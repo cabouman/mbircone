@@ -1,0 +1,20 @@
+#!/bin/sh -l
+#PBS -V
+#PBS -q bouman
+#PBS -l nodes=1:ppn=20
+#PBS -l walltime=336:00:00
+#PBS -N output_generic
+#PBS -e outputs/error_jobrun_generic_tb.txt
+#PBS -o outputs/output_jobrun_generic_tb.txt
+#
+cd $PBS_O_WORKDIR
+module load rcac
+module load matlab
+
+
+./run_generic_tb.sh
+
+
+echo "$(checkjob -v ${PBS_JOBID})" | mailx -s "Your Job on $(hostname -s) has terminated "$(whoami)@rcac.purdue.edu"
+
+

@@ -1,0 +1,26 @@
+denoisingParams.config
+[estimate_sigma] enable sigma estimation (0 or 1)
+0
+
+[sigma] noise standard deviation (only used if ~estimat_sigma)
+0.01
+
+[distribution] 'Gauss' --> Gaussian distribution | 'Rice ' --> Rician Distribution
+Gauss
+
+[profile] BM4D parameter profile | 'lc': low complexity | 'np': normal profile | 'mp': modified profile | 'bm3d'
+mp
+
+[do_wiener] Wiener filtering | 1 --> enable Wiener filtering | 0 --> disable Wiener filtering
+1
+
+[verbose] verbose mode (0 or 1)
+1
+
+[searchWindowSize] (if empty, defaut will be 11)
+11
+_______________________________________________________
+Additional Parameters ( Added Separately)
+
+[const_dims_4D] dimension(s) kept constant when denoising 4D data 1/2/3/4 (t,z,y,x): 1 element -> bm4d , 2 elements -> bm3d
+1

@@ -1,0 +1,47 @@
+params.txt
+
+[is_positivity_constraint] (1: positivity constraint on, 0: positivity constraint off )
+1
+
+[q] QGGMRF parameter (q>1, typical choice q=2)
+2.2
+
+[p] QGGMRF parameter (1<=p<q)
+1.15
+
+[T_s] QGGMRF parameter
+0.01
+
+[sigma_s] QGGMRF parameter
+1
+
+[T_t] QGGMRF parameter
+100
+
+[sigma_t] QGGMRF parameter
+0.01
+
+[sigma] noise standard deviation
+0.05
+
+[spacePriorMode] (0: 0 max neighbors, 1: 6 max neighbors, 2: 18 max neighbors, 3: 26 max neighbors)
+0
+
+[isTimePrior]
+1
+
+################################################################ Stopping Conditions #######
+[stopThreshold] stop threshold (%)
+0
+
+[MaxIterations] maximum number of iterations
+3
+
+################################################################ Intermediate saving #######
+[isSaveImage] Save the image after each iteration (TRUE: 1, FALSE: 0)
+1
+
+################################################################ Display
+[verbose] 1: display , 0: no display
+0
+

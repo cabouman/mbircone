@@ -1,0 +1,29 @@
+#!/bin/sh -l
+#PBS -V
+#PBS -n
+#PBS -q partner
+#PBS -l nodes=1:ppn=20
+#PBS -l walltime=00:12:00:00
+#PBS -N jobrun_multiNode_init
+#PBS -e outputs/error_jobrun_multiNode_init.txt
+#PBS -o outputs/output_jobrun_multiNode_init.txt
+
+cd $PBS_O_WORKDIR
+module load rcac
+module load matlab
+
+module load cuda
+module load cudnn/cuda-8.0_6.0
+module load anaconda/5.1.0-py36
+
+
+./multiNode_setup.sh init
+
+echo "$(checkjob -v ${PBS_JOBID})" | mailx -s "Your Job on $(hostname -s) is ready" "$(whoami)@rcac.purdue.edu"
+
+checkjob -v ${PBS_JOBID}
+
+sleep 9999999999
+
+
+

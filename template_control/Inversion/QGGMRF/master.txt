@@ -1,0 +1,26 @@
+Master Path Names
+[dataSetInfo] Data Set Path Names
+../dataSetInfo_thilo.txt
+../dataSetInfo_soumendu.txt
+
+[preprocessingParams] Preprocessing Params
+../preprocessingParams.txt
+
+[binaryFNames] Binary Path Names
+../binaryFNames.txt
+
+[sinoParams] Sinogram Params
+../sinoParams.txt
+
+[imgParams] Image Params
+../imgParams.txt
+
+[reconParams] Recon Params
+reconParams.txt
+
+[viewAngleList] View angle list
+../viewAngleList.txt
+
+[preprocessingScript]
+../../../code/Inversion/run/preprocessing_GE.sh
+../../../code/Inversion/run/preprocessing_LillyNSI.sh

@@ -1,0 +1,8 @@
+*.DS_Store
+sftp-config.json
+control
+*.o
+*.pyc
+
+# OSX / *nix default autosave extension MATLAB
+*.m~

@@ -1,0 +1,26 @@
+#!/bin/sh -l
+#PBS -V
+#PBS -q standby
+#PBS -l nodes=1:ppn=20
+#PBS -l walltime=00:04:00:00
+#PBS -N jobrun_multiNode_append
+#PBS -e outputs/error_jobrun_multiNode_append.txt
+#PBS -o outputs/output_jobrun_multiNode_append.txt
+
+cd $PBS_O_WORKDIR
+module load rcac
+module load matlab
+
+
+
+./multiNode_setup.sh append
+
+
+echo "$(checkjob -v ${PBS_JOBID})" | mailx -s "Your Job on $(hostname -s) is ready" "$(whoami)@rcac.purdue.edu"
+
+checkjob -v ${PBS_JOBID}
+
+sleep 9999999999
+
+
+

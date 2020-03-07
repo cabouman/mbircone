@@ -1,0 +1,39 @@
+------------------------------------------------ File Name stuff ----
+[inputImageFName]
+../../binaries/dncnn/noisyImage.recon
+
+[outputImageFName]
+../../binaries/dncnn/denoisedImage.recon
+
+[inputImageListList]
+dncnn_inputImageListList.txt
+
+[outputImageListList]
+dncnn_outputImageListList.txt
+
+[patchPositionList]
+dncnn_patchPositionList.txt
+
+[processIndexList]
+dncnn_processIndexList.txt
+
+[folderSuffix]
+_chunked
+------------------------------------------------ Parameters ---------
+[maxChunkSize] chunks will be at most of size (maxChunkSize)^3
+10000
+
+[haloRadius] Choose haloRadius < (maxChunkSize/2)
+1
+
+[dataType] use matlab syntax like "float32"
+float32
+
+[maxNumProcesses] if maxNumProcesses > numFiles then numProcesses = numFiles
+1
+
+[isCleanStart] clean chunked files at start
+1
+
+[isCleanEnd] clean chunked files at end
+0

@@ -1,0 +1,26 @@
+#!/bin/sh -l
+#PBS -V
+#PBS -q debug
+#PBS -l nodes=1:ppn=20
+#PBS -l walltime=00:20:00
+#PBS -N output_test
+
+cd $PBS_O_WORKDIR
+module load devel
+module load matlab
+
+
+# ./rungen.sh ../../../../control/Denoisers/qggmrf_4D/master.txt
+
+
+# cp -r ../../../../binaries/Inversion/object.recon ../../../../binaries/qggmrf_4D/noisyImage.recon
+# cp -r ../../../../binaries/Inversion/object.recon ../../../../binaries/qggmrf_4D/denoisedImage.recon
+
+./copyInv.sh
+
+./run.sh ../../../../control/Denoisers/BM4D_4D/master.txt
+# ./run_chunked.sh ../../../../control/Denoisers/BM4D_4D/master.txt
+
+echo "##########################################################"
+checkjob -v $PBS_JOBID
+

@@ -1,0 +1,12 @@
+denoisingParams.config
+[sigmaS] spacial sigma
+2
+
+[samS] the amount of downsampling performed by the fast approximation in the spatial dimensions
+2
+
+[sigmaR] value range sigma ( close to 1/numBins )
+0.5
+
+[numBins] number of bins for the range downsampling
+10

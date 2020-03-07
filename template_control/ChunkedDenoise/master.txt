@@ -1,0 +1,39 @@
+------------------------------------------------ File Name stuff ----
+[inputImageFName]
+../../binaries/BM4D/noisyImage.recon
+
+[outputImageFName]
+../../binaries/BM4D/denoisedImage.recon
+
+[inputImageListList]
+inputImageListList.txt
+
+[outputImageListList]
+outputImageListList.txt
+
+[patchPositionList]
+patchPositionList.txt
+
+[processIndexList]
+processIndexList.txt
+
+[folderSuffix]
+_chunked
+------------------------------------------------ Parameters ---------
+[maxChunkSize] chunks will be at most of size (maxChunkSize)^3
+50
+
+[haloRadius] Choose haloRadius < (maxChunkSize/2)
+1
+
+[dataType] use matlab syntax like "float32"
+float32
+
+[maxNumProcesses] if maxNumProcesses > numFiles then numProcesses = numFiles
+20
+
+[isCleanStart] clean chunked files at start
+1
+
+[isCleanEnd] clean chunked files at end
+1

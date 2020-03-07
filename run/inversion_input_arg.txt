@@ -1,0 +1,6 @@
+Inversion Input masterPathNames Choices. Paths are relative to this file's location
+Choice 1
+../control/Inversion/QGGMRF/master.txt
+
+
+

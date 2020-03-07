@@ -1,0 +1,16 @@
+Master Path Names
+-------------------------------------
+[hostNameList] file that contains a list of host names
+hostNames.txt
+
+[commandList]
+commands.txt
+-------------------------------------
+[numCoresPerNode]
+20
+
+[numAgentsPerNode]	Maximum number of agents processed simultanously on a single node
+20
+-------------------------------------
+[date] Date of last setup
+Fri Jun 29 13:17:01 EDT 2018
