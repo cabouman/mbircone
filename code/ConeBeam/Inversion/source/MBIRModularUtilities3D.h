@@ -101,24 +101,29 @@ struct RandomAux
 
 struct PathNames
 {
-    char masterFile[200];
-    char plainParamsFile[200];
+    char masterFile[1000];
+    char plainParamsFile[1000];
 
-    /* Inside dataSetPathNames.txt */
-    char sino[200];
-    char driftSino[200];
-    char origSino[200];
-    char wght[200];
-    char errsino[200];
-    char sinoMask[200];
-    char recon[200];
-    char reconROI[200];
-    char proxMapInput[200];
-    char lastChange[200];
-    char timeToChange[200];
-    char phantom[200];
-    char sysMatrix[200];
-    char wghtRecon[200];
+    char sino[1000];
+    char driftSino[1000];
+    char origSino[1000];
+    char wght[1000];
+    char errSino[1000];
+    char recon[1000];
+    char reconROI[1000];
+    char proxMapInput[1000];
+    char lastChange[1000];
+    char timeToChange[1000];
+    char phantom[1000];
+    char sysMatrix[1000];
+    char wghtRecon[1000];
+    char projInput[1000];
+    char projOutput[1000];
+    char backprojlikeInput[1000];
+    char backprojlikeOutput[1000];
+    char estimateSino[1000];
+    char consensusRecon[1000];
+    char jigMeasurementsSino[1000];
     
 };
 
@@ -152,6 +157,10 @@ struct ImageFParams
     long int j_xstop_roi;
     long int j_ystop_roi;
     long int j_zstop_roi;
+
+    long int N_x_roi;
+    long int N_y_roi;
+    long int N_z_roi;
 };
 
 
@@ -166,6 +175,8 @@ struct ImageF
     float ***lastChange;
     unsigned char ***timeToChange;
     float ***phantom;
+    float ***projInput;
+    float ***backprojlikeOutput;
     struct RandomZiplineAux randomZiplineAux;
     struct RandomAux randomAux;
 };
@@ -198,7 +209,7 @@ struct SinoParams
     double w_d0;
     
     /* Noise variance estimation */
-    double weightScaler;       /* Weight_true = Weight / weightScaler */
+    double weightScaler_value;       /* Weight_true = Weight / weightScaler_value */
 };
 
 
@@ -208,9 +219,9 @@ struct Sino
     float ***vox;       /* [N_beta][N_dv][N_dw] */
     WEIGHTDATATYPE ***wgt;
     float ***e;
-
-    /* Mask */
-    char ***mask;
+    float ***projOutput;
+    float ***backprojlikeInput;
+    float ***estimateSino;
 
 
 };
@@ -228,8 +239,7 @@ struct ReconParams
      *      Miscellaneous
      */
     double InitVal_recon;                  /* Initialization value InitVal_proxMapInput (mm-1) */
-    int isUsePhantomToInitErrSino;                  
-    double InitVal_proxMapInput;            /* Initialization value InitVal_recon_proxMap (mm-1) */
+    char initReconMode[200];
     double rho;                     /* System Matrix parameter rho: choose to be about 10<rho<100 */
 
     /**
@@ -287,9 +297,9 @@ struct ReconParams
     /**
      *      Weight scaler stuff
      */
-    int isEstimateWeightScaler;     /* Estimate weight scaler? 1: Yes. 0: Use user specified value */
-    int isUseWghtRecon;     
-    double weightScaler;            /* User specified weight scaler */
+    char weightScaler_estimateMode[200];     /* Estimate weight scaler? 1: Yes. 0: Use user specified value */
+    char weightScaler_domain[200];     
+    double weightScaler_value;            /* User specified weight scaler */
 
 
     /* NHICD stuff */
@@ -301,9 +311,8 @@ struct ReconParams
     /* Misc */
     int verbosity;
     int isComputeCost;
-    int isPhantomPresent;
-    int isForwardProjectPhantom;
-    int isRecomputeWeight;
+    int isPhantomReconReference;
+    char backprojlike_type[200]; 
 };
 
 struct SysMatrix
@@ -396,7 +405,7 @@ struct IterationStatistics
 {
     double cost;
     double relUpdate;
-    double weightScaler;
+    double weightScaler_value;
     double voxelsPerSecond;
     double ticToc_iteration;
 };
@@ -434,16 +443,12 @@ void readSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageFPara
 
 void forwardProject3DCone( float ***Ax, float ***x, struct ImageFParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoInfo);
 
-void initializeSinoMask(struct SysMatrix *A, struct Sino *sino, struct ImageF *img, struct ReconParams *reconParams);
-
-void initializeWght(struct SysMatrix *A, struct Sino *sino);
+void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageFParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams, struct ReconParams *reconParams);
 
 void initializeWghtRecon(struct SysMatrix *A, struct Sino *sino, struct ImageF *img, struct ReconParams *reconParams);
 
-long int computeNumberOfVoxelsInSinogramMask(struct Sino *sino);
-
-void errorInitialization(struct ImageF *img, struct SysMatrix *A, struct Sino *sino, struct ReconParams *reconParams);
-
+double computeAvgWghtRecon(struct ImageF *img);
+    
 void computeSecondaryReconParams(struct ReconParams *reconParams, struct ImageFParams *imgParams);
 
 void invertDoubleMatrix(double **A, double ** A_inv, int size);
@@ -454,8 +459,6 @@ double computeRelativeRMSEFloatArray(float *arr1, float *arr2, long int len);
 
 double computeSinogramWeightedNormSquared(struct Sino *sino, float ***arr);
 
-void setImageF2Value_insideMask(float ***arr, struct ImageFParams *params, float value);
-
 char isInsideMask(long int i_1, long int i_2, long int N1, long int N2);
 
 long int computeNumVoxelsInImageMask(struct ImageF *img);
@@ -463,6 +466,8 @@ long int computeNumVoxelsInImageMask(struct ImageF *img);
 void copyImageF2ROI(struct ImageF *img);
 
 void applyMask(float ***arr, long int N1, long int N2, long int N3);
+
+void floatArray_z_equals_aX_plus_bY(float *Z, double a, float *X, double b, float *Y, long int len);
 
 void setFloatArray2Value(float *arr, long int len, float value);
 

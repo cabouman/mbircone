@@ -143,6 +143,9 @@ void forwardProject3DCone( float ***Ax, float ***x, struct ImageFParams *imgPara
     long int j_u, j_x, j_y, i_beta, i_v, j_z, i_w;
     double B_ij, B_ij_times_x_j;
 
+    setFloatArray2Value( &Ax[0][0][0], sinoInfo->N_beta*sinoInfo->N_dv*sinoInfo->N_dw, 0);
+
+
     #pragma omp parallel for private(j_x, j_y, j_u, i_v, B_ij, j_z, B_ij_times_x_j, i_w)
     for (i_beta = 0; i_beta <= sinoInfo->N_beta-1; ++i_beta)
     {
@@ -169,84 +172,132 @@ void forwardProject3DCone( float ***Ax, float ***x, struct ImageFParams *imgPara
     }
 }
 
-void initializeSinoMask(struct SysMatrix *A, struct Sino *sino, struct ImageF *img, struct ReconParams *reconParams)
+void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageFParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams, struct ReconParams *reconParams)
 {
-    long int j_u, j_x, j_y, i_beta, i_v, j_z, i_w;
-    long int N_x_roi, N_y_roi;
+
+    long int j_u, j_x, j_y, i_beta, i_v, j_z, i_w, num;
+    double B_ij, A_ij;
     double ticToc;
+    char mode;
+    float ***normalization, val, val2;
 
-    N_x_roi = img->params.j_xstop_roi - img->params.j_xstart_roi + 1;
-    N_y_roi = img->params.j_ystop_roi - img->params.j_ystart_roi + 1;
+    if (strcmp(reconParams->backprojlike_type,"proj") == 0)
+    {
+        mode = 0;
+    }
+    else if (strcmp(reconParams->backprojlike_type,"entropy") == 0)
+    {
+        mode = 1;
+        normalization = (float***) allocateImageFData3DCone( imgParams, sizeof(float), 0);
+    }
+    else if (strcmp(reconParams->backprojlike_type,"kappa") == 0)
+    {
+        mode = 2;
+    }
+    else
+    {
+        fprintf(stderr, "ERROR in backProjectlike3DCone: can't recongnize backprojlike_type.\n");
+        exit(-1);
+    }
 
-    logAndDisp_message(LOG_PROGRESS, "\nInitialize Sinogram Mask ...\n");
-
+    logAndDisp_message(LOG_PROGRESS, "\n Computing backProjectlike ...\n");
 
 
     tic(&ticToc);
-    #pragma omp parallel for private(i_v, i_w)
-    for (i_beta = 0; i_beta <= sino->params.N_beta-1; ++i_beta)
+    #pragma omp parallel for private(j_y, j_z)
+    for (j_x = 0; j_x <= imgParams->N_x-1; ++j_x)
     {
-        for (i_v = 0; i_v <= sino->params.N_dv-1 ; ++i_v)
+        for (j_y = 0; j_y <= imgParams->N_y-1 ; ++j_y)
         {
-            for (i_w = 0; i_w <= sino->params.N_dw-1; ++i_w)
+            for (j_z = 0; j_z <= imgParams->N_z-1; ++j_z)
             {
-                sino->mask[i_beta][i_v][i_w] = 0;
+                x_out[j_x][j_y][j_z] = 0;
             }
         }
     }
 
-    #pragma omp parallel for private(j_x, j_y, j_u, i_v, j_z, i_w)
-    for (i_beta = 0; i_beta <= sino->params.N_beta-1; ++i_beta)
+    printf("mode: %d\n", mode);
+
+    #pragma omp parallel for private(j_x, j_y, j_u, i_v, B_ij, j_z, i_w, A_ij, val)
+    for (i_beta = 0; i_beta <= sinoParams->N_beta-1; ++i_beta)
     {
-        for (j_x = img->params.j_xstart_roi; j_x <= img->params.j_xstop_roi; ++j_x)
+
+        for (j_x = 0; j_x <= imgParams->N_x-1; ++j_x)
         {
-            for (j_y = img->params.j_ystart_roi; j_y <= img->params.j_ystop_roi; ++j_y)
+            for (j_y = 0; j_y <= imgParams->N_y-1; ++j_y)
             {
-                j_u = A->j_u[j_x][j_y][i_beta];
-                for (i_v = A->i_vstart[j_x][j_y][i_beta]; i_v < A->i_vstart[j_x][j_y][i_beta]+A->i_vstride[j_x][j_y][i_beta] ; ++i_v)
+                if(isInsideMask(j_x, j_y, imgParams->N_x, imgParams->N_y))
                 {
-                    for (j_z = img->params.j_zstart_roi; j_z <= img->params.j_zstop_roi; ++j_z)
+                    j_u = A->j_u[j_x][j_y][i_beta];
+                    for (i_v = A->i_vstart[j_x][j_y][i_beta]; i_v < A->i_vstart[j_x][j_y][i_beta]+A->i_vstride[j_x][j_y][i_beta] ; ++i_v)
                     {
-                        
-                        if (isInsideMask(j_x-img->params.j_xstart_roi, j_y-img->params.j_ystart_roi, N_x_roi, N_y_roi))
+                        B_ij = A->B_ij_scaler * A->B[j_x][j_y][i_beta*A->i_vstride_max + i_v-A->i_vstart[j_x][j_y][i_beta]];
+                        for (j_z = 0; j_z <= imgParams->N_z-1; ++j_z)
+                        {
                             for (i_w = A->i_wstart[j_u][j_z]; i_w < A->i_wstart[j_u][j_z]+A->i_wstride[j_u][j_z]; ++i_w)
                             {
-                                sino->mask[i_beta][i_v][i_w] = 1;
-                            }
+                                A_ij = B_ij * A->C_ij_scaler * A->C[j_u][j_z*A->i_wstride_max + i_w-A->i_wstart[j_u][j_z]];
+                                
 
+                                if(mode==0){
+                                    x_out[j_x][j_y][j_z] += A_ij * y_in[i_beta][i_v][i_w] ;
+                                }
+                                else if(mode==1){
+                                    val = A_ij * y_in[i_beta][i_v][i_w];
+                                    if (val!=0){
+                                        x_out[j_x][j_y][j_z] += val * log(val) ;
+                                    }
+                                    normalization[j_x][j_y][j_z] += A_ij * y_in[i_beta][i_v][i_w] ;
+                                }
+                                else if(mode==2){
+                                    x_out[j_x][j_y][j_z] += A_ij * y_in[i_beta][i_v][i_w] * A_ij ;
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
     }
-    toc(&ticToc);
-    ticToc_logAndDisp(ticToc, "initializeSinoMask");
 
+    printf("mode: %d\n", mode);
 
-
-}
-
-void initializeWght(struct SysMatrix *A, struct Sino *sino)
-{
-    long int i_beta, i_v, i_w;
-    double l;
-
-    #pragma omp parallel for private(i_v, i_w, l)
-    for (i_beta = 0; i_beta <= sino->params.N_beta-1; ++i_beta)
-    for (i_v = 0; i_v <= sino->params.N_dv-1; ++i_v)
-    for (i_w = 0; i_w <= sino->params.N_dw-1; ++i_w)
+    if(mode==1)
     {
-        l = exp(-sino->vox[i_beta][i_v][i_w]);
-
-        sino->wgt[i_beta][i_v][i_w] = l;
+        /* compute entropy in bits after normalization */
+        #pragma omp parallel for private(j_y, j_z, val, val2)
+        for (j_x = 0; j_x <= imgParams->N_x-1; ++j_x)
+        {
+            for (j_y = 0; j_y <= imgParams->N_y-1; ++j_y)
+            {
+                for (j_z = 0; j_z <= imgParams->N_z-1; ++j_z)
+                {
+                    val = x_out[j_x][j_y][j_z];
+                    val2 = normalization[j_x][j_y][j_z];
+                    if (val2==0){
+                        x_out[j_x][j_y][j_z] = 0;
+                    }
+                    else{
+                        x_out[j_x][j_y][j_z] = (log(val2) - val/val2)/log(2);
+                    }
+                }
+            }   
+        }
+        mem_free_3D((void***)normalization);
     }
+
+
+    toc(&ticToc);
+    ticToc_logAndDisp(ticToc, "backProjectlike3DCone");
+
 }
+
 
 void initializeWghtRecon(struct SysMatrix *A, struct Sino *sino, struct ImageF *img, struct ReconParams *reconParams)
 {
     long int j_u, j_x, j_y, i_beta, i_v, j_z, i_w, num;
     double B_ij, A_ij;
-    double ticToc, sum;
+    double ticToc, avg;
 
     logAndDisp_message(LOG_PROGRESS, "\nInitialize WghtRecon ...\n");
 
@@ -292,8 +343,23 @@ void initializeWghtRecon(struct SysMatrix *A, struct Sino *sino, struct ImageF *
         }
     }
 
-    sum = 0;
-    num = 0;
+    avg = computeAvgWghtRecon(img);
+
+    toc(&ticToc);
+    ticToc_logAndDisp(ticToc, "initializeWghtRecon");
+
+    printf("\n -> Average Weight Scaler = %e\n", avg);
+
+
+}
+
+double computeAvgWghtRecon(struct ImageF *img)
+{
+    long int j_x, j_y, j_z;
+
+    double sum = 0;
+    long int num = 0;
+
     #pragma omp parallel for private(j_y, j_z) reduction(+:sum,num)
     for (j_x = 0; j_x <= img->params.N_x-1; ++j_x)
     {
@@ -307,75 +373,10 @@ void initializeWghtRecon(struct SysMatrix *A, struct Sino *sino, struct ImageF *
                 }
         }
     }
-
-    toc(&ticToc);
-    ticToc_logAndDisp(ticToc, "initializeWghtRecon");
-
-    printf("\n -> Average Weight Scaler = %e\n", sum/num);
-
+    return sum/num;
 
 }
 
-long int computeNumberOfVoxelsInSinogramMask(struct Sino *sino)
-{
-    long int num_mask = 0;
-    long int i_beta, i_v, i_w;
-
-    for (i_beta = 0; i_beta < sino->params.N_beta; ++i_beta)
-    {
-        for (i_v = 0; i_v < sino->params.N_dv; ++i_v)
-        {
-            for (i_w = 0; i_w < sino->params.N_dw; ++i_w)
-            {
-                num_mask += sino->mask[i_beta][i_v][i_w];
-            }
-        }
-    }
-    return num_mask;
-}
-
-
-
-/**
- * Computes e = y - Ax
- * where y is the sinogram,
- * Ax is the forward projected image x.
- * Allocate e before calling.
- */
-void errorInitialization(struct ImageF *img, struct SysMatrix *A, struct Sino *sino, struct ReconParams *reconParams)
-{   
-    /* Overall steps: e <- y - (e <- Ax) */
-    long int i_v, i_w, i_beta;
-
-    double ticToc;
-    tic(&ticToc);
-
-    logAndDisp_message(LOG_PROGRESS, "\nInitialize error = y - Ax ...\n");
-
-    /* 1: e <- 0        |   Then, e = 0       */
-    setFloatArray2Value(&sino->e[0][0][0], sino->params.N_beta*sino->params.N_dv*sino->params.N_dw, 0);
-
-    /* 2: e <- e + Ax   |   Then, e = Ax      */
-    forwardProject3DCone( sino->e, img->vox, &img->params, A, &sino->params);
-
-
-
-    /* 3: e <- y - e    |   Then, e = y - Ax  */
-    for (i_beta = 0; i_beta < sino->params.N_beta; ++i_beta)
-    {
-        for (i_v = 0; i_v < sino->params.N_dv; ++i_v)
-        {
-            for (i_w = 0; i_w < sino->params.N_dw; ++i_w)
-            {
-                sino->e[i_beta][i_v][i_w] = sino->vox[i_beta][i_v][i_w] - sino->e[i_beta][i_v][i_w];
-            }
-        }
-    }
-
-    toc(&ticToc);
-    ticToc_logAndDisp(ticToc, "errorInitialization");
-
-}
 
 void computeSecondaryReconParams(struct ReconParams *reconParams, struct ImageFParams *imgParams)
 {
@@ -512,9 +513,9 @@ double computeSinogramWeightedNormSquared(struct Sino *sino, float ***arr)
      *      normError    = --- || arr ||  
      *                      M  ||     ||L 
      *
-     *      normError = weightScaler
+     *      normError = weightScaler_value
      * 
-     *      Weight_true = Weight / weightScaler
+     *      Weight_true = Weight / weightScaler_value
      */
     long int i_beta, i_v, i_w;
     long int num_mask;
@@ -524,32 +525,16 @@ double computeSinogramWeightedNormSquared(struct Sino *sino, float ***arr)
     for (i_v = 0; i_v < sino->params.N_dv; ++i_v)
     for (i_w = 0; i_w < sino->params.N_dw; ++i_w)
     {
-        normError += arr[i_beta][i_v][i_w] * sino->wgt[i_beta][i_v][i_w] * arr[i_beta][i_v][i_w] * sino->mask[i_beta][i_v][i_w];
+        normError += arr[i_beta][i_v][i_w] * sino->wgt[i_beta][i_v][i_w] * arr[i_beta][i_v][i_w];
     }
 
-    num_mask = computeNumberOfVoxelsInSinogramMask(sino);
+    num_mask = sino->params.N_beta * sino->params.N_dv * sino->params.N_dw;
     
     normError /= num_mask;
 
     return normError;
 }
 
-
-void setImageF2Value_insideMask(float ***arr, struct ImageFParams *params, float value)
-{
-    long int j_x, j_y, j_z;
-    
-    for (j_x = 0; j_x < params->N_x; ++j_x)
-    {
-        for (j_y = 0; j_y < params->N_y; ++j_y)
-        {
-            for (j_z = 0; j_z < params->N_z; ++j_z)
-            {
-                arr[j_x][j_y][j_z] = value * isInsideMask(j_x, j_y, params->N_x, params->N_y);
-            }
-        }
-    }
-}
 
 char isInsideMask(long int i_1, long int i_2, long int N1, long int N2)
 {
@@ -637,6 +622,16 @@ void applyMask(float ***arr, long int N1, long int N2, long int N3)
             }
 
         }
+    }
+}
+
+void floatArray_z_equals_aX_plus_bY(float *Z, double a, float *X, double b, float *Y, long int len)
+{
+    long int i;
+
+    for (i = 0; i < len; ++i)
+    {
+        Z[i] = a*X[i] + b*Y[i];
     }
 }
 
@@ -745,15 +740,9 @@ void readSinoData3DCone(char *fName, void ***sino, struct SinoParams *sinoParams
 
 void writeImageFData3DCone(char *fName, void ***arr, struct ImageFParams *params, int isROI, char *dataType)
 {
-    long int N_x_roi, N_y_roi, N_z_roi;
-
-    N_x_roi = params->j_xstop_roi - params->j_xstart_roi + 1;
-    N_y_roi = params->j_ystop_roi - params->j_ystart_roi + 1;
-    N_z_roi = params->j_zstop_roi - params->j_zstart_roi + 1;
-
     if (isROI) 
     {
-        write3DData(fName, (void***)arr, N_x_roi, N_y_roi, N_z_roi, dataType);
+        write3DData(fName, (void***)arr, params->N_x_roi, params->N_y_roi, params->N_z_roi, dataType);
     }
     else
     {
@@ -763,15 +752,9 @@ void writeImageFData3DCone(char *fName, void ***arr, struct ImageFParams *params
 
 void readImageFData3DCone(char *fName, void ***arr, struct ImageFParams *params, int isROI, char *dataType)
 {
-    long int N_x_roi, N_y_roi, N_z_roi;
-
-    N_x_roi = params->j_xstop_roi - params->j_xstart_roi + 1;
-    N_y_roi = params->j_ystop_roi - params->j_ystart_roi + 1;
-    N_z_roi = params->j_zstop_roi - params->j_zstart_roi + 1;
-
     if (isROI) 
     {
-        read3DData(fName, (void***)arr, N_x_roi, N_y_roi, N_z_roi, dataType);
+        read3DData(fName, (void***)arr, params->N_x_roi, params->N_y_roi, params->N_z_roi, dataType);
     }
     else
     {
