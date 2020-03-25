@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-#include "../0A_CLibraries/io3d.h"
-#include "../0A_CLibraries/MBIRModularUtilities3D.h"
+#include "io3d.h"
+#include "MBIRModularUtilities3D.h"
 #include "computeSysMatrix.h"
 
 
