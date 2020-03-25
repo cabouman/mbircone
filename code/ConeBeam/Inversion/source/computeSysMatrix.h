@@ -1,10 +1,8 @@
-
-
 #include <stdio.h>
 #include <math.h>
-#include "../0A_CLibraries/allocate.h"
-#include "../0A_CLibraries/io3d.h"
-#include "../0A_CLibraries/MBIRModularUtilities3D.h"
+#include "allocate.h"
+#include "io3d.h"
+#include "MBIRModularUtilities3D.h"
 
 void computeSysMatrix(struct SinoParams *sinoParams, struct ImageFParams *imgParams, struct SysMatrix *A, struct ReconParams *reconParams, struct ViewAngleList *viewAngleList);
 
