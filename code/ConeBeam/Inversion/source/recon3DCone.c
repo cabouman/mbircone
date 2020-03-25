@@ -1,7 +1,6 @@
 
 #include "recon3DCone.h"
-#include "../0A_CLibraries/allocate.h"
-#include "../0A_CLibraries/io3d.h"
+#include "allocate.h"
 #include <math.h>
 #include <time.h>
 #include <omp.h>
@@ -269,7 +268,6 @@ void MBIR3DCone(struct ImageF *img, struct Sino *sino, struct ReconParams *recon
         /**
          *      Iteration Info
          */
-
         weightedNormSquared_e = computeSinogramWeightedNormSquared(sino, sino->e);
         weightedNormSquared_y = computeSinogramWeightedNormSquared(sino, sino->vox);
         reconAux.relativeWeightedForwardError = sqrt(weightedNormSquared_e / weightedNormSquared_y);
@@ -286,11 +284,20 @@ void MBIR3DCone(struct ImageF *img, struct Sino *sino, struct ReconParams *recon
 		reconAux.lastChangeThreshold = prctile_copyFast(&img->lastChange[0][0][0], N_x*N_y*numZiplines, 100-reconParams->NHICD_percentage, subsampleFactor);
 		toc(&ticToc_computeLastChangeThreshold);
 
-
-		if (reconParams->isEstimateWeightScaler)
-			sino->params.weightScaler = weightedNormSquared_e;
+		/**
+		 *		weightScaler_estimateMode
+		 */
+		if (strcmp(reconParams->weightScaler_estimateMode,"errorSino") == 0)
+			sino->params.weightScaler_value = weightedNormSquared_e;
+		else if (strcmp(reconParams->weightScaler_estimateMode,"avgWghtRecon") == 0)
+			sino->params.weightScaler_value = computeAvgWghtRecon(img);
+		else if (strcmp(reconParams->weightScaler_estimateMode,"None") == 0)
+			sino->params.weightScaler_value = reconParams->weightScaler_value;
 		else
-			sino->params.weightScaler = reconParams->weightScaler;
+		{
+			fprintf(stderr, "ERROR in MBIR3DCone: can't recongnize weightScaler_estimateMode.\n");
+	        exit(-1);
+	    }
 
 		tic(&ticToc_computeCost);
         if(reconParams->isComputeCost)
@@ -306,12 +313,11 @@ void MBIR3DCone(struct ImageF *img, struct Sino *sino, struct ReconParams *recon
         reconAux.totalEquits += ratioUpdated;
 
 
-        if(reconParams->isPhantomPresent)
+        if(reconParams->isPhantomReconReference)
         	RRMSE = computeRelativeRMSEFloatArray(&img->vox[0][0][0], &img->phantom[0][0][0], N_x*N_y*N_z);
 
 
 
-        
 
 
 		tic(&ticToc_IntermediateStoring);
@@ -319,9 +325,9 @@ void MBIR3DCone(struct ImageF *img, struct Sino *sino, struct ReconParams *recon
 		 * 		Intermediate storing of binaries
 		 */
 			/* Error Sino */
-			writeSinoData3DCone(pathNames->errsino, (void***)sino->e, &sino->params, "float");
+			writeSinoData3DCone(pathNames->errSino, (void***)sino->e, &sino->params, "float");
 	
-			strcpy(tempFName, pathNames->errsino);
+			strcpy(tempFName, pathNames->errSino);
 			prependToFName(reconParams->downsampleFNamePrefix, tempFName);
 			writeDownSampledFloat3D(tempFName, sino->e, N_beta, N_dv, N_dw, reconParams->downsampleFactorSino, 1, 1);
 
@@ -329,6 +335,10 @@ void MBIR3DCone(struct ImageF *img, struct Sino *sino, struct ReconParams *recon
 			writeImageFData3DCone(pathNames->recon, (void***) img->vox, &img->params, 0, "float");
 			copyImageF2ROI(img);
 			writeImageFData3DCone(pathNames->reconROI, (void***) img->vox_roi, &img->params, 1, "float");
+
+			/* estimateSino */
+			floatArray_z_equals_aX_plus_bY(&sino->estimateSino[0][0][0], 1.0, &sino->vox[0][0][0], -1.0, &sino->e[0][0][0], sino->params.N_beta*sino->params.N_dv*sino->params.N_dw);
+			writeSinoData3DCone(pathNames->estimateSino, (void***)sino->estimateSino, &sino->params, "float");
 
 			strcpy(tempFName, pathNames->recon);
 			prependToFName(reconParams->downsampleFNamePrefix, tempFName);
@@ -348,7 +358,7 @@ void MBIR3DCone(struct ImageF *img, struct Sino *sino, struct ReconParams *recon
 		 */
         if (itNumber>0)
         {
-            if (relUpdate < stopThresholdChange || reconAux.relativeWeightedForwardError < stopThesholdRWFE || reconAux.relativeUnweightedForwardError < stopThesholdRUFE || (reconParams->isPhantomPresent && RRMSE < stopThesholdRRMSE) )
+            if (relUpdate < stopThresholdChange || reconAux.relativeWeightedForwardError < stopThesholdRWFE || reconAux.relativeUnweightedForwardError < stopThesholdRUFE || (reconParams->isPhantomReconReference && RRMSE < stopThesholdRRMSE) )
                 stopFlag = 1;
         }
 
@@ -365,7 +375,7 @@ void MBIR3DCone(struct ImageF *img, struct Sino *sino, struct ReconParams *recon
     		ticToc_logAndDisp(ticToc_iteration, 	              "iteration                  ");
     		ticToc_logAndDisp(ticToc_icdUpdate_total, 	          "icdUpdate_total            ");
         }
-		dispAndLog_iterationInfo(&reconAux, reconParams, itNumber, MaxIterations, cost, relUpdate, stopThresholdChange, sino->params.weightScaler, speedAuxICD.voxelsPerSecond, ticToc_icdUpdate, weightedNormSquared_e, ratioUpdated, RRMSE, stopThesholdRRMSE, reconAux.totalEquits);
+		dispAndLog_iterationInfo(&reconAux, reconParams, itNumber, MaxIterations, cost, relUpdate, stopThresholdChange, sino->params.weightScaler_value, speedAuxICD.voxelsPerSecond, ticToc_icdUpdate, weightedNormSquared_e, ratioUpdated, RRMSE, stopThesholdRRMSE, reconAux.totalEquits);
 	}
 
 	mem_free_1D((void*)reconAux.NHICD_numUpdatedVoxels);
@@ -385,18 +395,3 @@ void MBIR3DCone(struct ImageF *img, struct Sino *sino, struct ReconParams *recon
 	ticToc_logAndDisp(ticToc_all, "MBIR3DCone");
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
