@@ -7,8 +7,8 @@
 #include <stdio.h>
 #include <time.h>
 #include <omp.h>
-#include "../0A_CLibraries/allocate.h"
-#include "../0A_CLibraries/io3d.h"
+#include "allocate.h"
+#include "io3d.h"
 
 
 void ICDStep3DCone(struct Sino *sino, struct ImageF *img, struct SysMatrix *A, struct ICDInfo3DCone *icdInfo, struct ReconParams *reconParams, struct ReconAux *reconAux)
@@ -186,15 +186,20 @@ void computeTheta1Theta2ForwardTerm(struct Sino *sino, struct SysMatrix *A, stru
         }
     }
 
-    if (reconParams->isUseWghtRecon)
+    if (strcmp(reconParams->weightScaler_domain,"spatiallyVariant") == 0)
     {
 	    icdInfo->theta1_f /= icdInfo->wghtRecon_j;
 	    icdInfo->theta2_f /= icdInfo->wghtRecon_j;
     }
+    else if(strcmp(reconParams->weightScaler_domain,"spatiallyInvariant") == 0)
+    {
+	    icdInfo->theta1_f /= sino->params.weightScaler_value;
+	    icdInfo->theta2_f /= sino->params.weightScaler_value;
+    }
     else
     {
-	    icdInfo->theta1_f /= sino->params.weightScaler;
-	    icdInfo->theta2_f /= sino->params.weightScaler;
+        fprintf(stderr, "ERROR in computeTheta1Theta2ForwardTerm: can't recongnize weightScaler_domain.\n");
+        exit(-1);
     }
 
 }
@@ -405,7 +410,7 @@ double MAPCost3D(struct Sino *sino, struct ImageF *img, struct ReconParams *reco
 	 * 				+ sum    	b_{s,r} rho(x_s-x_r)
 	 * 		         {s,r} E P
 	 *
-	 * 				+ num_mask / 2 * log(weightScaler)
+	 * 				+ num_mask / 2 * log(weightScaler_value)
 	 */
 	double cost = 0;
 	long int num_mask;
@@ -418,8 +423,8 @@ double MAPCost3D(struct Sino *sino, struct ImageF *img, struct ReconParams *reco
     if(reconParams->priorWeight_proxMap >= 0)
 		cost += MAPCostPrior_ProxMap(img, reconParams);
 
-	num_mask = computeNumberOfVoxelsInSinogramMask(sino);
-	cost += num_mask / 2 * log(sino->params.weightScaler);
+	num_mask = sino->params.N_beta * sino->params.N_dv * sino->params.N_dw;
+	cost += num_mask / 2 * log(sino->params.weightScaler_value);
 
 	return cost;
 }
@@ -442,14 +447,13 @@ double MAPCostForward(struct Sino *sino)
             {
             	cost +=   sino->e[i_beta][i_v][i_w]
             			* sino->wgt[i_beta][i_v][i_w]
-            			* sino->e[i_beta][i_v][i_w]
-            			* sino->mask[i_beta][i_v][i_w];
+            			* sino->e[i_beta][i_v][i_w];
             }
         }
     }
 
 
-    return cost / (2.0 * sino->params.weightScaler);
+    return cost / (2.0 * sino->params.weightScaler_value);
 }
 
 double MAPCostPrior_QGGMRF(struct ImageF *img, struct ReconParams *reconParams)
@@ -713,7 +717,7 @@ void updateIterationStatsGroup(struct ReconAux *reconAux, struct ICDInfo3DCone *
 }
 
 
-void dispAndLog_iterationInfo(struct ReconAux *reconAux, struct ReconParams *reconParams, int itNumber, int MaxIterations, double cost, double relUpdate, double stopThresholdChange, double weightScaler, double voxelsPerSecond, double ticToc_iteration, double weightedNormSquared_e, double ratioUpdated, double RRMSE, double stopThesholdRRMSE, double totalEquits)
+void dispAndLog_iterationInfo(struct ReconAux *reconAux, struct ReconParams *reconParams, int itNumber, int MaxIterations, double cost, double relUpdate, double stopThresholdChange, double weightScaler_value, double voxelsPerSecond, double ticToc_iteration, double weightedNormSquared_e, double ratioUpdated, double RRMSE, double stopThesholdRRMSE, double totalEquits)
 {
 	char str[2000];
 
@@ -729,7 +733,7 @@ void dispAndLog_iterationInfo(struct ReconAux *reconAux, struct ReconParams *rec
 	sprintf(str, "%s *  RRMSE                  = %-10.10e %% (threshold = %-10.10e %%)\n", str, RRMSE*100, reconParams->stopThesholdRRMSE_pct);
 	sprintf(str, "%s * ----------------------------------------------------------------------------\n", str);
 	sprintf(str, "%s *  1/M ||e||^2_W          = %-10.10e = 1/%-10.10f\n", str, weightedNormSquared_e, 1/weightedNormSquared_e);
-	sprintf(str, "%s *  weightScaler           = %-10.10e = 1/%-10.10f\n", str, weightScaler, 1/weightScaler);
+	sprintf(str, "%s *  weightScaler_value     = %-10.10e = 1/%-10.10f\n", str, weightScaler_value, 1/weightScaler_value);
 	sprintf(str, "%s * ----------------------------------------------------------------------------\n", str);
 	sprintf(str, "%s *  voxelsPerSecond        = %-10.10e \n", str, voxelsPerSecond);
 	sprintf(str, "%s *  time icd update        = %-10.10e s\n", str, ticToc_iteration);
@@ -748,7 +752,7 @@ void dispAndLog_iterationInfo(struct ReconAux *reconAux, struct ReconParams *rec
 	sprintf(str, "%sstats.cost(%d)   = %.12e;\n", str, itNumber+1, (double) cost);
 	sprintf(str, "%sstats.relUpdate(%d)   = %.12e;\n", str, itNumber+1, (double) relUpdate);
 	sprintf(str, "%sstats.stopThresholdChange(%d)   = %.12e;\n", str, itNumber+1, (double) stopThresholdChange);
-	sprintf(str, "%sstats.weightScaler(%d)   = %.12e;\n", str, itNumber+1, (double) weightScaler);
+	sprintf(str, "%sstats.weightScaler_value(%d)   = %.12e;\n", str, itNumber+1, (double) weightScaler_value);
 	sprintf(str, "%sstats.voxelsPerSecond(%d)   = %.12e;\n", str, itNumber+1, (double) voxelsPerSecond);
 	sprintf(str, "%sstats.ticToc_iteration(%d)   = %.12e;\n", str, itNumber+1, (double) ticToc_iteration);
 	sprintf(str, "%sstats.weightedNormSquared_e(%d)   = %.12e;\n", str, itNumber+1, (double) weightedNormSquared_e);
@@ -966,23 +970,28 @@ void computeTheta1Theta2ForwardTermGroup(struct Sino *sino, struct SysMatrix *A,
 		}
 	}
 
-
-    if (reconParams->isUseWghtRecon)
+    if (strcmp(reconParams->weightScaler_domain,"spatiallyVariant") == 0)
     {
-		for (k_M = 0; k_M < N_M; ++k_M)
-		{
-			icdInfo[k_M].theta1_f /= icdInfo[k_M].wghtRecon_j;
-			icdInfo[k_M].theta2_f /= icdInfo[k_M].wghtRecon_j;
-		}
+        for (k_M = 0; k_M < N_M; ++k_M)
+        {
+            icdInfo[k_M].theta1_f /= icdInfo[k_M].wghtRecon_j;
+            icdInfo[k_M].theta2_f /= icdInfo[k_M].wghtRecon_j;
+        }
+    }
+    else if(strcmp(reconParams->weightScaler_domain,"spatiallyInvariant") == 0)
+    {
+        for (k_M = 0; k_M < N_M; ++k_M)
+        {
+            icdInfo[k_M].theta1_f /= sino->params.weightScaler_value;
+            icdInfo[k_M].theta2_f /= sino->params.weightScaler_value;
+        }
     }
     else
     {
-		for (k_M = 0; k_M < N_M; ++k_M)
-		{
-			icdInfo[k_M].theta1_f /= sino->params.weightScaler;
-			icdInfo[k_M].theta2_f /= sino->params.weightScaler;
-		}
+        fprintf(stderr, "ERROR in computeTheta1Theta2ForwardTerm: can't recongnize weightScaler_domain.\n");
+        exit(-1);
     }
+
 }
 
 void computeTheta1Theta2PriorTermQGGMRFGroup(struct ICDInfo3DCone *icdInfo, struct ReconParams *reconParams, struct RandomZiplineAux *randomZiplineAux)
@@ -1182,21 +1191,4 @@ void updateNHICDStats(struct ReconAux *reconAux, long int j_x, long int j_y, str
 
 	}
 
-
-
-
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

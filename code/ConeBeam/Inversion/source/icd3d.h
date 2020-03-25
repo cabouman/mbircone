@@ -2,7 +2,7 @@
 #ifndef ICD_H
 #define ICD_H
 
-#include "../0A_CLibraries/MBIRModularUtilities3D.h"
+#include "MBIRModularUtilities3D.h"
 
 
 void ICDStep3DCone(struct Sino *sino, struct ImageF *img, struct SysMatrix *A, struct ICDInfo3DCone *icdInfo, struct ReconParams *reconParams, struct ReconAux *reconAux);
@@ -55,7 +55,7 @@ void computeDeltaXjAndUpdateGroup(struct ICDInfo3DCone *icdInfo, struct RandomZi
 
 void updateIterationStatsGroup(struct ReconAux *reconAux, struct ICDInfo3DCone *icdInfoArray, struct RandomZiplineAux *randomZiplineAux, struct ImageF *img, struct ReconParams *reconParams);
 
-void dispAndLog_iterationInfo(struct ReconAux *reconAux, struct ReconParams *reconParams, int itNumber, int MaxIterations, double cost, double relUpdate, double stopThresholdChange, double weightScaler, double voxelsPerSecond, double ticToc_iteration, double weightedNormSquared_e, double ratioUpdated, double RRMSE, double stopThesholdRRMSE, double totalEquits);
+void dispAndLog_iterationInfo(struct ReconAux *reconAux, struct ReconParams *reconParams, int itNumber, int MaxIterations, double cost, double relUpdate, double stopThresholdChange, double weightScaler_value, double voxelsPerSecond, double ticToc_iteration, double weightedNormSquared_e, double ratioUpdated, double RRMSE, double stopThesholdRRMSE, double totalEquits);
 
 double computeRelUpdate(struct ReconAux *reconAux, struct ReconParams *reconParams, struct ImageF *img);
 
