@@ -13,6 +13,7 @@ struct CmdLine{
     
     char masterFile[1000];
     char plainParamsFile[1000];
+    char modes[1000];
 };
 
 
@@ -88,4 +89,3 @@ void resetFile(char *fName);
 
 
 #endif /* #ifndef IO3D_H */
-

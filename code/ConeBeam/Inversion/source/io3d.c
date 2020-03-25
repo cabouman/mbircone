@@ -13,10 +13,11 @@ void readCmdLine(int argc, char *argv[], struct CmdLine *cmdLine)
 	
 
 	cmdLine->masterFile[0] = '\0';
-	cmdLine->masterFile[0] = '\0';
+	cmdLine->plainParamsFile[0] = '\0';
+	cmdLine->modes[0] = '\0';
 
 	/* get options */
-	while ((ch = getopt(argc, argv, "a:b:")) != EOF)
+	while ((ch = getopt(argc, argv, "a:b:c:")) != EOF)
 	{
 
 		switch (ch)
@@ -29,6 +30,11 @@ void readCmdLine(int argc, char *argv[], struct CmdLine *cmdLine)
 			case 'b':
 			{
 				sprintf(cmdLine->plainParamsFile, "%s", optarg);
+				break;
+			}			
+			case 'c':
+			{
+				sprintf(cmdLine->modes, "%s", optarg);
 				break;
 			}			
 			default:
@@ -49,6 +55,11 @@ void readCmdLine(int argc, char *argv[], struct CmdLine *cmdLine)
 		printf("\nError in readCmdLine: plainParamsFile not specified\n");
 		exit(-1);
 	}
+	if(cmdLine->modes[0] == '\0')
+	{
+		printf("\nError in readCmdLine: modes not specified\n");
+		exit(-1);
+	}
 }
 
 void printCmdLine(struct CmdLine *cmdLine)
@@ -56,8 +67,11 @@ void printCmdLine(struct CmdLine *cmdLine)
 	char str[500];
 	sprintf(str, 	"\n"
 					"Command line arguments read:\n"
-					"\tmasterFile file = %s\n"
-					"\tplainParamsFile file = %s\n", cmdLine->masterFile, cmdLine->plainParamsFile);					
+					"\tmasterFile = %s\n"
+					"\tplainParamsFile = %s\n"
+					"\tmodes = %s\n"
+					"\n",\
+					cmdLine->masterFile, cmdLine->plainParamsFile, cmdLine->modes);					
 	logAndDisp_message(LOG_PROGRESS, str);
 }
 
@@ -147,9 +161,7 @@ void readBinaryFNames(char *masterFile, char *plainParamsFile, struct PathNames 
 
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "wght", pathNames->wght, resolveFlag);
 
-	plainParams(plainParamsFile, get_set, masterFile, masterField, "errsino", pathNames->errsino, resolveFlag);
-
-	plainParams(plainParamsFile, get_set, masterFile, masterField, "sinoMask", pathNames->sinoMask, resolveFlag);
+	plainParams(plainParamsFile, get_set, masterFile, masterField, "errSino", pathNames->errSino, resolveFlag);
 
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "recon", pathNames->recon, resolveFlag);
 
@@ -167,6 +179,19 @@ void readBinaryFNames(char *masterFile, char *plainParamsFile, struct PathNames 
 
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "wghtRecon", pathNames->wghtRecon, resolveFlag);
 
+	plainParams(plainParamsFile, get_set, masterFile, masterField, "projInput", pathNames->projInput, resolveFlag);
+
+	plainParams(plainParamsFile, get_set, masterFile, masterField, "projOutput", pathNames->projOutput, resolveFlag);
+
+	plainParams(plainParamsFile, get_set, masterFile, masterField, "backprojlikeInput", pathNames->backprojlikeInput, resolveFlag);
+
+	plainParams(plainParamsFile, get_set, masterFile, masterField, "backprojlikeOutput", pathNames->backprojlikeOutput, resolveFlag);
+
+	plainParams(plainParamsFile, get_set, masterFile, masterField, "estimateSino", pathNames->estimateSino, resolveFlag);
+
+	plainParams(plainParamsFile, get_set, masterFile, masterField, "consensusRecon", pathNames->consensusRecon, resolveFlag);
+
+	plainParams(plainParamsFile, get_set, masterFile, masterField, "jigMeasurementsSino", pathNames->jigMeasurementsSino, resolveFlag);
 
 }
 
@@ -213,7 +238,7 @@ void readSinoParams(char *masterFile, char *plainParamsFile, struct SinoParams *
 	sinoParams->w_d0 = str2double(temp);
 
 	/* Initialize these to avoid unpredictable behavior */
-	sinoParams->weightScaler = -1.0;
+	sinoParams->weightScaler_value = -1.0;
 
 }
 
@@ -267,6 +292,11 @@ void readImageFParams(char *masterFile, char *plainParamsFile, struct ImageFPara
 	imgParams->j_zstop_roi = str2int(temp);
 
 
+    imgParams->N_x_roi = imgParams->j_xstop_roi - imgParams->j_xstart_roi + 1;
+    imgParams->N_y_roi = imgParams->j_ystop_roi - imgParams->j_ystart_roi + 1;
+    imgParams->N_z_roi = imgParams->j_zstop_roi - imgParams->j_zstart_roi + 1;
+
+
 	/* if updated, also update "printImgParams" */
 }
 
@@ -280,11 +310,8 @@ void readReconParams(char *masterFile, char *plainParamsFile, struct ReconParams
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "InitVal_recon", temp, resolveFlag);
 	reconParams->InitVal_recon = str2double(temp);
 
-	plainParams(plainParamsFile, get_set, masterFile, masterField, "isUsePhantomToInitErrSino", temp, resolveFlag);
-	reconParams->isUsePhantomToInitErrSino = str2int(temp);
-
-	plainParams(plainParamsFile, get_set, masterFile, masterField, "InitVal_proxMapInput", temp, resolveFlag);
-	reconParams->InitVal_proxMapInput = str2double(temp);
+	plainParams(plainParamsFile, get_set, masterFile, masterField, "initReconMode", temp, resolveFlag);
+	strcpy(reconParams->initReconMode, temp);
 
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "rho", temp, resolveFlag);
 	reconParams->rho = str2double(temp);
@@ -373,14 +400,14 @@ void readReconParams(char *masterFile, char *plainParamsFile, struct ReconParams
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "numThreads", temp, resolveFlag);
 	reconParams->numThreads = str2int(temp);
 
-	plainParams(plainParamsFile, get_set, masterFile, masterField, "isEstimateWeightScaler", temp, resolveFlag);
-	reconParams->isEstimateWeightScaler = str2int(temp);
+	plainParams(plainParamsFile, get_set, masterFile, masterField, "weightScaler_estimateMode", temp, resolveFlag);
+	strcpy(reconParams->weightScaler_estimateMode, temp);
 
-	plainParams(plainParamsFile, get_set, masterFile, masterField, "isUseWghtRecon", temp, resolveFlag);
-	reconParams->isUseWghtRecon = str2int(temp);
+	plainParams(plainParamsFile, get_set, masterFile, masterField, "weightScaler_domain", temp, resolveFlag);
+	strcpy(reconParams->weightScaler_domain, temp);
 
-	plainParams(plainParamsFile, get_set, masterFile, masterField, "weightScaler", temp, resolveFlag);
-	reconParams->weightScaler = str2double(temp);
+	plainParams(plainParamsFile, get_set, masterFile, masterField, "weightScaler_value", temp, resolveFlag);
+	reconParams->weightScaler_value = str2double(temp);
 
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "NHICD_Mode", temp, resolveFlag);
 	strcpy(reconParams->NHICD_Mode, temp);
@@ -400,14 +427,12 @@ void readReconParams(char *masterFile, char *plainParamsFile, struct ReconParams
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "isComputeCost", temp, resolveFlag);
 	reconParams->isComputeCost = str2int(temp);
 
-	plainParams(plainParamsFile, get_set, masterFile, masterField, "isPhantomPresent", temp, resolveFlag);
-	reconParams->isPhantomPresent = str2int(temp);
+	plainParams(plainParamsFile, get_set, masterFile, masterField, "isPhantomReconReference", temp, resolveFlag);
+	reconParams->isPhantomReconReference = str2int(temp);
 
-	plainParams(plainParamsFile, get_set, masterFile, masterField, "isForwardProjectPhantom", temp, resolveFlag);
-	reconParams->isForwardProjectPhantom = str2int(temp);
+	plainParams(plainParamsFile, get_set, masterFile, masterField, "backprojlike_type", temp, resolveFlag);
+	strcpy(reconParams->backprojlike_type, temp);
 
-	plainParams(plainParamsFile, get_set, masterFile, masterField, "isRecomputeWeight", temp, resolveFlag);
-	reconParams->isRecomputeWeight = str2int(temp);
 
 	/* if updated, also update "printReconParams" */
 
@@ -468,8 +493,7 @@ void printPathNames(struct PathNames *pathNames)
 	sprintf(str, "%s\tsino = %s \n", str, pathNames->sino);
 	sprintf(str, "%s\tdriftSino = %s \n", str, pathNames->driftSino);
 	sprintf(str, "%s\twght = %s \n", str, pathNames->wght);
-	sprintf(str, "%s\terrsino = %s \n", str, pathNames->errsino);
-	sprintf(str, "%s\tsinoMask = %s \n", str, pathNames->sinoMask);
+	sprintf(str, "%s\terrSino = %s \n", str, pathNames->errSino);
 	sprintf(str, "%s\trecon = %s \n", str, pathNames->recon);
 	sprintf(str, "%s\treconROI = %s \n", str, pathNames->reconROI);
 	sprintf(str, "%s\tproxMapInput = %s \n", str, pathNames->proxMapInput);
@@ -478,6 +502,13 @@ void printPathNames(struct PathNames *pathNames)
 	sprintf(str, "%s\tphantom = %s \n", str, pathNames->phantom);
 	sprintf(str, "%s\tsysMatrix = %s \n", str, pathNames->sysMatrix);
 	sprintf(str, "%s\twghtRecon = %s \n", str, pathNames->wghtRecon);
+	sprintf(str, "%s\tprojInput = %s \n", str, pathNames->projInput);
+	sprintf(str, "%s\tprojOutput = %s \n", str, pathNames->projOutput);
+	sprintf(str, "%s\tbackprojlikeInput = %s \n", str, pathNames->backprojlikeInput);
+	sprintf(str, "%s\tbackprojlikeOutput = %s \n", str, pathNames->backprojlikeOutput);
+	sprintf(str, "%s\testimateSino = %s \n", str, pathNames->estimateSino);
+	sprintf(str, "%s\tconsensusRecon = %s \n", str, pathNames->consensusRecon);
+	sprintf(str, "%s\tjigMeasurementsSino = %s \n", str, pathNames->jigMeasurementsSino);
 
 	logAndDisp_message(LOG_PROGRESS, str);
 }
@@ -501,7 +532,7 @@ void printSinoParams(struct SinoParams *params)
 	sprintf(str, "%s\tv_d0 = %e,\n", str, params->v_d0);
 	sprintf(str, "%s\tw_d0 = %e,\n", str, params->w_d0);
 	sprintf(str, "%s\t(potentially uninitialized:)\n", str);
-	sprintf(str, "%s\tweightScaler = %e,\n", str, params->weightScaler);
+	sprintf(str, "%s\tweightScaler_value = %e,\n", str, params->weightScaler_value);
 	sprintf(str, "%s\n", str);
 	logAndDisp_message(LOG_PROGRESS, str);
 }
@@ -540,8 +571,7 @@ void printReconParams(struct ReconParams *params)
 	sprintf(str, "%s\nReconstruction parameters read:\n", str);
 	
 	sprintf(str, "%s\tInitVal_recon = %e \n", str, params->InitVal_recon);
-	sprintf(str, "%s\tisUsePhantomToInitErrSino = %d \n", str, params->isUsePhantomToInitErrSino);
-	sprintf(str, "%s\tInitVal_proxMapInput = %e \n", str, params->InitVal_proxMapInput);
+	sprintf(str, "%s\tinitReconMode = %s \n", str, params->initReconMode);
 	sprintf(str, "%s\trho = %e \n", str, params->rho);
 	sprintf(str, "%s\tpriorWeight_QGGMRF = %e \n", str, params->priorWeight_QGGMRF);
 	sprintf(str, "%s\tpriorWeight_proxMap = %e \n", str, params->priorWeight_proxMap);
@@ -575,9 +605,9 @@ void printReconParams(struct ReconParams *params)
 	sprintf(str, "%s\tnumVoxelsPerZipline = %d \n", str, params->numVoxelsPerZipline);
 	sprintf(str, "%s\tnumZiplines = %d \n", str, params->numZiplines);
 	sprintf(str, "%s\tnumThreads = %d \n", str, params->numThreads);
-	sprintf(str, "%s\tisEstimateWeightScaler = %d \n", str, params->isEstimateWeightScaler);
-	sprintf(str, "%s\tisUseWghtRecon = %d \n", str, params->isUseWghtRecon);
-	sprintf(str, "%s\tweightScaler = %e \n", str, params->weightScaler);
+	sprintf(str, "%s\tweightScaler_estimateMode = %s \n", str, params->weightScaler_estimateMode);
+	sprintf(str, "%s\tweightScaler_domain = %s \n", str, params->weightScaler_domain);
+	sprintf(str, "%s\tweightScaler_value = %e \n", str, params->weightScaler_value);
 
 	sprintf(str, "%s\tNHICD_Mode = %s \n", str, params->NHICD_Mode);
 	sprintf(str, "%s\tNHICD_ThresholdAllVoxels_ErrorPercent = %e \n", str, params->NHICD_ThresholdAllVoxels_ErrorPercent);
@@ -586,9 +616,7 @@ void printReconParams(struct ReconParams *params)
 
 	sprintf(str, "%s\tverbosity = %d \n", str, params->verbosity);
 	sprintf(str, "%s\tisComputeCost = %d \n", str, params->isComputeCost);
-	sprintf(str, "%s\tisPhantomPresent = %d \n", str, params->isPhantomPresent);
-	sprintf(str, "%s\tisForwardProjectPhantom = %d \n", str, params->isForwardProjectPhantom);
-	sprintf(str, "%s\tisRecomputeWeight = %d \n", str, params->isRecomputeWeight);
+	sprintf(str, "%s\tisPhantomReconReference = %d \n", str, params->isPhantomReconReference);
 
 	sprintf(str, "%s\n", str);
 
@@ -912,10 +940,3 @@ void resetFile(char *fName)
 	fclose(filePointer);
 		
 }
-
-
-
-
-
-
-
