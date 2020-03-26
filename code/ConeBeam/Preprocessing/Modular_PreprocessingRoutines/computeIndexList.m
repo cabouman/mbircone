@@ -1,20 +1,26 @@
 function indexList = computeIndexList(preprocessingParams, numAcquiredScans, TotalAngle)
 
+% with this option set N_beta_all to -1 and it will take all the acquired scans
+if(preprocessingParams.N_beta_all==-1)
+    preprocessingParams.N_beta_all = numAcquiredScans;
+end
+
 N_beta_all = preprocessingParams.N_beta_all;
 
-num_timePoints = preprocessingParams.num_timePoints;
-index_timePoints = preprocessingParams.index_timePoints;
+
+num_timePoints_all = preprocessingParams.num_timePoints_all;
+index_timePoints_all = preprocessingParams.index_timePoints_all;
 
 num_viewSubsets = preprocessingParams.num_viewSubsets ;
 index_viewSubsets = preprocessingParams.index_viewSubsets ;
 
 
-if index_timePoints >= num_timePoints
-	error('computeIndexList: index_timePoints exceeds limit');
+if index_timePoints_all >= num_timePoints_all
+	error('computeIndexList: index_timePoints_all exceeds limit');
 end
 
 if index_viewSubsets >= num_viewSubsets
-	error('computeIndexList: index_timePoints exceeds limit');
+	error('computeIndexList: index_timePoints_all exceeds limit');
 end
 
 
@@ -30,7 +36,7 @@ indexList_2 = subsample_array(indexList_1, N_beta_all);
 
 % --------------- Conserving sampling ------------------------------------------------
 % Conserving selection of Time point
-indexList_3 = select_contiguousSubset(indexList_2, num_timePoints, index_timePoints);
+indexList_3 = select_contiguousSubset(indexList_2, num_timePoints_all, index_timePoints_all);
 
 % Conserving seleciton of view subset
 indexList_4 = select_interlacedSubset(indexList_3, num_viewSubsets, index_viewSubsets);
