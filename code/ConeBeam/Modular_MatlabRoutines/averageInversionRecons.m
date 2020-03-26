@@ -1,7 +1,6 @@
 function [x] = averageInversionRecons(plainParamsFile, inversionMasterList_fName)
 
-inversionMasterList = readFileList(inversionMasterList_fName);
-
+inversionMasterList = readNDFileList(inversionMasterList_fName);
 
 numVols = length(inversionMasterList);
 
