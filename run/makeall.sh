@@ -32,6 +32,6 @@ cd ~-
 echo "--------------------------------------------------------------------------"
 echo "Compiling Inversion Code -------------------------------------------------"
 echo "--------------------------------------------------------------------------"
-../code/ConeBeam/Inversion/./make.sh all
+bash ../code/ConeBeam/Inversion/./make.sh all
 if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 

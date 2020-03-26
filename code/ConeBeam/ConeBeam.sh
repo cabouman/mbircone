@@ -74,66 +74,66 @@ echo task = $task
 # -------- Other tasks --------------------------------------------
 if [[ "${task}" = "CBMODE_preprocessing" ]]; then
 
-    ./Preprocessing/./preprocessing.sh "${masterFile}"
+    bash ./Preprocessing/./preprocessing.sh "${masterFile}"
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 elif [[ "${task}" = "CBMODE_changePreprocessing" ]]; then
 
-    ./multiResolution/./changePreprocessing.sh "${masterFile}"
+    bash ./multiResolution/./changePreprocessing.sh "${masterFile}"
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 elif [[ "${task}" = "CBMODE_multiResolution" ]]; then
 
-    ./multiResolution/./multiResolution.sh "${masterFile}"
+    bash ./multiResolution/./multiResolution.sh "${masterFile}"
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 elif [[ "${task}" = "CBMODE_FDK" ]]; then
 
-    ./FDK/./FDK.sh "${masterFile}"
+    bash ./FDK/./FDK.sh "${masterFile}"
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 # -------- Core Inversion --------------------------------------------
 elif [[ "${task}" = "CBMODE_INV_sys" ]]; then
 
-    ./Inversion/./run.sh "${masterFile}" sys
+    bash ./Inversion/./run.sh "${masterFile}" sys
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 elif [[ "${task}" = "CBMODE_INV_wghtRecon" ]]; then
 
-    ./Inversion/./run.sh "${masterFile}" wghtRecon
+    bash ./Inversion/./run.sh "${masterFile}" wghtRecon
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 elif [[ "${task}" = "CBMODE_INV_init" ]]; then
 
     FDK_if_initReconMode_FDK
-    ./Inversion/./run.sh "${masterFile}" init
+    bash ./Inversion/./run.sh "${masterFile}" init
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 elif [[ "${task}" = "CBMODE_INV_recon" ]]; then
 
-    ./Inversion/./run.sh "${masterFile}" recon
+    bash ./Inversion/./run.sh "${masterFile}" recon
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 elif [[ "${task}" = "CBMODE_INV_runall" ]]; then
 
     FDK_if_initReconMode_FDK
-    ./Inversion/./run.sh "${masterFile}" sys,wghtRecon,init,recon
+    bash ./Inversion/./run.sh "${masterFile}" sys,wghtRecon,init,recon
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 elif [[ "${task}" = "CBMODE_INV_prepare" ]]; then
 
     FDK_if_initReconMode_FDK
-    ./Inversion/./run.sh "${masterFile}" sys,wghtRecon,init
+    bash ./Inversion/./run.sh "${masterFile}" sys,wghtRecon,init
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 elif [[ "${task}" = "CBMODE_proj" ]]; then
 
-    ./Inversion/./run.sh "${masterFile}" proj
+    bash ./Inversion/./run.sh "${masterFile}" proj
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 elif [[ "${task}" = "CBMODE_backprojlike" ]]; then
 
-    ./Inversion/./run.sh "${masterFile}" backprojlike
+    bash ./Inversion/./run.sh "${masterFile}" backprojlike
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 
