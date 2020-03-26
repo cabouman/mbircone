@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # To submit a job for SLURM clusters run: 
-# qsub jobSub/PBS_demojob.sub
+
 
 ./makeall.sh
 
