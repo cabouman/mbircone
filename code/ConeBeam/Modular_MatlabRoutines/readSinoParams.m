@@ -1,4 +1,8 @@
-function [ par ] = readSinoParams( masterFile, plainParamsFile );
+function [ par ] = readSinoParams( masterFile, plainParamsFile )
+
+% Add plainParams.m file to path
+d = fileparts(GetFullPath(plainParamsFile));
+addpath(d);
 
 executablePath = plainParamsFile;
 get_set = 'get';
