@@ -1,0 +1,10 @@
+#!/bin/bash
+# FILENAME: SLURM_CB:.sub
+
+
+module load rcac
+module load matlab
+cd $SLURM_O_WORKDIR
+echo '$(pwd)'
+
+./basic_pipeline.sh
