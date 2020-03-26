@@ -17,8 +17,8 @@ resolveFlag = '';
 
 preprocessingParams.subset_acquiredScans =              plainParams(executablePath, get_set, masterFile, masterField, 'subset_acquiredScans', value, resolveFlag);
 preprocessingParams.N_beta_all =                str2num(plainParams(executablePath, get_set, masterFile, masterField, 'N_beta_all', value, resolveFlag));
-preprocessingParams.num_timePoints =            str2num(plainParams(executablePath, get_set, masterFile, masterField, 'num_timePoints', value, resolveFlag));
-preprocessingParams.index_timePoints =          str2num(plainParams(executablePath, get_set, masterFile, masterField, 'index_timePoints', value, resolveFlag));
+preprocessingParams.num_timePoints_all =        str2num(plainParams(executablePath, get_set, masterFile, masterField, 'num_timePoints_all', value, resolveFlag));
+preprocessingParams.index_timePoints_all =      str2num(plainParams(executablePath, get_set, masterFile, masterField, 'index_timePoints_all', value, resolveFlag));
 preprocessingParams.num_viewSubsets =           str2num(plainParams(executablePath, get_set, masterFile, masterField, 'num_viewSubsets', value, resolveFlag));
 preprocessingParams.index_viewSubsets =         str2num(plainParams(executablePath, get_set, masterFile, masterField, 'index_viewSubsets', value, resolveFlag));
 
@@ -55,6 +55,8 @@ preprocessingParams.scaler_Delta_z =            str2num(plainParams(executablePa
 preprocessingParams.weightCutoffPercentile =    str2num(plainParams(executablePath, get_set, masterFile, masterField, 'weightCutoffPercentile', value, resolveFlag));
 % ---------------- BH Correction        -----------------------------------------------------
 preprocessingParams.BHC_polynomial_coeffs =     str2num(plainParams(executablePath, get_set, masterFile, masterField, 'BHC_polynomial_coeffs', value, resolveFlag));
+% ---------------- Jig Correction       -----------------------------------------------------
+preprocessingParams.applyJigCorrectionMode = 	str2num(plainParams(executablePath, get_set, masterFile, masterField, 'applyJigCorrectionMode', value, resolveFlag));
 % ---------------- Source Shift         -----------------------------------------------------
 preprocessingParams.shift_correctionType =      str2num(plainParams(executablePath, get_set, masterFile, masterField, 'shift_correctionType', value, resolveFlag));
 preprocessingParams.shift_values =                      plainParams(executablePath, get_set, masterFile, masterField, 'shift_values', value, resolveFlag);
@@ -66,10 +68,6 @@ preprocessingParams.shift_gridReductionRatio =  str2num(plainParams(executablePa
 preprocessingParams.driftCorrection_type =      str2num(plainParams(executablePath, get_set, masterFile, masterField, 'driftCorrection_type', value, resolveFlag));
 preprocessingParams.backgroundPatchLimits =             plainParams(executablePath, get_set, masterFile, masterField, 'backgroundPatchLimits', value, resolveFlag);
 preprocessingParams.drift_spatialSigma =        str2num(plainParams(executablePath, get_set, masterFile, masterField, 'drift_spatialSigma', value, resolveFlag));
-% ---------------- Occlution Correct       -----------------------------------------------------
-preprocessingParams.occusionCorrectionType =    str2num(plainParams(executablePath, get_set, masterFile, masterField, 'occusionCorrectionType', value, resolveFlag));
-
-
 
 
 
