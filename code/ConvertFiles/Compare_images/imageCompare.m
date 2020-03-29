@@ -1,93 +1,163 @@
-function imageComare(saveFolder, fNames, titles, titles_all, isProfile, xi, yi, colors, lines, isCrop, magnification, isreducedMargin)
+function [profile_list, params] = imageCompare(params)
 
-x_full = imread(fNames{1});
+if ~isfield(params, 'saveFolder')
+    params.saveFolder = '~/Desktop';
+end
+if ~isfield(params, 'fNames')
+    params.fNames = {};
+end
+if ~isfield(params, 'imgNames')
+    params.imgNames = {};
+end
+if ~isfield(params, 'fullName')
+    params.fullName = 'Test';
+end
+if ~isfield(params, 'isCrop')
+    params.isCrop = true;
+end
+if ~isfield(params, 'isNormalizeByFirst')
+    params.isNormalizeByFirst = true;
+end
+if ~isfield(params, 'isreducedMargin')
+    params.isreducedMargin = true;
+end
+if ~isfield(params, 'isProfile')
+    params.isProfile = true;
+end
+if ~isfield(params, 'magnification')
+    params.magnification = 1;
+end
+if ~isfield(params, 'colors')
+    params.colors = {};
+end
+if ~isfield(params, 'lines')
+    params.lines = {};
+end
+if ~isfield(params, 'LineWidth')
+    params.LineWidth = 0.5;
+end
 
 
-range = double([intmin(class(x_full)), intmax(class(x_full))]);
+% add extra param elements if not enough
+for i=length(params.lines)+1:length(params.fNames)
+    params.lines{i} = '-';
+end
+for i=length(params.colors)+1:length(params.fNames)
+    params.colors{i} = 'r';
+end
+for i=length(params.imgNames)+1:length(params.fNames)
+    [~, params.imgNames{i}] = fileparts(params.fNames{i});
+end
 
-x_full = double(x_full)/(range(2));
+% remove excess param elements
+params.lines = params.lines(1:length(params.fNames));
+params.colors = params.colors(1:length(params.fNames));
+params.imgNames = params.imgNames(1:length(params.fNames));
+
+
+saveFolder_imgs_tif = [params.saveFolder, '/', 'imgs_tif'];
+saveFolder_imgs_png = [params.saveFolder, '/', 'imgs_png'];
+saveFolder_line_png = [params.saveFolder, '/', 'line_png'];
+
+createFolder_purge(saveFolder_imgs_tif);
+createFolder_purge(saveFolder_imgs_png);
+createFolder_purge(saveFolder_line_png);
+
+img_ref = imread(params.fNames{1});
+quantizedRange = double([intmin(class(img_ref)), intmax(class(img_ref))]);
+img_ref = double(img_ref)/(quantizedRange(2));
+
 
 f = figure(1);
-imagesc(x_full, [0,1]);
-truesize(f, size(x_full)*magnification);
-colormap(gray)
+imagesc(img_ref, [0,1]);
+truesize(f, size(img_ref)*params.magnification);
+colormap(gray(1000))
 
-if(isCrop)
+if(params.isCrop)
     [~, rect] = imcrop;
     rect = round(rect);
 else
-    rect = [1, 1, size(x_full, 2), size(x_full, 1)];
+    rect = [1, 1, size(img_ref, 2), size(img_ref, 1)];
 end
-
 % disp(['rect = [', num2str(rect), ']'])
+img_ref_crop = img_ref(rect(2):rect(2)+rect(4)-1, rect(1):rect(1)+rect(3)-1);
 
-x_crop = x_full(rect(2):rect(2)+rect(4)-1, rect(1):rect(1)+rect(3)-1);
+imagesc(img_ref_crop, [0,1]);
+truesize(f, size(img_ref_crop)*params.magnification);
+colormap(gray(1000))
 
-imagesc(x_crop, [0,1]);
-truesize(f, size(x_crop)*magnification);
-colormap(gray)
-
-if(isProfile)
-    [cx, cy, ~, xi, yi] = improfile;
+if(params.isProfile)
+    if ~isfield(params, 'xi') || ~isfield(params, 'yi')
+        [~, ~, ~, params.xi, params.yi] = improfile;
+    end
 else
-    cx = [];
-    cy = [];
-    xi = [];
-    yi = [];
+    params.xi = [];
+    params.yi = [];
 end
-% disp(['xi = [', num2str(xi'), ']'''])
-% disp(['yi = [', num2str(yi'), ']'''])
 
-
-
-c = {};
-for i = 1:length(fNames)
+profile_list = {};
+for i = 1:length(params.fNames)
     
-    x_full = imread(fNames{i});
-    x_full = double(x_full)/(range(2));
-    x_crop = x_full(rect(2):rect(2)+rect(4)-1, rect(1):rect(1)+rect(3)-1);
-    [~,~,c{i}] = improfile(x_crop, xi, yi);
+    img = imread(params.fNames{i});
+    img = double(img)/(quantizedRange(2));
+
+    if params.isNormalizeByFirst
+        disp('Normalizing');
+        img = LS_fit_vol(img, img_ref);
+    end
+
+    img_crop = img(rect(2):rect(2)+rect(4)-1, rect(1):rect(1)+rect(3)-1);
+
+    [cx,cy,profile_list{i}] = improfile(img_crop, params.xi, params.yi);
     
     f = figure(i);
-    % imagesc(x_crop, [0,1]);
-    imshow(x_crop, [0,1]);
-    truesize(f, size(x_crop)*magnification);
-    colormap(gray)
+    imagesc(img_crop, [0,1]);
+    % imshow(img_crop, [0,1]);
+    truesize(f, size(img_crop)*params.magnification);
+    colormap(gray(1000))
     
-    line(cx, cy, 'color', colors{i});
+    line(cx, cy, 'color', params.colors{i}, 'LineWidth', params.LineWidth);
+
+    filename_imgs_tif = [saveFolder_imgs_tif, '/', params.imgNames{i}, '.tif'];
+    filename_imgs_png = [saveFolder_imgs_png, '/', params.imgNames{i}, '.png'];
+    filename_line_png = [saveFolder_line_png, '/', params.imgNames{i}, '.png'];
     
-    if isreducedMargin
-        set(gca,'position',[0 0 1 1],'units','normalized')
+    if params.isreducedMargin
+        set(gca,'position',[0 0 1 1],'units', 'normalized')
     else
-        title(titles{i}, 'Interpreter', 'none');
+        title(params.imgNames{i}, 'Interpreter', 'none');
     end
-    filename = [saveFolder, '/', strrep(titles{i},' ',''), '.png'];
     
-    saveas(f,filename);
+    if(params.isProfile)
+        saveas(f, filename_line_png);
+    end
+    imwrite(img_crop, filename_imgs_tif);
+    imwrite(img_crop, filename_imgs_png);
     
 end
-
+close all;
 
 %%
-if(isProfile)
-    f = figure(10);
+if(params.isProfile)
+    f = figure(1);
     clf
-    for i = 1:length(fNames)
+    for i = 1:length(params.fNames)
         hold on;
-        plot(c{i}, [colors{i},lines{i}]);
+        plot(profile_list{i}, [params.colors{i},params.lines{i}]);
         hold off    
     end
 
-    leg = legend(titles{:});
+    leg = legend(params.imgNames{:});
     set(leg, 'Interpreter', 'none');
-    
     xlabel('Cross-section');
     ylabel('Intensity');
 
-    filename = [saveFolder, '/', char(strrep(titles_all,' ','')), '.png'];
-    filename_m = [saveFolder, '/', char(strrep(titles_all,' ','')), '.fig'];
-    saveas(f,filename);
-    saveas(f,filename_m);
+    filename_plot_png = [params.saveFolder, '/', char(strrep(params.fullName,' ','')), '.png'];
+    filename_plot_fig = [params.saveFolder, '/', char(strrep(params.fullName,' ','')), '.fig'];
+    saveas(f,filename_plot_png);
+    saveas(f,filename_plot_fig);
 end
+close all;
 
-end
+
+return
