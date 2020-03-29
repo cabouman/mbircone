@@ -4,11 +4,12 @@ function [ ] = view3D_folder( folderName_binary, opts)
 %%%  Includes (note: paths relative to function location)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 mfilepath=fileparts(which(mfilename));
-addpath(fullfile(mfilepath,'../Modular_MatlabRoutines'));
+addpath(fullfile(mfilepath,'../../Modular_MatlabRoutines'));
+addpath(fullfile(mfilepath,'../MatlabRoutines'));
 addpath(fullfile(mfilepath,'MatlabRoutines'));
 
 %%
-extensions = {'.sino', '.wght', '.recon', '.sinoMask'};
+extensions = {'.sino', '.wght', '.recon', '.scan'};
 [ DirStructure ] = findBinaryFilesInFolder( folderName_binary, extensions );
 
 %%

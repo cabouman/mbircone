@@ -1,25 +1,34 @@
 clearvars opts
-folderName_binary = '/Users/tbalke/Desktop/nsi';
+folderName_binary = '/Volumes/ORANGE4TB_DataSets/Binaries/CBMBIR_workfolder/small-hemisphere-200-2e8/';
+
+% clipLo = -0.2;
+% clipHi = 1.2;
+% radius = clipHi - clipLo;
+% opts.target_lo = (0-clipLo)/radius;
+% opts.target_hi = (1-clipLo)/radius;
 
 opts.target_lo = 0.2/1.4;
 opts.target_hi = 1.2/1.4;
+
+
+
 %opts.mode = 'percentile 0.00 100';
-opts.mode = 'percentile 0.01 99.99';
+opts.mode = 'percentile 0.5 99.9';
+%opts.mode = 'absolute 0 10';
 
-%opts.mode = 'absolute -0.2 1.2';
-%opts.mode = 'absolute 0 1';
 
-opts.prctileSubsampleFactor = 10;
+opts.prctileSubsampleFactor = 1;
 %opts.mode = 'absolute -1 1';
 opts.isGenerateMP4 = 1;
 opts.isFramesJPG = 0;
 opts.isFramesTIF = 1;
 opts.isGenerateGIF = 1;
+opts.isFramesPNG = 0;
 opts.isGenerateColorbarEnvironment = 0;
 
-%opts.indexOrder = [3 2 1]; 
-opts.flip = 0;
-opts.rotate_90 = 0;
+opts.indexOrder = [1 2 3];
+opts.flipVect = [0 0 0];
+
 
 
 opts.figurePrintSize = 1;
