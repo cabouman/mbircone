@@ -1,0 +1,9 @@
+Data Set Path Names
+[blankScan] 
+/scratch/brown/tbalke/DataSets/genScan/smallTest/phantom.atten.blank.scan
+
+[scan]
+/scratch/brown/tbalke/DataSets/genScan/smallTest/phantom.atten.sino
+
+[params]
+/scratch/brown/tbalke/DataSets/genScan/smallTest/phantom.geometryParams.txt
