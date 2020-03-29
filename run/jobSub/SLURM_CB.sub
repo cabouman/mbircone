@@ -7,4 +7,4 @@ module load matlab
 cd $SLURM_O_WORKDIR
 echo '$(pwd)'
 
-./basic_pipeline.sh
+bash ./basic_pipeline.sh
