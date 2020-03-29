@@ -14,6 +14,10 @@ for j = 1:size(x_norm,3)
         fName = [fName_prefix, '.tif'];
         img = uint16(x_norm(:,:,j)*2^16-1);
         imwrite(img, fName);
+    elseif(strcmp(frames_fileType, 'png'))
+        fName = [fName_prefix, '.png'];
+        img = x_norm(:,:,j);
+        imwrite(img, fName);
     end
     
 end

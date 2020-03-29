@@ -2,7 +2,11 @@ function [ ] = generateHistogram( folderName, dispName, img, range, figureNumber
 
 
 figure(figureNumber); close; figure(figureNumber);
-myhist = histogram(img(:), 200);
+numBins = 200;
+% myhist = histogram(img(:), numBins); % this may fail when values too
+% small line below is more robust
+myhist = histogram(img(:), linspace(min(img(:)), max(img(:)), numBins+1));
+
 title(['Histogram of \verb|', dispName, '|', description], 'interpreter', 'latex');
 ylabel('Frequency');
 xlabel('Intensity Value');
