@@ -1,0 +1,42 @@
+Binary Path Names
+[sino] Sinogram Path
+../../binaries/Inversion/object.sino
+
+[driftSino] Sinogram Drift Offset Path
+../../binaries/Inversion/object.drift.sino
+
+[origSino]
+../../binaries/Inversion/object.orig.sino
+
+[wght] Weight Path
+../../binaries/Inversion/object.wght
+
+[errsino] Error Sinogram Path
+../../binaries/Inversion/object.err.sino
+
+[sinoMask] Sinogram Mask Path
+../../binaries/Inversion/object.sinoMask
+
+[recon] Recon Path
+../../binaries/Inversion/object.recon
+
+[reconROI] Recon (ROI) Path
+../../binaries/Inversion/object.ROI.recon
+
+[proxMapInput] Proximal Mapping Input Path
+../../binaries/Inversion/object.proxMapInput.recon
+
+[lastChange] Image storing the amount of change from last voxel update
+../../binaries/Inversion/object.lastChange.recon
+
+[timeToChange] Image storing next time to update
+../../binaries/Inversion/object.timeToChange.bin
+
+[phantom] Phantom image if available
+../../binaries/Inversion/object.phantom.recon
+
+[sysMatrix] System Matrix Path
+../../binaries/Inversion/object.sysmatrix
+
+[wghtRecon] Voxel-individual weight scaler
+../../binaries/Inversion/object.wghtRecon.recon
