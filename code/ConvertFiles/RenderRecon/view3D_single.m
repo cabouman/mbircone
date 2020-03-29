@@ -4,7 +4,8 @@ function [ ] = view3D_single(binaryPath, opts)
 %%%  Includes (note: paths relative to function location)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 mfilepath=fileparts(which(mfilename));
-addpath(fullfile(mfilepath,'../Modular_MatlabRoutines'));
+addpath(fullfile(mfilepath,'../../Modular_MatlabRoutines'));
+addpath(fullfile(mfilepath,'../MatlabRoutines'));
 addpath(fullfile(mfilepath,'MatlabRoutines'));
 
 %%
@@ -102,6 +103,9 @@ for i = 1:2
 	end
 	if(opts.isFramesTIF)
 	    generateSingleImages( viewOutputFolder, dispName, img_norm, 'tif');
+	end
+	if(opts.isFramesPNG)
+	    generateSingleImages( viewOutputFolder, dispName, img_norm, 'png');
 	end
 
 	%% Generate environment with title and colorbar for the video
