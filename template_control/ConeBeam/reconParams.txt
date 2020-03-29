@@ -5,11 +5,10 @@ reconParams.txt: This file can be modified by the user
 [InitVal_recon] Initialization value (mm-1)
 0
 
-[isUsePhantomToInitErrSino] omitted when isPhantomPresent==0. used in initialize. x=phantom, output=y-Ax and more
-0
-
-[InitVal_proxMapInput] Initialization value (mm-1)
-0
+[initReconMode] 'constant':{use InitVal_recon}, 'recon':{reads recon}, 'FDK':{like recon but performs FDK before init}
+constant
+recon
+FDK
 
 [rho] System Matrix parameter: choose to be about 10<rho<100
 4
@@ -30,13 +29,13 @@ reconParams.txt: This file can be modified by the user
 2
 
 [p] QGGMRF parameter (1<=p<q)
-1.0
+1
 
 [T] QGGMRF parameter 		(=eps TGGMRF parameter)
 0.1
 
 [sigmaX] QGGMRF parameter	(=s TGGMRF parameter)
-1
+0.5
 
 [bFace] relative neighbor weight: 6 cube faces 			(Computation when #>=0, omitting when #<0)
 1.0
@@ -66,7 +65,7 @@ reconParams.txt: This file can be modified by the user
 0
 
 [MaxIterations] maximum number of iterations
-9999
+10
 . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  Relative Change Computation . . .
 [relativeChangeMode] 'meanImage' or 'fixedScaler' 'percentile'. If 'meanImage':	change=avg(change)/avg(x(x changed))
 percentile
@@ -99,17 +98,20 @@ Downsampled/DS_
 [numThreads] Number of threads
 20
 ################################################################ Weight Scaler  ############
-[isEstimateWeightScaler] Estimate weight scaler? 1: Yes. 0: Use user specified value
-0
+[weightScaler_domain] "spatiallyVariant", "spatiallyInvariant"
+spatiallyInvariant
+spatiallyVariant
 
-[isUseWghtRecon] Uses wghtRecon to do the weight scaling.
+[weightScaler_estimateMode] 'None', "errorSino", "avgWghtRecon" (only when "spatiallyInvariant")
+avgWghtRecon
+None
+errorSino
+
+[weightScaler_value] User specified weight scaler (only when 'spatiallyInvariant' and 'None')
 1
-
-[weightScaler] User specified weight scaler
-7.4937697175e-07
 ################################################################ NHICD          ############
 [NHICD_Mode] 'off' 'percentile+random'
-percentile+random
+off
 
 [NHICD_ThresholdAllVoxels_ErrorPercent] when error greater then all voxels are updated
 80
@@ -127,13 +129,10 @@ percentile+random
 [isComputeCost]
 0
 
-[isPhantomPresent]
+[isPhantomReconReference]
 0
 
-[isForwardProjectPhantom] omitted when isPhantomPresent==0. used in initialize. x=phantom, output=Ax
-0
-
-[isRecomputeWeight] in initialization it only computes the wghtRecon (useful after changing wght)
-0
+[backprojlike_type] proj, entropy, kappa
+proj
 ############################################################################################
 

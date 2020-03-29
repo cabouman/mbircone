@@ -2,22 +2,22 @@ preprocessingParams.txt: User can choose these parameters. Used in the preproces
 -------------------------------------------------------------------------------------------
 ############# DATA SELECTION            ###################################################
 ---------------- View selection -----------------------------------------------------------
-[subset_acquiredScans] arbirary selection of all acquired scans 	(lossy selection)
+[subset_acquiredScans] arbirary selection of all acquired scans     (lossy selection)
 1:end
 
-[N_beta_all] selection of N_beta_all views of subset_acquiredScans	(lossy selection)
-100
+[N_beta_all] selection of N_beta_all views of subset_acquiredScans (lossy selection), -1 is all
+-1
 
-[num_timePoints] Number of time points (must be >= 1)				(conservative selection)
+[num_timePoints_all] Number of time points (must be >= 1)               (conservative selection)
 1
 
-[index_timePoints] index of time point (0-indexing)					(conservative selection)
+[index_timePoints_all] index of time point (0-indexing)                 (conservative selection)
 0
 
-[num_viewSubsets] Number of view subsets (must be >= 1)				(conservative selection)
+[num_viewSubsets] Number of view subsets (must be >= 1)             (conservative selection)
 1
 
-[index_viewSubsets] index of view subset (0-indexing)				(conservative selection)
+[index_viewSubsets] index of view subset (0-indexing)               (conservative selection)
 0
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [rotationDirection] (0: negative, 1: positive)
@@ -39,27 +39,27 @@ preprocessingParams.txt: User can choose these parameters. Used in the preproces
 1
 ---------------- Downscaling    -----------------------------------------------------------
 [downscale_dv] Downscale factor in v-direction (must be positive integer << Number of pixels)
-4
+1
 
 [downscale_dw] Downscale factor in w-direction (must be positive integer << Number of pixels)
-4
+1
 ---------------- Enlarge ROR    -----------------------------------------------------------
 [ROR_enlargeFactor_xy] Enlarge ROR radius in the xy plane by this scalar factor
 1
 -------------------------------------------------------------------------------------------
 ############# PARAMETER TUNING            #################################################
 ---------------- Geometry       -----------------------------------------------------------
-[Delta_u_s] Adjust source-object distance 			(u_s <- u_s + Delta_u_s)
+[Delta_u_s] Adjust source-object distance           (u_s <- u_s + Delta_u_s)
 0
 
-[Delta_u_d0] Adjust object-detector distance 		(u_d0 <- u_d0 + Delta_u_d0)
+[Delta_u_d0] Adjust object-detector distance        (u_d0 <- u_d0 + Delta_u_d0)
 0
 
-[Delta_v_d0] Adjust detector position horizontally 	(v_d0 <- v_d0 + Delta_v_d0)
-0.5028
+[Delta_v_d0] Adjust detector position horizontally  (v_d0 <- v_d0 + Delta_v_d0)
+0
 
-[Delta_w_d0] Adjust detector position vertically 	(w_d0 <- w_d0 + Delta_w_d0)
-2.613
+[Delta_w_d0] Adjust detector position vertically    (w_d0 <- w_d0 + Delta_w_d0)
+0
 
 [Delta_axis_tilt] Adjust tilt of rotation axis (in degrees)
 0
@@ -70,10 +70,10 @@ matlab
 [Delta_v_r] Adjust center of rotation distance      (v_r  <- v_r  + Delta_v_r)
 0
 ---------------- Voxel size     -----------------------------------------------------------
-[scaler_Delta_xy] Adjust voxel size (xy-plane) 		(Delta_xy <- Delta_xy * scaler_Delta_xy)
+[scaler_Delta_xy] Adjust voxel size (xy-plane)      (Delta_xy <- Delta_xy * scaler_Delta_xy)
 1
 
-[scaler_Delta_z] Adjust voxel size (z-direction) 	(Delta_z <- Delta_z * scaler_Delta_z)
+[scaler_Delta_z] Adjust voxel size (z-direction)    (Delta_z <- Delta_z * scaler_Delta_z)
 1
 -------------------------------------------------------------------------------------------
 ############# Sinogram Corrections        #################################################
@@ -84,8 +84,8 @@ matlab
 [BHC_polynomial_coeffs] (gamma) No BHC: "0 1"
 0      1
 
----------------- Occlusion Correction        -----------------------------------------------------
-[occusionCorrectionType] (0: none, 1: blind correction, 2: correct using seperate measurements)
+---------------- Apply Jig Correction        ----------------------------------------------
+[applyJigCorrectionMode] (0: none, 1: jigLibrary, 2: jigMeasurements, 3: polynomial fitting for each detector column)
 0
 
 ---------------- Source Shift         -----------------------------------------------------
