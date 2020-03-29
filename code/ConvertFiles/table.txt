@@ -1,2 +1,0 @@
-mode,isGenerateMP4,isFramesJPG,isFramesTIF,flip,rotate_90,figurePrintSize,figureDispSize,relFontSize,range1,range2,range3,folderSuffix
-absolute 0 0.15,1,0,1,0,0,1,1,1,1:end,1:end,163:8:end,_view
