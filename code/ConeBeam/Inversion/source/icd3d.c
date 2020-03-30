@@ -1191,4 +1191,21 @@ void updateNHICDStats(struct ReconAux *reconAux, long int j_x, long int j_y, str
 
 	}
 
+
+
+
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
