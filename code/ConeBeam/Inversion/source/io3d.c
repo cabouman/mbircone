@@ -940,3 +940,10 @@ void resetFile(char *fName)
 	fclose(filePointer);
 		
 }
+
+
+
+
+
+
+
