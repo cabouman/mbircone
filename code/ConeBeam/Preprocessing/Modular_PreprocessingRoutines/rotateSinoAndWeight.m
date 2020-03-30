@@ -1,4 +1,4 @@
-function [sino, wght, occlusion_sino] = rotateSinoAndWeight( sino, wght, occlusion_sino, preprocessingParams)
+function [sino, wght, jigMeasurementsSino] = rotateSinoAndWeight( sino, wght, jigMeasurementsSino, preprocessingParams)
 
 N_beta = size(sino,3);
 
@@ -16,8 +16,8 @@ if angle_degree~=0
 			sino(:,:,i) = imrotate( sino(:,:,i), angle_degree, 'bilinear', 'crop');
 			wght(:,:,i) = imrotate( wght(:,:,i), angle_degree, 'bilinear', 'crop');
 		end
-		for i=1:size(occlusion_sino,3) 
-			occlusion_sino(:,:,i) = imrotate( occlusion_sino(:,:,i), angle_degree, 'bilinear', 'crop');
+		for i=1:size(jigMeasurementsSino,3) 
+			jigMeasurementsSino(:,:,i) = imrotate( jigMeasurementsSino(:,:,i), angle_degree, 'bilinear', 'crop');
 		end
 
 	case 'shear'
@@ -29,8 +29,8 @@ if angle_degree~=0
 			sino(:,:,i) = rotate_by_shear( sino(:,:,i), angle_degree, windowLen, interp_method );
 			wght(:,:,i) = rotate_by_shear( wght(:,:,i), angle_degree, windowLen, interp_method );
 		end
-		for i=1:size(occlusion_sino,3) 
-			occlusion_sino(:,:,i) = rotate_by_shear( occlusion_sino(:,:,i), angle_degree, windowLen, interp_method );
+		for i=1:size(jigMeasurementsSino,3) 
+			jigMeasurementsSino(:,:,i) = rotate_by_shear( jigMeasurementsSino(:,:,i), angle_degree, windowLen, interp_method );
 		end
 	end
 end
