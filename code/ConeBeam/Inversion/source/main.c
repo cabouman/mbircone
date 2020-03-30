@@ -414,5 +414,10 @@ int main(int argc, char *argv[])
     {
         mem_free_3D((void***)sino.wgt);
     }
+
+    
+
+
+
     return 0;
 }
