@@ -7,6 +7,7 @@ mfilepath=fileparts(which(mfilename));
 addpath(fullfile(mfilepath,'../GE_ModularMatlabRoutines'));
 addpath(fullfile(mfilepath,'../Modular_PreprocessingRoutines'));
 addpath(fullfile(mfilepath,'../../../Modular_MatlabRoutines'));
+addpath(fullfile(mfilepath,'../../Modular_MatlabRoutines'));
 
 
 

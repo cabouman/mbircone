@@ -53,9 +53,9 @@ for i_beta=1:size(newScans.object,3)
     newScans.object(:,:,i_beta) = cropScan( scans.object(:,:,i_beta), N_dwshift0, N_dwshift1, N_dvshift0, N_dvshift1 );
 end
 
-newScans.occlusion_scan = zeros( N_dw_new, N_dv_new, size(scans.occlusion_scan,3) );
-for i=1:size(newScans.occlusion_scan,3)
-    newScans.occlusion_scan(:,:,i) = cropScan( scans.occlusion_scan(:,:,i), N_dwshift0, N_dwshift1, N_dvshift0, N_dvshift1 );
+newScans.jig_scan = zeros( N_dw_new, N_dv_new, size(scans.jig_scan,3) );
+for i=1:size(newScans.jig_scan,3)
+    newScans.jig_scan(:,:,i) = cropScan( scans.jig_scan(:,:,i), N_dwshift0, N_dwshift1, N_dvshift0, N_dvshift1 );
 end
 
 

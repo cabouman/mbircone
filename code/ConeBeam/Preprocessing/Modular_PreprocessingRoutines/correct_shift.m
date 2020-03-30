@@ -1,4 +1,4 @@
-function [sino, wght, driftReference_sino, occlusion_sino] = correct_shift( sino, wght, driftReference_sino, occlusion_sino, TotalAngle, viewAngleList, preprocessingParams)
+function [sino, wght, driftReference_sino, jigMeasurementsSino] = correct_shift( sino, wght, driftReference_sino, jigMeasurementsSino, TotalAngle, viewAngleList, preprocessingParams)
 
 N_beta = size(sino,3);
 
@@ -31,8 +31,8 @@ if preprocessingParams.shift_correctionType == 2 || preprocessingParams.shift_co
 	    sino(:,:,i) = shift_img( sino(:,:,i), -shift1_in_view, -shift2_in_view);
 	    wght(:,:,i) = shift_img( wght(:,:,i), -shift1_in_view, -shift2_in_view);
 	end
-	for i = 1:size(occlusion_sino,3)
-	    occlusion_sino(:,:,i) = shift_img( occlusion_sino(:,:,i), -shift1_in_view, -shift2_in_view);
+	for i = 1:size(jigMeasurementsSino,3)
+	    jigMeasurementsSino(:,:,i) = shift_img( jigMeasurementsSino(:,:,i), -shift1_in_view, -shift2_in_view);
 	end
 	driftReference_sino(:,:,2) = shift_img( sino(:,:,i), -shift1_total, -shift2_total);
 end

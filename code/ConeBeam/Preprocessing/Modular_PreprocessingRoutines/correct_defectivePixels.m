@@ -1,4 +1,4 @@
-function [sino, wght, driftReference_sino, occlusion_sino] = correct_defectivePixels( sino, wght, driftReference_sino, occlusion_sino, defectivePixelMap, method_str );
+function [sino, wght, driftReference_sino, jigMeasurementsSino] = correct_defectivePixels( sino, wght, driftReference_sino, jigMeasurementsSino, defectivePixelMap, method_str );
 
 switch method_str
     case 'interpolate'
@@ -19,8 +19,8 @@ switch method_str
         end
 
         
-        for i=1:size(occlusion_sino,3)
-            occlusion_sino(:,:,i) = shepperd_interpolation( interpLocations, sampled_mask, occlusion_sino(:,:,i), 1, 1, 'giveError');
+        for i=1:size(jigMeasurementsSino,3)
+            jigMeasurementsSino(:,:,i) = shepperd_interpolation( interpLocations, sampled_mask, jigMeasurementsSino(:,:,i), 1, 1, 'giveError');
         end
         
 

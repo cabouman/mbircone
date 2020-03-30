@@ -32,8 +32,8 @@ for i=1:size(newScans.object,3)
     newScans.object(:,:,i) = subResolution(scans.object(:,:,i), factor1, factor2, 'sum');   
 end
 
-for i=1:size(scans.occlusion_scan,3)
-    newScans.occlusion_scan(:,:,i) = subResolution(scans.occlusion_scan(:,:,i), factor1, factor2, 'sum');    
+for i=1:size(scans.jig_scan,3)
+    newScans.jig_scan(:,:,i) = subResolution(scans.jig_scan(:,:,i), factor1, factor2, 'sum');    
 end
 
 newPar = par;
