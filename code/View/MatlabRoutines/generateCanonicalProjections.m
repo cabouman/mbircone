@@ -13,12 +13,15 @@ for i = 1:3
     if(i<3)
         proj = proj';
     end
-
-    dom = max(proj(:)) - min(proj(:));
+    
+    lo = prctile(proj(:), 0.5);
+    hi = prctile(proj(:), 99.5);
+    dom = hi - lo;
+    proj = proj - lo;
     if(dom>0)
         proj = proj/dom;
     end
-    proj = proj - min(proj(:));
+    
 
     
     imwrite(proj, [outFolder, '/', dispName, '_projection_', num2str(i), '.png']);

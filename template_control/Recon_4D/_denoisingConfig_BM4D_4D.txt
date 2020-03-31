@@ -1,9 +1,0 @@
-This file contains the necessary scripts and arguments to perform the denoising steps
-[Script] Denoising script
-../../code/Denoisers/BM4D_4D/run/run_chunked.sh
-
-[ScriptArg] Denoising script argument
-../Denoisers/BM4D_4D/master.txt
-
-[iopath] Path to read/write img function
-../../code/Denoisers/ModularMatlabCode_4D

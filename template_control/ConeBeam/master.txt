@@ -1,0 +1,26 @@
+Master Path Names
+[dataSetInfo] Data Set Path Names
+dataSetInfo_sm_genScan.txt
+
+[preprocessingParams] Preprocessing Params
+preprocessingParams.txt
+
+[binaryFNames] Binary Path Names
+binaryFNames.txt
+
+[sinoParams] Sinogram Params
+sinoParams.txt
+
+[imgParams] Image Params
+imgParams.txt
+
+[reconParams] Recon Params
+reconParams.txt
+
+[viewAngleList] View angle list
+viewAngleList.txt
+
+[preprocessingScript]
+../../code/ConeBeam/Preprocessing/preprocessing_genScan.sh
+../../code/ConeBeam/Preprocessing/preprocessing_LillyNSI.sh
+../../code/ConeBeam/Preprocessing/preprocessing_GE.sh

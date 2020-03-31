@@ -1,3 +1,0 @@
-
-
-qsub -I -l nodes=1:ppn=20 -q bouman -l walltime=50:00:00

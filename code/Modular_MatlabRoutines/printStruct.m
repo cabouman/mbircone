@@ -15,38 +15,42 @@ if isempty(identation)
     genericDispRoutine(' ', fileID);
 end
 
-f = fields(s);
-if(isInterpretable~=1)
-    genericDispRoutine([nameOfStruct, ' : '], fileID);
-end
+if ~isempty(s)
 
-for i = 1:length(f)
-
-	content = s.(f{i});
-
-    if isstruct(content)
-        if(isInterpretable==1)
-            new_name = [nameOfStruct, '.', f{i} ];
-            new_identation = identation;
-        else
-            new_name = ['    ', f{i} ];
-            new_identation = [ '    ', identation ];
-        end
-        printStruct(content, new_name, isInterpretable, new_identation, fileID);
-    else
-    	if(ischar(content))
-    		content = ['''', content, ''''];
-    	else
-    		content = num2str(content);
-        end
-
-        if(isInterpretable==1)
-            genericDispRoutine([ identation, nameOfStruct, '.', f{i}, ' = [', content, '];'], fileID);
-        else
-            genericDispRoutine([ identation, '    ', f{i}, ' : ', content], fileID);
-        end
+    f = fields(s);
+    if(isInterpretable~=1)
+        genericDispRoutine([nameOfStruct, ' : '], fileID);
     end
-  
+
+    for i = 1:length(f)
+
+    	content = s.(f{i});
+
+        if isstruct(content)
+            if(isInterpretable==1)
+                new_name = [nameOfStruct, '.', f{i} ];
+                new_identation = identation;
+            else
+                new_name = ['    ', f{i} ];
+                new_identation = [ '    ', identation ];
+            end
+            printStruct(content, new_name, isInterpretable, new_identation, fileID);
+        else
+        	if(ischar(content))
+        		content = ['''', content, ''''];
+        	else
+        		content = num2str(content);
+            end
+
+            if(isInterpretable==1)
+                genericDispRoutine([ identation, nameOfStruct, '.', f{i}, ' = [', content, '];'], fileID);
+            else
+                genericDispRoutine([ identation, '    ', f{i}, ' : ', content], fileID);
+            end
+        end
+      
+    end
+
 end
 
 

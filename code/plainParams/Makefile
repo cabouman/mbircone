@@ -1,4 +1,4 @@
-CC=gcc
+CC=icc
 
 OBJECTS=plainParams.o
 SOURCES=plainParams.c

@@ -2,7 +2,7 @@
 
 ############################################
 get_set="get"
-masterFileName="Control/QGGMRF/master.txt"
+masterFileName="Control/master.txt"
 masterField="binaryFNames"
 subField="sino"
 value=""

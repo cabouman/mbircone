@@ -4,10 +4,7 @@ function [ x, x_norm, lo, hi ] = read3D_transform_normalize( binaryPath, opts )
 [~, ~, ext] = fileparts(binaryPath);
 
 dataTypeOut = 'single';
-if( strcmp(ext, '.sinoMask'))
-	x = read3D(binaryPath, 'int8', dataTypeOut);
-    %WEIGHTCHANGE
-elseif(strcmp(ext, '.wght'))
+if(strcmp(ext, '.wght'))
     % x = read3D(binaryPath, 'uint8');
     x = read3D(binaryPath, 'float32', dataTypeOut);
 else
@@ -23,19 +20,19 @@ end
 x = permute(x, opts.indexOrder);    
 
 %% Do flips
-if(opts.flip1 == 1)
+if(opts.flipVect(1) == 1)
 	x = flip(x, 1);
 end
-if(opts.flip2 == 1)
+if(opts.flipVect(2) == 1)
 	x = flip(x, 2);
 end
-if(opts.flip3 == 1)
+if(opts.flipVect(3) == 1)
 	x = flip(x, 3);
 end
 
 
 %% Normalize
-[lo, hi] = findBounds(x, opts);
+[lo, hi] = findBounds(x, opts.mode, opts.prctileSubsampleFactor, opts.target_lo, opts.target_hi );
 x_norm = normalize01Bounds( x, lo, hi );
 
 
