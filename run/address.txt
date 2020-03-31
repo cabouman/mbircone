@@ -1,1 +1,0 @@
-/Volumes/Data/Cone_beam_results/Meeting_20180713/02_test_new_qggmrf_byCADMM_recon/03_tune_time_space/08_sigma_s=0.5_sigma_t=0.05

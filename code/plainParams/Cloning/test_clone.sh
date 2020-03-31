@@ -3,7 +3,7 @@
 cd $(dirname "$0")
 BASEDIR=$(pwd)
 
-master_source="Control_test/QGGMRF/master.txt"
+master_source="Control_test/master.txt"
 prefix="copy_"
 suffix=""
 # prefix="prefix"

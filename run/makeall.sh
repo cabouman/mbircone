@@ -19,15 +19,19 @@ executionDir=$(pwd)
 scriptDir=$(readlink -f $(dirname $0))
 cd "${scriptDir}"
 
-echo "--------------------------------------------------------------------------"
-echo "Compiling Inversiong Code ------------------------------------------------"
-echo "--------------------------------------------------------------------------"
-./Inversion_makeall.sh
-if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 echo "--------------------------------------------------------------------------"
-echo "Compiling qggmrf Denoiser Code -------------------------------------------"
+echo "Compiling plainParams Code ------------------------------------------------"
 echo "--------------------------------------------------------------------------"
-./qggmrf_4D_makeall.sh
+cd ../code/plainParams/
+make clean
+make
+if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
+cd ~-
+
+echo "--------------------------------------------------------------------------"
+echo "Compiling Inversion Code -------------------------------------------------"
+echo "--------------------------------------------------------------------------"
+bash ../code/ConeBeam/Inversion/./make.sh all
 if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 

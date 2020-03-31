@@ -1,3 +1,0 @@
-1
-../../../binaries/qggmrf/denoisedImage_T_000001.recon
-
