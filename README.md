@@ -10,16 +10,18 @@ The codebase is broadly divided into five parts:
 2) code: the actual source code
 3) control: contains parameters inputted to the source code (not included)
 4) run: contains run scripts for all major parts of the code
-5) template control: same as control but used as a reference for ‘default’ parameter values
+5) template_control: a reference 'control' folder containing ‘default’ parameter values
 
 ## Running
 
-The basic pipeline for running a reconstruction is given in run/basic_pipeline.sh
-A run script with more advanced features is in run/run_all_sm.sh
+First create a 'control' folder and copy the contents of 'template_control' into the 'control' folder.
+The parameters in 'control' can be modified as needed.
+
+Then, run the basic reconstruction pipeline given in run/basic_pipeline.sh
 
 To submit a SLURM job in a cluster with the basic pipeline, run 
 ```
-sbatch jobSub/SLURM_multi_init.sub
+sbatch jobSub/SLURM_CB.sub
 ```
 from the run directory
 
@@ -64,13 +66,6 @@ from the run directory
 
 	Follow the full directions in: https://www.mathworks.com/matlabcentral/answers/442969-how-do-i-run-matlab-from-the-mac-terminal
 
-
-#### 5) Python with anaconda
-	For HPC clusters, run
-	```
-	module load anaconda
-	```
-	
 
 
 
