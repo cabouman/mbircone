@@ -54,23 +54,3 @@ from the run directory
 	```
 	module load intel
 	```
-
-#### 4) Matlab with command line support
-	For HPC clusters, run
-	```
-	module load matlab
-	```
-
-	For standalone computers, run the following code to add command line support for matlab
-	```
-	alias matlab="/Applications/MATLAB_R2018b.app/bin/matlab -nojvm -nodesktop"
-	```
-	[change the path to wherever matlab is installed in the system.]
-	Add the alias code snippet to the bash_profile to have it always present.
-
-	Follow the full directions in: https://www.mathworks.com/matlabcentral/answers/442969-how-do-i-run-matlab-from-the-mac-terminal
-
-
-
-
-
