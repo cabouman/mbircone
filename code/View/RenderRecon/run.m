@@ -2,14 +2,8 @@ clearvars opts
 
 folderName_binary = '/Users/admin/Desktop/Data';
 
-clipLo = -0.1;
-clipHi = 1.6;
-clipLo = 0;
-clipHi = 1;
-
-radius = clipHi - clipLo;
-opts.target_lo = (0-clipLo)/radius;
-opts.target_hi = (1-clipLo)/radius;
+opts.target_lo = 0;
+opts.target_hi = 1;
 
 % opts.mode = 'absolute 0 0.1';
 opts.mode = 'percentile 1 99';
