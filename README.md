@@ -58,7 +58,7 @@ brew install coreutils
 alias readlink='greadlink'
 ```
 
-Add the code ```alias readlink='greadlink'``` to the run script ```run/basic_pipeline.sh``` to have GNU readlink present while running the reconstruction.
+Uncomment the code ```alias readlink='greadlink'``` in the run script ```run/basic_pipeline.sh``` to have GNU readlink present while running the reconstruction.
 
 #### 3) Intel C compiler (ICC) with openmp support
 For HPC clusters, run
