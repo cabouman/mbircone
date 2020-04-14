@@ -42,6 +42,7 @@ A volume rendering can also be performed by running ```code/View/VolumeRenderRec
 
 #### 1) Bash
 #### 2) GNU readlink 
+Readlink converts relative paths to absolute paths.
 Typically present in HPC clusters and GNU Linux machines but not Mac.
 In Mac there is another readlink that has different behaviour than GNU readlink.
 
@@ -57,7 +58,7 @@ brew install coreutils
 alias readlink='greadlink'
 ```
 
-Add the code ```alias readlink='greadlink'``` to the bash_profile to have it always present.
+Add the code ```alias readlink='greadlink'``` to the run script ```run/basic_pipeline.sh``` to have GNU readlink present while running the reconstruction.
 
 #### 3) Intel C compiler (ICC) with openmp support
 For HPC clusters, run
