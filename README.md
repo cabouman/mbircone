@@ -29,12 +29,20 @@ sbatch jobSub/SLURM_CB.sub
 ```
 from the run directory
 
+## Data and Visualization
+
+The repository includes a small test data in binaries/Scan
+The demo script run/basic_pipeline.sh reconstructs from this test data.
+
+The reconstructed images are stored in binaries/ConeBeam.
+The data can be visualized using the script code/View/RenderRecon/run.m 
+A volume rendering can also be performed by running code/View/VolumeRenderRecon/run.m 
 
 ## Dependencies
 
-
-#### 1) readlink 
-	Present in HPC clusters and GNU Linux machines but not Mac
+#### 1) Bash
+#### 2) readlink 
+	Typically present in HPC clusters and GNU Linux machines but not Mac
 	Check if readlink works: 
 		```
 		readlink -f ..
@@ -45,9 +53,6 @@ from the run directory
 		alias readlink='greadlink'
 		```
 	Add the alias code snippet to the bash_profile to have it always present.
-
-	
-#### 2) Bash
 
 #### 3) Intel C compiler (ICC) with openmp support
 	For HPC clusters, run
