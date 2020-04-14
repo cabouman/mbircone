@@ -41,15 +41,16 @@ A volume rendering can also be performed by running ```code/View/VolumeRenderRec
 ## Dependencies
 
 #### 1) Bash
-#### 2) readlink 
+#### 2) GNU readlink 
 Typically present in HPC clusters and GNU Linux machines but not Mac.
+In Mac there is another readlink that has different behaviour than GNU readlink.
 
 Check if readlink works by running: 
 ```
 readlink -f ..
 ```
 	
-If readlink does not work, install it using homebrew by doing:
+If readlink does not work, install it using homebrew(https://brew.sh) by doing:
 
 ```
 brew install coreutils
