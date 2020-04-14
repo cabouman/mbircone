@@ -18,12 +18,12 @@ The codebase is broadly divided into five parts:
 
 ## Running
 
-First create a 'control' folder and copy the contents of 'template_control' into the 'control' folder.
-The parameters in 'control' can be modified as needed.
+First create a ```control``` folder and copy the contents of ```template_control``` into the ```control``` folder.
+The parameters in ```control``` can be modified as needed.
 
-Then, run the basic reconstruction pipeline given in run/basic_pipeline.sh
+Then, run the basic reconstruction pipeline given in ```run/basic_pipeline.sh```
 
-To submit a SLURM job in a cluster with the basic pipeline, run 
+To submit a SLURM job in a HPC cluster with the basic pipeline, run 
 ```
 sbatch jobSub/SLURM_CB.sub
 ```
