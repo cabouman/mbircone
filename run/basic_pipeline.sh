@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
-# To submit a job for SLURM clusters run: 
+# To submit a job for SLURM clusters run: sbatch jobSub/SLURM_CB.sub 
 
+# uncomment the following line to override mac's readlink with GNU readlink (more info in readme)
+# alias readlink='greadlink'
 
 ./makeall.sh
 
