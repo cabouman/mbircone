@@ -31,31 +31,36 @@ from the run directory
 
 ## Data and Visualization
 
-The repository includes a small test data in binaries/Scan
-The demo script run/basic_pipeline.sh reconstructs from this test data.
+The repository includes a small test data in ```binaries/Scan```
+The demo script ```run/basic_pipeline.sh``` reconstructs from this test data.
 
-The reconstructed images are stored in binaries/ConeBeam.
-The data can be visualized using the script code/View/RenderRecon/run.m 
-A volume rendering can also be performed by running code/View/VolumeRenderRecon/run.m 
+The reconstructed images are stored in ```binaries/ConeBeam```.
+The data can be visualized using the script ```code/View/RenderRecon/run.m```
+A volume rendering can also be performed by running ```code/View/VolumeRenderRecon/run.m```
 
 ## Dependencies
 
 #### 1) Bash
 #### 2) readlink 
-	Typically present in HPC clusters and GNU Linux machines but not Mac
-	Check if readlink works: 
-		```
-		readlink -f ..
-		```
-	If not, run:
-		```
-		brew install coreutils
-		alias readlink='greadlink'
-		```
-	Add the alias code snippet to the bash_profile to have it always present.
+Typically present in HPC clusters and GNU Linux machines but not Mac.
+
+Check if readlink works by running: 
+```
+readlink -f ..
+```
+	
+If readlink does not work, install it using homebrew by doing:
+
+```
+brew install coreutils
+alias readlink='greadlink'
+```
+
+Add the code ```alias readlink='greadlink'``` to the bash_profile to have it always present.
 
 #### 3) Intel C compiler (ICC) with openmp support
-	For HPC clusters, run
-	```
-	module load intel
-	```
+For HPC clusters, run
+```
+module load intel
+```
+Otherwise, install it from intel's website
