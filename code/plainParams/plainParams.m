@@ -12,6 +12,9 @@ function value = plainParams(executablePath, get_set, masterFile, masterField, s
 %
 % This file need to be in the same folder as the plainParams.sh executable!
 
+% to test run:
+% plainParams('plainParams.sh', 'get', '../../control/ConeBeam/master.txt', 'preprocessingParams', 'N_beta_all', '', '')   
+
 command = ['bash ', executablePath];
 
 if(~strcmp(get_set, ''))
@@ -41,6 +44,8 @@ if(~strcmp(resolveFlag, ''))
 	command = [command, ' ', resolveFlag];
 end
 
+% disp(command)
+% [exit_status, commandLineOutput] = system(command);
 [exit_status, commandLineOutput] = system_safe(command);
 
 if(exit_status == 0)
