@@ -10,8 +10,8 @@ For other OpenMBIR packages see: https://github.com/cabouman/OpenMBIR-Index
 ## Organization
 
 The codebase is broadly divided into five parts:
-1) binaries: meant to contain all binary data files: (reconstructions, sinogram etc)
-2) code: the actual source code
+1) data: meant to contain all binary data files: (reconstructions, sinogram etc)
+2) src: the actual source code
 3) control: contains parameters inputted to the source code (not included)
 4) run: contains run scripts for all major parts of the code
 5) template_control: a reference 'control' folder containing ‘default’ parameter values
