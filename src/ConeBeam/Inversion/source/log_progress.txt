@@ -1,7 +1,7 @@
 
 Command line arguments read:
 	masterFile = /home/li3120/OpenCBMBIR/control/ConeBeam/master.txt
-	plainParamsFile = /home/li3120/OpenCBMBIR/code/plainParams/plainParams.sh
+	plainParamsFile = /home/li3120/OpenCBMBIR/src/plainParams/plainParams.sh
 	modes = recon
 
 
