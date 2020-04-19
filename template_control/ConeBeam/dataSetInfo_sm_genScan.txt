@@ -1,9 +1,9 @@
 Data Set Path Names
 [blankScan] 
-../../binaries/Scan/ref.blank.sino
+../../data/Scan/ref.blank.sino
 
 [scan]
-../../binaries/Scan/ref.object.sino
+../../data/Scan/ref.object.sino
 
 [params]
-../../binaries/Scan/ref.geometryParams.txt
+../../data/Scan/ref.geometryParams.txt

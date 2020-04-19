@@ -4,69 +4,69 @@ Binary Path Names
 sinogram like files
 ###################################################################################
 [sino] Sinogram Path (y)
-../../binaries/ConeBeam/object.sino
+../../data/ConeBeam/object.sino
 
 [estimateSino] Forward projection of reconstruction (Ax)
-../../binaries/ConeBeam/object.estimateSino.sino
+../../data/ConeBeam/object.estimateSino.sino
 
 [errSino] Error Sinogram Path (e = y - Ax)
-../../binaries/ConeBeam/object.err.sino
+../../data/ConeBeam/object.err.sino
 
 [wght] Weight Path
-../../binaries/ConeBeam/object.wght
+../../data/ConeBeam/object.wght
 
 [origSino]
-../../binaries/ConeBeam/object.orig.sino
+../../data/ConeBeam/object.orig.sino
 
 [jigMeasurementsSino] Jig Measurement Path
-../../binaries/ConeBeam/object.jig.sino
+../../data/ConeBeam/object.jig.sino
 
 [driftSino] Sinogram Drift Offset Path
-../../binaries/ConeBeam/object.drift.sino
+../../data/ConeBeam/object.drift.sino
 
 [projOutput] Forward projection of projInput
-../../binaries/ConeBeam/object.projOutput.sino
+../../data/ConeBeam/object.projOutput.sino
 
 [backprojlikeInput] Input for back-projection like operators
-../../binaries/ConeBeam/object.backprojlikeInput.sino
+../../data/ConeBeam/object.backprojlikeInput.sino
 
 ###################################################################################
 recon like files
 ###################################################################################
 
 [recon] Recon Path (x)
-../../binaries/ConeBeam/object.recon
+../../data/ConeBeam/object.recon
 
 [reconROI] Recon (ROI) Path
-../../binaries/ConeBeam/object.ROI.recon
+../../data/ConeBeam/object.ROI.recon
 
 [proxMapInput] Proximal Mapping Input Path
-../../binaries/ConeBeam/object.proxMapInput.recon
+../../data/ConeBeam/object.proxMapInput.recon
 
 [lastChange] Image storing the amount of change from last voxel update
-../../binaries/ConeBeam/object.lastChange.recon
+../../data/ConeBeam/object.lastChange.recon
 
 [phantom] Phantom image if available
-../../binaries/ConeBeam/object.phantom.recon
+../../data/ConeBeam/object.phantom.recon
 
 [wghtRecon] Voxel-individual weight scaler
-../../binaries/ConeBeam/object.wghtRecon.recon
+../../data/ConeBeam/object.wghtRecon.recon
 
 [projInput] Image that is being used for independent forward projection
-../../binaries/ConeBeam/object.projInput.recon
+../../data/ConeBeam/object.projInput.recon
 
 [backprojlikeOutput] Output for back-projection like operators
-../../binaries/ConeBeam/object.backprojlikeOutput.recon
+../../data/ConeBeam/object.backprojlikeOutput.recon
 
 [consensusRecon] Points to output of consensus reconstruction
-../../binaries/ConeBeam/object.consensusRecon.recon
+../../data/ConeBeam/object.consensusRecon.recon
 
 ###################################################################################
 other files
 ###################################################################################
 
 [sysMatrix] System Matrix Path
-../../binaries/ConeBeam/object.sysmatrix
+../../data/ConeBeam/object.sysmatrix
 
 [timeToChange] Image storing next time to update
-../../binaries/ConeBeam/object.timeToChange.bin
+../../data/ConeBeam/object.timeToChange.bin

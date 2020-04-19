@@ -31,12 +31,12 @@ from the run directory
 
 ## Data and Visualization
 
-The repository includes a small test data in ```binaries/Scan```
+The repository includes a small test data in ```data/Scan```
 The demo script ```run/basic_pipeline.sh``` reconstructs from this test data.
 
-The reconstructed images are stored in ```binaries/ConeBeam```.
-The data can be visualized using the script ```code/View/RenderRecon/run.m```
-A volume rendering can also be performed by running ```code/View/VolumeRenderRecon/run.m```
+The reconstructed images are stored in ```data/ConeBeam```.
+The data can be visualized using the script ```src/View/RenderRecon/run.m```
+A volume rendering can also be performed by running ```src/View/VolumeRenderRecon/run.m```
 
 ## Dependencies
 

@@ -9,9 +9,9 @@
 
 master=$(readlink -f "../control/ConeBeam/master.txt")
 
-bash ../code/ConeBeam/ConeBeam.sh "${master}" CBMODE_preprocessing
+bash ../src/ConeBeam/ConeBeam.sh "${master}" CBMODE_preprocessing
 
-bash ../code/ConeBeam/ConeBeam.sh "${master}" CBMODE_INV_prepare
+bash ../src/ConeBeam/ConeBeam.sh "${master}" CBMODE_INV_prepare
 
-bash ../code/ConeBeam/ConeBeam.sh "${master}" CBMODE_INV_recon
+bash ../src/ConeBeam/ConeBeam.sh "${master}" CBMODE_INV_recon
 

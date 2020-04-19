@@ -1,6 +1,6 @@
 clearvars opts
 
-folderName_binary = '~/OpenCBMBIR/binaries/ConeBeam';
+folderName_binary = '~/OpenCBMBIR/data/ConeBeam';
 
 opts.target_lo = 0;
 opts.target_hi = 1;
