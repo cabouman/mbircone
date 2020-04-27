@@ -1,0 +1,9 @@
+Data Set Path Names
+[blankScan] 
+../data/Scan/ref.blank.sino
+
+[scan]
+../data/Scan/ref.object.sino
+
+[params]
+../data/Scan/ref.geometryParams.txt
