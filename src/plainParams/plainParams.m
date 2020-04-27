@@ -13,7 +13,7 @@ function value = plainParams(executablePath, get_set, masterFile, masterField, s
 % This file need to be in the same folder as the plainParams.sh executable!
 
 % to test run:
-% plainParams('plainParams.sh', 'get', '../../control/ConeBeam/master.txt', 'preprocessingParams', 'N_beta_all', '', '')   
+% plainParams('plainParams.sh', 'get', '../../param/master.txt', 'preprocessingParams', 'N_beta_all', '', '')   
 
 command = ['bash ', executablePath];
 

@@ -7,7 +7,7 @@
 
 ./makeall.sh
 
-master=$(readlink -f "../control/ConeBeam/master.txt")
+master=$(readlink -f "../param/master.txt")
 
 bash ../src/ConeBeam/ConeBeam.sh "${master}" CBMODE_preprocessing
 
