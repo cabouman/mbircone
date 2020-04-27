@@ -1,0 +1,72 @@
+Binary Path Names
+
+###################################################################################
+sinogram like files
+###################################################################################
+[sino] Sinogram Path (y)
+../data/ConeBeam/object.sino
+
+[estimateSino] Forward projection of reconstruction (Ax)
+../data/ConeBeam/object.estimateSino.sino
+
+[errSino] Error Sinogram Path (e = y - Ax)
+../data/ConeBeam/object.err.sino
+
+[wght] Weight Path
+../data/ConeBeam/object.wght
+
+[origSino]
+../data/ConeBeam/object.orig.sino
+
+[jigMeasurementsSino] Jig Measurement Path
+../data/ConeBeam/object.jig.sino
+
+[driftSino] Sinogram Drift Offset Path
+../data/ConeBeam/object.drift.sino
+
+[projOutput] Forward projection of projInput
+../data/ConeBeam/object.projOutput.sino
+
+[backprojlikeInput] Input for back-projection like operators
+../data/ConeBeam/object.backprojlikeInput.sino
+
+###################################################################################
+recon like files
+###################################################################################
+
+[recon] Recon Path (x)
+../data/ConeBeam/object.recon
+
+[reconROI] Recon (ROI) Path
+../data/ConeBeam/object.ROI.recon
+
+[proxMapInput] Proximal Mapping Input Path
+../data/ConeBeam/object.proxMapInput.recon
+
+[lastChange] Image storing the amount of change from last voxel update
+../data/ConeBeam/object.lastChange.recon
+
+[phantom] Phantom image if available
+../data/ConeBeam/object.phantom.recon
+
+[wghtRecon] Voxel-individual weight scaler
+../data/ConeBeam/object.wghtRecon.recon
+
+[projInput] Image that is being used for independent forward projection
+../data/ConeBeam/object.projInput.recon
+
+[backprojlikeOutput] Output for back-projection like operators
+../data/ConeBeam/object.backprojlikeOutput.recon
+
+[consensusRecon] Points to output of consensus reconstruction
+../data/ConeBeam/object.consensusRecon.recon
+
+###################################################################################
+other files
+###################################################################################
+
+[sysMatrix] System Matrix Path
+../data/ConeBeam/object.sysmatrix
+
+[timeToChange] Image storing next time to update
+../data/ConeBeam/object.timeToChange.bin

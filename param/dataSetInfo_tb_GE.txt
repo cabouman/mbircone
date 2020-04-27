@@ -1,0 +1,35 @@
+Data Set Path Names
+[pcaObject] .pca file of object scan
+/scratch/snyder/t/tbalke/DataSets/NGC/C450/20180402/NG8-80-2-1_NoFast_250ms_3000views/NG8-80-2-1_NoFast_250ms_3000views_ScattCor.pca
+
+[pcaDark] .pca file of dark scan (ignored if mode = 0)
+n/a
+
+[pcaBlank] .pca file of blank scan (ignored if mode = 0)
+n/a
+
+[mode] Transmission fraction mode or photon count mode (0 or 1, respectively)
+0
+
+---------
+270 views CoCr
+/scratch/snyder/t/tbalke/DataSets/GEA/CoCr/C450/20171030/NG8-GE-2-04-NoFast-Cal-270Views/Projections/NG8-GE-2-04-NoFast-Cal-270Views_ScattCor.pca
+
+2160 views CoCr
+/scratch/snyder/t/tbalke/DataSets/GEA/CoCr/C450/20171030/NG8-GE-2-04-NoFast-Cal-2160Views/Projections/NG8-GE-2-04-NoFast-Cal-2160Views_ScattCor.pca
+
+270 views Al
+/scratch/snyder/t/tbalke/DataSets/GEA/Al/C450/20171030/NG8-GE-2-10-NoFast-Cal-270Views/Projections/NG8-GE-2-10-NoFast-Cal-270Views_ScattCor.pca
+
+3000 views Ti
+/scratch/snyder/t/tbalke/DataSets/NGC/C450/20171030/GE8-Ti64-Phantom-NoFast-Cal-3000Views_ScattCor/projections/GE8-Ti64-Phantom-NoFast-Cal-3000Views_ScattCor.pca
+
+ScatterCorrected Ti cal rod
+/scratch/snyder/t/tbalke/DataSets/CalRods/MAI_Ti-64_rod/Scatter/ScatterCorrectedData/Ti-64_rod_ScattCor.pca
+
+CoCr New Dataset
+/scratch/snyder/t/tbalke/DataSets/GEA/CoCr/C450/20180323/NG8-GE-2-04/NG8-GE-2-04_ScattCor.pca
+
+3000 views Ti New data
+/scratch/snyder/t/tbalke/DataSets/NGC/C450/20180402/NG8-80-2-1_NoFast_250ms_3000views/NG8-80-2-1_NoFast_250ms_3000views_ScattCor.pca
+

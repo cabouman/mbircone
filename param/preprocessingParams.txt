@@ -1,0 +1,117 @@
+preprocessingParams.txt: User can choose these parameters. Used in the preprocessing function
+-------------------------------------------------------------------------------------------
+############# DATA SELECTION            ###################################################
+---------------- View selection -----------------------------------------------------------
+[subset_acquiredScans] arbirary selection of all acquired scans     (lossy selection)
+1:end
+
+[N_beta_all] selection of N_beta_all views of subset_acquiredScans (lossy selection), -1 is all
+-1
+
+[num_timePoints_all] Number of time points (must be >= 1)               (conservative selection)
+1
+
+[index_timePoints_all] index of time point (0-indexing)                 (conservative selection)
+0
+
+[num_viewSubsets] Number of view subsets (must be >= 1)             (conservative selection)
+1
+
+[index_viewSubsets] index of view subset (0-indexing)               (conservative selection)
+0
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+[rotationDirection] (0: negative, 1: positive)
+0
+
+[N_avg] Number of images dark/blank scan (must be <= acquired images)
+50
+---------------- Cropping       -----------------------------------------------------------
+[crop_dv0] Crop factor in v-direction (lower half) (must be \in (0,1))
+0
+
+[crop_dv1] Crop factor in v-direction (upper half) (must be \in (0,1))
+1
+
+[crop_dw0] Crop factor in w-direction (lower half) (must be \in (0,1))
+0
+
+[crop_dw1] Crop factor in w-direction (upper half) (must be \in (0,1))
+1
+---------------- Downscaling    -----------------------------------------------------------
+[downscale_dv] Downscale factor in v-direction (must be positive integer << Number of pixels)
+1
+
+[downscale_dw] Downscale factor in w-direction (must be positive integer << Number of pixels)
+1
+---------------- Enlarge ROR    -----------------------------------------------------------
+[ROR_enlargeFactor_xy] Enlarge ROR radius in the xy plane by this scalar factor
+1
+-------------------------------------------------------------------------------------------
+############# PARAMETER TUNING            #################################################
+---------------- Geometry       -----------------------------------------------------------
+[Delta_u_s] Adjust source-object distance           (u_s <- u_s + Delta_u_s)
+0
+
+[Delta_u_d0] Adjust object-detector distance        (u_d0 <- u_d0 + Delta_u_d0)
+0
+
+[Delta_v_d0] Adjust detector position horizontally  (v_d0 <- v_d0 + Delta_v_d0)
+0
+
+[Delta_w_d0] Adjust detector position vertically    (w_d0 <- w_d0 + Delta_w_d0)
+0
+
+[Delta_axis_tilt] Adjust tilt of rotation axis (in degrees)
+0
+
+[tiltCorrectionMethod]
+matlab
+
+[Delta_v_r] Adjust center of rotation distance      (v_r  <- v_r  + Delta_v_r)
+0
+---------------- Voxel size     -----------------------------------------------------------
+[scaler_Delta_xy] Adjust voxel size (xy-plane)      (Delta_xy <- Delta_xy * scaler_Delta_xy)
+1
+
+[scaler_Delta_z] Adjust voxel size (z-direction)    (Delta_z <- Delta_z * scaler_Delta_z)
+1
+-------------------------------------------------------------------------------------------
+############# Sinogram Corrections        #################################################
+---------------- Weight quantization  -----------------------------------------------------
+[weightCutoffPercentile] this is used to normalize the weights in 0-1 before quantizing to 8 bits
+99
+---------------- BH Correction        -----------------------------------------------------
+[BHC_polynomial_coeffs] (gamma) No BHC: "0 1"
+0      1
+
+---------------- Apply Jig Correction        ----------------------------------------------
+[applyJigCorrectionMode] (0: none, 1: jigLibrary, 2: jigMeasurements, 3: polynomial fitting for each detector column)
+0
+
+---------------- Source Shift         -----------------------------------------------------
+[shift_correctionType] (0: none, 1: automatic, 2: manual)
+0
+
+[shift_values]
+[-0.1 0.22]
+
+[shift_searchRadius] (Search radius for finding x-ray focus shift)
+1
+
+[shift_gridSize] 
+0.05
+
+[shift_numPointsGrid]
+10
+
+[shift_gridReductionRatio]
+2
+---------------- Sinogram Drift       -----------------------------------------------------
+[driftCorrection_type] (Type of drift correction. 0:none 1:background patch 2:linear drift in views, slope is low frequency spatially, 3: hybrid of 1 & 2)
+0
+
+[backgroundPatchLimits] (if driftCorrection_type = 1 or 3) limits of the background patch in matlab notation. Used for doing drift correction
+:,[1:100 850:920]
+
+[drift_spatialSigma] (if driftCorrection_type=2: spatial sd of slope in linear drift )
+30
