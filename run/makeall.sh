@@ -33,5 +33,6 @@ echo "--------------------------------------------------------------------------
 echo "Compiling Inversion Code -------------------------------------------------"
 echo "--------------------------------------------------------------------------"
 bash ../src/ConeBeam/Inversion/./make.sh all
+bash ../src/ConeBeam/Inversion/./make.sh move
 if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 

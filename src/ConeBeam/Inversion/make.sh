@@ -73,7 +73,15 @@ elif [[ "${mode}" = "clean" ]]; then
     echo clean all the things
     cd source
     rm ${OBJECTS} ${EXECUTABLE}
+    cd ../../../../bin
+    rm ${OBJECTS} ${EXECUTABLE} plainParams.o
 
+elif [[ "${mode}" = "move" ]]; then
+
+    echo put all object and executables in the bin
+    cd source
+    mv ${OBJECTS} ${EXECUTABLE} ../../../../bin
+    mv ../../../plainParams/plainParams.o ../../../../bin
 # -------- Error --------------------------------------------
 else
 
