@@ -44,5 +44,5 @@ if [[ ! -e ${plainParamsFile} ]]; then messageError "plainParamsFile \"${plainPa
 
 cd source/
 # ----------------------------------------------------------------------------------------- sys,init,recon
-./main -a "${masterFile}" -b "${plainParamsFile}" -c "${modes}"
+../../../../bin/./main -a "${masterFile}" -b "${plainParamsFile}" -c "${modes}"
 if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
