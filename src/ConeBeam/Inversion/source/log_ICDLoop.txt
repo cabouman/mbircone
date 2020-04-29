@@ -1,187 +1,171 @@
-( 1) Loop Progress = 6.009254e-03 %  voxelsPerSecond = 3.446673e+02
-( 1) Loop Progress = 6.249624e+00 %  voxelsPerSecond = 5.293917e+04
-( 1) Loop Progress = 1.251127e+01 %  voxelsPerSecond = 5.810351e+04
-( 1) Loop Progress = 1.876690e+01 %  voxelsPerSecond = 6.006945e+04
-( 1) Loop Progress = 2.493841e+01 %  voxelsPerSecond = 6.098114e+04
-( 1) Loop Progress = 3.122409e+01 %  voxelsPerSecond = 6.150550e+04
-( 1) Loop Progress = 3.708311e+01 %  voxelsPerSecond = 6.139278e+04
-( 1) Loop Progress = 4.288805e+01 %  voxelsPerSecond = 6.156760e+04
-( 1) Loop Progress = 4.880716e+01 %  voxelsPerSecond = 6.163461e+04
-( 1) Loop Progress = 5.472027e+01 %  voxelsPerSecond = 6.166433e+04
-( 1) Loop Progress = 6.053122e+01 %  voxelsPerSecond = 6.164899e+04
-( 1) Loop Progress = 6.646836e+01 %  voxelsPerSecond = 6.161686e+04
-( 1) Loop Progress = 7.244757e+01 %  voxelsPerSecond = 6.156685e+04
-( 1) Loop Progress = 7.822246e+01 %  voxelsPerSecond = 6.153006e+04
-( 1) Loop Progress = 8.417763e+01 %  voxelsPerSecond = 6.146144e+04
-( 1) Loop Progress = 8.994652e+01 %  voxelsPerSecond = 6.124149e+04
-( 1) Loop Progress = 9.554113e+01 %  voxelsPerSecond = 6.111186e+04
+( 1) Loop Progress = 6.009254e-03 %  voxelsPerSecond = 3.458115e+02
+( 1) Loop Progress = 6.117421e+00 %  voxelsPerSecond = 5.166138e+04
+( 1) Loop Progress = 1.252329e+01 %  voxelsPerSecond = 5.816019e+04
+( 1) Loop Progress = 1.900126e+01 %  voxelsPerSecond = 6.085740e+04
+( 1) Loop Progress = 2.566552e+01 %  voxelsPerSecond = 6.260224e+04
+( 1) Loop Progress = 3.225167e+01 %  voxelsPerSecond = 6.350705e+04
+( 1) Loop Progress = 3.854937e+01 %  voxelsPerSecond = 6.402976e+04
+( 1) Loop Progress = 4.494922e+01 %  voxelsPerSecond = 6.455930e+04
+( 1) Loop Progress = 5.104861e+01 %  voxelsPerSecond = 6.460248e+04
+( 1) Loop Progress = 5.691966e+01 %  voxelsPerSecond = 6.419560e+04
+( 1) Loop Progress = 6.273061e+01 %  voxelsPerSecond = 6.388196e+04
+( 1) Loop Progress = 6.867977e+01 %  voxelsPerSecond = 6.361925e+04
+( 1) Loop Progress = 7.449672e+01 %  voxelsPerSecond = 6.327196e+04
+( 1) Loop Progress = 8.018749e+01 %  voxelsPerSecond = 6.302939e+04
+( 1) Loop Progress = 8.516916e+01 %  voxelsPerSecond = 6.216702e+04
+( 1) Loop Progress = 9.103419e+01 %  voxelsPerSecond = 6.200473e+04
+( 1) Loop Progress = 9.666486e+01 %  voxelsPerSecond = 6.187143e+04
 ( 2) Loop Progress = 0.000000e+00 %  voxelsPerSecond = 0.000000e+00
-( 2) Loop Progress = 4.320654e+00 %  voxelsPerSecond = 4.513249e+04
-( 2) Loop Progress = 9.945316e+00 %  voxelsPerSecond = 5.199764e+04
-( 2) Loop Progress = 1.566012e+01 %  voxelsPerSecond = 5.428603e+04
-( 2) Loop Progress = 2.124271e+01 %  voxelsPerSecond = 5.542440e+04
-( 2) Loop Progress = 2.586984e+01 %  voxelsPerSecond = 5.394435e+04
-( 2) Loop Progress = 3.158464e+01 %  voxelsPerSecond = 5.477753e+04
-( 2) Loop Progress = 3.715522e+01 %  voxelsPerSecond = 5.537076e+04
-( 2) Loop Progress = 4.279190e+01 %  voxelsPerSecond = 5.582038e+04
-( 2) Loop Progress = 4.839853e+01 %  voxelsPerSecond = 5.617815e+04
-( 2) Loop Progress = 5.409531e+01 %  voxelsPerSecond = 5.645877e+04
-( 2) Loop Progress = 5.993029e+01 %  voxelsPerSecond = 5.668607e+04
-( 2) Loop Progress = 6.563908e+01 %  voxelsPerSecond = 5.688169e+04
-( 2) Loop Progress = 7.139595e+01 %  voxelsPerSecond = 5.705284e+04
-( 2) Loop Progress = 7.712277e+01 %  voxelsPerSecond = 5.720786e+04
-( 2) Loop Progress = 8.283156e+01 %  voxelsPerSecond = 5.735457e+04
-( 2) Loop Progress = 8.854636e+01 %  voxelsPerSecond = 5.747220e+04
-( 2) Loop Progress = 9.440538e+01 %  voxelsPerSecond = 5.758329e+04
-( 2) Loop Progress = 9.987981e+01 %  voxelsPerSecond = 5.767380e+04
-( 3) Loop Progress = 1.261943e+00 %  voxelsPerSecond = 3.011255e+04
-( 3) Loop Progress = 7.036837e+00 %  voxelsPerSecond = 4.984806e+04
-( 3) Loop Progress = 1.263145e+01 %  voxelsPerSecond = 5.354571e+04
-( 3) Loop Progress = 1.814795e+01 %  voxelsPerSecond = 5.466586e+04
-( 3) Loop Progress = 2.390481e+01 %  voxelsPerSecond = 5.532583e+04
-( 3) Loop Progress = 2.952948e+01 %  voxelsPerSecond = 5.587004e+04
-( 3) Loop Progress = 3.504597e+01 %  voxelsPerSecond = 5.633714e+04
-( 3) Loop Progress = 4.076077e+01 %  voxelsPerSecond = 5.669591e+04
-( 3) Loop Progress = 4.634337e+01 %  voxelsPerSecond = 5.695954e+04
-( 3) Loop Progress = 5.198606e+01 %  voxelsPerSecond = 5.716045e+04
-( 3) Loop Progress = 5.765879e+01 %  voxelsPerSecond = 5.732501e+04
-( 3) Loop Progress = 6.353585e+01 %  voxelsPerSecond = 5.748395e+04
-( 3) Loop Progress = 6.917253e+01 %  voxelsPerSecond = 5.758621e+04
-( 3) Loop Progress = 7.476113e+01 %  voxelsPerSecond = 5.769042e+04
-( 3) Loop Progress = 8.033171e+01 %  voxelsPerSecond = 5.778354e+04
-( 3) Loop Progress = 8.590830e+01 %  voxelsPerSecond = 5.785651e+04
-( 3) Loop Progress = 9.188150e+01 %  voxelsPerSecond = 5.795513e+04
-( 3) Loop Progress = 9.753020e+01 %  voxelsPerSecond = 5.803702e+04
-( 4) Loop Progress = 6.009254e-03 %  voxelsPerSecond = 3.455889e+02
-( 4) Loop Progress = 5.744847e+00 %  voxelsPerSecond = 4.825192e+04
-( 4) Loop Progress = 1.120125e+01 %  voxelsPerSecond = 5.330074e+04
-( 4) Loop Progress = 1.678986e+01 %  voxelsPerSecond = 5.517039e+04
-( 4) Loop Progress = 2.251668e+01 %  voxelsPerSecond = 5.612329e+04
-( 4) Loop Progress = 2.803918e+01 %  voxelsPerSecond = 5.625221e+04
-( 4) Loop Progress = 3.352563e+01 %  voxelsPerSecond = 5.643577e+04
-( 4) Loop Progress = 3.890391e+01 %  voxelsPerSecond = 5.632816e+04
-( 4) Loop Progress = 4.451055e+01 %  voxelsPerSecond = 5.649552e+04
-( 4) Loop Progress = 4.991287e+01 %  voxelsPerSecond = 5.643250e+04
-( 4) Loop Progress = 5.559762e+01 %  voxelsPerSecond = 5.670395e+04
-( 4) Loop Progress = 6.109008e+01 %  voxelsPerSecond = 5.664937e+04
-( 4) Loop Progress = 6.660056e+01 %  voxelsPerSecond = 5.662079e+04
-( 4) Loop Progress = 7.184664e+01 %  voxelsPerSecond = 5.655559e+04
-( 4) Loop Progress = 7.721892e+01 %  voxelsPerSecond = 5.643284e+04
-( 4) Loop Progress = 8.269936e+01 %  voxelsPerSecond = 5.650491e+04
-( 4) Loop Progress = 8.811370e+01 %  voxelsPerSecond = 5.650049e+04
-( 4) Loop Progress = 9.358813e+01 %  voxelsPerSecond = 5.650286e+04
-( 4) Loop Progress = 9.903251e+01 %  voxelsPerSecond = 5.646301e+04
-( 5) Loop Progress = 6.009254e-03 %  voxelsPerSecond = 3.452830e+02
-( 5) Loop Progress = 5.456403e+00 %  voxelsPerSecond = 4.546601e+04
-( 5) Loop Progress = 1.078661e+01 %  voxelsPerSecond = 5.029777e+04
-( 5) Loop Progress = 1.611081e+01 %  voxelsPerSecond = 5.178786e+04
-( 5) Loop Progress = 2.171144e+01 %  voxelsPerSecond = 5.305598e+04
-( 5) Loop Progress = 2.708972e+01 %  voxelsPerSecond = 5.375405e+04
-( 5) Loop Progress = 3.271438e+01 %  voxelsPerSecond = 5.419062e+04
-( 5) Loop Progress = 3.834505e+01 %  voxelsPerSecond = 5.462373e+04
-( 5) Loop Progress = 4.368728e+01 %  voxelsPerSecond = 5.488779e+04
-( 5) Loop Progress = 4.932396e+01 %  voxelsPerSecond = 5.525373e+04
-( 5) Loop Progress = 5.453398e+01 %  voxelsPerSecond = 5.536211e+04
-( 5) Loop Progress = 6.000841e+01 %  voxelsPerSecond = 5.560303e+04
-( 5) Loop Progress = 6.565711e+01 %  voxelsPerSecond = 5.582219e+04
-( 5) Loop Progress = 7.132384e+01 %  voxelsPerSecond = 5.602474e+04
-( 5) Loop Progress = 7.664804e+01 %  voxelsPerSecond = 5.598667e+04
-( 5) Loop Progress = 8.221862e+01 %  voxelsPerSecond = 5.605231e+04
-( 5) Loop Progress = 8.751878e+01 %  voxelsPerSecond = 5.606475e+04
-( 5) Loop Progress = 9.289105e+01 %  voxelsPerSecond = 5.604936e+04
-( 5) Loop Progress = 9.847966e+01 %  voxelsPerSecond = 5.619162e+04
-( 6) Loop Progress = 1.201851e-02 %  voxelsPerSecond = 3.455664e+02
-( 6) Loop Progress = 5.660718e+00 %  voxelsPerSecond = 4.731837e+04
-( 6) Loop Progress = 1.108707e+01 %  voxelsPerSecond = 5.180978e+04
-( 6) Loop Progress = 1.632714e+01 %  voxelsPerSecond = 5.290166e+04
-( 6) Loop Progress = 2.187969e+01 %  voxelsPerSecond = 5.421874e+04
-( 6) Loop Progress = 2.720389e+01 %  voxelsPerSecond = 5.446918e+04
-( 6) Loop Progress = 3.285259e+01 %  voxelsPerSecond = 5.506615e+04
-( 6) Loop Progress = 3.818280e+01 %  voxelsPerSecond = 5.516527e+04
-( 6) Loop Progress = 4.339883e+01 %  voxelsPerSecond = 5.534985e+04
-( 6) Loop Progress = 4.872904e+01 %  voxelsPerSecond = 5.537386e+04
-( 6) Loop Progress = 5.425756e+01 %  voxelsPerSecond = 5.543729e+04
-( 6) Loop Progress = 5.981011e+01 %  voxelsPerSecond = 5.550929e+04
-( 6) Loop Progress = 6.518839e+01 %  voxelsPerSecond = 5.549810e+04
-( 6) Loop Progress = 7.069888e+01 %  voxelsPerSecond = 5.560084e+04
-( 6) Loop Progress = 7.611922e+01 %  voxelsPerSecond = 5.559456e+04
-( 6) Loop Progress = 8.147948e+01 %  voxelsPerSecond = 5.562729e+04
-( 6) Loop Progress = 8.691184e+01 %  voxelsPerSecond = 5.562853e+04
-( 6) Loop Progress = 9.246440e+01 %  voxelsPerSecond = 5.564651e+04
-( 6) Loop Progress = 9.794484e+01 %  voxelsPerSecond = 5.579439e+04
+( 2) Loop Progress = 4.314645e+00 %  voxelsPerSecond = 4.506076e+04
+( 2) Loop Progress = 9.975362e+00 %  voxelsPerSecond = 5.215959e+04
+( 2) Loop Progress = 1.583438e+01 %  voxelsPerSecond = 5.484245e+04
+( 2) Loop Progress = 2.148909e+01 %  voxelsPerSecond = 5.607841e+04
+( 2) Loop Progress = 2.710174e+01 %  voxelsPerSecond = 5.652928e+04
+( 2) Loop Progress = 3.272640e+01 %  voxelsPerSecond = 5.685354e+04
+( 2) Loop Progress = 3.845923e+01 %  voxelsPerSecond = 5.717088e+04
+( 2) Loop Progress = 4.421609e+01 %  voxelsPerSecond = 5.766790e+04
+( 2) Loop Progress = 4.970855e+01 %  voxelsPerSecond = 5.774557e+04
+( 2) Loop Progress = 5.575987e+01 %  voxelsPerSecond = 5.813435e+04
+( 2) Loop Progress = 6.169701e+01 %  voxelsPerSecond = 5.840206e+04
+( 2) Loop Progress = 6.757406e+01 %  voxelsPerSecond = 5.854726e+04
+( 2) Loop Progress = 7.352924e+01 %  voxelsPerSecond = 5.864709e+04
+( 2) Loop Progress = 7.914789e+01 %  voxelsPerSecond = 5.874805e+04
+( 2) Loop Progress = 8.512109e+01 %  voxelsPerSecond = 5.887999e+04
+( 2) Loop Progress = 9.060754e+01 %  voxelsPerSecond = 5.879278e+04
+( 2) Loop Progress = 9.624422e+01 %  voxelsPerSecond = 5.878672e+04
+( 3) Loop Progress = 0.000000e+00 %  voxelsPerSecond = 0.000000e+00
+( 3) Loop Progress = 4.254552e+00 %  voxelsPerSecond = 4.464841e+04
+( 3) Loop Progress = 9.885223e+00 %  voxelsPerSecond = 5.158501e+04
+( 3) Loop Progress = 1.578631e+01 %  voxelsPerSecond = 5.464073e+04
+( 3) Loop Progress = 2.180758e+01 %  voxelsPerSecond = 5.652053e+04
+( 3) Loop Progress = 2.794904e+01 %  voxelsPerSecond = 5.788731e+04
+( 3) Loop Progress = 3.399435e+01 %  voxelsPerSecond = 5.890275e+04
+( 3) Loop Progress = 4.018989e+01 %  voxelsPerSecond = 5.969302e+04
+( 3) Loop Progress = 4.631933e+01 %  voxelsPerSecond = 6.026248e+04
+( 3) Loop Progress = 5.250886e+01 %  voxelsPerSecond = 6.073561e+04
+( 3) Loop Progress = 5.873445e+01 %  voxelsPerSecond = 6.107811e+04
+( 3) Loop Progress = 6.503816e+01 %  voxelsPerSecond = 6.137818e+04
+( 3) Loop Progress = 7.123370e+01 %  voxelsPerSecond = 6.163035e+04
+( 3) Loop Progress = 7.729103e+01 %  voxelsPerSecond = 6.179640e+04
+( 3) Loop Progress = 8.337239e+01 %  voxelsPerSecond = 6.197236e+04
+( 3) Loop Progress = 8.976023e+01 %  voxelsPerSecond = 6.215992e+04
+( 3) Loop Progress = 9.607596e+01 %  voxelsPerSecond = 6.232916e+04
+( 4) Loop Progress = 0.000000e+00 %  voxelsPerSecond = 0.000000e+00
+( 4) Loop Progress = 4.789376e+00 %  voxelsPerSecond = 4.980174e+04
+( 4) Loop Progress = 1.066042e+01 %  voxelsPerSecond = 5.679564e+04
+( 4) Loop Progress = 1.664563e+01 %  voxelsPerSecond = 5.880764e+04
+( 4) Loop Progress = 2.291329e+01 %  voxelsPerSecond = 6.024043e+04
+( 4) Loop Progress = 2.907277e+01 %  voxelsPerSecond = 6.109939e+04
+( 4) Loop Progress = 3.507001e+01 %  voxelsPerSecond = 6.118254e+04
+( 4) Loop Progress = 4.062256e+01 %  voxelsPerSecond = 6.064534e+04
+( 4) Loop Progress = 4.644553e+01 %  voxelsPerSecond = 6.065845e+04
+( 4) Loop Progress = 5.227450e+01 %  voxelsPerSecond = 6.054235e+04
+( 4) Loop Progress = 5.819362e+01 %  voxelsPerSecond = 6.061600e+04
+( 4) Loop Progress = 6.414278e+01 %  voxelsPerSecond = 6.067676e+04
+( 4) Loop Progress = 6.997777e+01 %  voxelsPerSecond = 6.069913e+04
+( 4) Loop Progress = 7.595697e+01 %  voxelsPerSecond = 6.081378e+04
+( 4) Loop Progress = 8.193017e+01 %  voxelsPerSecond = 6.093057e+04
+( 4) Loop Progress = 8.807163e+01 %  voxelsPerSecond = 6.110974e+04
+( 4) Loop Progress = 9.391863e+01 %  voxelsPerSecond = 6.107002e+04
+( 5) Loop Progress = 0.000000e+00 %  voxelsPerSecond = 0.000000e+00
+( 5) Loop Progress = 4.627126e+00 %  voxelsPerSecond = 4.722105e+04
+( 5) Loop Progress = 1.057028e+01 %  voxelsPerSecond = 5.501692e+04
+( 5) Loop Progress = 1.673577e+01 %  voxelsPerSecond = 5.788976e+04
+( 5) Loop Progress = 2.276306e+01 %  voxelsPerSecond = 5.902468e+04
+( 5) Loop Progress = 2.886846e+01 %  voxelsPerSecond = 5.973995e+04
+( 5) Loop Progress = 3.508203e+01 %  voxelsPerSecond = 6.026741e+04
+( 5) Loop Progress = 4.119945e+01 %  voxelsPerSecond = 6.070095e+04
+( 5) Loop Progress = 4.707049e+01 %  voxelsPerSecond = 6.095027e+04
+( 5) Loop Progress = 5.306772e+01 %  voxelsPerSecond = 6.125272e+04
+( 5) Loop Progress = 5.914909e+01 %  voxelsPerSecond = 6.151952e+04
+( 5) Loop Progress = 6.527252e+01 %  voxelsPerSecond = 6.166584e+04
+( 5) Loop Progress = 7.142600e+01 %  voxelsPerSecond = 6.184059e+04
+( 5) Loop Progress = 7.751337e+01 %  voxelsPerSecond = 6.195165e+04
+( 5) Loop Progress = 8.360075e+01 %  voxelsPerSecond = 6.204025e+04
+( 5) Loop Progress = 8.953789e+01 %  voxelsPerSecond = 6.207690e+04
+( 5) Loop Progress = 9.561925e+01 %  voxelsPerSecond = 6.214845e+04
+( 6) Loop Progress = 0.000000e+00 %  voxelsPerSecond = 0.000000e+00
+( 6) Loop Progress = 4.621117e+00 %  voxelsPerSecond = 4.726323e+04
+( 6) Loop Progress = 1.059432e+01 %  voxelsPerSecond = 5.533838e+04
+( 6) Loop Progress = 1.647738e+01 %  voxelsPerSecond = 5.757013e+04
+( 6) Loop Progress = 2.254071e+01 %  voxelsPerSecond = 5.905746e+04
+( 6) Loop Progress = 2.866414e+01 %  voxelsPerSecond = 6.000046e+04
+( 6) Loop Progress = 3.470945e+01 %  voxelsPerSecond = 6.038407e+04
+( 6) Loop Progress = 4.052641e+01 %  voxelsPerSecond = 6.058626e+04
+( 6) Loop Progress = 4.642750e+01 %  voxelsPerSecond = 6.088573e+04
+( 6) Loop Progress = 5.262905e+01 %  voxelsPerSecond = 6.108288e+04
+( 6) Loop Progress = 5.877051e+01 %  voxelsPerSecond = 6.128203e+04
+( 6) Loop Progress = 6.476173e+01 %  voxelsPerSecond = 6.126928e+04
+( 6) Loop Progress = 7.072291e+01 %  voxelsPerSecond = 6.132874e+04
+( 6) Loop Progress = 7.693047e+01 %  voxelsPerSecond = 6.151448e+04
+( 6) Loop Progress = 8.291569e+01 %  voxelsPerSecond = 6.155700e+04
+( 6) Loop Progress = 8.913527e+01 %  voxelsPerSecond = 6.165588e+04
+( 6) Loop Progress = 9.512049e+01 %  voxelsPerSecond = 6.169085e+04
 ( 7) Loop Progress = 0.000000e+00 %  voxelsPerSecond = 0.000000e+00
-( 7) Loop Progress = 4.212487e+00 %  voxelsPerSecond = 4.327660e+04
-( 7) Loop Progress = 9.825131e+00 %  voxelsPerSecond = 5.076863e+04
-( 7) Loop Progress = 1.541374e+01 %  voxelsPerSecond = 5.329042e+04
-( 7) Loop Progress = 2.090620e+01 %  voxelsPerSecond = 5.436479e+04
-( 7) Loop Progress = 2.651884e+01 %  voxelsPerSecond = 5.517343e+04
-( 7) Loop Progress = 3.201130e+01 %  voxelsPerSecond = 5.552028e+04
-( 7) Loop Progress = 3.752178e+01 %  voxelsPerSecond = 5.582350e+04
-( 7) Loop Progress = 4.320654e+01 %  voxelsPerSecond = 5.606855e+04
-( 7) Loop Progress = 4.859083e+01 %  voxelsPerSecond = 5.607341e+04
-( 7) Loop Progress = 5.399916e+01 %  voxelsPerSecond = 5.607876e+04
-( 7) Loop Progress = 5.952166e+01 %  voxelsPerSecond = 5.623623e+04
-( 7) Loop Progress = 6.511027e+01 %  voxelsPerSecond = 5.643542e+04
-( 7) Loop Progress = 7.069888e+01 %  voxelsPerSecond = 5.645327e+04
-( 7) Loop Progress = 7.608317e+01 %  voxelsPerSecond = 5.652397e+04
-( 7) Loop Progress = 8.147347e+01 %  voxelsPerSecond = 5.649310e+04
-( 7) Loop Progress = 8.682171e+01 %  voxelsPerSecond = 5.638833e+04
-( 7) Loop Progress = 9.219999e+01 %  voxelsPerSecond = 5.635283e+04
-( 7) Loop Progress = 9.762034e+01 %  voxelsPerSecond = 5.633715e+04
+( 7) Loop Progress = 4.621117e+00 %  voxelsPerSecond = 4.779145e+04
+( 7) Loop Progress = 1.079863e+01 %  voxelsPerSecond = 5.562471e+04
+( 7) Loop Progress = 1.662761e+01 %  voxelsPerSecond = 5.771592e+04
+( 7) Loop Progress = 2.267893e+01 %  voxelsPerSecond = 5.904092e+04
+( 7) Loop Progress = 2.886846e+01 %  voxelsPerSecond = 5.994750e+04
+( 7) Loop Progress = 3.487170e+01 %  voxelsPerSecond = 6.051968e+04
+( 7) Loop Progress = 4.100114e+01 %  voxelsPerSecond = 6.097781e+04
+( 7) Loop Progress = 4.717265e+01 %  voxelsPerSecond = 6.129893e+04
+( 7) Loop Progress = 5.329007e+01 %  voxelsPerSecond = 6.151092e+04
+( 7) Loop Progress = 5.921519e+01 %  voxelsPerSecond = 6.148622e+04
+( 7) Loop Progress = 6.520041e+01 %  voxelsPerSecond = 6.162280e+04
+( 7) Loop Progress = 7.128177e+01 %  voxelsPerSecond = 6.168713e+04
+( 7) Loop Progress = 7.717084e+01 %  voxelsPerSecond = 6.172694e+04
+( 7) Loop Progress = 8.294574e+01 %  voxelsPerSecond = 6.161104e+04
+( 7) Loop Progress = 8.887086e+01 %  voxelsPerSecond = 6.156025e+04
+( 7) Loop Progress = 9.455562e+01 %  voxelsPerSecond = 6.139131e+04
 ( 8) Loop Progress = 0.000000e+00 %  voxelsPerSecond = 0.000000e+00
-( 8) Loop Progress = 3.996154e+00 %  voxelsPerSecond = 4.223626e+04
-( 8) Loop Progress = 9.500631e+00 %  voxelsPerSecond = 4.965759e+04
-( 8) Loop Progress = 1.486089e+01 %  voxelsPerSecond = 5.221867e+04
-( 8) Loop Progress = 2.024518e+01 %  voxelsPerSecond = 5.307237e+04
-( 8) Loop Progress = 2.561144e+01 %  voxelsPerSecond = 5.354360e+04
-( 8) Loop Progress = 3.107385e+01 %  voxelsPerSecond = 5.404680e+04
-( 8) Loop Progress = 3.654828e+01 %  voxelsPerSecond = 5.442735e+04
-( 8) Loop Progress = 4.206478e+01 %  voxelsPerSecond = 5.483243e+04
-( 8) Loop Progress = 4.738297e+01 %  voxelsPerSecond = 5.493744e+04
-( 8) Loop Progress = 5.289947e+01 %  voxelsPerSecond = 5.505234e+04
-( 8) Loop Progress = 5.821766e+01 %  voxelsPerSecond = 5.509664e+04
-( 8) Loop Progress = 6.386635e+01 %  voxelsPerSecond = 5.537059e+04
-( 8) Loop Progress = 6.922060e+01 %  voxelsPerSecond = 5.539642e+04
-( 8) Loop Progress = 7.452076e+01 %  voxelsPerSecond = 5.540428e+04
-( 8) Loop Progress = 7.991707e+01 %  voxelsPerSecond = 5.542331e+04
-( 8) Loop Progress = 8.522925e+01 %  voxelsPerSecond = 5.549008e+04
-( 8) Loop Progress = 9.060754e+01 %  voxelsPerSecond = 5.547831e+04
-( 8) Loop Progress = 9.634637e+01 %  voxelsPerSecond = 5.563596e+04
+( 8) Loop Progress = 4.627126e+00 %  voxelsPerSecond = 4.883213e+04
+( 8) Loop Progress = 1.068445e+01 %  voxelsPerSecond = 5.610844e+04
+( 8) Loop Progress = 1.670573e+01 %  voxelsPerSecond = 5.857576e+04
+( 8) Loop Progress = 2.281113e+01 %  voxelsPerSecond = 5.991664e+04
+( 8) Loop Progress = 2.865212e+01 %  voxelsPerSecond = 5.986014e+04
+( 8) Loop Progress = 3.462532e+01 %  voxelsPerSecond = 6.009754e+04
+( 8) Loop Progress = 4.064059e+01 %  voxelsPerSecond = 6.054978e+04
+( 8) Loop Progress = 4.671594e+01 %  voxelsPerSecond = 6.093902e+04
+( 8) Loop Progress = 5.291148e+01 %  voxelsPerSecond = 6.119850e+04
+( 8) Loop Progress = 5.904693e+01 %  voxelsPerSecond = 6.145567e+04
+( 8) Loop Progress = 6.523045e+01 %  voxelsPerSecond = 6.168006e+04
+( 8) Loop Progress = 7.125774e+01 %  voxelsPerSecond = 6.183716e+04
+( 8) Loop Progress = 7.743525e+01 %  voxelsPerSecond = 6.197582e+04
+( 8) Loop Progress = 8.340244e+01 %  voxelsPerSecond = 6.204142e+04
+( 8) Loop Progress = 8.950784e+01 %  voxelsPerSecond = 6.212355e+04
+( 8) Loop Progress = 9.572141e+01 %  voxelsPerSecond = 6.217844e+04
 ( 9) Loop Progress = 0.000000e+00 %  voxelsPerSecond = 0.000000e+00
-( 9) Loop Progress = 3.990145e+00 %  voxelsPerSecond = 4.325388e+04
-( 9) Loop Progress = 9.596779e+00 %  voxelsPerSecond = 5.093265e+04
-( 9) Loop Progress = 1.523947e+01 %  voxelsPerSecond = 5.309785e+04
-( 9) Loop Progress = 2.080404e+01 %  voxelsPerSecond = 5.443482e+04
-( 9) Loop Progress = 2.643471e+01 %  voxelsPerSecond = 5.526046e+04
-( 9) Loop Progress = 3.194520e+01 %  voxelsPerSecond = 5.546670e+04
-( 9) Loop Progress = 3.724536e+01 %  voxelsPerSecond = 5.571992e+04
-( 9) Loop Progress = 4.269575e+01 %  voxelsPerSecond = 5.575418e+04
-( 9) Loop Progress = 4.812812e+01 %  voxelsPerSecond = 5.574849e+04
-( 9) Loop Progress = 5.347635e+01 %  voxelsPerSecond = 5.572855e+04
-( 9) Loop Progress = 5.903491e+01 %  voxelsPerSecond = 5.584723e+04
-( 9) Loop Progress = 6.473169e+01 %  voxelsPerSecond = 5.606410e+04
-( 9) Loop Progress = 7.018809e+01 %  voxelsPerSecond = 5.603723e+04
-( 9) Loop Progress = 7.562046e+01 %  voxelsPerSecond = 5.607278e+04
-( 9) Loop Progress = 8.108287e+01 %  voxelsPerSecond = 5.610865e+04
-( 9) Loop Progress = 8.638303e+01 %  voxelsPerSecond = 5.607335e+04
-( 9) Loop Progress = 9.194760e+01 %  voxelsPerSecond = 5.613904e+04
-( 9) Loop Progress = 9.716363e+01 %  voxelsPerSecond = 5.613726e+04
+( 9) Loop Progress = 4.410793e+00 %  voxelsPerSecond = 4.749520e+04
+( 9) Loop Progress = 1.043807e+01 %  voxelsPerSecond = 5.548868e+04
+( 9) Loop Progress = 1.671775e+01 %  voxelsPerSecond = 5.822088e+04
+( 9) Loop Progress = 2.272700e+01 %  voxelsPerSecond = 5.940745e+04
+( 9) Loop Progress = 2.892855e+01 %  voxelsPerSecond = 6.013479e+04
+( 9) Loop Progress = 3.478156e+01 %  voxelsPerSecond = 6.066705e+04
+( 9) Loop Progress = 4.068265e+01 %  voxelsPerSecond = 6.083445e+04
+( 9) Loop Progress = 4.670392e+01 %  voxelsPerSecond = 6.089525e+04
+( 9) Loop Progress = 5.288144e+01 %  voxelsPerSecond = 6.119325e+04
+( 9) Loop Progress = 5.902890e+01 %  voxelsPerSecond = 6.142829e+04
+( 9) Loop Progress = 6.520041e+01 %  voxelsPerSecond = 6.164732e+04
+( 9) Loop Progress = 7.150412e+01 %  voxelsPerSecond = 6.183076e+04
+( 9) Loop Progress = 7.760952e+01 %  voxelsPerSecond = 6.197306e+04
+( 9) Loop Progress = 8.358272e+01 %  voxelsPerSecond = 6.205428e+04
+( 9) Loop Progress = 8.967009e+01 %  voxelsPerSecond = 6.205585e+04
+( 9) Loop Progress = 9.564329e+01 %  voxelsPerSecond = 6.214389e+04
 (10) Loop Progress = 0.000000e+00 %  voxelsPerSecond = 0.000000e+00
-(10) Loop Progress = 3.978126e+00 %  voxelsPerSecond = 4.172029e+04
-(10) Loop Progress = 9.530677e+00 %  voxelsPerSecond = 4.929314e+04
-(10) Loop Progress = 1.508323e+01 %  voxelsPerSecond = 5.222339e+04
-(10) Loop Progress = 2.057569e+01 %  voxelsPerSecond = 5.334857e+04
-(10) Loop Progress = 2.582177e+01 %  voxelsPerSecond = 5.370097e+04
-(10) Loop Progress = 3.117000e+01 %  voxelsPerSecond = 5.418739e+04
-(10) Loop Progress = 3.641608e+01 %  voxelsPerSecond = 5.435046e+04
-(10) Loop Progress = 4.184244e+01 %  voxelsPerSecond = 5.456442e+04
-(10) Loop Progress = 4.736494e+01 %  voxelsPerSecond = 5.478723e+04
-(10) Loop Progress = 5.301965e+01 %  voxelsPerSecond = 5.516734e+04
-(10) Loop Progress = 5.836789e+01 %  voxelsPerSecond = 5.521628e+04
-(10) Loop Progress = 6.384833e+01 %  voxelsPerSecond = 5.528437e+04
-(10) Loop Progress = 6.932877e+01 %  voxelsPerSecond = 5.548721e+04
-(10) Loop Progress = 7.497146e+01 %  voxelsPerSecond = 5.565172e+04
-(10) Loop Progress = 8.032570e+01 %  voxelsPerSecond = 5.568095e+04
-(10) Loop Progress = 8.578210e+01 %  voxelsPerSecond = 5.569690e+04
-(10) Loop Progress = 9.114837e+01 %  voxelsPerSecond = 5.570776e+04
-(10) Loop Progress = 9.671294e+01 %  voxelsPerSecond = 5.587474e+04
+(10) Loop Progress = 4.549005e+00 %  voxelsPerSecond = 4.737197e+04
+(10) Loop Progress = 1.052821e+01 %  voxelsPerSecond = 5.471206e+04
+(10) Loop Progress = 1.670573e+01 %  voxelsPerSecond = 5.774002e+04
+(10) Loop Progress = 2.267292e+01 %  voxelsPerSecond = 5.882246e+04
+(10) Loop Progress = 2.864011e+01 %  voxelsPerSecond = 5.977621e+04
+(10) Loop Progress = 3.455321e+01 %  voxelsPerSecond = 6.016250e+04
+(10) Loop Progress = 4.069467e+01 %  voxelsPerSecond = 6.067524e+04
+(10) Loop Progress = 4.668590e+01 %  voxelsPerSecond = 6.083281e+04
+(10) Loop Progress = 5.286942e+01 %  voxelsPerSecond = 6.112073e+04
+(10) Loop Progress = 5.888468e+01 %  voxelsPerSecond = 6.128362e+04
+(10) Loop Progress = 6.497807e+01 %  voxelsPerSecond = 6.142493e+04
+(10) Loop Progress = 7.101737e+01 %  voxelsPerSecond = 6.161480e+04
+(10) Loop Progress = 7.735713e+01 %  voxelsPerSecond = 6.178877e+04
+(10) Loop Progress = 8.345652e+01 %  voxelsPerSecond = 6.191089e+04
+(10) Loop Progress = 8.959197e+01 %  voxelsPerSecond = 6.205029e+04
+(10) Loop Progress = 9.560123e+01 %  voxelsPerSecond = 6.212971e+04
