@@ -64,7 +64,9 @@ elif [[ "${mode}" = "all" ]]; then
     { STATUS=$?; set +x; } 2>/dev/null
     if [[  $STATUS != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
-
+    echo put all object and executables in the bin
+    mv ${OBJECTS} ${EXECUTABLE} ../../../../bin
+    mv ../../../plainParams/plainParams.o ../../../../bin
 
 # -------- Help --------------------------------------------
 
@@ -76,12 +78,8 @@ elif [[ "${mode}" = "clean" ]]; then
     cd ../../../../bin
     rm ${OBJECTS} ${EXECUTABLE} plainParams.o
 
-elif [[ "${mode}" = "move" ]]; then
 
-    echo put all object and executables in the bin
-    cd source
-    mv ${OBJECTS} ${EXECUTABLE} ../../../../bin
-    mv ../../../plainParams/plainParams.o ../../../../bin
+
 # -------- Error --------------------------------------------
 else
 
