@@ -10,33 +10,27 @@ For other OpenMBIR packages see: https://github.com/cabouman/OpenMBIR-Index
 ## Organization
 
 The codebase is broadly divided into five parts:
-1) data: meant to contain all binary data files: (reconstructions, sinogram etc)
-2) src: the actual source code
-3) control: contains parameters inputted to the source code (not included)
-4) run: contains run scripts for all major parts of the code
-5) template_control: a reference 'control' folder containing ‘default’ parameter values
+1) bin: meant to store compiled executables
+2) data: meant to contain all data files: (scans, reconstructions, sinogram etc)
+3) param: contains parameters for reconstruction
+4) run: contains scripts that compile and execute the code
+5) src: the actual source code
 
 ## Running
 
-First create a ```control``` folder and copy the contents of ```template_control``` into the ```control``` folder.
-The parameters in ```control``` can be modified as needed.
+To reconstruct from the included data in ```data/Scan```, run the script in ```run/basic_pipeline.sh``` from the run folder.
 
-Then, run the basic reconstruction pipeline given in ```run/basic_pipeline.sh```
-
-To submit a SLURM job in a HPC cluster with the basic pipeline, run 
-```
-sbatch jobSub/SLURM_CB.sub
-```
-from the run directory
+To submit a SLURM job in a HPC cluster with the basic pipeline, run ```sbatch jobSub/SLURM_CB.sub``` from the run folder.
 
 ## Data and Visualization
 
-The repository includes a small test data in ```data/Scan```
-The demo script ```run/basic_pipeline.sh``` reconstructs from this test data.
+The repository includes a small test data in ```data/Scan```.
+The script ```run/basic_pipeline.sh``` reconstructs from this test data.
 
 The reconstructed images are stored in ```data/ConeBeam```.
 The data can be visualized using the script ```src/View/RenderRecon/run.m```
 A volume rendering can also be performed by running ```src/View/VolumeRenderRecon/run.m```
+The file ```src/Modular_MatlabRoutines/read3D.m``` can be used to read the reconstruction files into MATLAB.
 
 ## Dependencies
 
