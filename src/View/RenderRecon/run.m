@@ -1,6 +1,6 @@
 clearvars opts
 
-folderName_binary = '/Users/admin/Desktop/Data';
+folderName_binary = '~/OpenCBMBIR/data/ConeBeam';
 
 opts.target_lo = 0;
 opts.target_hi = 1;
@@ -10,7 +10,7 @@ opts.mode = 'percentile 1 99';
 
 opts.prctileSubsampleFactor = 10;
 
-opts.isGenerateMP4 = 1;
+opts.isGenerateMP4 = 0;
 opts.isFramesJPG = 0;
 opts.isFramesTIF = 1;
 opts.isGenerateGIF = 1;

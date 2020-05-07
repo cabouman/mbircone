@@ -322,7 +322,7 @@ void MBIR3DCone(struct ImageF *img, struct Sino *sino, struct ReconParams *recon
 
 		tic(&ticToc_IntermediateStoring);
 		/**
-		 * 		Intermediate storing of binaries
+		 * 		Intermediate storing of data
 		 */
 			/* Error Sino */
 			writeSinoData3DCone(pathNames->errSino, (void***)sino->e, &sino->params, "float");

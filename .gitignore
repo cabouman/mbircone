@@ -6,3 +6,7 @@ control
 
 # OSX / *nix default autosave extension MATLAB
 *.m~
+
+# ignore all files in bin folder except the empty file gitignore
+bin/*
+!bin/.gitignore
