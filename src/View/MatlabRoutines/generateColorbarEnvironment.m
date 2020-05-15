@@ -36,7 +36,9 @@ for i = 1:size(img, 3)
         title(['\verb|', dispName, '|', ' (Frame ', num2str(i), ' of ' num2str(size(img,3)), ')'], 'interpreter', 'latex');
         set(gca, 'fontsize', get(gca, 'fontsize')*opts.relFontSize);
 
-        truesize(fig, size(img(:,:,i))*opts.figureDispSize)           % Adjusts figure s.t. the image has native resolution
+        if(~isempty(which('truesize')))  % check in case Image toolbox missing
+            truesize(fig, size(img(:,:,i))*opts.figureDispSize)    % Adjusts figure s.t. the image has native resolution
+        end
         fig.Units = 'pixels';   % Ensures that resolution is 72 DPI (mac)
         resFac = opts.figurePrintSize/opts.figureDispSize;             % Factor by which saved image is higher resolution
         dpi = resFac*72*1;
