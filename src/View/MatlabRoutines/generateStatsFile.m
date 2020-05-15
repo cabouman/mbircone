@@ -4,7 +4,9 @@ function [ ] = generateStatsFile( folderName, dispName, img, stats)
 
 fName = [folderName, '/', dispName, '_stats.txt'];
 
-immse_ = immse(img,zeros(size(img), 'like', img));
+%immse_ = immse(img,zeros(size(img), 'like', img));
+% immse() is in Image toolbox.. removing dependency here
+immse_ = mean(img(:).^2);
 rmse_ = sqrt(immse_);
 mean_ = mean(img(:));
 min_ = min(img(:));
