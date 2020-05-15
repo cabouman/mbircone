@@ -14,8 +14,13 @@ for i = 1:3
         proj = proj';
     end
     
-    lo = prctile(proj(:), 0.5);
-    hi = prctile(proj(:), 99.5);
+    if(~isempty(which('prctile')))  % check in case Stats toolbox isn't loaded
+        lo = prctile(proj(:), 0.5);
+        hi = prctile(proj(:), 99.5);
+    else
+        lo = my_prctile(proj(:), 0.5);
+        hi = my_prctile(proj(:), 99.5);
+    end
     dom = hi - lo;
     proj = proj - lo;
     if(dom>0)
@@ -30,4 +35,3 @@ for i = 1:3
 end
 
 end
-    

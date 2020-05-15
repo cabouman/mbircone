@@ -6,7 +6,7 @@ function [ ] = view3D_folder( folderName_binary, opts)
 mfilepath=fileparts(which(mfilename));
 addpath(fullfile(mfilepath,'../../Modular_MatlabRoutines'));
 addpath(fullfile(mfilepath,'../MatlabRoutines'));
-addpath(fullfile(mfilepath,'MatlabRoutines'));
+%addpath(fullfile(mfilepath,'MatlabRoutines'));
 
 %%
 extensions = {'.sino', '.wght', '.recon', '.scan'};

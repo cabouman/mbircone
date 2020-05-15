@@ -7,8 +7,13 @@ if(startsWith_(mode, 'percentile'))
     loPerc = temp(1, :);
     hiPerc = temp(2, :);
     
-    lo = prctile(img(1:prctileSubsampleFactor:end), loPerc);
-    hi = prctile(img(1:prctileSubsampleFactor:end), hiPerc);
+    if(~isempty(which('prctile')))  % check in case Stats toolbox isn't loaded
+        lo = prctile(img(1:prctileSubsampleFactor:end), loPerc);
+        hi = prctile(img(1:prctileSubsampleFactor:end), hiPerc);
+    else
+        lo = my_prctile(img(1:prctileSubsampleFactor:end), loPerc);
+        hi = my_prctile(img(1:prctileSubsampleFactor:end), hiPerc);
+    end
 end
 
 if(startsWith_(mode, 'absolute'))
