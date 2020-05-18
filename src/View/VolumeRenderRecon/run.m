@@ -1,8 +1,7 @@
 
 addpath(genpath('../../Modular_MatlabRoutines/'));
 
-fNameList = natsort(glob('/Users/admin/Desktop/Data/*.recon'))
-
+fNameList = natsort(glob('../../../**/object.recon'))
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Default Params
@@ -30,5 +29,5 @@ opts.folderSuffix = 'view_4D';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% volRender_reconList(fNameList, opts);
-surfRender_reconList(fNameList, opts);
+volRender_reconList(fNameList, opts);
+%surfRender_reconList(fNameList, opts);

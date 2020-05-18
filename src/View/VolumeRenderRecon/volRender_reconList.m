@@ -16,6 +16,7 @@ dispName = [baseName, ext];
 for i=1:length(fNameList)
 
 	[~, baseName, ext] = fileparts(fNameList{i});
+    baseName
 	img = read3D(fNameList{i}, 'float32');
 	%% Permute from file type
 	if(strcmpi(ext, '.recon') || strcmpi(ext, '.proxMapInput'))
@@ -42,12 +43,14 @@ for i=1:length(fNameList)
 		Alphamap = (Alphamap-transparencyLims(1))/(transparencyLims(2)-transparencyLims(1));
 		Alphamap(Alphamap<0) = 0;
 		Alphamap(Alphamap>1) = 1;
-	end
-
-	volshow(img_norm, 'BackgroundColor', opts.BackgroundColor, 'ScaleFactors', opts.ScaleFactors, ...
-		'CameraPosition', opts.CameraPosition, 'CameraTarget', opts.CameraTarget, ...
-		'Isovalue', opts.Isovalue, 'Renderer', opts.Renderer, 'IsosurfaceColor', opts.surfaceColor, ...
-		'Alphamap', Alphamap);
+    end
+    size(img_norm)
+    
+    volshow(img_norm, 'BackgroundColor', opts.BackgroundColor, 'ScaleFactors', opts.ScaleFactors, ...
+        'CameraPosition', opts.CameraPosition, 'CameraTarget', opts.CameraTarget, ...
+        'Isovalue', opts.Isovalue, 'Renderer', opts.Renderer, 'IsosurfaceColor', opts.surfaceColor, ...
+        'Alphamap', Alphamap);
+    
 		
 	
 	I = getframe(gcf);
