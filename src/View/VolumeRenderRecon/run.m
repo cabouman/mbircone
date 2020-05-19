@@ -1,7 +1,7 @@
 
 addpath(genpath('../../Modular_MatlabRoutines/'));
 
-fNameList = natsort(glob('../../../**/object.recon'))
+fNameList = {'../../../data/ConeBeam/object.recon'}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Default Params
