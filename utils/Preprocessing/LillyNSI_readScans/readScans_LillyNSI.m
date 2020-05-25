@@ -4,10 +4,8 @@ function [ data ] = readScans_LillyNSI(masterFile, plainParamsFile )
 %%%  Includes (note: paths relative to function location)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 mfilepath=fileparts(which(mfilename));
-addpath(fullfile(mfilepath,'MatlabRoutines'));
 addpath(fullfile(mfilepath,'../Modular_PreprocessingRoutines'));
-addpath(fullfile(mfilepath,'../../Modular_MatlabRoutines'));
-addpath(fullfile(mfilepath,'../../../Modular_MatlabRoutines'));
+addpath(fullfile(mfilepath,'../../misc_routines'));
 
 
 

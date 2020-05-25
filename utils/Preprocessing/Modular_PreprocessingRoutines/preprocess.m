@@ -4,16 +4,15 @@ function [ ] = preprocess(data, masterFile, plainParamsFile )
 %%%  Includes (note: paths relative to function location)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 mfilepath=fileparts(which(mfilename));
-addpath(genpath(fullfile(mfilepath,'../Modular_PreprocessingRoutines')));
-addpath(genpath(fullfile(mfilepath,'../../Modular_MatlabRoutines')));
-addpath(genpath(fullfile(mfilepath,'../../../Modular_MatlabRoutines')));
+addpath(fullfile(mfilepath,'../Modular_PreprocessingRoutines'));
+addpath(fullfile(mfilepath,'../../misc_routines'));
 
 
 disp(' ----------------------------------------------------')
 disp('| Read File Names ...');
 disp(' ----------------------------------------------------')
 preprocessingParams = readPreprocessingParams(masterFile, plainParamsFile);
-binaryFNames = readBinaryFNames( masterFile, plainParamsFile );
+binaryFNames = readBinaryFNames( masterFile, plainParamsFile )
 
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -88,6 +87,7 @@ end
 disp(' ----------------------------------------------------')
 disp('| Write Data to file ...')
 disp(' ----------------------------------------------------')
+disp(binaryFNames.sino)
 write3D( binaryFNames.sino, sino, 'float32');
 write3D( binaryFNames.origSino, origSino, 'float32');
 write3D( binaryFNames.driftSino, driftSino, 'float32');

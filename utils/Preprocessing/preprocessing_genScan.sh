@@ -29,7 +29,7 @@ scriptDir=$(readlink -f $(dirname $0))
 cd "${scriptDir}"
 
 preprocessingScript="$(readlink -f ../Preprocessing/genScan_readScans/readScans_and_preprocess_genScan.m)"
-plainParamsFile=$(readlink -f "../../plainParams/plainParams.sh")
+plainParamsFile=$(readlink -f "../plainParams/plainParams.sh")
 
 if [[ ! -e ${masterFile} ]]; then messageError "masterFile does not exist!"; generalError "$0 $@"; exit 1; fi
 if [[ ! -e ${plainParamsFile} ]]; then messageError "plainParamsFile does not exist!"; generalError "$0 $@"; exit 1; fi

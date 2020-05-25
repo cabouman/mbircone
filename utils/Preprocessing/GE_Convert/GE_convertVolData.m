@@ -6,7 +6,7 @@ function [ ] = GE_convertVolData(fName_vol)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 mfilepath=fileparts(which(mfilename));
 addpath(fullfile(mfilepath,'../GE_ModularMatlabRoutines'));
-addpath(fullfile(mfilepath,'../../../Modular_MatlabRoutines'));
+addpath(fullfile(mfilepath,'../../misc_routines'));
 
 %% File names (assumes .pcr file is in the same folder and has the same file name as .vol file)
 [ path, filename, ext] = fileparts(fName_vol);
