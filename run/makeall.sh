@@ -18,12 +18,13 @@ messageError()
 executionDir=$(pwd)
 scriptDir=$(readlink -f $(dirname $0))
 cd "${scriptDir}"
+$(pwd)
 
 
 echo "--------------------------------------------------------------------------"
 echo "Compiling plainParams Code ------------------------------------------------"
 echo "--------------------------------------------------------------------------"
-cd ../src/plainParams/
+cd ../utils/plainParams/
 make clean
 make
 if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
@@ -32,7 +33,7 @@ cd ~-
 echo "--------------------------------------------------------------------------"
 echo "Compiling Inversion Code -------------------------------------------------"
 echo "--------------------------------------------------------------------------"
-bash ../src/ConeBeam/Inversion/./make.sh all
+bash ../src/./make.sh all
 
 if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 

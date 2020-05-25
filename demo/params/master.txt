@@ -21,6 +21,6 @@ reconParams.txt
 viewAngleList.txt
 
 [preprocessingScript]
-../src/ConeBeam/Preprocessing/preprocessing_genScan.sh
-../src/ConeBeam/Preprocessing/preprocessing_LillyNSI.sh
-../src/ConeBeam/Preprocessing/preprocessing_GE.sh
+../../utils/Preprocessing/preprocessing_genScan.sh
+../../utils/Preprocessing/preprocessing_LillyNSI.sh
+../../utils/Preprocessing/preprocessing_GE.sh

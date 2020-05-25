@@ -52,7 +52,8 @@ if [[ "${mode}" = 'help' ]]; then
 elif [[ "${mode}" = "all" ]]; then
 
     echo make all the things
-    cd source
+    echo "${scriptDir}"
+    cd "${scriptDir}"
 
     set -x
         icc -fopenmp -O3 -Wall -pedantic -c ${SOURCES}
@@ -60,22 +61,22 @@ elif [[ "${mode}" = "all" ]]; then
     if [[  $STATUS != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
     set -x
-        icc -fopenmp -O3 -Wall -pedantic ${OBJECTS} ../../../plainParams/plainParams.o -o ${EXECUTABLE}
+        icc -fopenmp -O3 -Wall -pedantic ${OBJECTS} ../utils/plainParams/plainParams.o -o ${EXECUTABLE}
     { STATUS=$?; set +x; } 2>/dev/null
     if [[  $STATUS != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
     echo put all object and executables in the bin
-    mv ${OBJECTS} ${EXECUTABLE} ../../../../bin
-    mv ../../../plainParams/plainParams.o ../../../../bin
+    mv ${OBJECTS} ${EXECUTABLE} ../bin
+    mv ../utils/plainParams/plainParams.o ../bin
 
 # -------- Help --------------------------------------------
 
 elif [[ "${mode}" = "clean" ]]; then
 
     echo clean all the things
-    cd source
+    cd "${scriptDir}"
     rm ${OBJECTS} ${EXECUTABLE}
-    cd ../../../../bin
+    cd ../bin
     rm ${OBJECTS} ${EXECUTABLE} plainParams.o
 
 
