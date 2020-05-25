@@ -7,11 +7,11 @@
 
 ./makeall.sh
 
-master=$(readlink -f "../param/master.txt")
+master=$(readlink -f "../demo/params/master.txt")
 
-bash ../src/ConeBeam/ConeBeam.sh "${master}" CBMODE_preprocessing
+bash ./ConeBeam.sh "${master}" CBMODE_preprocessing
 
-bash ../src/ConeBeam/ConeBeam.sh "${master}" CBMODE_INV_prepare
+bash ./ConeBeam.sh "${master}" CBMODE_INV_prepare
 
-bash ../src/ConeBeam/ConeBeam.sh "${master}" CBMODE_INV_recon
+bash ./ConeBeam.sh "${master}" CBMODE_INV_recon
 
