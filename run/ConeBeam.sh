@@ -40,7 +40,7 @@ FDK_if_initReconMode_FDK()
     echo "initReconMode: $initReconMode"
     if [[ "${initReconMode}" = "FDK" ]]; then
 
-        ./FDK/./FDK.sh "${masterFile}"
+        bash ../utils/FDK/./FDK.sh "${masterFile}"
         if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
     fi
