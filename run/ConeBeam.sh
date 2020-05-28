@@ -95,45 +95,45 @@ elif [[ "${task}" = "CBMODE_FDK" ]]; then
 # -------- Core Inversion --------------------------------------------
 elif [[ "${task}" = "CBMODE_INV_sys" ]]; then
 
-    bash ./run.sh "${masterFile}" sys
+    ../bin/./main -a "${masterFile}" -b "${plainParamsFile}" -c sys
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 elif [[ "${task}" = "CBMODE_INV_wghtRecon" ]]; then
 
-    bash ./run.sh "${masterFile}" wghtRecon
+    ../bin/./main -a "${masterFile}" -b "${plainParamsFile}" -c wghtRecon
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 elif [[ "${task}" = "CBMODE_INV_init" ]]; then
 
     FDK_if_initReconMode_FDK
-    bash ./run.sh "${masterFile}" init
+    ../bin/./main -a "${masterFile}" -b "${plainParamsFile}" -c init
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 elif [[ "${task}" = "CBMODE_INV_recon" ]]; then
 
-    bash ./run.sh "${masterFile}" recon
+    ../bin/./main -a "${masterFile}" -b "${plainParamsFile}" -c recon
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 elif [[ "${task}" = "CBMODE_INV_runall" ]]; then
 
     FDK_if_initReconMode_FDK
-    bash ./run.sh "${masterFile}" sys,wghtRecon,init,recon
+    ../bin/./main -a "${masterFile}" -b "${plainParamsFile}" -c sys,wghtRecon,init,recon
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 elif [[ "${task}" = "CBMODE_INV_prepare" ]]; then
 
     FDK_if_initReconMode_FDK
-    bash ./run.sh "${masterFile}" sys,wghtRecon,init
+    ../bin/./main -a "${masterFile}" -b "${plainParamsFile}" -c sys,wghtRecon,init
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 elif [[ "${task}" = "CBMODE_proj" ]]; then
 
-    bash ./run.sh "${masterFile}" proj
+    ../bin/./main -a "${masterFile}" -b "${plainParamsFile}" -c proj
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 elif [[ "${task}" = "CBMODE_backprojlike" ]]; then
 
-    bash ./run.sh "${masterFile}" backprojlike
+    ../bin/./main -a "${masterFile}" -b "${plainParamsFile}" -c backprojlike
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 
