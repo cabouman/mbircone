@@ -1,4 +1,4 @@
-function [ data ] = readScans_genScan( masterFile, plainParamsFile )
+function [ data ] = readScans( masterFile, plainParamsFile )
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%  Includes (note: paths relative to function location)
@@ -14,7 +14,7 @@ disp(' ____________________________________________________')
 disp('| Read File Names ...');
 disp(' ----------------------------------------------------')
 preprocessingParams = readPreprocessingParams(masterFile, plainParamsFile);
-dataSetInfo = readDataSetInfo_genScan(masterFile, plainParamsFile)
+dataSetInfo = readDataSetInfo(masterFile, plainParamsFile)
 
 printStruct(dataSetInfo, 'dataSetInfo');
 

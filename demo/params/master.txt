@@ -1,6 +1,6 @@
 Master Path Names
 [dataSetInfo] Data Set Path Names
-dataSetInfo_sm_genScan.txt
+dataSetInfo.txt
 
 [preprocessingParams] Preprocessing Params
 preprocessingParams.txt
@@ -21,6 +21,5 @@ reconParams.txt
 viewAngleList.txt
 
 [preprocessingScript]
-../../utils/Preprocessing/preprocessing_genScan.sh
-../../utils/Preprocessing/preprocessing_LillyNSI.sh
-../../utils/Preprocessing/preprocessing_GE.sh
+../../utils/Preprocessing/preprocessing_generic.sh
+ 
