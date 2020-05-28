@@ -22,9 +22,6 @@ preprocessingParams.txt: User can choose these parameters. Used in the preproces
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [rotationDirection] (0: negative, 1: positive)
 0
-
-[N_avg] Number of images dark/blank scan (must be <= acquired images)
-50
 ---------------- Cropping       -----------------------------------------------------------
 [crop_dv0] Crop factor in v-direction (lower half) (must be \in (0,1))
 0
@@ -77,16 +74,9 @@ matlab
 1
 -------------------------------------------------------------------------------------------
 ############# Sinogram Corrections        #################################################
----------------- Weight quantization  -----------------------------------------------------
-[weightCutoffPercentile] this is used to normalize the weights in 0-1 before quantizing to 8 bits
-99
 ---------------- BH Correction        -----------------------------------------------------
 [BHC_polynomial_coeffs] (gamma) No BHC: "0 1"
 0      1
-
----------------- Apply Jig Correction        ----------------------------------------------
-[applyJigCorrectionMode] (0: none, 1: jigLibrary, 2: jigMeasurements, 3: polynomial fitting for each detector column)
-0
 
 ---------------- Source Shift         -----------------------------------------------------
 [shift_correctionType] (0: none, 1: automatic, 2: manual)

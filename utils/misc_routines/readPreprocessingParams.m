@@ -23,7 +23,6 @@ preprocessingParams.num_viewSubsets =           str2num(plainParams(executablePa
 preprocessingParams.index_viewSubsets =         str2num(plainParams(executablePath, get_set, masterFile, masterField, 'index_viewSubsets', value, resolveFlag));
 
 preprocessingParams.rotationDirection =         str2num(plainParams(executablePath, get_set, masterFile, masterField, 'rotationDirection', value, resolveFlag));
-preprocessingParams.N_avg =                     str2num(plainParams(executablePath, get_set, masterFile, masterField, 'N_avg', value, resolveFlag));
 % ---------------- Cropping       -----------------------------------------------------------
 preprocessingParams.crop_dv0 =                  str2num(plainParams(executablePath, get_set, masterFile, masterField, 'crop_dv0', value, resolveFlag));
 preprocessingParams.crop_dv1 =                  str2num(plainParams(executablePath, get_set, masterFile, masterField, 'crop_dv1', value, resolveFlag));
@@ -51,12 +50,8 @@ preprocessingParams.scaler_Delta_z =            str2num(plainParams(executablePa
 
 
 % ############# Sinogram Corrections        #################################################
-% ---------------- Weight quantization  -----------------------------------------------------
-preprocessingParams.weightCutoffPercentile =    str2num(plainParams(executablePath, get_set, masterFile, masterField, 'weightCutoffPercentile', value, resolveFlag));
 % ---------------- BH Correction        -----------------------------------------------------
 preprocessingParams.BHC_polynomial_coeffs =     str2num(plainParams(executablePath, get_set, masterFile, masterField, 'BHC_polynomial_coeffs', value, resolveFlag));
-% ---------------- Jig Correction       -----------------------------------------------------
-preprocessingParams.applyJigCorrectionMode = 	str2num(plainParams(executablePath, get_set, masterFile, masterField, 'applyJigCorrectionMode', value, resolveFlag));
 % ---------------- Source Shift         -----------------------------------------------------
 preprocessingParams.shift_correctionType =      str2num(plainParams(executablePath, get_set, masterFile, masterField, 'shift_correctionType', value, resolveFlag));
 preprocessingParams.shift_values =                      plainParams(executablePath, get_set, masterFile, masterField, 'shift_values', value, resolveFlag);
