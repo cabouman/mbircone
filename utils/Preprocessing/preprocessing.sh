@@ -39,11 +39,3 @@ if [[ ! -e ${preprocessingScript} ]]; then messageError "preprocessingScript doe
 
 bash "${preprocessingScript}" "${masterFile}"
 
-applyJigCorrectionMode=$(bash "${plainParamsFile}" -a get -m "${masterFile}" -F preprocessingParams -f applyJigCorrectionMode)
-if [[  $? != 0 ]]; then messageError "error reading applyJigCorrectionMode field!"; generalError "$0 $@"; exit 1; fi
-JigCorrectionScript=$(readlink -f "../JigCorrection/./jig_correction_apply.sh");
-
-if [[ "${applyJigCorrectionMode}" != '0' ]]; then
-	bash "${JigCorrectionScript}" "${masterFile}" "${plainParamsFile}"
-	if [[  $? != 0 ]]; then messageError "error running JigCorrectionScript!"; generalError "$0 $@"; exit 1; fi
-fi

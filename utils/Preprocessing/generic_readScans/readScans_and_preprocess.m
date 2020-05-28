@@ -1,7 +1,7 @@
-function [ ] = readScans_and_preprocess_genScan( masterFile, plainParamsFile )
+function [ ] = readScans_and_preprocess( masterFile, plainParamsFile )
 disp('*****************************************************************************************************')
 
-data = readScans_genScan(masterFile, plainParamsFile );
+data = readScans(masterFile, plainParamsFile );
 disp('*****************************************************************************************************')
 
 preprocess(data, masterFile, plainParamsFile );

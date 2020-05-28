@@ -1,4 +1,4 @@
-function [ par ] = readDataSetInfo_genScan( masterFile, plainParamsFile );
+function [ par ] = readDataSetInfo( masterFile, plainParamsFile );
 
 executablePath = plainParamsFile;
 get_set = 'get';
