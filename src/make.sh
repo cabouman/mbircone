@@ -23,9 +23,6 @@ usage()
 
 # set compiler
 CC=icc
-if [[ ${CC} -eq gcc ]]; then
-    LM=-lm
-fi
 
 # cd to where the script is
 executionDir=$(pwd)
@@ -65,7 +62,7 @@ elif [[ "${mode}" = "all" ]]; then
     if [[  $STATUS != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
     set -x
-        ${CC} -fopenmp -O3 -Wall -pedantic ${OBJECTS}  -o ${EXECUTABLE} ${LM}
+        ${CC} -fopenmp -O3 -Wall -pedantic ${OBJECTS}  -o ${EXECUTABLE} -lm
     { STATUS=$?; set +x; } 2>/dev/null
     if [[  $STATUS != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
