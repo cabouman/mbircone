@@ -21,7 +21,11 @@ usage()
 
 }
 
-
+# set compiler
+CC=icc
+if [[ ${CC} -eq gcc ]]; then
+    LM=-lm
+fi
 
 # cd to where the script is
 executionDir=$(pwd)
@@ -56,12 +60,12 @@ elif [[ "${mode}" = "all" ]]; then
     cd "${scriptDir}"
 
     set -x
-        icc -fopenmp -O3 -Wall -pedantic -c ${SOURCES}
+        ${CC} -fopenmp -O3 -Wall -pedantic -c ${SOURCES}
     { STATUS=$?; set +x; } 2>/dev/null
     if [[  $STATUS != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
     set -x
-        icc -fopenmp -O3 -Wall -pedantic ${OBJECTS}  -o ${EXECUTABLE}
+        ${CC} -fopenmp -O3 -Wall -pedantic ${OBJECTS}  -o ${EXECUTABLE} ${LM}
     { STATUS=$?; set +x; } 2>/dev/null
     if [[  $STATUS != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
