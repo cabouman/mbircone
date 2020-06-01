@@ -22,7 +22,7 @@ usage()
 }
 
 # set compiler
-CC=icc
+CC=gcc
 
 # cd to where the script is
 executionDir=$(pwd)

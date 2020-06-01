@@ -5,7 +5,12 @@
 # uncomment the following line to override mac's readlink with GNU readlink (more info in readme)
 # alias readlink='greadlink'
 
-./makeall.sh
+#./makeall.sh
+
+cur=$(pwd)
+cd ../
+make all
+cd ${cur}
 
 master=$(readlink -f "../demo/params/master.txt")
 
