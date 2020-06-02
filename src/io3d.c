@@ -1,7 +1,7 @@
 
 #include "io3d.h"
 #include <libgen.h>
-#include "../utils/plainParams/plainParams.h"
+#include "plainParams.h"
 
 
 
