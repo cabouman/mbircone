@@ -8,8 +8,8 @@
 #./makeall.sh
 
 cur=$(pwd)
-cd ../
-make all
+cd ../src
+make
 cd ${cur}
 
 master=$(readlink -f "../demo/params/master.txt")

@@ -9,3 +9,9 @@ sftp-config.json
 # ignore all files in bin folder except the empty file gitignore
 bin/*
 !bin/.gitignore
+
+# runtime log files
+run/log*
+
+# demo output
+demo/inversion/*
