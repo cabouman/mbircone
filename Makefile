@@ -3,7 +3,7 @@ FLAGS=-fopenmp -O3 -Wall -pedantic
 SRC   = src
 
 OBJ_NAME=allocate.o MBIRModularUtilities3D.o io3d.o computeSysMatrix.o icd3d.o recon3DCone.o plainParams.o
-OBJS=$(join $(addsuffix src/, $(dir $(OBJ_NAME))), $(notdir $(OBJ_NAME)))
+OBJS=$(addprefix $(SRC)/, $(OBJ_NAME))
 
 all: main clean
 
