@@ -4,7 +4,7 @@ FLAGS=-fopenmp -O3 -Wall -pedantic
 OBJS  = allocate.o MBIRModularUtilities3D.o io3d.o computeSysMatrix.o icd3d.o recon3DCone.o plainParams.o
 
 
-all: main
+all: main clean
 
 main: main.o $(OBJS)
 	${CC} ${FLAGS} $^ -o $@ -lm
