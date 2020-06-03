@@ -2,7 +2,7 @@
 #include "io3d.h"
 #include <libgen.h>
 #include "plainParams.h"
-
+#include <unistd.h>
 
 
 /* Read Command-line */

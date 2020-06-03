@@ -1,24 +1,17 @@
 CC=icc
 FLAGS=-fopenmp -O3 -Wall -pedantic
+SRC   = src
+OBJS  = $(SRC)/allocate.o $(SRC)/MBIRModularUtilities3D.o $(SRC)/io3d.o $(SRC)/computeSysMatrix.o $(SRC)/icd3d.o $(SRC)/recon3DCone.o $(SRC)/plainParams.o
 
-bin=./bin
-SRCS  = "allocate.c MBIRModularUtilities3D.c io3d.c computeSysMatrix.c icd3d.c recon3DCone.c main.c plainParams.c"
-OBJS  = "allocate.o MBIRModularUtilities3D.o io3d.o computeSysMatrix.o icd3d.o recon3DCone.o main.o plainParams.o"
-EXECUTABLE=main
-# --- meta labels -------------------------------------------------
 
 all: main clean
-	rm ./src/*.o 
 
-main:
-	${CC} ${FLAGS} -c ${SRCS}
-	mv *.o ./src/
-	${CC} ${FLAGS} ${OBJS} -o ${bin}/${EXECUTABLE} -lm
+main: $(SRC)/main.o $(OBJS)
+	${CC} ${FLAGS} $^ -o $@ -lm
+	mv $@ bin
 
 clean:
-	rm ./src/*.o 
+	rm $(SRC)/*.o
 
-# --- Compiling -------------------------------------------------
-
-# ${OBJS} :
-# 	${CC} ${FLAGS} -c -o $@ $(@:.o=.c)
+%.o: %.c
+	$(CC) -c $< $(FLAGS) -o $@

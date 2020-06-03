@@ -8,7 +8,7 @@
 #./makeall.sh
 
 cur=$(pwd)
-cd ../src
+cd ..
 make
 cd ${cur}
 
