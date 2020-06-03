@@ -1,8 +1,9 @@
 CC=icc
 FLAGS=-fopenmp -O3 -Wall -pedantic
 SRC   = src
-OBJS  = $(SRC)/allocate.o $(SRC)/MBIRModularUtilities3D.o $(SRC)/io3d.o $(SRC)/computeSysMatrix.o $(SRC)/icd3d.o $(SRC)/recon3DCone.o $(SRC)/plainParams.o
 
+OBJ_NAME=allocate.o MBIRModularUtilities3D.o io3d.o computeSysMatrix.o icd3d.o recon3DCone.o plainParams.o
+OBJS=$(join $(addsuffix src/, $(dir $(OBJ_NAME))), $(notdir $(OBJ_NAME)))
 
 all: main clean
 
