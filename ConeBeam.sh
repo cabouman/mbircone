@@ -77,16 +77,6 @@ if [[ "${task}" = "CBMODE_preprocessing" ]]; then
     bash utils/Preprocessing/./preprocessing.sh "${masterFile}"
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
-elif [[ "${task}" = "CBMODE_changePreprocessing" ]]; then
-
-    bash utils/multiResolution/./changePreprocessing.sh "${masterFile}"
-    if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
-
-elif [[ "${task}" = "CBMODE_multiResolution" ]]; then
-
-    bash utils/multiResolution/./multiResolution.sh "${masterFile}"
-    if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
-
 elif [[ "${task}" = "CBMODE_FDK" ]]; then
 
     bash utils/FDK/./FDK.sh "${masterFile}"
