@@ -732,7 +732,7 @@ void read3DData(char *fName, void ***arr, long int N1, long int N2, long int N3,
 	 * 		Read body of data
 	 */
 	numToRead = N1*N2*N3;
-	numHaveRead = fread(&arr[0][0][0], dataTypeSize, numToRead, fp);
+	numHaveRead = fread(**arr, dataTypeSize, numToRead, fp);
 	if (numHaveRead != numToRead)
 	{
 		printf("Error in reading body file \"%s\".\n", fName);
@@ -790,7 +790,7 @@ void write3DData(char *fName, void ***arr, long int N1, long int N2, long int N3
 	 * 		Write body of data
 	 */
 	numToWrite = N1*N2*N3;
-	numWritten = fwrite(&arr[0][0][0], dataTypeSize, numToWrite, fp);
+	numWritten = fwrite(**arr, dataTypeSize, numToWrite, fp);
 	if (numWritten != numToWrite)
 	{
 		printf("Error in reading body file \"%s\".\n", fName);

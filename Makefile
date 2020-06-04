@@ -1,11 +1,13 @@
 CC=icc
 FLAGS=-fopenmp -O3 -Wall -pedantic
-SRC   = src
+SRC=src
 
 OBJ_NAME=allocate.o MBIRModularUtilities3D.o io3d.o computeSysMatrix.o icd3d.o recon3DCone.o plainParams.o
 OBJS=$(addprefix $(SRC)/, $(OBJ_NAME))
 
-all: main clean
+.PHONY: all clean
+
+all: main
 
 main: $(SRC)/main.o $(OBJS)
 	${CC} ${FLAGS} $^ -o $@ -lm

@@ -175,7 +175,7 @@ void forwardProject3DCone( float ***Ax, float ***x, struct ImageFParams *imgPara
 void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageFParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams, struct ReconParams *reconParams)
 {
 
-    long int j_u, j_x, j_y, i_beta, i_v, j_z, i_w, num;
+    long int j_u, j_x, j_y, i_beta, i_v, j_z, i_w;
     double B_ij, A_ij;
     double ticToc;
     char mode;
@@ -295,7 +295,7 @@ void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageFParams *
 
 void initializeWghtRecon(struct SysMatrix *A, struct Sino *sino, struct ImageF *img, struct ReconParams *reconParams)
 {
-    long int j_u, j_x, j_y, i_beta, i_v, j_z, i_w, num;
+    long int j_u, j_x, j_y, i_beta, i_v, j_z, i_w;
     double B_ij, A_ij;
     double ticToc, avg;
 
@@ -683,10 +683,10 @@ void*** allocateImageFData3DCone( struct ImageFParams *params, int dataTypeSize,
 
 void allocateSysMatrix(struct SysMatrix *A, long int N_x, long int N_y, long int N_z, long int N_beta, long int i_vstride_max, long int i_wstride_max, long int N_u)
 {
-    double totSizeGB;
+    /*double totSizeGB;*/
     /*logAndDisp_message(LOG_PROGRESS, "\nAllocate Space for A-matrix...\n");*/
 
-
+    /*
     totSizeGB =\
     (\
     N_x * N_y * N_beta * i_vstride_max * sizeof(BIJDATATYPE) + \
@@ -697,7 +697,7 @@ void allocateSysMatrix(struct SysMatrix *A, long int N_x, long int N_y, long int
     N_u * N_z * sizeof(INDEXSTARTSTOPDATATYPE) + \
     N_u * N_z * sizeof(INDEXSTRIDEDATATYPE)\
     )\
-    /1e9;
+    /1e9;*/
    /* printf("\tAllocating %e GB ...\n", totSizeGB);*/
 
 
@@ -784,7 +784,7 @@ void RandomZiplineAux_allocate(struct RandomZiplineAux *aux, struct ImageFParams
 
 void RandomZiplineAux_Initialize(struct RandomZiplineAux *aux, struct ImageFParams *imgParams, struct ReconParams *reconParams, int N_M_max)
 {
-    long int N_x, N_y, N_z;
+    long int N_x, N_y;
     long int j_xy;
 
     /**
@@ -795,7 +795,6 @@ void RandomZiplineAux_Initialize(struct RandomZiplineAux *aux, struct ImageFPara
 
     N_x = imgParams->N_x;
     N_y = imgParams->N_y;
-    N_z = imgParams->N_z;
 
     /**
      *      Initialize orderXY
@@ -1053,11 +1052,12 @@ int timer_hasPassed(double *timer, double time_passed)
 
 /**************************************** misc ****************************************/
 
-
-// Standard partition process of QuickSort().
-// It considers the mid element as pivot
-// and moves all smaller element to left of
-// it and greater elements to right
+/*
+Standard partition process of QuickSort().
+It considers the mid element as pivot
+and moves all smaller element to left of
+it and greater elements to right
+*/
 long int partition(float arr[], long int left, long int right)
 {
     float pivot, temp = 0;
@@ -1076,35 +1076,38 @@ long int partition(float arr[], long int left, long int right)
     _SWAP_(arr[i], arr[right], temp);
     return i; /* end pivot position */
 }
- 
-// This function returns k'th smallest 
-// element in arr[l..r] using QuickSort 
-// based method.
-// WARNING: it will also mix the array around
+
+/*
+This function returns k'th smallest 
+element in arr[l..r] using QuickSort 
+based method.
+WARNING: it will also mix the array around
+*/
 float kthSmallest(float arr[], long int l, long int r, long int k)
 {
     long int pivotIndex;
-    // If k is smaller than number of 
-    // elements in array
+    /*
+    If k is smaller than number of 
+    elements in array
+    */ 
     if (k > 0 && k <= r - l + 1) {
  
-        // Partition the array around last 
-        // element and get position of pivot 
-        // element in sorted array
+        /*
+        Partition the array around last 
+        element and get position of pivot 
+        element in sorted array
+        */ 
         pivotIndex = partition(arr, l, r);
  
-        // If position is same as k
         if (pivotIndex - l == k - 1)
             return arr[pivotIndex];
 
  
         if (pivotIndex - l > k - 1) 
-        // If position is more, recur for left subarray
         {
             return kthSmallest(arr, l, pivotIndex - 1, k);
         }
         else
-        // Else recur for right subarray
         {
             return kthSmallest(arr, pivotIndex + 1, r, k - pivotIndex + l - 1);
         }
@@ -1116,8 +1119,9 @@ float kthSmallest(float arr[], long int l, long int r, long int k)
     } 
 }
 
-/* Returns p-th percentile p \in 0 to 100 */
-// WARNING: it will also mix the array around
+/* Returns p-th percentile p \in 0 to 100 
+WARNING: it will also mix the array around
+*/
 float prctile(float arr[], long int len, float p)
 {
     long int k;
