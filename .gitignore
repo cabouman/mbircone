@@ -11,7 +11,7 @@ bin/*
 !bin/.gitignore
 
 # runtime log files
-run/log*
+log_*
 
 # demo output
 demo/inversion/*
