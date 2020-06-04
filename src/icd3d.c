@@ -770,7 +770,6 @@ double computeRelUpdate(struct ReconAux *reconAux, struct ReconParams *reconPara
 	double AvgValueChange, AvgVoxelValue;
 	double scaler;
 	int subsampleFactor = 10; /* when chosen 1 this is completely accurate. User can mess with this to some extend*/
-	int foundMatch = 0;
 
 	if(reconAux->NumUpdatedVoxels>0)
 	{
@@ -789,22 +788,17 @@ double computeRelUpdate(struct ReconAux *reconAux, struct ReconParams *reconPara
 		if (strcmp(reconParams->relativeChangeMode, "meanImage")==0)
 		{
 			relUpdate = AvgValueChange / AvgVoxelValue;
-			foundMatch = 1;
 		}
-		if (strcmp(reconParams->relativeChangeMode, "fixedScaler")==0)
+		else if (strcmp(reconParams->relativeChangeMode, "fixedScaler")==0)
 		{
 			relUpdate = AvgValueChange / reconParams->relativeChangeScaler;
-			foundMatch = 1;
 		}
-
-		if (strcmp(reconParams->relativeChangeMode, "percentile")==0)
+		else if (strcmp(reconParams->relativeChangeMode, "percentile")==0)
 		{
 			scaler = prctile_copyFast(&img->vox[0][0][0], img->params.N_x*img->params.N_y*img->params.N_z,  reconParams->relativeChangePercentile, subsampleFactor);
 			relUpdate = AvgValueChange / scaler;
-			foundMatch = 1;
 		}
-
-		if (foundMatch == 0)
+		else
 		{
 			printf("Error: relativeChangeMode unknown\n");
 			exit(-1);
