@@ -1,4 +1,4 @@
-CC=gcc
+CC=icc
 FLAGS=-fopenmp -O3 -Wall -pedantic
 SRC=src
 
