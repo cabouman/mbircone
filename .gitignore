@@ -14,4 +14,4 @@ bin/*
 log_*
 
 # demo output
-demo/inversion/*
+#demo/inversion/*
