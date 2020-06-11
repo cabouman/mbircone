@@ -12,7 +12,7 @@ master=$(readlink -f "params/master.txt")
 
 bash .././ConeBeam.sh "${master}" CBMODE_preprocessing
 
-bash .././ConeBeam.sh "${master}" CBMODE_INV_prepare
+#bash .././ConeBeam.sh "${master}" CBMODE_INV_prepare
 
-bash .././ConeBeam.sh "${master}" CBMODE_INV_recon
+#bash .././ConeBeam.sh "${master}" CBMODE_INV_recon
 
