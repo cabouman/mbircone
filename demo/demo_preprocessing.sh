@@ -6,5 +6,5 @@
 
 master=$(readlink -f "params/master.txt")
 
-bash .././ConeBeam.sh "${master}" CBMODE_preprocessing
+bash ../bin/ConeBeam.sh "${master}" CBMODE_preprocessing
 

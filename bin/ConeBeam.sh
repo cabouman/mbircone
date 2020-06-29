@@ -40,7 +40,7 @@ FDK_if_initReconMode_FDK()
     echo "initReconMode: $initReconMode"
     if [[ "${initReconMode}" = "FDK" ]]; then
 
-        bash utils/FDK/./FDK.sh "${masterFile}"
+        bash ../utils/FDK/./FDK.sh "${masterFile}"
         if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
     fi
@@ -64,7 +64,7 @@ executionDir=$(pwd)
 scriptDir=$(readlink -f $(dirname $0))
 cd "${scriptDir}"
 
-plainParamsFile=$(readlink -f "utils/plainParams/plainParams.sh")
+plainParamsFile=$(readlink -f "../utils/plainParams/plainParams.sh")
 if [[ ! -e ${plainParamsFile} ]]; then messageError "plainParamsFile \"${plainParamsFile}\" does not exist!"; generalError "$0 $@"; exit 1; fi
 
 echo task = $task
@@ -74,56 +74,56 @@ echo task = $task
 # -------- Other tasks --------------------------------------------
 if [[ "${task}" = "CBMODE_preprocessing" ]]; then
 
-    bash utils/Preprocessing/./preprocessing.sh "${masterFile}"
+    bash ../utils/Preprocessing/./preprocessing.sh "${masterFile}"
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 elif [[ "${task}" = "CBMODE_FDK" ]]; then
 
-    bash utils/FDK/./FDK.sh "${masterFile}"
+    bash ../utils/FDK/./FDK.sh "${masterFile}"
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 # -------- Core Inversion --------------------------------------------
 elif [[ "${task}" = "CBMODE_INV_sys" ]]; then
 
-    bin/./main -a "${masterFile}" -b "${plainParamsFile}" -c sys
+    ./main -a "${masterFile}" -b "${plainParamsFile}" -c sys
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 elif [[ "${task}" = "CBMODE_INV_wghtRecon" ]]; then
 
-    bin/./main -a "${masterFile}" -b "${plainParamsFile}" -c wghtRecon
+    ./main -a "${masterFile}" -b "${plainParamsFile}" -c wghtRecon
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 elif [[ "${task}" = "CBMODE_INV_init" ]]; then
 
     FDK_if_initReconMode_FDK
-    bin/./main -a "${masterFile}" -b "${plainParamsFile}" -c init
+    ./main -a "${masterFile}" -b "${plainParamsFile}" -c init
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 elif [[ "${task}" = "CBMODE_INV_recon" ]]; then
 
-    bin/./main -a "${masterFile}" -b "${plainParamsFile}" -c recon
+    ./main -a "${masterFile}" -b "${plainParamsFile}" -c recon
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 elif [[ "${task}" = "CBMODE_INV_runall" ]]; then
 
     FDK_if_initReconMode_FDK
-    bin/./main -a "${masterFile}" -b "${plainParamsFile}" -c sys,wghtRecon,init,recon
+    ./main -a "${masterFile}" -b "${plainParamsFile}" -c sys,wghtRecon,init,recon
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 elif [[ "${task}" = "CBMODE_INV_prepare" ]]; then
 
     FDK_if_initReconMode_FDK
-    bin/./main -a "${masterFile}" -b "${plainParamsFile}" -c sys,wghtRecon,init
+    ./main -a "${masterFile}" -b "${plainParamsFile}" -c sys,wghtRecon,init
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 elif [[ "${task}" = "CBMODE_proj" ]]; then
 
-    bin/./main -a "${masterFile}" -b "${plainParamsFile}" -c proj
+    ./main -a "${masterFile}" -b "${plainParamsFile}" -c proj
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 elif [[ "${task}" = "CBMODE_backprojlike" ]]; then
 
-    bin/./main -a "${masterFile}" -b "${plainParamsFile}" -c backprojlike
+    ./main -a "${masterFile}" -b "${plainParamsFile}" -c backprojlike
     if [[  $? != 0 ]]; then generalError "$0 $@"; exit 1; fi
 
 
