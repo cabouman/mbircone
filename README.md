@@ -9,27 +9,36 @@ For other OpenMBIR packages see: https://github.com/cabouman/OpenMBIR-Index
 
 ## Organization
 
-The codebase is broadly divided into five parts:
-1) bin: meant to store compiled executables
-2) data: meant to contain all data files: (scans, reconstructions, sinogram etc)
-3) param: contains parameters for reconstruction
-4) run: contains scripts that compile and execute the code
-5) src: the actual source code
+The repository is organized as follows:
+1) ```bin```: Contains binary executable and bash interface
+2) ```demo```: Contains demo data, params and demo scripts
+3) ```docs```: Contains documentation file
+4) ```src```: Contains the c source code for conebeam reconstruction
+5) utils: Contains utility scripts for preprocessing, parameter manipulation, rendering and traditional FDK reconstruction
 
-## Running
+## Demo
 
-To reconstruct from the included data in ```data/Scan```, run the script in ```run/basic_pipeline.sh``` from the run folder.
+The ```demo``` folder contains a preprocessing and a reconstruction demo (data, parameters, scripts etc).
+These two demos can be run using the scripts ```demo_recon.sh``` and ```demo_preprocessing.sh```.
+MATLAB is required for ```demo_preprocessing.sh``` but ```demo_recon.sh``` requires only a c compiler.
+The two demos are independant, i.e. one can run ```demo_recon.sh``` without running ```demo_preprocessing.sh```.
 
-To submit a SLURM job in a HPC cluster with the basic pipeline, run ```sbatch jobSub/SLURM_CB.sub``` from the run folder.
+### Reconstruction demo
 
-## Data and Visualization
+This demo can be run using the script ```demo_recon.sh```.
+Input data are in ```demo/inversion```, output data are also saved in ```demo/inversion```.
 
-The repository includes a small test data in ```data/Scan```.
-The script ```run/basic_pipeline.sh``` reconstructs from this test data.
+To submit a SLURM job in a HPC cluster with the demo, run ```sbatch jobSub/SLURM_CB.sub``` from the ```demo``` folder.
 
-The reconstructed images are stored in ```data/ConeBeam```.
-The data can be visualized using the script ```src/View/RenderRecon/run.m```
-A volume rendering can also be performed by running ```src/View/VolumeRenderRecon/run.m```
+### Preprocessing demo
+
+This demo can be run using the script ```demo_preprocessing.sh```.
+Input data are in ```demo/scan```, output data are saved in ```demo/inversion```.
+
+
+### Visualization
+
+The input and output data in the ```demo/inversion``` folder can be visualized using the script ```src/View/RenderRecon/run.m```.
 The file ```src/Modular_MatlabRoutines/read3D.m``` can be used to read the reconstruction files into MATLAB.
 
 ## Dependencies
