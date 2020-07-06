@@ -10,9 +10,7 @@ cd ${cur}
 
 master=$(readlink -f "params/master.txt")
 
-bash .././ConeBeam.sh "${master}" CBMODE_preprocessing
+bash ../bin/ConeBeam.sh "${master}" CBMODE_INV_prepare
 
-bash .././ConeBeam.sh "${master}" CBMODE_INV_prepare
-
-bash .././ConeBeam.sh "${master}" CBMODE_INV_recon
+bash ../bin/ConeBeam.sh "${master}" CBMODE_INV_recon
 

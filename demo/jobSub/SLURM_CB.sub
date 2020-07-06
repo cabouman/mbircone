@@ -7,4 +7,6 @@ module load matlab
 cd $SLURM_O_WORKDIR
 echo '$(pwd)'
 
-bash ./demo.sh
+# bash ./demo_preprocessing.sh
+
+bash ./demo_recon.sh
