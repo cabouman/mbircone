@@ -14,7 +14,7 @@ The repository is organized as follows:
 2) ```demo```: Contains demo data, params and demo scripts
 3) ```docs```: Contains documentation file
 4) ```src```: Contains the c source code for conebeam reconstruction
-5) utils: Contains utility scripts for preprocessing, parameter manipulation, rendering and traditional FDK reconstruction
+5) ```utils```: Contains utility scripts for preprocessing, parameter manipulation, rendering and traditional FDK reconstruction
 
 ## Demo
 
