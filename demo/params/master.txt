@@ -23,3 +23,5 @@ viewAngleList.txt
 [preprocessingScript]
 ../../utils/Preprocessing/preprocessing_generic.sh
  
+[logDir]
+../logs
