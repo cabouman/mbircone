@@ -18,7 +18,6 @@ relpath.darkScanMean_filePath = plainParams(executablePath, get_set, masterFile,
 relpath.darkScanStd_filePath = plainParams(executablePath, get_set, masterFile, masterField, 'darkScanStd_filePath', value, resolveFlag) ;
 relpath.blankScanMean_filePath = plainParams(executablePath, get_set, masterFile, masterField, 'blankScanMean_filePath', value, resolveFlag) ;
 
-relpath.corrections_filePath = plainParams(executablePath, get_set, masterFile, masterField, 'corrections_filePath', value, resolveFlag) ;
 relpath.defects_filePath = plainParams(executablePath, get_set, masterFile, masterField, 'defects_filePath', value, resolveFlag) ;
 relpath.driftReferenceStart_filePath = plainParams(executablePath, get_set, masterFile, masterField, 'driftReferenceStart_filePath', value, resolveFlag) ;
 relpath.driftReferenceEnd_filePath = plainParams(executablePath, get_set, masterFile, masterField, 'driftReferenceEnd_filePath', value, resolveFlag) ;
@@ -55,7 +54,6 @@ dataSetInfo.objectScan_folderPath = getAbsPath_withNull(dataSetInfo.main_folderP
 dataSetInfo.darkScanMean_filePath = getAbsPath_withNull(dataSetInfo.main_folderPath, relpath.darkScanMean_filePath);
 dataSetInfo.darkScanStd_filePath = getAbsPath_withNull(dataSetInfo.main_folderPath, relpath.darkScanStd_filePath);
 dataSetInfo.blankScanMean_filePath = getAbsPath_withNull(dataSetInfo.main_folderPath, relpath.blankScanMean_filePath);
-dataSetInfo.corrections_filePath = getAbsPath_withNull(dataSetInfo.main_folderPath, relpath.corrections_filePath);
 dataSetInfo.defects_filePath = getAbsPath_withNull(dataSetInfo.main_folderPath, relpath.defects_filePath);
 dataSetInfo.driftReferenceStart_filePath = getAbsPath_withNull(dataSetInfo.main_folderPath, relpath.driftReferenceStart_filePath);
 dataSetInfo.driftReferenceEnd_filePath = getAbsPath_withNull(dataSetInfo.main_folderPath, relpath.driftReferenceEnd_filePath);
