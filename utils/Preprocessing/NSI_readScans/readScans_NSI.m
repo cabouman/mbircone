@@ -5,7 +5,7 @@ function [ data ] = readScans_NSI(masterFile, plainParamsFile )
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 mfilepath=fileparts(which(mfilename));
 addpath(fullfile(mfilepath,'../Modular_PreprocessingRoutines'));
-addpath(fullfile(mfilepath,'../../misc_routines'));
+addpath(fullfile(mfilepath,'../../misc_routines_matlab'));
 addpath(fullfile(mfilepath,'MatlabRoutines'));
 
 

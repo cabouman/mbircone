@@ -4,7 +4,7 @@ function [ ] = FDK(masterFile, plainParamsFile)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 mfilepath=fileparts(which(mfilename));
 addpath(fullfile(mfilepath,'../Preprocessing/Modular_PreprocessingRoutines'));
-addpath(fullfile(mfilepath,'../misc_routines'));
+addpath(fullfile(mfilepath,'../misc_routines_matlab'));
 addpath('CBCT_Kyungsang_matlab_Feb2015');
 addpath('CBCT_Kyungsang_matlab_Feb2015/bin');
 

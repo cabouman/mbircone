@@ -4,7 +4,7 @@ function [ ] = view3D_folder( folderName_binary, opts)
 %%%  Includes (note: paths relative to function location)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 mfilepath=fileparts(which(mfilename));
-addpath(fullfile(mfilepath,'../misc_routines'));
+addpath(fullfile(mfilepath,'../misc_routines_matlab'));
 addpath(fullfile(mfilepath,'utils'));
 %addpath(fullfile(mfilepath,'MatlabRoutines'));
 
