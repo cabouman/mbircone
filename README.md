@@ -1,5 +1,10 @@
-# OpenMBIR-ConeBeam
-Open Source Cone Beam MBIR package
+# MBIR Cone
+
+Our goal is to write a Python Package for Cone Beam reconstruction.
+This will be based on a Cython interface to the C-base OpenMBIR-ConeBeam package.
+
+
+## Distribution Statement
 
 Distribution Statement A. Approved for public release: distribution unlimited (88ABW-2020-0895).
 If you publish results based on this code, please cite the following paper:
