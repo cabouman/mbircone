@@ -2,16 +2,19 @@
 Strategy:
 
 1. Define target C subroutine interface
-2. Modify C code to conformed to target interface (wrapper + other changes)
+2. Modify C code to conformed to target interface (make wrapper + other changes)
 3. Write cython wrapper to call C subroutines
 4. Write python wrapper to using cython subroutines
 
+```
+void MBIR3DCone(float *x, float *sino, struct ReconParams *reconParams, char *SysMatrix_fname);
 
+void forwardProject(float *proj, float *x, struct ImageParams *imgParams, struct SinoParams *sinoInfo, char *SysMatrix_fname);
+
+writeSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageParams *imgParams);
+```
 
 Example of documentation for a C subroutine call.
-
-
-> Here are preliminary prototypes for c-routines I think we'll need. We'll need to think out the various ways these will be used by python so we can implement this properly (for example, supplying the initial error sinogram vs. not). It'll be slightly tricky if we're hiding the A matrix structure from python.
 > 
 > ```
 > void MBIRReconstruct3D(
