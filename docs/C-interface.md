@@ -2,7 +2,7 @@
 Strategy:
 
 1. Define target C subroutine interface
-2. Modify C code to conformed to target interface
+2. Modify C code to conformed to target interface (wrapper + other changes)
 3. Write cython wrapper to call C subroutines
 4. Write python wrapper to using cython subroutines
 
