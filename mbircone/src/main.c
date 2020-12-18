@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     struct CmdLine cmdLine;
     struct PathNames pathNames;
     struct Sino sino;
-    struct ImageF img;
+    struct Image img;
     struct ReconParams reconParams;
     struct SysMatrix A;
     struct ViewAngleList viewAngleList;
@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
     strcpy(pathNames.masterFile, cmdLine.masterFile);
     strcpy(pathNames.plainParamsFile, cmdLine.plainParamsFile);
 
-    readImageFParams(pathNames.masterFile, pathNames.plainParamsFile, &img.params);
+    readImageParams(pathNames.masterFile, pathNames.plainParamsFile, &img.params);
 
     readReconParams(pathNames.masterFile, pathNames.plainParamsFile, &reconParams);
     computeSecondaryReconParams(&reconParams, &img.params);
@@ -185,13 +185,13 @@ int main(int argc, char *argv[])
         /**
          *      Allocate
          */
-        img.projInput = (float***) allocateImageFData3DCone( &img.params, sizeof(float), 0);
+        img.projInput = (float***) allocateImageData3DCone( &img.params, sizeof(float), 0);
         sino.projOutput = (float***) allocateSinoData3DCone(&sino.params, sizeof(float));
 
         /**
          *      Compute
          */
-        readImageFData3DCone(pathNames.projInput, (void***)img.projInput, &img.params, 0, "float");
+        readImageData3DCone(pathNames.projInput, (void***)img.projInput, &img.params, 0, "float");
         setFloatArray2Value(&sino.projOutput[0][0][0], sino.params.N_beta*sino.params.N_dv*sino.params.N_dw, 0);
 
         forwardProject3DCone(sino.projOutput, img.projInput, &img.params, &A, &sino.params);
@@ -215,7 +215,7 @@ int main(int argc, char *argv[])
          *      Allocate
          */
         sino.backprojlikeInput = (float***) allocateSinoData3DCone(&sino.params, sizeof(float));
-        img.backprojlikeOutput = (float***) allocateImageFData3DCone( &img.params, sizeof(float), 0);
+        img.backprojlikeOutput = (float***) allocateImageData3DCone( &img.params, sizeof(float), 0);
 
 
         /**
@@ -227,7 +227,7 @@ int main(int argc, char *argv[])
         backProjectlike3DCone(img.backprojlikeOutput, sino.backprojlikeInput, &img.params, &A, &sino.params, &reconParams);
         applyMask(img.backprojlikeOutput, img.params.N_x, img.params.N_y, img.params.N_z);
 
-        writeImageFData3DCone(pathNames.backprojlikeOutput, (void***)img.backprojlikeOutput, &img.params, 0, "float");
+        writeImageData3DCone(pathNames.backprojlikeOutput, (void***)img.backprojlikeOutput, &img.params, 0, "float");
 
         /**
          *      Free
@@ -242,11 +242,11 @@ int main(int argc, char *argv[])
     if (isMode_wghtRecon)
     {
         printf("Compute Weight Recon Error ...\n");
-        img.wghtRecon = (float***) allocateImageFData3DCone( &img.params, sizeof(float), 0);
+        img.wghtRecon = (float***) allocateImageData3DCone( &img.params, sizeof(float), 0);
 
         initializeWghtRecon(&A, &sino, &img, &reconParams);
 
-        writeImageFData3DCone(pathNames.wghtRecon, (void***)img.wghtRecon, &img.params, 0, "float");
+        writeImageData3DCone(pathNames.wghtRecon, (void***)img.wghtRecon, &img.params, 0, "float");
 
         mem_free_3D((void***)img.wghtRecon);
     }
@@ -263,9 +263,9 @@ int main(int argc, char *argv[])
          */
         sino.estimateSino = (float***) allocateSinoData3DCone(&sino.params, sizeof(float));
         sino.e = (float***) allocateSinoData3DCone(&sino.params, sizeof(float));
-        img.vox = (float***) allocateImageFData3DCone( &img.params, sizeof(float), 0);
-        img.vox_roi = (float***) allocateImageFData3DCone( &img.params, sizeof(float), 1);
-        img.proxMapInput = (float***) allocateImageFData3DCone( &img.params, sizeof(float), 0);
+        img.vox = (float***) allocateImageData3DCone( &img.params, sizeof(float), 0);
+        img.vox_roi = (float***) allocateImageData3DCone( &img.params, sizeof(float), 1);
+        img.proxMapInput = (float***) allocateImageData3DCone( &img.params, sizeof(float), 0);
         img.lastChange = (float***) mem_alloc_3D(img.params.N_x, img.params.N_y, reconParams.numZiplines, sizeof(float));
         img.timeToChange = (unsigned char***) mem_alloc_3D(img.params.N_x, img.params.N_y, reconParams.numZiplines, sizeof(unsigned char));
         
@@ -279,11 +279,11 @@ int main(int argc, char *argv[])
         }
         else if(strcmp(reconParams.initReconMode, "recon")==0)
         {
-            readImageFData3DCone(pathNames.recon, (void***)img.vox, &img.params, 0, "float");
+            readImageData3DCone(pathNames.recon, (void***)img.vox, &img.params, 0, "float");
         }
         else if(strcmp(reconParams.initReconMode, "FDK")==0)
         {
-            readImageFData3DCone(pathNames.recon, (void***)img.vox, &img.params, 0, "float");
+            readImageData3DCone(pathNames.recon, (void***)img.vox, &img.params, 0, "float");
         }
         else
         {
@@ -292,7 +292,7 @@ int main(int argc, char *argv[])
         }
         applyMask(img.vox, img.params.N_x, img.params.N_y, img.params.N_z);
 
-        copyImageF2ROI(&img);
+        copyImage2ROI(&img);
         
         setFloatArray2Value(&img.proxMapInput[0][0][0], img.params.N_x*img.params.N_y*img.params.N_z, 0.0);
         setFloatArray2Value(&img.lastChange[0][0][0], img.params.N_x*img.params.N_y*reconParams.numZiplines, 0.0);
@@ -313,9 +313,9 @@ int main(int argc, char *argv[])
          *      Write
          */
         
-        writeImageFData3DCone(pathNames.recon, (void***)img.vox, &img.params, 0, "float");
-        writeImageFData3DCone(pathNames.reconROI, (void***)img.vox_roi, &img.params, 1, "float");
-        writeImageFData3DCone(pathNames.proxMapInput, (void***)img.proxMapInput, &img.params, 0, "float");
+        writeImageData3DCone(pathNames.recon, (void***)img.vox, &img.params, 0, "float");
+        writeImageData3DCone(pathNames.reconROI, (void***)img.vox_roi, &img.params, 1, "float");
+        writeImageData3DCone(pathNames.proxMapInput, (void***)img.proxMapInput, &img.params, 0, "float");
         write3DData(pathNames.lastChange, (void***)img.lastChange, img.params.N_x, img.params.N_y, reconParams.numZiplines, "float");
         write3DData(pathNames.timeToChange, (void***)img.timeToChange, img.params.N_x, img.params.N_y, reconParams.numZiplines, "unsigned char");
 
@@ -351,14 +351,14 @@ int main(int argc, char *argv[])
         /**
          *      Allocate space for image
          */
-        img.vox = (float***) allocateImageFData3DCone( &img.params, sizeof(float), 0);
-        img.vox_roi = (float***) allocateImageFData3DCone( &img.params, sizeof(float), 1);
-        img.wghtRecon = (float***) allocateImageFData3DCone( &img.params, sizeof(float), 0);
-        img.proxMapInput = (float***) allocateImageFData3DCone( &img.params, sizeof(float), 0);
+        img.vox = (float***) allocateImageData3DCone( &img.params, sizeof(float), 0);
+        img.vox_roi = (float***) allocateImageData3DCone( &img.params, sizeof(float), 1);
+        img.wghtRecon = (float***) allocateImageData3DCone( &img.params, sizeof(float), 0);
+        img.proxMapInput = (float***) allocateImageData3DCone( &img.params, sizeof(float), 0);
         img.lastChange = (float***) mem_alloc_3D(img.params.N_x, img.params.N_y, reconParams.numZiplines, sizeof(float));
         img.timeToChange = (unsigned char***) mem_alloc_3D(img.params.N_x, img.params.N_y, reconParams.numZiplines, sizeof(unsigned char));
         if(reconParams.isPhantomReconReference)
-            img.phantom = (float***) allocateImageFData3DCone( &img.params, sizeof(float), 0);
+            img.phantom = (float***) allocateImageData3DCone( &img.params, sizeof(float), 0);
 
         /*
          *      Read sinogram data
@@ -368,14 +368,14 @@ int main(int argc, char *argv[])
         /**
          *      Image Initialization
          */
-        readImageFData3DCone(pathNames.recon, (void***)img.vox, &img.params, 0, "float");
-        readImageFData3DCone(pathNames.wghtRecon, (void***)img.wghtRecon, &img.params, 0, "float");
-        readImageFData3DCone(pathNames.proxMapInput, (void***)img.proxMapInput, &img.params, 0, "float");
+        readImageData3DCone(pathNames.recon, (void***)img.vox, &img.params, 0, "float");
+        readImageData3DCone(pathNames.wghtRecon, (void***)img.wghtRecon, &img.params, 0, "float");
+        readImageData3DCone(pathNames.proxMapInput, (void***)img.proxMapInput, &img.params, 0, "float");
         read3DData(pathNames.lastChange, (void***)img.lastChange, img.params.N_x, img.params.N_y, reconParams.numZiplines, "float");
         read3DData(pathNames.timeToChange, (void***)img.timeToChange, img.params.N_x, img.params.N_y, reconParams.numZiplines, "unsigned char");
 
         if(reconParams.isPhantomReconReference)
-            readImageFData3DCone(pathNames.phantom, (void***)img.phantom, &img.params, 0, "float");
+            readImageData3DCone(pathNames.phantom, (void***)img.phantom, &img.params, 0, "float");
 
         /**
          *      Reconstruction

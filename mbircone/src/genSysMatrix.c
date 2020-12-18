@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     struct CmdLine cmdLine;
     struct PathNames pathNames;
     struct SinoParams sinoParams;
-    struct ImageFParams imgParams;
+    struct ImageParams imgParams;
 	struct ReconParams reconParams;
     struct ViewAngleList viewAngleList;
     
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 	readSinoParams(pathNames.masterFile, pathNames.plainParamsFile, &sinoParams);
 	printSinoParams(&sinoParams);
 
-	readImageFParams(pathNames.masterFile, pathNames.plainParamsFile, &imgParams);
+	readImageParams(pathNames.masterFile, pathNames.plainParamsFile, &imgParams);
 	printImgParams(&imgParams);
 
 	readReconParams(pathNames.masterFile, pathNames.plainParamsFile, &reconParams);

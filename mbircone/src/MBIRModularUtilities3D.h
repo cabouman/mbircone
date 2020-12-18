@@ -128,7 +128,7 @@ struct PathNames
 };
 
 
-struct ImageFParams
+struct ImageParams
 {
     /* Location of the corner of the first voxel corresponding to
      (j_x, j_y, j_z) = (0, 0, 0). */
@@ -164,9 +164,9 @@ struct ImageFParams
 };
 
 
-struct ImageF
+struct Image
 {
-    struct ImageFParams params;
+    struct ImageParams params;
     float ***vox;           /* [N_x][N_y][N_z] */
     float ***wghtRecon;     /* [N_x][N_y][N_z] */
     float ***vox_roi;       /* [N_x_roi][N_y_roi][N_z_roi] */
@@ -436,20 +436,20 @@ struct ReconAux
 
 
 
-void writeSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageFParams *imgParams, struct SysMatrix *A);
+void writeSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A);
 
-void readSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageFParams *imgParams, struct SysMatrix *A);
+void readSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A);
 
 
-void forwardProject3DCone( float ***Ax, float ***x, struct ImageFParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoInfo);
+void forwardProject3DCone( float ***Ax, float ***x, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoInfo);
 
-void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageFParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams, struct ReconParams *reconParams);
+void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams, struct ReconParams *reconParams);
 
-void initializeWghtRecon(struct SysMatrix *A, struct Sino *sino, struct ImageF *img, struct ReconParams *reconParams);
+void initializeWghtRecon(struct SysMatrix *A, struct Sino *sino, struct Image *img, struct ReconParams *reconParams);
 
-double computeAvgWghtRecon(struct ImageF *img);
+double computeAvgWghtRecon(struct Image *img);
     
-void computeSecondaryReconParams(struct ReconParams *reconParams, struct ImageFParams *imgParams);
+void computeSecondaryReconParams(struct ReconParams *reconParams, struct ImageParams *imgParams);
 
 void invertDoubleMatrix(double **A, double ** A_inv, int size);
 
@@ -461,9 +461,9 @@ double computeSinogramWeightedNormSquared(struct Sino *sino, float ***arr);
 
 char isInsideMask(long int i_1, long int i_2, long int N1, long int N2);
 
-long int computeNumVoxelsInImageMask(struct ImageF *img);
+long int computeNumVoxelsInImageMask(struct Image *img);
 
-void copyImageF2ROI(struct ImageF *img);
+void copyImage2ROI(struct Image *img);
 
 void applyMask(float ***arr, long int N1, long int N2, long int N3);
 
@@ -475,7 +475,7 @@ void setUCharArray2Value(unsigned char *arr, long int len, unsigned char value);
 
 void*** allocateSinoData3DCone(struct SinoParams *params, int dataTypeSize);
 
-void*** allocateImageFData3DCone( struct ImageFParams *params, int dataTypeSize, int isROI);
+void*** allocateImageData3DCone( struct ImageParams *params, int dataTypeSize, int isROI);
 
 void allocateSysMatrix(struct SysMatrix *A, long int N_x, long int N_y, long int N_z, long int N_beta, long int i_vstride_max, long int i_wstride_max, long int N_u);
 
@@ -490,30 +490,30 @@ void writeSinoData3DCone(char *fName, void ***sino, struct SinoParams *sinoParam
 
 void readSinoData3DCone(char *fName, void ***sino, struct SinoParams *sinoParams, char *dataType);
 
-void writeImageFData3DCone(char *fName, void ***arr, struct ImageFParams *params, int isROI, char *dataType);
+void writeImageData3DCone(char *fName, void ***arr, struct ImageParams *params, int isROI, char *dataType);
 
-void readImageFData3DCone(char *fName, void ***arr, struct ImageFParams *params, int isROI, char *dataType);
+void readImageData3DCone(char *fName, void ***arr, struct ImageParams *params, int isROI, char *dataType);
 
 
 /**************************************** stuff for random update ****************************************/
-void RandomZiplineAux_allocate(struct RandomZiplineAux *aux, struct ImageFParams *imgParams, struct ReconParams *reconParams);
+void RandomZiplineAux_allocate(struct RandomZiplineAux *aux, struct ImageParams *imgParams, struct ReconParams *reconParams);
 
-void RandomZiplineAux_Initialize(struct RandomZiplineAux *aux, struct ImageFParams *imgParams, struct ReconParams *reconParams, int N_M_max);
+void RandomZiplineAux_Initialize(struct RandomZiplineAux *aux, struct ImageParams *imgParams, struct ReconParams *reconParams, int N_M_max);
 
-void RandomAux_allocate(struct RandomAux *aux, struct ImageFParams *imgParams);
+void RandomAux_allocate(struct RandomAux *aux, struct ImageParams *imgParams);
 
-void RandomAux_Initialize(struct RandomAux *aux, struct ImageFParams *imgParams);
+void RandomAux_Initialize(struct RandomAux *aux, struct ImageParams *imgParams);
 
 void RandomZiplineAux_free(struct RandomZiplineAux *aux);
 
 void RandomAux_free(struct RandomAux *aux);
 
 
-void RandomZiplineAux_ShuffleGroupIndices(struct RandomZiplineAux *aux, struct ImageFParams *imgParams);
+void RandomZiplineAux_ShuffleGroupIndices(struct RandomZiplineAux *aux, struct ImageParams *imgParams);
 
-void RandomZiplineAux_ShuffleGroupIndices_FixedDistance(struct RandomZiplineAux *aux, struct ImageFParams *imgParams);
+void RandomZiplineAux_ShuffleGroupIndices_FixedDistance(struct RandomZiplineAux *aux, struct ImageParams *imgParams);
 
-void RandomZiplineAux_shuffleOrderXY(struct RandomZiplineAux *aux, struct ImageFParams *imgParams);
+void RandomZiplineAux_shuffleOrderXY(struct RandomZiplineAux *aux, struct ImageParams *imgParams);
 
 
 void indexExtraction2D(long int j_xy, long int *j_x, long int N_x, long int *j_y, long int N_y);
