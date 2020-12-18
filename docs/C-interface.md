@@ -7,11 +7,21 @@ Strategy:
 4. Write python wrapper to using cython subroutines
 
 ```
-void MBIR3DCone(float *x, float *sino, struct ReconParams *reconParams, char *SysMatrix_fname);
+void MBIR3DCone(float *x, 
+	float *sino, 
+	struct ReconParams *reconParams, 
+	char *SysMatrix_fname);
 
-void forwardProject(float *proj, float *x, struct ImageParams *imgParams, struct SinoParams *sinoInfo, char *SysMatrix_fname);
+void forwardProject(float *proj, 
+	float *x, 
+	struct ImageParams *imgParams, 
+	struct SinoParams *sinoInfo, 
+	char *SysMatrix_fname);
 
-writeSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageParams *imgParams);
+writeSysMatrix(char *fName, 
+	struct SinoParams *sinoParams, 
+	struct ImageParams *imgParams);
+	
 ```
 
 Example of documentation for a C subroutine call.
