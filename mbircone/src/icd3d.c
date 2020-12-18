@@ -11,7 +11,7 @@
 #include "io3d.h"
 
 
-void ICDStep3DCone(struct Sino *sino, struct ImageF *img, struct SysMatrix *A, struct ICDInfo3DCone *icdInfo, struct ReconParams *reconParams, struct ReconAux *reconAux)
+void ICDStep3DCone(struct Sino *sino, struct Image *img, struct SysMatrix *A, struct ICDInfo3DCone *icdInfo, struct ReconParams *reconParams, struct ReconAux *reconAux)
 {
 	/**
 	 * 		Updates one voxel. Voxel change is stored in icdInfo->Delta_xj. 
@@ -41,7 +41,7 @@ void ICDStep3DCone(struct Sino *sino, struct ImageF *img, struct SysMatrix *A, s
 	
 }
 
-void prepareICDInfo(long int j_x, long int j_y, long int j_z, struct ICDInfo3DCone *icdInfo, struct ImageF *img, struct ReconAux *reconAux, struct ReconParams *reconParams)
+void prepareICDInfo(long int j_x, long int j_y, long int j_z, struct ICDInfo3DCone *icdInfo, struct Image *img, struct ReconAux *reconAux, struct ReconParams *reconParams)
 {
 	icdInfo->old_xj = img->vox[j_x][j_y][j_z];
 	icdInfo->proxMapInput_j = img->proxMapInput[j_x][j_y][j_z];
@@ -62,7 +62,7 @@ void prepareICDInfo(long int j_x, long int j_y, long int j_z, struct ICDInfo3DCo
 
 
 
-void extractNeighbors(struct ICDInfo3DCone *icdInfo, struct ImageF *img, struct ReconParams *reconParams)
+void extractNeighbors(struct ICDInfo3DCone *icdInfo, struct Image *img, struct ReconParams *reconParams)
 {
 
 	long int j_x, j_y, j_z;
@@ -361,7 +361,7 @@ void updateErrorSinogram(struct Sino *sino, struct SysMatrix *A, struct ICDInfo3
     }
 }
 
-void updateIterationStats(struct ReconAux *reconAux, struct ICDInfo3DCone *icdInfo, struct ImageF *img)
+void updateIterationStats(struct ReconAux *reconAux, struct ICDInfo3DCone *icdInfo, struct Image *img)
 {
 	reconAux->TotalValueChange += fabs(icdInfo->Delta_xj);
 	reconAux->TotalVoxelValue += _MAX_(img->vox[icdInfo->j_x][icdInfo->j_y][icdInfo->j_z], icdInfo->old_xj);
@@ -377,7 +377,7 @@ void resetIterationStats(struct ReconAux *reconAux)
 
 
 
-void RandomAux_ShuffleOrderXYZ(struct RandomAux *aux, struct ImageFParams *params)
+void RandomAux_ShuffleOrderXYZ(struct RandomAux *aux, struct ImageParams *params)
 {
 	shuffleLongIntArray(aux->orderXYZ, params->N_x * params->N_y * params->N_z);
 }
@@ -402,7 +402,7 @@ void indexExtraction3D(long int j_xyz, long int *j_x, long int N_x, long int *j_
 }
 
 
-double MAPCost3D(struct Sino *sino, struct ImageF *img, struct ReconParams *reconParams)
+double MAPCost3D(struct Sino *sino, struct Image *img, struct ReconParams *reconParams)
 {
 	/**
 	 * 		Cost = 	  1/2 ||e||^{2}_{W}
@@ -456,7 +456,7 @@ double MAPCostForward(struct Sino *sino)
     return cost / (2.0 * sino->params.weightScaler_value);
 }
 
-double MAPCostPrior_QGGMRF(struct ImageF *img, struct ReconParams *reconParams)
+double MAPCostPrior_QGGMRF(struct Image *img, struct ReconParams *reconParams)
 {
 	/**
 	 *	cost = sum     b_{s,r}  rho(x_s-x_r)
@@ -488,7 +488,7 @@ double MAPCostPrior_QGGMRF(struct ImageF *img, struct ReconParams *reconParams)
 	return cost * reconParams->priorWeight_QGGMRF;
 }
 
-double MAPCostPrior_ProxMap(struct ImageF *img, struct ReconParams *reconParams)
+double MAPCostPrior_ProxMap(struct Image *img, struct ReconParams *reconParams)
 {
     /**
      * 			Compute proximal mapping prior cost
@@ -584,7 +584,7 @@ int partialZipline_computeZiplineIndex(long int j_z, long int numVoxelsPerZiplin
 
 
 
-void prepareICDInfoRandGroup(long int j_x, long int j_y, struct RandomZiplineAux *randomZiplineAux, struct ICDInfo3DCone *icdInfo, struct ImageF *img, struct ReconParams *reconParams, struct ReconAux *reconAux)
+void prepareICDInfoRandGroup(long int j_x, long int j_y, struct RandomZiplineAux *randomZiplineAux, struct ICDInfo3DCone *icdInfo, struct Image *img, struct ReconParams *reconParams, struct ReconAux *reconAux)
 {
     /* j = j_y + N_y j_x */
     long int j_z, k_M;
@@ -617,7 +617,7 @@ void prepareICDInfoRandGroup(long int j_x, long int j_y, struct RandomZiplineAux
 
 
 
-void computeDeltaXjAndUpdate(struct ICDInfo3DCone *icdInfo, struct ReconParams *reconParams, struct ImageF *img, struct ReconAux *reconAux)
+void computeDeltaXjAndUpdate(struct ICDInfo3DCone *icdInfo, struct ReconParams *reconParams, struct Image *img, struct ReconAux *reconAux)
 {
 	/**
 	 * 			Compute voxel increment Delta_xj.
@@ -667,7 +667,7 @@ void computeDeltaXjAndUpdate(struct ICDInfo3DCone *icdInfo, struct ReconParams *
 
 }
 
-void computeDeltaXjAndUpdateGroup(struct ICDInfo3DCone *icdInfo, struct RandomZiplineAux *randomZiplineAux, struct ReconParams *reconParams, struct ImageF *img, struct ReconAux *reconAux)
+void computeDeltaXjAndUpdateGroup(struct ICDInfo3DCone *icdInfo, struct RandomZiplineAux *randomZiplineAux, struct ReconParams *reconParams, struct Image *img, struct ReconAux *reconAux)
 {
 	long int N_M, k_M;
 	struct ICDInfo3DCone *info;
@@ -681,7 +681,7 @@ void computeDeltaXjAndUpdateGroup(struct ICDInfo3DCone *icdInfo, struct RandomZi
 }
 
 
-void updateIterationStatsGroup(struct ReconAux *reconAux, struct ICDInfo3DCone *icdInfoArray, struct RandomZiplineAux *randomZiplineAux, struct ImageF *img, struct ReconParams *reconParams)
+void updateIterationStatsGroup(struct ReconAux *reconAux, struct ICDInfo3DCone *icdInfoArray, struct RandomZiplineAux *randomZiplineAux, struct Image *img, struct ReconParams *reconParams)
 {
 	long int N_M, k_M;
 	double absDelta, totValue;
@@ -764,7 +764,7 @@ void dispAndLog_iterationInfo(struct ReconAux *reconAux, struct ReconParams *rec
 	log_message(LOG_STATS, str);
 }
 
-double computeRelUpdate(struct ReconAux *reconAux, struct ReconParams *reconParams, struct ImageF *img)
+double computeRelUpdate(struct ReconAux *reconAux, struct ReconParams *reconParams, struct Image *img)
 {
 	double relUpdate;
 	double AvgValueChange, AvgVoxelValue;
@@ -869,7 +869,7 @@ void freeParallelAux(struct ParallelAux *parallelAux)
 
 }
 
-void ICDStep3DConeGroup(struct Sino *sino, struct ImageF *img, struct SysMatrix *A, struct ICDInfo3DCone *icdInfo, struct ReconParams *reconParams, struct RandomZiplineAux *randomZiplineAux, struct ParallelAux *parallelAux, struct ReconAux *reconAux)
+void ICDStep3DConeGroup(struct Sino *sino, struct Image *img, struct SysMatrix *A, struct ICDInfo3DCone *icdInfo, struct ReconParams *reconParams, struct RandomZiplineAux *randomZiplineAux, struct ParallelAux *parallelAux, struct ReconAux *reconAux)
 {
 	if (randomZiplineAux->N_M>0)
 	{
@@ -1091,7 +1091,7 @@ void speedAuxICD_computeSpeed(struct SpeedAuxICD *speedAuxICD)
 
 /* * * * * * * * * * * * NHICD * * * * * * * * * * * * **/
 
-int NHICD_isVoxelHot(struct ReconParams *reconParams, struct ImageF *img, long int j_x, long int j_y, long int j_z, double lastChangeThreshold)
+int NHICD_isVoxelHot(struct ReconParams *reconParams, struct Image *img, long int j_x, long int j_y, long int j_z, double lastChangeThreshold)
 {
     if(img->lastChange[j_x][j_y][j_z] > lastChangeThreshold)
         return 1;
@@ -1110,7 +1110,7 @@ int NHICD_activatePartialUpdate(struct ReconParams *reconParams, double relative
 		return 0;
 }
 
-int NHICD_checkPartialZiplineHot(struct ReconAux *reconAux, long int j_x, long int j_y, long int indexZiplines, struct ImageF *img)
+int NHICD_checkPartialZiplineHot(struct ReconAux *reconAux, long int j_x, long int j_y, long int indexZiplines, struct Image *img)
 {
 	if (reconAux->NHICD_isPartialUpdateActive)
 	{
@@ -1132,7 +1132,7 @@ int NHICD_checkPartialZiplineHot(struct ReconAux *reconAux, long int j_x, long i
 
 }
 
-void NHICD_checkPartialZiplinesHot(struct ReconAux *reconAux, long int j_x, long int j_y, struct ReconParams *reconParams, struct ImageF *img)
+void NHICD_checkPartialZiplinesHot(struct ReconAux *reconAux, long int j_x, long int j_y, struct ReconParams *reconParams, struct Image *img)
 {
 	long int indexZiplines;
 
@@ -1144,7 +1144,7 @@ void NHICD_checkPartialZiplinesHot(struct ReconAux *reconAux, long int j_x, long
 	}
 }
 
-void updateNHICDStats(struct ReconAux *reconAux, long int j_x, long int j_y, struct ImageF *img, struct ReconParams *reconParams)
+void updateNHICDStats(struct ReconAux *reconAux, long int j_x, long int j_y, struct Image *img, struct ReconParams *reconParams)
 {
 	long int jj_x, jj_y, jj_x_min, jj_y_min, jj_x_max, jj_y_max;
 	double avgChange;

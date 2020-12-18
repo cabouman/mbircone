@@ -40,7 +40,7 @@ void readBinaryFNames(char *masterFile, char *plainParamsFile, struct PathNames 
 
 void readSinoParams(char *masterFile, char *plainParamsFile, struct SinoParams *sinoParams);
 
-void readImageFParams(char *masterFile, char *plainParamsFile, struct ImageFParams *imgParams);
+void readImageParams(char *masterFile, char *plainParamsFile, struct ImageParams *imgParams);
 
 void readReconParams(char *masterFile, char *plainParamsFile, struct ReconParams *reconParams);
 
@@ -52,7 +52,7 @@ void printPathNames(struct PathNames *pathNames);
 void printSinoParams(struct SinoParams *params);
 /**/
 
-void printImgParams(struct ImageFParams *params);
+void printImgParams(struct ImageParams *params);
 
 
 void printReconParams(struct ReconParams *params);

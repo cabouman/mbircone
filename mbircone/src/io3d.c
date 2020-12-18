@@ -242,7 +242,7 @@ void readSinoParams(char *masterFile, char *plainParamsFile, struct SinoParams *
 
 }
 
-void readImageFParams(char *masterFile, char *plainParamsFile, struct ImageFParams *imgParams)
+void readImageParams(char *masterFile, char *plainParamsFile, struct ImageParams *imgParams)
 {
 	char get_set[1000] = "get";
 	char masterField[1000] = "imgParams";
@@ -537,10 +537,10 @@ void printSinoParams(struct SinoParams *params)
 	logAndDisp_message(LOG_PROGRESS, str);
 }
 
-void printImgParams(struct ImageFParams *params)
+void printImgParams(struct ImageParams *params)
 {
 	char str[2000];
-	sprintf(str, "\nImageF parameters read:\n");
+	sprintf(str, "\nImage parameters read:\n");
 
 	sprintf(str, "%s\tx_0 = %e \n", str, params->x_0);
 	sprintf(str, "%s\ty_0 = %e \n", str, params->y_0);

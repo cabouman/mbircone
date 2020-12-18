@@ -8,7 +8,7 @@
 
 
 
-void MBIR3DCone(struct ImageF *img, struct Sino *sino, struct ReconParams *reconParams, struct SysMatrix *A, struct PathNames *pathNames)
+void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconParams, struct SysMatrix *A, struct PathNames *pathNames)
 {
 	int itNumber = 0, MaxIterations;
     double stopThresholdChange;
@@ -332,9 +332,9 @@ void MBIR3DCone(struct ImageF *img, struct Sino *sino, struct ReconParams *recon
 			writeDownSampledFloat3D(tempFName, sino->e, N_beta, N_dv, N_dw, reconParams->downsampleFactorSino, 1, 1);
 
 			/* Image */
-			writeImageFData3DCone(pathNames->recon, (void***) img->vox, &img->params, 0, "float");
-			copyImageF2ROI(img);
-			writeImageFData3DCone(pathNames->reconROI, (void***) img->vox_roi, &img->params, 1, "float");
+			writeImageData3DCone(pathNames->recon, (void***) img->vox, &img->params, 0, "float");
+			copyImage2ROI(img);
+			writeImageData3DCone(pathNames->reconROI, (void***) img->vox_roi, &img->params, 1, "float");
 
 			/* estimateSino */
 			floatArray_z_equals_aX_plus_bY(&sino->estimateSino[0][0][0], 1.0, &sino->vox[0][0][0], -1.0, &sino->e[0][0][0], sino->params.N_beta*sino->params.N_dv*sino->params.N_dw);

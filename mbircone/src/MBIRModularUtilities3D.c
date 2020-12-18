@@ -4,7 +4,7 @@
 #include "io3d.h"
 
 /* write the System matrix to hard drive */
-void writeSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageFParams *imgParams, struct SysMatrix *A)
+void writeSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A)
 {
     FILE *fp;
     long int totsize = 0;
@@ -69,7 +69,7 @@ void writeSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageFPar
 /* read the System matrix to hard drive */
 /* Utility for reading the Sparse System Matrix */
 /* Returns 0 if no error occurs */
-void readSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageFParams *imgParams, struct SysMatrix *A)
+void readSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A)
 {
 
     FILE *fp;
@@ -138,7 +138,7 @@ void readSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageFPara
 
 
 
-void forwardProject3DCone( float ***Ax, float ***x, struct ImageFParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoInfo)
+void forwardProject3DCone( float ***Ax, float ***x, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoInfo)
 {
     long int j_u, j_x, j_y, i_beta, i_v, j_z, i_w;
     double B_ij, B_ij_times_x_j;
@@ -172,7 +172,7 @@ void forwardProject3DCone( float ***Ax, float ***x, struct ImageFParams *imgPara
     }
 }
 
-void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageFParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams, struct ReconParams *reconParams)
+void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams, struct ReconParams *reconParams)
 {
 
     long int j_u, j_x, j_y, i_beta, i_v, j_z, i_w;
@@ -188,7 +188,7 @@ void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageFParams *
     else if (strcmp(reconParams->backprojlike_type,"entropy") == 0)
     {
         mode = 1;
-        normalization = (float***) allocateImageFData3DCone( imgParams, sizeof(float), 0);
+        normalization = (float***) allocateImageData3DCone( imgParams, sizeof(float), 0);
     }
     else if (strcmp(reconParams->backprojlike_type,"kappa") == 0)
     {
@@ -293,7 +293,7 @@ void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageFParams *
 }
 
 
-void initializeWghtRecon(struct SysMatrix *A, struct Sino *sino, struct ImageF *img, struct ReconParams *reconParams)
+void initializeWghtRecon(struct SysMatrix *A, struct Sino *sino, struct Image *img, struct ReconParams *reconParams)
 {
     long int j_u, j_x, j_y, i_beta, i_v, j_z, i_w;
     double B_ij, A_ij;
@@ -353,7 +353,7 @@ void initializeWghtRecon(struct SysMatrix *A, struct Sino *sino, struct ImageF *
 
 }
 
-double computeAvgWghtRecon(struct ImageF *img)
+double computeAvgWghtRecon(struct Image *img)
 {
     long int j_x, j_y, j_z;
 
@@ -378,7 +378,7 @@ double computeAvgWghtRecon(struct ImageF *img)
 }
 
 
-void computeSecondaryReconParams(struct ReconParams *reconParams, struct ImageFParams *imgParams)
+void computeSecondaryReconParams(struct ReconParams *reconParams, struct ImageParams *imgParams)
 {
     double sum;
     int N_max, N_z;
@@ -557,7 +557,7 @@ char isInsideMask(long int i_1, long int i_2, long int N1, long int N2)
 
 }
 
-long int computeNumVoxelsInImageMask(struct ImageF *img)
+long int computeNumVoxelsInImageMask(struct Image *img)
 {
     long int j_x, j_y;
     long int count = 0;
@@ -573,7 +573,7 @@ long int computeNumVoxelsInImageMask(struct ImageF *img)
 }
 
 
-void copyImageF2ROI(struct ImageF *img)
+void copyImage2ROI(struct Image *img)
 {
     long int j_x, j_y, j_z;
     long int j_xstart, j_xstop, j_ystart, j_ystop, j_zstart, j_zstop;
@@ -661,7 +661,7 @@ void*** allocateSinoData3DCone(struct SinoParams *params, int dataTypeSize)
 }
 
 
-void*** allocateImageFData3DCone( struct ImageFParams *params, int dataTypeSize, int isROI)
+void*** allocateImageData3DCone( struct ImageParams *params, int dataTypeSize, int isROI)
 {
     long int N_x_roi, N_y_roi, N_z_roi;
 
@@ -738,7 +738,7 @@ void readSinoData3DCone(char *fName, void ***sino, struct SinoParams *sinoParams
     read3DData(fName, (void***)sino, sinoParams->N_beta, sinoParams->N_dv, sinoParams->N_dw, dataType);
 }
 
-void writeImageFData3DCone(char *fName, void ***arr, struct ImageFParams *params, int isROI, char *dataType)
+void writeImageData3DCone(char *fName, void ***arr, struct ImageParams *params, int isROI, char *dataType)
 {
     if (isROI) 
     {
@@ -750,7 +750,7 @@ void writeImageFData3DCone(char *fName, void ***arr, struct ImageFParams *params
     }
 }
 
-void readImageFData3DCone(char *fName, void ***arr, struct ImageFParams *params, int isROI, char *dataType)
+void readImageData3DCone(char *fName, void ***arr, struct ImageParams *params, int isROI, char *dataType)
 {
     if (isROI) 
     {
@@ -763,7 +763,7 @@ void readImageFData3DCone(char *fName, void ***arr, struct ImageFParams *params,
 }
 
 /**************************************** stuff for random update ****************************************/
-void RandomZiplineAux_allocate(struct RandomZiplineAux *aux, struct ImageFParams *imgParams, struct ReconParams *reconParams)
+void RandomZiplineAux_allocate(struct RandomZiplineAux *aux, struct ImageParams *imgParams, struct ReconParams *reconParams)
 {
     long int N_x, N_y, N_z;
 
@@ -782,7 +782,7 @@ void RandomZiplineAux_allocate(struct RandomZiplineAux *aux, struct ImageFParams
     aux->groupIndex = (unsigned char***) mem_alloc_3D(N_x, N_y, N_z, sizeof(unsigned char***));
 }
 
-void RandomZiplineAux_Initialize(struct RandomZiplineAux *aux, struct ImageFParams *imgParams, struct ReconParams *reconParams, int N_M_max)
+void RandomZiplineAux_Initialize(struct RandomZiplineAux *aux, struct ImageParams *imgParams, struct ReconParams *reconParams, int N_M_max)
 {
     long int N_x, N_y;
     long int j_xy;
@@ -805,12 +805,12 @@ void RandomZiplineAux_Initialize(struct RandomZiplineAux *aux, struct ImageFPara
     }
 }
 
-void RandomAux_allocate(struct RandomAux *aux, struct ImageFParams *imgParams)
+void RandomAux_allocate(struct RandomAux *aux, struct ImageParams *imgParams)
 {
     aux->orderXYZ = mem_alloc_1D(imgParams->N_x * imgParams->N_y * imgParams->N_z, sizeof(long ));
 }
 
-void RandomAux_Initialize(struct RandomAux *aux, struct ImageFParams *imgParams)
+void RandomAux_Initialize(struct RandomAux *aux, struct ImageParams *imgParams)
 {
 
     long int N_x, N_y, N_z;
@@ -843,7 +843,7 @@ void RandomAux_free(struct RandomAux *aux)
 
 
 
-void RandomZiplineAux_ShuffleGroupIndices(struct RandomZiplineAux *aux, struct ImageFParams *imgParams)
+void RandomZiplineAux_ShuffleGroupIndices(struct RandomZiplineAux *aux, struct ImageParams *imgParams)
 {
     long int j_x, j_y, j_z, N_G, r;
 
@@ -873,7 +873,7 @@ void RandomZiplineAux_ShuffleGroupIndices(struct RandomZiplineAux *aux, struct I
     }
 }
 
-void RandomZiplineAux_ShuffleGroupIndices_FixedDistance(struct RandomZiplineAux *aux, struct ImageFParams *imgParams)
+void RandomZiplineAux_ShuffleGroupIndices_FixedDistance(struct RandomZiplineAux *aux, struct ImageParams *imgParams)
 {
     long int j_x, j_y, j_z, N_G, i;
     int *first_N_G_members;
@@ -904,7 +904,7 @@ void RandomZiplineAux_ShuffleGroupIndices_FixedDistance(struct RandomZiplineAux 
     }
 }
 
-void RandomZiplineAux_shuffleOrderXY(struct RandomZiplineAux *aux, struct ImageFParams *imgParams)
+void RandomZiplineAux_shuffleOrderXY(struct RandomZiplineAux *aux, struct ImageParams *imgParams)
 {
     shuffleIntArray(aux->orderXY, imgParams->N_x*imgParams->N_y);
 }
