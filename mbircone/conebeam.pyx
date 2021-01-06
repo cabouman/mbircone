@@ -1,16 +1,15 @@
 import numpy as np
-import ctypes           # Import python package required to use cython
-cimport cython          # Import cython package
-cimport numpy as cnp    # Import specialized cython support for numpy
+import ctypes
+cimport cython
+cimport numpy as np
 
-# This imports functions and data types from the matrices.pxd file in the same directory
 from matrices cimport flat_array_2D, interface_matrix_multiplication
 
 
 @cython.boundscheck(False)      # Deactivate bounds checking to increase speed
 @cython.wraparound(False)       # Deactivate negative indexing to increase speed
 
-def cython_matrix_multiplication(cnp.ndarray py_a, cnp.ndarray py_b):
+def cython_matrix_multiplication(np.ndarray py_a, np.ndarray py_b):
     """
     Cython function that multiplies two single precision float matrices
 
@@ -36,11 +35,11 @@ def cython_matrix_multiplication(cnp.ndarray py_a, cnp.ndarray py_b):
     nrows_c = nrows_a
     ncols_c = ncols_b
 
-    cdef cnp.ndarray[float, ndim=2, mode="c"] cy_a = py_a
-    cdef cnp.ndarray[float, ndim=2, mode="c"] cy_b = py_b
+    cdef np.ndarray[float, ndim=2, mode="c"] cy_a = py_a
+    cdef np.ndarray[float, ndim=2, mode="c"] cy_b = py_b
 
     # Allocates memory, without initialization, for matrix to be passed back from C subroutine
-    cdef cnp.ndarray[float, ndim=2, mode="c"] py_c = np.empty((nrows_a,ncols_b), dtype=ctypes.c_float)
+    cdef np.ndarray[float, ndim=2, mode="c"] py_c = np.empty((nrows_a,ncols_b), dtype=ctypes.c_float)
 
     # Declare and initialize 3 matrices
     cdef flat_array_2D A     # Allocate C data structure matrix
