@@ -14,3 +14,5 @@ cdef extern from "src/interface.h":
 
     # Define cython function
     int interface_matrix_multiplication( flat_array_2D *A, flat_array_2D *B, flat_array_2D *C );
+
+    
