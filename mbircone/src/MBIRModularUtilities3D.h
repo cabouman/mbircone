@@ -30,6 +30,8 @@
 /*#define WEIGHTDATATYPE unsigned char
 #define WEIGHTDATATYPE_string "unsigned char"*/
 
+#define AMATRIX_RHO 4/* System Matrix parameter rho: choose to be about 10<rho<100 */
+
 /* AMATRIXCHANGE */
 #define ISBIJCOMPRESSED 1       /* 1: used compressed mode, 0: use uncompressed mode */
 #if ISBIJCOMPRESSED == 1
