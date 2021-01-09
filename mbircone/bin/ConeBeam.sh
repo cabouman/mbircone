@@ -64,7 +64,7 @@ executionDir=$(pwd)
 scriptDir=$(readlink -f $(dirname $0))
 cd "${scriptDir}"
 
-plainParamsFile=$(readlink -f "../utils/plainParams/plainParams.sh")
+plainParamsFile=$(readlink -f "../plainParams/plainParams.sh")
 if [[ ! -e ${plainParamsFile} ]]; then messageError "plainParamsFile \"${plainParamsFile}\" does not exist!"; generalError "$0 $@"; exit 1; fi
 
 echo task = $task
