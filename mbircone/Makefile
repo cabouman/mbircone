@@ -1,6 +1,6 @@
 # Compiler, gcc or icc
-# CC=icc
-CC=gcc
+CC=icc
+# CC=gcc
 FLAGS=-fopenmp -O3 -Wall -pedantic
 
 # Source Folder
