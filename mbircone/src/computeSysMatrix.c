@@ -116,7 +116,6 @@ void computeAMatrixParameters(struct SinoParams *sinoParams, struct ImageParams 
 	#endif
 
 	/* Compute resulting struct SysMatrix parameters from these */
-    /*A->Delta_u = imgParams->Delta_xy / reconParams->rho;*/
 	A->Delta_u = imgParams->Delta_xy / AMATRIX_RHO;
 	A->N_u = ceil((A->u_1 - A->u_0) / A->Delta_u) + 1;
 
