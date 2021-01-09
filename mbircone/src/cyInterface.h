@@ -2,7 +2,6 @@
 #define _CY_INTERFACE_H_
 
 #include <stdio.h>
-#include "matrices.h"
 
 struct flat_array_2D
 {
