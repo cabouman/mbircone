@@ -12,22 +12,24 @@ AUTHOR = "Soumendu Majee"
 
 
 # Specifies directory containing cython functions to be compiled
-SRC_DIR = "cython_sandbox"
-PACKAGES = [SRC_DIR]
+PACKAGE_DIR = "mbircone"
+PACKAGES = [PACKAGE_DIR]
 
 # Single threaded gcc compile; tested for MacOS and Linux
 
 # Single threaded clang compile; tested for MacOS and Linux
 if os.environ.get('CC') == 'clang':
-    c_extension = Extension(SRC_DIR + ".wrapped",
-                      [SRC_DIR + "/src/matrices.c",SRC_DIR + "/src/allocate.c", SRC_DIR + "/wrapped.pyx"],
+    c_extension = Extension(PACKAGE_DIR+".conebeam",
+                      # [PACKAGE_DIR+"/src/matrices.c", 
+                      [PACKAGE_DIR+"/src/allocate.c", PACKAGE_DIR + "/conebeam.pyx"],
                       libraries=[],
                       include_dirs=[np.get_include()])
 
 # OpenMP gcc compile: tested for MacOS and Linux
 if os.environ.get('CC') =='gcc':
-    c_extension = Extension(SRC_DIR + ".wrapped",
-                      [SRC_DIR + "/src/matrices.c",SRC_DIR + "/src/allocate.c", SRC_DIR + "/wrapped.pyx"],
+    c_extension = Extension(PACKAGE_DIR+".conebeam",
+                      # [PACKAGE_DIR+"/src/matrices.c", 
+                      [PACKAGE_DIR+"/src/allocate.c", PACKAGE_DIR + "/conebeam.pyx"],
                       libraries=[],
                       include_dirs=[np.get_include()],
                       # for gcc-10 "-std=c11" can be added as a flag
@@ -37,8 +39,9 @@ if os.environ.get('CC') =='gcc':
 
 # OpenMP icc compile: tested for MacOS and Linux
 if os.environ.get('CC') =='icc':
-    c_extension = Extension(SRC_DIR + ".wrapped",
-                      [SRC_DIR + "/src/matrices.c",SRC_DIR + "/src/allocate.c", SRC_DIR + "/wrapped.pyx"],
+    c_extension = Extension(PACKAGE_DIR+".conebeam",
+                      # [PACKAGE_DIR+"/src/matrices.c", 
+                      [PACKAGE_DIR+"/src/allocate.c", PACKAGE_DIR + "/conebeam.pyx"],
                       libraries=[],
                       include_dirs=[np.get_include()],
                       # for gcc-10 "-std=c11" can be added as a flag

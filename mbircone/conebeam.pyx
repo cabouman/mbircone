@@ -3,7 +3,7 @@ import ctypes
 cimport cython
 cimport numpy as np
 
-from matrices cimport flat_array_2D, interface_matrix_multiplication
+from conebeam cimport flat_array_2D, interface_matrix_multiplication
 
 
 @cython.boundscheck(False)      # Deactivate bounds checking to increase speed

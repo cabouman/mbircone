@@ -4,8 +4,8 @@ import ctypes
 from numpy import int32, float, double
 from numpy cimport int32_t, float_t, double_t
 
-# These cython declarations must be equivalent to C declarations and structures in src/interface.h
-cdef extern from "src/interface.h":
+# These cython declarations must be equivalent to C declarations and structures in src/cyInterface.h
+cdef extern from "src/cyInterface.h":
     # Define cython data structure
     struct flat_array_2D:
         int NRows;

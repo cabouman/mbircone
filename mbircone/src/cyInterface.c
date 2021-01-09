@@ -1,6 +1,5 @@
 
 #include "allocate.h"
-#include "matrices.h"
 #include "interface.h"
 
 int interface_matrix_multiplication(struct flat_array_2D *A_flat, struct flat_array_2D *B_flat , struct flat_array_2D *C_flat)
@@ -14,7 +13,6 @@ int interface_matrix_multiplication(struct flat_array_2D *A_flat, struct flat_ar
     allocate_matrix_from_flattened(&C, C_flat);
 
     /* Original c code for matrix multiplication that uses multi-alloc array*/
-    matrix_multiplication(&A, &B, &C);
 
     /* Deallocate multi-alloc pointer array */
     deallocate_matrix_to_flattened(&A);
