@@ -27,13 +27,13 @@ FDK
 2
 
 [p] QGGMRF parameter (1<=p<q)
-1
+1.2
 
 [T] QGGMRF parameter 		(=eps TGGMRF parameter)
-0.1
+0.5
 
 [sigmaX] QGGMRF parameter	(=s TGGMRF parameter)
-0.5
+0.1
 
 [bFace] relative neighbor weight: 6 cube faces 			(Computation when #>=0, omitting when #<0)
 1.0
@@ -63,7 +63,7 @@ FDK
 0
 
 [MaxIterations] maximum number of iterations
-10
+20
 . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  Relative Change Computation . . .
 [relativeChangeMode] 'meanImage' or 'fixedScaler' 'percentile'. If 'meanImage':	change=avg(change)/avg(x(x changed))
 percentile
@@ -125,7 +125,7 @@ off
 0
 
 [isComputeCost]
-0
+1
 
 [isPhantomReconReference]
 0
