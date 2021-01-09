@@ -6,9 +6,10 @@ sftp-config.json
 # OSX / *nix default autosave extension MATLAB
 *.m~
 
-# ignore all files in bin folder except the empty file gitignore
+# ignore all files in bin folder except the empty file gitignore and ConeBeam
 bin/*
 !bin/.gitignore
+!bin/ConeBeam.sh
 
 # runtime log files
 log_*
