@@ -1,64 +1,84 @@
 import numpy as np
-import ctypes
-cimport cython
-cimport numpy as np
+import ctypes           # Import python package required to use cython
+cimport cython          # Import cython package
+cimport numpy as cnp    # Import specialized cython support for numpy
 
-from conebeam cimport flat_array_2D, interface_matrix_multiplication
+# Import c data structure
+cdef extern from "./src/MBIRModularUtilities3D.h":
+     
+    struct SinoParams:
+    
+        long int N_dv;
+        long int N_dw; 
+        double Delta_dv;
+        double Delta_dw;
+       
+        long int N_beta;
+        
+        double u_s;
+        double u_r;
+        double v_r;
+        double u_d0;
+        double v_d0;
+        double w_d0;
+        
+        double weightScaler_value; 
 
 
-@cython.boundscheck(False)      # Deactivate bounds checking to increase speed
-@cython.wraparound(False)       # Deactivate negative indexing to increase speed
+    struct ImageParams:
 
-def cython_matrix_multiplication(np.ndarray py_a, np.ndarray py_b):
-    """
-    Cython function that multiplies two single precision float matrices
+        double x_0;
+        double y_0;
+        double z_0;
 
+        long int N_x;
+        long int N_y;
+        long int N_z;
+
+        double Delta_xy;
+        double Delta_z;
+        
+        long int j_xstart_roi;
+        long int j_ystart_roi;
+        long int j_zstart_roi;
+        long int j_xstop_roi;
+        long int j_ystop_roi;
+        long int j_zstop_roi;
+
+        long int N_x_roi;
+        long int N_y_roi;
+        long int N_z_roi;
+
+
+# Import a c function to compute A matrix.
+cdef extern from "./src/cyInterface.h":
+    void writeSysMatrix(double *angles,
+        SinoParams sinoParams,
+        ImageParams imgParams,
+        char *fName);
+
+
+def cy_AmatrixComputeToFile(py_imageparams,
+                            py_sinoparams,
+                            char[:] Amatrix_fname,
+                            char verboseLevel):
+    '''
+    Cython wrapper that calls c code to compute A matrix to file.
     Args:
-        py_a(float): 2D numpy float array with C continuous order, the left matrix A.
-        py_b(float): 2D numpy float array with C continuous order, the right matrix B.
+        py_imageparams: python dictionary stores image parameters
+        py_sinoparams: python dictionary stores sinogram parameters
+        Amatrix_fname: path to store computed A matrix.
+        verboseLevel: Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal reconstruction progress information, and 2 prints the full information.
+    Returns:
+    '''
+    # Declare image and sinogram Parameter structures.
+    cdef ImageParams3D imgparams
+    cdef SinoParams3DParallel sinoparams
 
-    Return:
-        py_c: 2D numpy float array that is the product of A and B.
-    """
+    # Write parameter to c structures based on given py parameter List.
+    write_ImageParams3D(&imgparams, py_imageparams)
+    write_SinoParams3D(&sinoparams, py_sinoparams, py_sinoparams['ViewAngles'])
 
-    # Get shapes of A and B
-    nrows_a, ncols_a = np.shape(py_a)
-    nrows_b, ncols_b = np.shape(py_b)
+    # Compute A matrix.
+    AmatrixComputeToFile(imgparams,sinoparams,&Amatrix_fname[0],verboseLevel)
 
-    if (not py_a.flags["C_CONTIGUOUS"]) or (not py_b.flags["C_CONTIGUOUS"]):
-        raise AttributeError("2D np.ndarrays must be C-contiguous")
-
-    if (ncols_a != nrows_b):
-        raise AttributeError("Matrix shapes are not compatible")
-
-    # Set output matrix shape
-    nrows_c = nrows_a
-    ncols_c = ncols_b
-
-    cdef np.ndarray[float, ndim=2, mode="c"] cy_a = py_a
-    cdef np.ndarray[float, ndim=2, mode="c"] cy_b = py_b
-
-    # Allocates memory, without initialization, for matrix to be passed back from C subroutine
-    cdef np.ndarray[float, ndim=2, mode="c"] py_c = np.empty((nrows_a,ncols_b), dtype=ctypes.c_float)
-
-    # Declare and initialize 3 matrices
-    cdef flat_array_2D A     # Allocate C data structure matrix
-    A.data_pt = &cy_a[0, 0]  # Assign pointer in C data structure
-    A.NRows = nrows_a       # Set value of NRows in C data structure
-    A.NCols = ncols_a       # Set value of NCols in C data structure
-
-    cdef flat_array_2D B
-    B.data_pt = &cy_b[0, 0]
-    B.NRows = nrows_b
-    B.NCols = ncols_b
-
-    cdef flat_array_2D C
-    C.data_pt = &py_c[0, 0]
-    C.NRows = nrows_c
-    C.NCols = ncols_c
-
-    # Multiply matrices together by calling C subroutine
-    interface_matrix_multiplication(&A, &B, &C)
-
-    # Return cython ndarray
-    return py_c

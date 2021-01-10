@@ -1,6 +1,6 @@
 
 #include "allocate.h"
-#include "interface.h"
+#include "cyInterface.h"
 
 
 int writeSysMatrix(char *fName, double *angles, struct SinoParams *sinoParams, struct ImageParams *imgParams)
