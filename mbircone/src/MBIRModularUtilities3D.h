@@ -242,7 +242,6 @@ struct ReconParams
      */
     double InitVal_recon;                  /* Initialization value InitVal_proxMapInput (mm-1) */
     char initReconMode[200];
-    double rho;                     /* System Matrix parameter rho: choose to be about 10<rho<100 */
 
     /**
      *     Prior
