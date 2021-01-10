@@ -10,8 +10,6 @@ constant
 recon
 FDK
 
-[rho] System Matrix parameter: choose to be about 10<rho<100
-4
 ################################################################ Prior Model stuff #########
 [priorWeight_QGGMRF] Weight of [1/2 ||y-Ax||^2_W] term. Skips computation if weight < 0. 
 1

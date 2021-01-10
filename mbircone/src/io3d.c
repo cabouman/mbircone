@@ -313,9 +313,6 @@ void readReconParams(char *masterFile, char *plainParamsFile, struct ReconParams
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "initReconMode", temp, resolveFlag);
 	strcpy(reconParams->initReconMode, temp);
 
-	plainParams(plainParamsFile, get_set, masterFile, masterField, "rho", temp, resolveFlag);
-	reconParams->rho = str2double(temp);
-
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "priorWeight_QGGMRF", temp, resolveFlag);
 	reconParams->priorWeight_QGGMRF = str2double(temp);
 
@@ -572,7 +569,6 @@ void printReconParams(struct ReconParams *params)
 	
 	sprintf(str, "%s\tInitVal_recon = %e \n", str, params->InitVal_recon);
 	sprintf(str, "%s\tinitReconMode = %s \n", str, params->initReconMode);
-	sprintf(str, "%s\trho = %e \n", str, params->rho);
 	sprintf(str, "%s\tpriorWeight_QGGMRF = %e \n", str, params->priorWeight_QGGMRF);
 	sprintf(str, "%s\tpriorWeight_proxMap = %e \n", str, params->priorWeight_proxMap);
 	sprintf(str, "%s\tq = %e \n", str, params->q);
