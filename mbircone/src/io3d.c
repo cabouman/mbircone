@@ -313,6 +313,9 @@ void readReconParams(char *masterFile, char *plainParamsFile, struct ReconParams
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "initReconMode", temp, resolveFlag);
 	strcpy(reconParams->initReconMode, temp);
 
+	plainParams(plainParamsFile, get_set, masterFile, masterField, "priorWeight_QGGMRF", temp, resolveFlag);
+	reconParams->priorWeight_QGGMRF = str2double(temp);
+
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "priorWeight_proxMap", temp, resolveFlag);
 	reconParams->priorWeight_proxMap = str2double(temp);
 
