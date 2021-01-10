@@ -27,7 +27,7 @@ int writeSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageParam
 {
     readAndAllocateViewAngleList(pathNames.masterFile, pathNames.plainParamsFile, &viewAngleList, &sino.params);
 
-    computeSysMatrix(&sino.params, &img.params, &A, &reconParams, &viewAngleList);
+    computeSysMatrix(&sino.params, &img.params, &A, &viewAngleList);
     isExistSysMatrix = 1;
     
     printSysMatrixParams(&A);

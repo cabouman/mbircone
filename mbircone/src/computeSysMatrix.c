@@ -3,7 +3,7 @@
 
  
 
-void computeSysMatrix(struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A, struct ReconParams *reconParams, struct ViewAngleList *viewAngleList)
+void computeSysMatrix(struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A, struct ViewAngleList *viewAngleList)
 {
 	double ticToc;
 	tic(&ticToc);
@@ -11,7 +11,7 @@ void computeSysMatrix(struct SinoParams *sinoParams, struct ImageParams *imgPara
     logAndDisp_message(LOG_PROGRESS, "\nInitialize Sinogram Mask ...\n");
 
 	logAndDisp_message(LOG_PROGRESS, "\nCompute SysMatrix Parameters...\n");
-    computeAMatrixParameters(sinoParams, imgParams, A, reconParams, viewAngleList);
+    computeAMatrixParameters(sinoParams, imgParams, A, viewAngleList);
 
 	printSysMatrixParams(A);
 	
@@ -19,17 +19,17 @@ void computeSysMatrix(struct SinoParams *sinoParams, struct ImageParams *imgPara
    
 
 	logAndDisp_message(LOG_PROGRESS, "\nPrecompute B...\n");
-    computeBMatrix( sinoParams, imgParams, A, reconParams, viewAngleList);
+    computeBMatrix( sinoParams, imgParams, A, viewAngleList);
 
     logAndDisp_message(LOG_PROGRESS, "\nPrecompute C...\n");
-    computeCMatrix(sinoParams, imgParams, A, reconParams);
+    computeCMatrix(sinoParams, imgParams, A);
 
 
     toc(&ticToc);
     ticToc_logAndDisp(ticToc, "computeSysMatrix");
 }
 
-void computeAMatrixParameters(struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A, struct ReconParams *reconParams, struct ViewAngleList *viewAngleList)
+void computeAMatrixParameters(struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A, struct ViewAngleList *viewAngleList)
 {
 	/* Part 1: Find i_vstride_max, u_0, u_1 */
 	double x_v, y_v;
@@ -171,7 +171,7 @@ void computeAMatrixParameters(struct SinoParams *sinoParams, struct ImageParams 
 }
 
 
-void computeBMatrix(struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A, struct ReconParams *reconParams, struct ViewAngleList *viewAngleList)
+void computeBMatrix(struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A, struct ViewAngleList *viewAngleList)
 {
 	/* Variable declarations */
 	double x_v, y_v;
@@ -257,7 +257,7 @@ void computeBMatrix(struct SinoParams *sinoParams, struct ImageParams *imgParams
 }
 
 
-void computeCMatrix( struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A, struct ReconParams *reconParams)
+void computeCMatrix( struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A)
 {
         double u_v, w_v;
         double M;
