@@ -128,7 +128,7 @@ off
 0
 
 [isPhantomReconReference]
-0
+1
 
 [backprojlike_type] proj, entropy, kappa
 proj
