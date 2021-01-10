@@ -3,7 +3,7 @@
 #include "cyInterface.h"
 
 
-int writeSysMatrix(char *fName, double *angles, struct SinoParams *sinoParams, struct ImageParams *imgParams)
+int writeSysMatrix(double *angles, struct SinoParams *sinoParams, struct ImageParams *imgParams, char *fName)
 {
     struct SysMatrix A;
     struct ViewAngleList viewAngleList;
