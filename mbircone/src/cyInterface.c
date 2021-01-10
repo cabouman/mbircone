@@ -3,12 +3,14 @@
 #include "cyInterface.h"
 
 
-int writeSysMatrix(double *angles, struct SinoParams *sinoParams, struct ImageParams *imgParams, char *fName)
+int AmatrixComputeToFile(double *angles, struct SinoParams sinoParams, struct ImageParams imgParams, char *fName)
 {
     struct SysMatrix A;
     struct ViewAngleList viewAngleList;
 
-    computeSysMatrix(sinoParams, &imgParams, &A, &viewAngleList);
+    viewAngleList.beta = angles;
+
+    computeSysMatrix(&sinoParams, &imgParams, &A, &viewAngleList);
     
     printSysMatrixParams(&A);
     writeSysMatrix(pathNames.sysMatrix, &sino.params, &img.params, &A);

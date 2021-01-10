@@ -52,7 +52,7 @@ cdef extern from "./src/MBIRModularUtilities3D.h":
 
 # Import a c function to compute A matrix.
 cdef extern from "./src/cyInterface.h":
-    void writeSysMatrix(double *angles,
+    void AmatrixComputeToFile(double *angles,
         SinoParams sinoParams,
         ImageParams imgParams,
         char *fName);
