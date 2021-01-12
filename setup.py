@@ -23,6 +23,7 @@ if os.environ.get('CC') == 'clang':
                       # [PACKAGE_DIR+"/src/matrices.c", 
                       [PACKAGE_DIR+"/src/allocate.c", PACKAGE_DIR + "/conebeam.pyx"],
                       libraries=[],
+                      language='c',
                       include_dirs=[np.get_include()])
 
 # OpenMP gcc compile: tested for MacOS and Linux
@@ -31,6 +32,7 @@ if os.environ.get('CC') =='gcc':
                       # [PACKAGE_DIR+"/src/matrices.c", 
                       [PACKAGE_DIR+"/src/allocate.c", PACKAGE_DIR + "/conebeam.pyx"],
                       libraries=[],
+                      language='c',
                       include_dirs=[np.get_include()],
                       # for gcc-10 "-std=c11" can be added as a flag
                       extra_compile_args=["-O3", "-fopenmp","-Wno-unknown-pragmas"],
@@ -43,6 +45,7 @@ if os.environ.get('CC') =='icc':
                       # [PACKAGE_DIR+"/src/matrices.c", 
                       [PACKAGE_DIR+"/src/allocate.c", PACKAGE_DIR + "/conebeam.pyx"],
                       libraries=[],
+                      language='c',
                       include_dirs=[np.get_include()],
                       # for gcc-10 "-std=c11" can be added as a flag
                       extra_compile_args=["-DICC","-qopenmp","-no-prec-div", "-restrict" ,"-ipo","-inline-calloc",

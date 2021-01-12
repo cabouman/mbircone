@@ -1,6 +1,6 @@
 
 import numpy as np
-# import mbircone
+from mbircone import AmatrixComputeToFile_cy
 
 
 sino = np.load('sino.npy')
