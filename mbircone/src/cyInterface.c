@@ -13,7 +13,7 @@ void AmatrixComputeToFile(double *angles, struct SinoParams sinoParams, struct I
     computeSysMatrix(&sinoParams, &imgParams, &A, &viewAngleList);
     
     printSysMatrixParams(&A);
-    writeSysMatrix(pathNames.sysMatrix, &sino.params, &img.params, &A);
+    writeSysMatrix(Amatrix_fname, &sinoParams, &imgParams, &A);
 
 }
 
