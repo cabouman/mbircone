@@ -51,6 +51,7 @@ if os.environ.get('CC') =='icc':
                                           "-qopt-calloc","-no-ansi-alias","-xCORE-AVX2"])
 
 
+
 setup(install_requires=REQUIRES,
       packages=PACKAGES,
       zip_safe=False,
