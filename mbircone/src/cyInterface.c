@@ -3,7 +3,7 @@
 #include "cyInterface.h"
 
 
-void AmatrixComputeToFile(double *angles, struct SinoParams sinoParams, struct ImageParams imgParams, char *fName)
+void AmatrixComputeToFile(double *angles, struct SinoParams sinoParams, struct ImageParams imgParams, char *Amatrix_fname)
 {
     struct SysMatrix A;
     struct ViewAngleList viewAngleList;
