@@ -1,7 +1,7 @@
 # MBIR Cone
 
-Our goal is to write a Python Package for Cone Beam reconstruction.
-This will be based on a Cython interface to the C-base OpenMBIR-ConeBeam package.
+Python Package for Cone Beam reconstruction.
+Based on the OpenMBIR-ConeBeam c package.
 
 
 ## Distribution Statement
