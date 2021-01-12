@@ -57,54 +57,54 @@ cdef extern from "./src/cyInterface.h":
         char *fName);
 
 
-cdef map_py2c_sinoparams(SinoParams* sinoparams_c, sinoparams_py):
+cdef map_py2c_sinoparams(SinoParams* c_sinoparams, sinoparams):
     
-    sinoparams_c.N_dv = sinoparams_py['N_dv'];
-    sinoparams_c.N_dw; = sinoparams_py['N_dw;'] 
-    sinoparams_c.Delta_dv = sinoparams_py['Delta_dv'];
-    sinoparams_c.Delta_dw = sinoparams_py['Delta_dw'];
-    sinoparams_c.N_beta = sinoparams_py['N_beta'];   
-    sinoparams_c.u_s = sinoparams_py['u_s'];
-    sinoparams_c.u_r = sinoparams_py['u_r'];
-    sinoparams_c.v_r = sinoparams_py['v_r'];
-    sinoparams_c.u_d0 = sinoparams_py['u_d0'];
-    sinoparams_c.v_d0 = sinoparams_py['v_d0'];
-    sinoparams_c.w_d0 = sinoparams_py['w_d0'];
-    sinoparams_c.weightScaler_value; = sinoparams_py['weightScaler_value;'] 
+    c_sinoparams.N_dv = sinoparams['N_dv'];
+    c_sinoparams.N_dw; = sinoparams['N_dw;'] 
+    c_sinoparams.Delta_dv = sinoparams['Delta_dv'];
+    c_sinoparams.Delta_dw = sinoparams['Delta_dw'];
+    c_sinoparams.N_beta = sinoparams['N_beta'];   
+    c_sinoparams.u_s = sinoparams['u_s'];
+    c_sinoparams.u_r = sinoparams['u_r'];
+    c_sinoparams.v_r = sinoparams['v_r'];
+    c_sinoparams.u_d0 = sinoparams['u_d0'];
+    c_sinoparams.v_d0 = sinoparams['v_d0'];
+    c_sinoparams.w_d0 = sinoparams['w_d0'];
+    c_sinoparams.weightScaler_value = sinoparams['weightScaler_value;'];
 
 
-cdef map_py2c_imgparams(ImageParams* imgparams_c, imgparams_py):
+cdef map_py2c_imgparams(ImageParams* c_imgparams, imgparams):
 
-    imgparams_c.x_0 = imgparams_py['x_0'];
-    imgparams_c.y_0 = imgparams_py['y_0'];
-    imgparams_c.z_0 = imgparams_py['z_0'];
-    imgparams_c.N_x = imgparams_py['N_x'];
-    imgparams_c.N_y = imgparams_py['N_y'];
-    imgparams_c.N_z = imgparams_py['N_z'];
-    imgparams_c.Delta_xy = imgparams_py['Delta_xy'];
-    imgparams_c.Delta_z = imgparams_py['Delta_z'];
-    imgparams_c.j_xstart_roi = imgparams_py['j_xstart_roi'];
-    imgparams_c.j_ystart_roi = imgparams_py['j_ystart_roi'];
-    imgparams_c.j_zstart_roi = imgparams_py['j_zstart_roi'];
-    imgparams_c.j_xstop_roi = imgparams_py['j_xstop_roi'];
-    imgparams_c.j_ystop_roi = imgparams_py['j_ystop_roi'];
-    imgparams_c.j_zstop_roi = imgparams_py['j_zstop_roi'];
-    imgparams_c.N_x_roi = imgparams_py['N_x_roi'];
-    imgparams_c.N_y_roi = imgparams_py['N_y_roi'];
-    imgparams_c.N_z_roi = imgparams_py['N_z_roi'];
+    c_imgparams.x_0 = imgparams['x_0'];
+    c_imgparams.y_0 = imgparams['y_0'];
+    c_imgparams.z_0 = imgparams['z_0'];
+    c_imgparams.N_x = imgparams['N_x'];
+    c_imgparams.N_y = imgparams['N_y'];
+    c_imgparams.N_z = imgparams['N_z'];
+    c_imgparams.Delta_xy = imgparams['Delta_xy'];
+    c_imgparams.Delta_z = imgparams['Delta_z'];
+    c_imgparams.j_xstart_roi = imgparams['j_xstart_roi'];
+    c_imgparams.j_ystart_roi = imgparams['j_ystart_roi'];
+    c_imgparams.j_zstart_roi = imgparams['j_zstart_roi'];
+    c_imgparams.j_xstop_roi = imgparams['j_xstop_roi'];
+    c_imgparams.j_ystop_roi = imgparams['j_ystop_roi'];
+    c_imgparams.j_zstop_roi = imgparams['j_zstop_roi'];
+    c_imgparams.N_x_roi = imgparams['N_x_roi'];
+    c_imgparams.N_y_roi = imgparams['N_y_roi'];
+    c_imgparams.N_z_roi = imgparams['N_z_roi'];
 
 
 def AmatrixComputeToFile_cy(angles, imgparams, sinoparams, char[:] Amatrix_fname):
 
     # Declare image and sinogram Parameter structures
-    cdef ImageParams3D imgparams_c
-    cdef SinoParams3DParallel sinoparams_c
+    cdef ImageParams3D c_imgparams
+    cdef SinoParams3DParallel c_sinoparams
 
     # Get pointer to 1D array of angles
-    cdef double *angle_arr = 
+    # cdef double *angle_arr = 
 
-    map_py2c_sinoparams(&sinoparams_c, sinoparams)
-    map_py2c_imgparams(&imgparams_c, imgparams)
+    map_py2c_sinoparams(&c_sinoparams, sinoparams)
+    map_py2c_imgparams(&c_imgparams, imgparams)
 
     AmatrixComputeToFile(imgparams, sinoparams, &Amatrix_fname[0])
 
