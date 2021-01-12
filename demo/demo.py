@@ -3,6 +3,7 @@ from cython_sandbox import cython_matrix_multiplication
 import time
 
 if __name__ == '__main__':
+    
     # Generate random matrices A and B of compatible sizes
     A = np.random.randint(10, size=(1000, 500)).astype(np.float32)
     B = np.random.randint(10, size=(500, 10)).astype(np.float32)

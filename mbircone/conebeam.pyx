@@ -1,3 +1,4 @@
+
 import numpy as np
 import ctypes           # Import python package required to use cython
 cimport cython          # Import cython package
@@ -52,33 +53,58 @@ cdef extern from "./src/MBIRModularUtilities3D.h":
 
 # Import a c function to compute A matrix.
 cdef extern from "./src/cyInterface.h":
-    void AmatrixComputeToFile(double *angles,
-        SinoParams sinoParams,
-        ImageParams imgParams,
+    void AmatrixComputeToFile(double *angles, SinoParams sinoParams, ImageParams imgParams, 
         char *fName);
 
 
-def cy_AmatrixComputeToFile(py_imageparams,
-                            py_sinoparams,
-                            char[:] Amatrix_fname,
-                            char verboseLevel):
-    '''
-    Cython wrapper that calls c code to compute A matrix to file.
-    Args:
-        py_imageparams: python dictionary stores image parameters
-        py_sinoparams: python dictionary stores sinogram parameters
-        Amatrix_fname: path to store computed A matrix.
-        verboseLevel: Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal reconstruction progress information, and 2 prints the full information.
-    Returns:
-    '''
-    # Declare image and sinogram Parameter structures.
-    cdef ImageParams3D imgparams
-    cdef SinoParams3DParallel sinoparams
+cdef map_py2c_sinoparams(SinoParams* sinoparams_c, sinoparams_py):
+    
+    sinoparams_c.N_dv = sinoparams_py['N_dv'];
+    sinoparams_c.N_dw; = sinoparams_py['N_dw;'] 
+    sinoparams_c.Delta_dv = sinoparams_py['Delta_dv'];
+    sinoparams_c.Delta_dw = sinoparams_py['Delta_dw'];
+    sinoparams_c.N_beta = sinoparams_py['N_beta'];   
+    sinoparams_c.u_s = sinoparams_py['u_s'];
+    sinoparams_c.u_r = sinoparams_py['u_r'];
+    sinoparams_c.v_r = sinoparams_py['v_r'];
+    sinoparams_c.u_d0 = sinoparams_py['u_d0'];
+    sinoparams_c.v_d0 = sinoparams_py['v_d0'];
+    sinoparams_c.w_d0 = sinoparams_py['w_d0'];
+    sinoparams_c.weightScaler_value; = sinoparams_py['weightScaler_value;'] 
 
-    # Write parameter to c structures based on given py parameter List.
-    write_ImageParams3D(&imgparams, py_imageparams)
-    write_SinoParams3D(&sinoparams, py_sinoparams, py_sinoparams['ViewAngles'])
 
-    # Compute A matrix.
-    AmatrixComputeToFile(imgparams,sinoparams,&Amatrix_fname[0],verboseLevel)
+cdef map_py2c_imgparams(ImageParams* imgparams_c, imgparams_py):
+
+    imgparams_c.x_0 = imgparams_py['x_0'];
+    imgparams_c.y_0 = imgparams_py['y_0'];
+    imgparams_c.z_0 = imgparams_py['z_0'];
+    imgparams_c.N_x = imgparams_py['N_x'];
+    imgparams_c.N_y = imgparams_py['N_y'];
+    imgparams_c.N_z = imgparams_py['N_z'];
+    imgparams_c.Delta_xy = imgparams_py['Delta_xy'];
+    imgparams_c.Delta_z = imgparams_py['Delta_z'];
+    imgparams_c.j_xstart_roi = imgparams_py['j_xstart_roi'];
+    imgparams_c.j_ystart_roi = imgparams_py['j_ystart_roi'];
+    imgparams_c.j_zstart_roi = imgparams_py['j_zstart_roi'];
+    imgparams_c.j_xstop_roi = imgparams_py['j_xstop_roi'];
+    imgparams_c.j_ystop_roi = imgparams_py['j_ystop_roi'];
+    imgparams_c.j_zstop_roi = imgparams_py['j_zstop_roi'];
+    imgparams_c.N_x_roi = imgparams_py['N_x_roi'];
+    imgparams_c.N_y_roi = imgparams_py['N_y_roi'];
+    imgparams_c.N_z_roi = imgparams_py['N_z_roi'];
+
+
+def AmatrixComputeToFile_cy(angles, imgparams, sinoparams, char[:] Amatrix_fname):
+
+    # Declare image and sinogram Parameter structures
+    cdef ImageParams3D imgparams_c
+    cdef SinoParams3DParallel sinoparams_c
+
+    # Get pointer to 1D array of angles
+    cdef double *angle_arr = 
+
+    map_py2c_sinoparams(&sinoparams_c, sinoparams)
+    map_py2c_imgparams(&imgparams_c, imgparams)
+
+    AmatrixComputeToFile(imgparams, sinoparams, &Amatrix_fname[0])
 
