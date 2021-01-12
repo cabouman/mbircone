@@ -101,7 +101,7 @@ def AmatrixComputeToFile_cy(angles, sinoparams, imgparams, char[:] Amatrix_fname
     cdef ImageParams c_imgparams
 
     # Get pointer to 1D array of angles
-    cdef cnp.ndarray[float, ndim=1, mode="c"] c_angles = angles
+    cdef cnp.ndarray[double, ndim=1, mode="c"] c_angles = angles
 
     map_py2c_sinoparams(&c_sinoparams, sinoparams)
     map_py2c_imgparams(&c_imgparams, imgparams)
