@@ -19,8 +19,15 @@ SRC_FILES = [PACKAGE_DIR+'/src/allocate.c', PACKAGE_DIR+'/src/computeSysMatrix.c
              PACKAGE_DIR+'/conebeam.pyx']
 
 
+compiler_str = os.environ.get('CC')
+
+# Set default to gcc in case CC is not set
+if not compiler_str:
+  compiler_str = 'gcc'
+
+
 # Single threaded clang compile
-if os.environ.get('CC') == 'clang':
+if compiler_str == 'clang':
     c_extension = Extension(PACKAGE_DIR+'.conebeam', SRC_FILES,
                       libraries=[],
                       language='c',
@@ -28,7 +35,7 @@ if os.environ.get('CC') == 'clang':
 
 
 # OpenMP gcc compile
-if os.environ.get('CC') =='gcc':
+if compiler_str =='gcc':
     c_extension = Extension(PACKAGE_DIR+'.conebeam', SRC_FILES,
                       libraries=[],
                       language='c',
@@ -39,7 +46,7 @@ if os.environ.get('CC') =='gcc':
 
 
 # OpenMP icc compile
-if os.environ.get('CC') =='icc':
+if compiler_str =='icc':
     c_extension = Extension(PACKAGE_DIR+'.conebeam', SRC_FILES,
                       libraries=[],
                       language='c',
