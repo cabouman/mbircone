@@ -1,9 +1,10 @@
 
 #include "allocate.h"
+#include "MBIRModularUtilities3D.h"
 #include "cyInterface.h"
 
 
-void AmatrixComputeToFile2(double *angles, struct SinoParams sinoParams, struct ImageParams imgParams, char *Amatrix_fname)
+void AmatrixComputeToFile(double *angles, struct SinoParams sinoParams, struct ImageParams imgParams, char *Amatrix_fname)
 {
     struct SysMatrix A;
     struct ViewAngleList viewAngleList;
