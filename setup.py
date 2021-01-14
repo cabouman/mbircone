@@ -13,24 +13,23 @@ AUTHOR = "Soumendu Majee"
 
 # Specifies directory containing cython functions to be compiled
 PACKAGE_DIR = "mbircone"
-PACKAGES = [PACKAGE_DIR]
+SRC_FILES = [PACKAGE_DIR+'/src/allocate.c', PACKAGE_DIR+'/src/computeSysMatrix.c',
+             PACKAGE_DIR+'/src/cyInterface.c', PACKAGE_DIR+'/src/icd3d.c',
+             PACKAGE_DIR+'/src/MBIRModularUtilities3D.c', PACKAGE_DIR+'/src/recon3DCone.c',
+             PACKAGE_DIR+'/conebeam.pyx']
 
-# Single threaded gcc compile; tested for MacOS and Linux
 
-# Single threaded clang compile; tested for MacOS and Linux
+# Single threaded clang compile
 if os.environ.get('CC') == 'clang':
-    c_extension = Extension(PACKAGE_DIR+".conebeam",
-                      # [PACKAGE_DIR+"/src/matrices.c", 
-                      [PACKAGE_DIR+"/src/allocate.c", PACKAGE_DIR + "/conebeam.pyx"],
+    c_extension = Extension(PACKAGE_DIR+'.conebeam', SRC_FILES,
                       libraries=[],
                       language='c',
                       include_dirs=[np.get_include()])
 
-# OpenMP gcc compile: tested for MacOS and Linux
+
+# OpenMP gcc compile
 if os.environ.get('CC') =='gcc':
-    c_extension = Extension(PACKAGE_DIR+".conebeam",
-                      # [PACKAGE_DIR+"/src/matrices.c", 
-                      [PACKAGE_DIR+"/src/allocate.c", PACKAGE_DIR + "/conebeam.pyx"],
+    c_extension = Extension(PACKAGE_DIR+'.conebeam', SRC_FILES,
                       libraries=[],
                       language='c',
                       include_dirs=[np.get_include()],
@@ -39,11 +38,9 @@ if os.environ.get('CC') =='gcc':
                       extra_link_args=["-lm","-fopenmp"]) 
 
 
-# OpenMP icc compile: tested for MacOS and Linux
+# OpenMP icc compile
 if os.environ.get('CC') =='icc':
-    c_extension = Extension(PACKAGE_DIR+".conebeam",
-                      # [PACKAGE_DIR+"/src/matrices.c", 
-                      [PACKAGE_DIR+"/src/allocate.c", PACKAGE_DIR + "/conebeam.pyx"],
+    c_extension = Extension(PACKAGE_DIR+'.conebeam', SRC_FILES,
                       libraries=[],
                       language='c',
                       include_dirs=[np.get_include()],
@@ -54,9 +51,8 @@ if os.environ.get('CC') =='icc':
                                           "-qopt-calloc","-no-ansi-alias","-xCORE-AVX2"])
 
 
-
 setup(install_requires=REQUIRES,
-      packages=PACKAGES,
+      packages=[PACKAGE_DIR],
       zip_safe=False,
       name=NAME,
       version=VERSION,
