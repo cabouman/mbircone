@@ -29,32 +29,32 @@ if not compiler_str:
 # Single threaded clang compile
 if compiler_str == 'clang':
     c_extension = Extension(PACKAGE_DIR+'.conebeam', SRC_FILES,
-                      libraries=[],
-                      language='c',
-                      include_dirs=[np.get_include()])
+                    libraries=[],
+                    language='c',
+                    include_dirs=[np.get_include()])
 
 
 # OpenMP gcc compile
 if compiler_str =='gcc':
     c_extension = Extension(PACKAGE_DIR+'.conebeam', SRC_FILES,
-                      libraries=[],
-                      language='c',
-                      include_dirs=[np.get_include()],
-                      # for gcc-10 "-std=c11" can be added as a flag
-                      extra_compile_args=["-O3", "-fopenmp","-Wno-unknown-pragmas"],
-                      extra_link_args=["-lm","-fopenmp"]) 
+                    libraries=[],
+                    language='c',
+                    include_dirs=[np.get_include()],
+                    # for gcc-10 "-std=c11" can be added as a flag
+                    extra_compile_args=["-O3", "-fopenmp","-Wno-unknown-pragmas"],
+                    extra_link_args=["-lm","-fopenmp"]) 
 
 
 # OpenMP icc compile
 if compiler_str =='icc':
     c_extension = Extension(PACKAGE_DIR+'.conebeam', SRC_FILES,
-                      libraries=[],
-                      language='c',
-                      include_dirs=[np.get_include()],
-                      # for gcc-10 "-std=c11" can be added as a flag
-                      extra_compile_args=["-DICC","-qopenmp","-no-prec-div", "-restrict" ,"-ipo","-inline-calloc",
+                    libraries=[],
+                    language='c',
+                    include_dirs=[np.get_include()],
+                    # for gcc-10 "-std=c11" can be added as a flag
+                    extra_compile_args=["-DICC","-qopenmp","-no-prec-div", "-restrict" ,"-ipo","-inline-calloc",
                                           "-qopt-calloc","-no-ansi-alias","-xCORE-AVX2"],
-                      extra_link_args=["-lm","-DICC","-qopenmp","-no-prec-div", "-restrict" ,"-ipo","-inline-calloc",
+                    extra_link_args=["-lm","-DICC","-qopenmp","-no-prec-div", "-restrict" ,"-ipo","-inline-calloc",
                                           "-qopt-calloc","-no-ansi-alias","-xCORE-AVX2"])
 
 
