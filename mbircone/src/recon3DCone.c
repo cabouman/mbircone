@@ -313,8 +313,9 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
         reconAux.totalEquits += ratioUpdated;
 
 
-        if(reconParams->isPhantomReconReference)
+        if(reconParams->isPhantomReconReference){
         	RRMSE = computeRelativeRMSEFloatArray(&img->vox[0][0][0], &img->phantom[0][0][0], N_x*N_y*N_z);
+        }
 
 
 

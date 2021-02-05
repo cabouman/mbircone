@@ -746,7 +746,7 @@ void dispAndLog_iterationInfo(struct ReconAux *reconAux, struct ReconParams *rec
 	/**
 	 * 		stats file
 	 */
-	sprintf(str, "\n");
+	/*sprintf(str, "\n");
 	sprintf(str, "%sstats.itNumber(%d)   = %.12e;\n", str, itNumber+1, (double) itNumber);
 	sprintf(str, "%sstats.MaxIterations(%d)   = %.12e;\n", str, itNumber+1, (double) MaxIterations);
 	sprintf(str, "%sstats.cost(%d)   = %.12e;\n", str, itNumber+1, (double) cost);
@@ -761,7 +761,7 @@ void dispAndLog_iterationInfo(struct ReconAux *reconAux, struct ReconParams *rec
 	sprintf(str, "%sstats.RRMSE(%d)   = %.12e;\n", str, itNumber+1, (double) RRMSE);
 	sprintf(str, "%sstats.totalEquits(%d)   = %.12e;\n", str, itNumber+1, (double) totalEquits);
 
-	log_message(LOG_STATS, str);
+	log_message(LOG_STATS, str);*/
 }
 
 double computeRelUpdate(struct ReconAux *reconAux, struct ReconParams *reconParams, struct Image *img)
