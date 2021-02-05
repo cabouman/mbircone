@@ -1,26 +1,22 @@
-*.DS_Store
-sftp-config.json
-*.o
 *.pyc
+__pycache__
 
-# OSX / *nix default autosave extension MATLAB
-*.m~
+# docs
+docs/build/
 
-# cython build files
-build
+# compiled files
 mbircone/conebeam.c
+mbircone/*.so
+*.o
+build/
+dist/
+mbircone.egg-info/
 
-# ignore all files in bin folder except the empty file gitignore and ConeBeam
-bin/*
-!bin/.gitignore
-!bin/ConeBeam.sh
+# sublime text config
+sftp-config.json
 
-# runtime log files
-log_*
+# macos hidden file
+*.DS_Store
 
-# demo output
-#demo/inversion/*
-
-
-# PyCharm files
-.idea
+# Pycharm idea folder
+.idea/
