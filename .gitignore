@@ -20,3 +20,7 @@ log_*
 
 # demo output
 #demo/inversion/*
+
+
+# PyCharm files
+.idea
