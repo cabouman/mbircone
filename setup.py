@@ -1,7 +1,8 @@
+import os
+import sys
+import numpy as np
 from setuptools import setup, Extension
 from Cython.Distutils import build_ext
-import numpy as np
-import os
 
 NAME = "mbircone"
 VERSION = "0.1"
@@ -47,15 +48,15 @@ if compiler_str =='gcc':
 
 # OpenMP icc compile
 if compiler_str =='icc':
+    if sys.platform == 'linux':
+            os.environ['LDSHARED'] = 'icc -shared'
     c_extension = Extension(PACKAGE_DIR+'.conebeam', SRC_FILES,
                     libraries=[],
                     language='c',
                     include_dirs=[np.get_include()],
-                    # for gcc-10 "-std=c11" can be added as a flag
-                    extra_compile_args=["-DICC","-qopenmp","-no-prec-div", "-restrict" ,"-ipo","-inline-calloc",
-                                          "-qopt-calloc","-no-ansi-alias","-xCORE-AVX2"],
-                    extra_link_args=["-lm","-DICC","-qopenmp","-no-prec-div", "-restrict" ,"-ipo","-inline-calloc",
-                                          "-qopt-calloc","-no-ansi-alias","-xCORE-AVX2"])
+                    extra_compile_args=["-O3","-DICC","-qopenmp","-no-prec-div","-restrict","-ipo","-inline-calloc",
+                            "-qopt-calloc","-no-ansi-alias","-xCORE-AVX2"],
+                    extra_link_args=["-lm"])
 
 
 setup(install_requires=REQUIRES,
