@@ -1,12 +1,9 @@
 
-#include "recon3DCone.h"
-#include "allocate.h"
 #include <math.h>
 #include <time.h>
 #include <omp.h>
-
-
-
+#include "recon3DCone.h"
+#include "allocate.h"
 
 void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconParams, struct SysMatrix *A, struct PathNames *pathNames)
 {

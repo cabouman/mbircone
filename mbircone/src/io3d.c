@@ -1,9 +1,8 @@
 
-#include "io3d.h"
 #include <libgen.h>
-#include "plainParams.h"
 #include <unistd.h>
-
+#include "io3d.h"
+#include "plainParams.h"
 
 /* Read Command-line */
 void readCmdLine(int argc, char *argv[], struct CmdLine *cmdLine)
