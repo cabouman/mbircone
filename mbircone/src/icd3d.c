@@ -1,12 +1,10 @@
 
-#include "icd3d.h"
 #include <math.h>
-#include <stdio.h>
-
-
 #include <stdio.h>
 #include <time.h>
 #include <omp.h>
+
+#include "icd3d.h"
 #include "allocate.h"
 #include "io3d.h"
 

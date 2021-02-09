@@ -32,6 +32,7 @@
 #ifndef ALLOCATE_INC
 #define ALLOCATE_INC
 
+#include <stdio.h>
 #include <stdlib.h>
 
 void *get_spc(int num, size_t size);
