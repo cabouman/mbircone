@@ -73,7 +73,7 @@ void computeAMatrixParameters(struct SinoParams *sinoParams, struct ImageParams 
 				M = (sinoParams->u_d0 - sinoParams->u_s) / (u_v - sinoParams->u_s);
 				theta = atan2(v_v, u_v - sinoParams->u_s );
 				alpha_xy = beta - theta;
-				alpha_xy = fmod(alpha_xy + M_PI_4, M_PI_2) - M_PI_4;
+				alpha_xy = fmod(alpha_xy + PI/4, PI/2) - PI/4;
 				W_pv = M * imgParams->Delta_xy * cos(alpha_xy) / cos(theta);
 
 				i_vstart = round( (M*v_v - W_pv/2 - (sinoParams->v_d0 + sinoParams->Delta_dv/2))/ sinoParams->Delta_dv ) ;
