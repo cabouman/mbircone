@@ -75,20 +75,27 @@ struct ImageParams
 ```
 
 ```
-void MBIR3DCone(float *x, 
-	float *sino, 
-	struct ReconParams *reconParams, 
+void MBIR3DCone(float *x, float *sino, float *wght, 
+    float *x_init, float *proxmap_input,
+	struct ReconParams reconParams, 
 	char *Amatrix_fname);
 
-void forwardProject(float *proj, 
-	float *x, 
-	struct ImageParams *imgParams, 
-	struct SinoParams *sinoInfo, 
+void forwardProject(float *proj, float *x, 
+	struct SinoParams sinoParams, 
+	struct ImageParams imgParams, 
 	char *Amatrix_fname);
 
 writeSysMatrix(double *angles, 
-	struct SinoParams *sinoParams, 
-	struct ImageParams *imgParams,
+	struct SinoParams sinoParams, 
+	struct ImageParams imgParams,
     char *Amatrix_fname);
 	
 ```
+
+TO DO:
+
+Test writeSysMatrix
+clean reconparams
+clean inner c code
+Write recon project function
+Add verbose levels
