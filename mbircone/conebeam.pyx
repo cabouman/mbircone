@@ -105,9 +105,6 @@ def string_to_char_array(input_str):
                           dtype=np.ubyte)  # Create output array - note the len_str+1 to give 0-terminated array
     output_char_array[:len_str] = bytearray(input_str.encode('ascii'))  # Fill in the output array with the input string
 
-    # Thilo's better version:
-    # output_char_array = bytearray((input_str+"\0").encode('ascii'))
-
     return output_char_array
 
 
