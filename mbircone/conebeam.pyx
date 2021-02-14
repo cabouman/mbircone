@@ -124,7 +124,7 @@ def AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname):
     map_py2c_sinoparams(&c_sinoparams, sinoparams)
     map_py2c_imgparams(&c_imgparams, imgparams)
 
-    Amatrix_fname_char_array = string_to_char_array(Amatrix_fname)
+    c_Amatrix_fname = string_to_char_array(Amatrix_fname)
 
-    AmatrixComputeToFile(&c_angles[0], sinoparams, imgparams, &Amatrix_fname_char_array[0])
+    AmatrixComputeToFile(&c_angles[0], c_sinoparams, c_imgparams, &c_Amatrix_fname[0])
 
