@@ -100,10 +100,14 @@ def string_to_char_array(input_str):
     Returns:
         0-terminated array of unsigned byte with ascii representation of input_str
     """
-    len_str = len(input_str)  # Get the input length to prepare output space
-    output_char_array = np.zeros(len_str + 1,
-                          dtype=np.ubyte)  # Create output array - note the len_str+1 to give 0-terminated array
-    output_char_array[:len_str] = bytearray(input_str.encode('ascii'))  # Fill in the output array with the input string
+    # Get the input length to prepare output space
+    len_str = len(input_str)  
+    
+    # Create output array - note the len_str+1 to give 0-terminated array
+    output_char_array = np.zeros(len_str + 1, dtype=np.ubyte)  
+    
+    # Fill in the output array with the input string
+    output_char_array[:len_str] = bytearray(input_str.encode('ascii'))  
 
     return output_char_array
 
