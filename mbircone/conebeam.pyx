@@ -93,8 +93,25 @@ cdef map_py2c_imgparams(ImageParams* c_imgparams, imgparams):
     c_imgparams.N_y_roi = imgparams['N_y_roi']
     c_imgparams.N_z_roi = imgparams['N_z_roi']
 
+def string_to_char_array(input_str):
+    """
+    Args:
+        input_str:  python string
+    Returns:
+        0-terminated array of unsigned byte with ascii representation of input_str
+    """
+    len_str = len(input_str)  # Get the input length to prepare output space
+    output_char_array = np.zeros(len_str + 1,
+                          dtype=np.ubyte)  # Create output array - note the len_str+1 to give 0-terminated array
+    output_char_array[:len_str] = bytearray(input_str.encode('ascii'))  # Fill in the output array with the input string
 
-def AmatrixComputeToFile_cy(angles, sinoparams, imgparams, char[:] Amatrix_fname):
+    # Thilo's better version:
+    # output_char_array = bytearray((input_str+"\0").encode('ascii'))
+
+    return output_char_array
+
+
+def AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname):
 
     # Declare image and sinogram Parameter structures
     cdef SinoParams c_sinoparams
@@ -106,5 +123,7 @@ def AmatrixComputeToFile_cy(angles, sinoparams, imgparams, char[:] Amatrix_fname
     map_py2c_sinoparams(&c_sinoparams, sinoparams)
     map_py2c_imgparams(&c_imgparams, imgparams)
 
-    AmatrixComputeToFile(&c_angles[0], sinoparams, imgparams, &Amatrix_fname[0])
+    Amatrix_fname_char_array = string_to_char_array(Amatrix_fname)
+
+    AmatrixComputeToFile(&c_angles[0], sinoparams, imgparams, &Amatrix_fname_char_array[0])
 
