@@ -1,0 +1,19 @@
+#!/bin/bash
+
+conda deactivate &&
+
+conda remove env --name mbircone --all &&
+
+conda env create -f environment.yml &&
+
+conda activate mbircone &&
+
+source run_clean &&
+
+pip install . &&
+
+cd demo &&
+
+python demo.py
+
+cd .. 
