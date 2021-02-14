@@ -10,3 +10,6 @@ wght = np.load('wght.npy')
 angles = np.linspace(0, 2*np.pi, 40, endpoint=False)
 
 print(angles)
+
+# mbircone.AmatrixComputeToFile_cy(angles)
+
