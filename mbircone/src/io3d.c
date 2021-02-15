@@ -805,39 +805,6 @@ error:
 }
 
 
-void writeDownSampledFloat3D(char *fName, float ***arr, long int N1, long int N2, long int N3, int D1, int D2, int D3)
-{
-	float ***arr_DS;
-	int N1DS, N2DS, N3DS;
-	int i1, i2, i3;
-
-	D1 = _MIN_(D1, N1-1);
-	D2 = _MIN_(D2, N2-1);
-	D3 = _MIN_(D3, N3-1);
-
-	N1DS = N1/D1;
-	N2DS = N2/D2;
-	N3DS = N3/D3;
-
-
-	arr_DS = (float***) mem_alloc_3D( N1DS,  N2DS,  N3DS, sizeof(float));
-
-
-	for (i1 = 0; i1 < N1DS; ++i1)
-	for (i2 = 0; i2 < N2DS; ++i2)
-	for (i3 = 0; i3 < N3DS; ++i3)
-	{
-		arr_DS[i1][i2][i3] = arr[i1*D1][i2*D2][i3*D3];
-	}
-
-	write3DData(fName, (void***)arr_DS, N1DS, N2DS, N3DS, "float");
-
-	mem_free_3D((void***)arr_DS);
-
-
-}
-
-
 
 
 

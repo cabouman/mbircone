@@ -67,8 +67,6 @@ void read3DData(char *fName, void ***arr, long int N1, long int N2, long int N3,
 
 void write3DData(char *fName, void ***arr, long int N1, long int N2, long int N3, char *dataType);
 
-void writeDownSampledFloat3D(char *fName, float ***arr, long int N1, long int N2, long int N3, int D1, int D2, int D3);
-
 
 
 #endif /* #ifndef IO3D_H */

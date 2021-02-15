@@ -21,7 +21,6 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 	long int numVoxelsInMask;
     double ratioUpdated;
     double relUpdate;
-	char tempFName[1000];
 
 	double timer_icd_loop;
 	double ticToc_icdUpdate;
@@ -324,10 +323,8 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 		 */
 			/* Error Sino */
 			writeSinoData3DCone(pathNames->errSino, (void***)sino->e, &sino->params, "float");
-	
-			strcpy(tempFName, pathNames->errSino);
-			prependToFName(reconParams->downsampleFNamePrefix, tempFName);
-			writeDownSampledFloat3D(tempFName, sino->e, N_beta, N_dv, N_dw, reconParams->downsampleFactorSino, 1, 1);
+
+			
 
 			/* Image */
 			writeImageData3DCone(pathNames->recon, (void***) img->vox, &img->params, 0, "float");
@@ -337,10 +334,7 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 			/* estimateSino */
 			floatArray_z_equals_aX_plus_bY(&sino->estimateSino[0][0][0], 1.0, &sino->vox[0][0][0], -1.0, &sino->e[0][0][0], sino->params.N_beta*sino->params.N_dv*sino->params.N_dw);
 			writeSinoData3DCone(pathNames->estimateSino, (void***)sino->estimateSino, &sino->params, "float");
-
-			strcpy(tempFName, pathNames->recon);
-			prependToFName(reconParams->downsampleFNamePrefix, tempFName);
-			writeDownSampledFloat3D(tempFName, img->vox, N_x, N_y, N_z, 1, 1, reconParams->downsampleFactorRecon);
+			
 
 			/* NHICD Arrays */
 			applyMask(img->lastChange, N_x, N_y, numZiplines);
