@@ -486,16 +486,6 @@ void freeSysMatrix(struct SysMatrix *A);
 void freeViewAngleList(struct ViewAngleList *list);
 
 
-
-void writeSinoData3DCone(char *fName, void ***sino, struct SinoParams *sinoParams, char *dataType);
-
-void readSinoData3DCone(char *fName, void ***sino, struct SinoParams *sinoParams, char *dataType);
-
-void writeImageData3DCone(char *fName, void ***arr, struct ImageParams *params, int isROI, char *dataType);
-
-void readImageData3DCone(char *fName, void ***arr, struct ImageParams *params, int isROI, char *dataType);
-
-
 /**************************************** stuff for random update ****************************************/
 void RandomZiplineAux_allocate(struct RandomZiplineAux *aux, struct ImageParams *imgParams, struct ReconParams *reconParams);
 

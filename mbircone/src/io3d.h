@@ -68,6 +68,15 @@ void read3DData(char *fName, void ***arr, long int N1, long int N2, long int N3,
 void write3DData(char *fName, void ***arr, long int N1, long int N2, long int N3, char *dataType);
 
 
+void writeSinoData3DCone(char *fName, void ***sino, struct SinoParams *sinoParams, char *dataType);
+
+void readSinoData3DCone(char *fName, void ***sino, struct SinoParams *sinoParams, char *dataType);
+
+void writeImageData3DCone(char *fName, void ***arr, struct ImageParams *params, int isROI, char *dataType);
+
+void readImageData3DCone(char *fName, void ***arr, struct ImageParams *params, int isROI, char *dataType);
+
+
 
 #endif /* #ifndef IO3D_H */
 

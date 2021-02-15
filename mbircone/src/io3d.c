@@ -806,7 +806,40 @@ error:
 
 
 
+void writeSinoData3DCone(char *fName, void ***sino, struct SinoParams *sinoParams, char *dataType)
+{
 
+    write3DData(fName, (void***)sino, sinoParams->N_beta, sinoParams->N_dv, sinoParams->N_dw, dataType);
+}
+
+void readSinoData3DCone(char *fName, void ***sino, struct SinoParams *sinoParams, char *dataType)
+{
+    read3DData(fName, (void***)sino, sinoParams->N_beta, sinoParams->N_dv, sinoParams->N_dw, dataType);
+}
+
+void writeImageData3DCone(char *fName, void ***arr, struct ImageParams *params, int isROI, char *dataType)
+{
+    if (isROI) 
+    {
+        write3DData(fName, (void***)arr, params->N_x_roi, params->N_y_roi, params->N_z_roi, dataType);
+    }
+    else
+    {
+        write3DData(fName, (void***)arr, params->N_x, params->N_y, params->N_z, dataType);
+    }
+}
+
+void readImageData3DCone(char *fName, void ***arr, struct ImageParams *params, int isROI, char *dataType)
+{
+    if (isROI) 
+    {
+        read3DData(fName, (void***)arr, params->N_x_roi, params->N_y_roi, params->N_z_roi, dataType);
+    }
+    else
+    {
+        read3DData(fName, (void***)arr, params->N_x, params->N_y, params->N_z, dataType);
+    }
+}
 
 
 

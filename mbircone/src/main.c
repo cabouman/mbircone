@@ -382,6 +382,19 @@ int main(int argc, char *argv[])
          */
         MBIR3DCone(&img, &sino, &reconParams, &A, &pathNames);
 
+
+        /**
+         *      Write
+         */
+        writeImageData3DCone(pathNames.recon, (void***)img.vox, &img.params, 0, "float");
+        writeImageData3DCone(pathNames.reconROI, (void***)img.vox_roi, &img.params, 1, "float");
+        write3DData(pathNames.lastChange, (void***)img.lastChange, img.params.N_x, img.params.N_y, reconParams.numZiplines, "float");
+        write3DData(pathNames.timeToChange, (void***)img.timeToChange, img.params.N_x, img.params.N_y, reconParams.numZiplines, "unsigned char");
+
+        writeSinoData3DCone(pathNames.errSino, (void***)sino.e, &sino.params, "float");
+        writeSinoData3DCone(pathNames.estimateSino, (void***)sino.estimateSino, &sino.params, "float");
+        
+
         /**
          *      Free allocated data
          */
