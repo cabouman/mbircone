@@ -4,7 +4,7 @@
 #include "cyInterface.h"
 
 
-void AmatrixComputeToFile(double *angles, struct SinoParams sinoParams, struct ImageParams imgParams, char *Amatrix_fname)
+void AmatrixComputeToFile(double *angles, struct SinoParams sinoParams, struct ImageParams imgParams, char *Amatrix_fname, char verbose)
 {
     struct SysMatrix A;
     struct ViewAngleList viewAngleList;
@@ -12,8 +12,13 @@ void AmatrixComputeToFile(double *angles, struct SinoParams sinoParams, struct I
     viewAngleList.beta = angles;
 
     computeSysMatrix(&sinoParams, &imgParams, &A, &viewAngleList);
+
+    printf("verbose: %d\n",verbose );
     
-    printSysMatrixParams(&A);
+    if(verbose){
+    	printSysMatrixParams(&A);
+    }
+
     writeSysMatrix(Amatrix_fname, &sinoParams, &imgParams, &A);
 
 }
