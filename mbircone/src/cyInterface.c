@@ -12,8 +12,6 @@ void AmatrixComputeToFile(double *angles, struct SinoParams sinoParams, struct I
     viewAngleList.beta = angles;
 
     computeSysMatrix(&sinoParams, &imgParams, &A, &viewAngleList);
-
-    printf("verbose: %d\n",verbose );
     
     if(verbose){
     	printSysMatrixParams(&A);

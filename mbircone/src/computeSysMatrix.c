@@ -12,8 +12,6 @@ void computeSysMatrix(struct SinoParams *sinoParams, struct ImageParams *imgPara
 
 	logAndDisp_message(LOG_PROGRESS, "\nCompute SysMatrix Parameters...\n");
     computeAMatrixParameters(sinoParams, imgParams, A, viewAngleList);
-
-	printSysMatrixParams(A);
 	
 	allocateSysMatrix(A, imgParams->N_x, imgParams->N_y, imgParams->N_z, sinoParams->N_beta, A->i_vstride_max, A->i_wstride_max, A->N_u);
    
