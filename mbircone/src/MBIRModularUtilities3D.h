@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "allocate.h"
 #include <omp.h>
+#include "allocate.h"
 
 #define LOG_PROGRESS "log_progress.txt"
 #define LOG_STATS "log_stats.m"
