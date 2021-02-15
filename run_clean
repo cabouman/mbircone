@@ -1,7 +1,7 @@
-/bin/rm mbircone/conebeam.c
-/bin/rm mbircone/*.so
-/bin/rm -r build
-/bin/rm -r dist
-/bin/rm -r mbircone.egg-info
+rm mbircone/conebeam.c
+rm mbircone/*.so
+rm -r build
+rm -r dist
+rm -r mbircone.egg-info
 
 pip uninstall mbircone
