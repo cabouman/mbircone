@@ -29,7 +29,6 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 	double ticToc_randomization;
 	double ticToc_computeCost;
 	double ticToc_computeRelUpdate;
-	double ticToc_IntermediateStoring;
 	double ticToc_iteration;
 	double ticToc_computeLastChangeThreshold;
 
@@ -315,34 +314,14 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 
 
 
+		copyImage2ROI(img);
 
+		/* estimateSino */
+		floatArray_z_equals_aX_plus_bY(&sino->estimateSino[0][0][0], 1.0, &sino->vox[0][0][0], -1.0, &sino->e[0][0][0], sino->params.N_beta*sino->params.N_dv*sino->params.N_dw);
 
-		tic(&ticToc_IntermediateStoring);
-		/**
-		 * 		Intermediate storing of data
-		 */
-			/* Error Sino */
-			writeSinoData3DCone(pathNames->errSino, (void***)sino->e, &sino->params, "float");
+		/* NHICD Arrays */
+		applyMask(img->lastChange, N_x, N_y, numZiplines);
 
-			
-
-			/* Image */
-			writeImageData3DCone(pathNames->recon, (void***) img->vox, &img->params, 0, "float");
-			copyImage2ROI(img);
-			writeImageData3DCone(pathNames->reconROI, (void***) img->vox_roi, &img->params, 1, "float");
-
-			/* estimateSino */
-			floatArray_z_equals_aX_plus_bY(&sino->estimateSino[0][0][0], 1.0, &sino->vox[0][0][0], -1.0, &sino->e[0][0][0], sino->params.N_beta*sino->params.N_dv*sino->params.N_dw);
-			writeSinoData3DCone(pathNames->estimateSino, (void***)sino->estimateSino, &sino->params, "float");
-			
-
-			/* NHICD Arrays */
-			applyMask(img->lastChange, N_x, N_y, numZiplines);
-			write3DData(pathNames->lastChange, (void***) img->lastChange, N_x, N_y, numZiplines, "float");
-
-			write3DData(pathNames->timeToChange, (void***) img->timeToChange, N_x, N_y, numZiplines, "unsigned char");
-
-		toc(&ticToc_IntermediateStoring);
 		toc(&ticToc_iteration);
 
 		/**
@@ -361,7 +340,6 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
     		ticToc_logAndDisp(ticToc_randomization,	              "randomization              ");
             ticToc_logAndDisp(ticToc_computeRelUpdate,            "computeRelUpdate           ");
             ticToc_logAndDisp(ticToc_computeLastChangeThreshold,  "computeLastChangeThreshold ");
-            ticToc_logAndDisp(ticToc_IntermediateStoring,         "IntermediateStoring        ");
     		ticToc_logAndDisp(ticToc_computeCost, 	              "computeCost                ");
             ticToc_logAndDisp(ticToc_icdUpdate,                   "icdUpdate                  ");
     		ticToc_logAndDisp(ticToc_iteration, 	              "iteration                  ");
