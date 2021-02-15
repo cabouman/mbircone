@@ -12,6 +12,11 @@ build/
 dist/
 mbircone.egg-info/
 
+# mbir files
+*log_progress.txt
+*log_time.txt
+*.sysmatrix
+
 # sublime text config
 sftp-config.json
 

@@ -99,3 +99,14 @@ clean reconparams
 clean inner c code
 Write recon project function
 Add verbose levels
+
+add function to convert ROI to ROR
+
+
+Done: 
+
+Purge data writing from inner functions
+Purge log file writing from inner functions
+Remove plainparams dependency
+
+

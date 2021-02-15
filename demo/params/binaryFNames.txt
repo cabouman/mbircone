@@ -37,17 +37,11 @@ recon like files
 [recon] Recon Path (x)
 ../inversion/object.recon
 
-[reconROI] Recon (ROI) Path
-../inversion/object.ROI.recon
-
 [proxMapInput] Proximal Mapping Input Path
 ../inversion/object.proxMapInput.recon
 
 [lastChange] Image storing the amount of change from last voxel update
 ../inversion/object.lastChange.recon
-
-[phantom] Phantom image if available
-../inversion/object.phantom.recon
 
 [wghtRecon] Voxel-individual weight scaler
 ../inversion/object.wghtRecon.recon

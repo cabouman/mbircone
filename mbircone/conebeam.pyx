@@ -54,7 +54,7 @@ cdef extern from "./src/MBIRModularUtilities3D.h":
 # Import a c function to compute A matrix.
 cdef extern from "./src/cyInterface.h":
     void AmatrixComputeToFile(double *angles, SinoParams c_sinoparams, ImageParams c_imgparams, 
-        char *Amatrix_fname);
+        char *Amatrix_fname, char verbose);
 
 
 cdef map_py2c_sinoparams(SinoParams* c_sinoparams, sinoparams):
@@ -112,7 +112,7 @@ def string_to_char_array(input_str):
     return output_char_array
 
 
-def AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname):
+def AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname, verbose=1):
 
     # Declare image and sinogram Parameter structures
     cdef SinoParams c_sinoparams
@@ -128,5 +128,5 @@ def AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname):
 
     c_Amatrix_fname = string_to_char_array(Amatrix_fname)
 
-    AmatrixComputeToFile(&c_angles[0], c_sinoparams, c_imgparams, &c_Amatrix_fname[0])
+    AmatrixComputeToFile(&c_angles[0], c_sinoparams, c_imgparams, &c_Amatrix_fname[0], verbose)
 

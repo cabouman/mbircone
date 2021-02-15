@@ -1,7 +1,6 @@
 
 
 #include "MBIRModularUtilities3D.h"
-#include "io3d.h"
 
 /* write the System matrix to hard drive */
 void writeSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A)
@@ -10,7 +9,7 @@ void writeSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImagePara
     long int totsize = 0;
     long int N_x, N_y, N_z, N_beta, i_vstride_max, i_wstride_max, N_u;
     
-    logAndDisp_message(LOG_PROGRESS, "\nWrite System Matrix ... \n");
+    printf("\nWrite System Matrix ... \n");
     
     fp = fopen(fName, "w");
     if (fp == NULL)
@@ -200,7 +199,7 @@ void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageParams *i
         exit(-1);
     }
 
-    logAndDisp_message(LOG_PROGRESS, "\n Computing backProjectlike ...\n");
+    printf("\n Computing backProjectlike ...\n");
 
 
     tic(&ticToc);
@@ -288,7 +287,7 @@ void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageParams *i
 
 
     toc(&ticToc);
-    ticToc_logAndDisp(ticToc, "backProjectlike3DCone");
+    ticTocDisp(ticToc, "backProjectlike3DCone");
 
 }
 
@@ -299,7 +298,7 @@ void initializeWghtRecon(struct SysMatrix *A, struct Sino *sino, struct Image *i
     double B_ij, A_ij;
     double ticToc, avg;
 
-    logAndDisp_message(LOG_PROGRESS, "\nInitialize WghtRecon ...\n");
+    printf("\nInitialize WghtRecon ...\n");
 
 
     tic(&ticToc);
@@ -346,7 +345,7 @@ void initializeWghtRecon(struct SysMatrix *A, struct Sino *sino, struct Image *i
     avg = computeAvgWghtRecon(img);
 
     toc(&ticToc);
-    ticToc_logAndDisp(ticToc, "initializeWghtRecon");
+    ticTocDisp(ticToc, "initializeWghtRecon");
 
     printf("\n -> Average Weight Scaler = %e\n", avg);
 
@@ -684,7 +683,6 @@ void*** allocateImageData3DCone( struct ImageParams *params, int dataTypeSize, i
 void allocateSysMatrix(struct SysMatrix *A, long int N_x, long int N_y, long int N_z, long int N_beta, long int i_vstride_max, long int i_wstride_max, long int N_u)
 {
     /*double totSizeGB;*/
-    /*logAndDisp_message(LOG_PROGRESS, "\nAllocate Space for A-matrix...\n");*/
 
     /*
     totSizeGB =\
@@ -727,40 +725,6 @@ void freeViewAngleList(struct ViewAngleList *list)
     mem_free_1D((void*)list->beta);
 }
 
-void writeSinoData3DCone(char *fName, void ***sino, struct SinoParams *sinoParams, char *dataType)
-{
-
-    write3DData(fName, (void***)sino, sinoParams->N_beta, sinoParams->N_dv, sinoParams->N_dw, dataType);
-}
-
-void readSinoData3DCone(char *fName, void ***sino, struct SinoParams *sinoParams, char *dataType)
-{
-    read3DData(fName, (void***)sino, sinoParams->N_beta, sinoParams->N_dv, sinoParams->N_dw, dataType);
-}
-
-void writeImageData3DCone(char *fName, void ***arr, struct ImageParams *params, int isROI, char *dataType)
-{
-    if (isROI) 
-    {
-        write3DData(fName, (void***)arr, params->N_x_roi, params->N_y_roi, params->N_z_roi, dataType);
-    }
-    else
-    {
-        write3DData(fName, (void***)arr, params->N_x, params->N_y, params->N_z, dataType);
-    }
-}
-
-void readImageData3DCone(char *fName, void ***arr, struct ImageParams *params, int isROI, char *dataType)
-{
-    if (isROI) 
-    {
-        read3DData(fName, (void***)arr, params->N_x_roi, params->N_y_roi, params->N_z_roi, dataType);
-    }
-    else
-    {
-        read3DData(fName, (void***)arr, params->N_x, params->N_y, params->N_z, dataType);
-    }
-}
 
 /**************************************** stuff for random update ****************************************/
 void RandomZiplineAux_allocate(struct RandomZiplineAux *aux, struct ImageParams *imgParams, struct ReconParams *reconParams)
@@ -1020,13 +984,9 @@ void toc(double *ticToc)
     (*ticToc) += omp_get_wtime();
 }
 
-void ticToc_logAndDisp(double ticToc, char *ticTocName)
+void ticTocDisp(double ticToc, char *ticTocName)
 {
-    char str[1000];
-
-    sprintf(str, "[ticToc] %s = %e s\n", ticTocName, ticToc);
-    logAndDisp_message(LOG_TIME, str);
-
+    printf("[ticToc] %s = %e s\n", ticTocName, ticToc);
 }
 
 /**************************************** timer ****************************************/
@@ -1153,8 +1113,213 @@ float prctile_copyFast(float arr[], long int len, float p, int subsampleFactor)
 }
 
 
+/* IO routines */
 
 
 
+long int keepWritingToBinaryFile(FILE *fp, void *var, long int numEls, int elSize, char *fName)
+{
+    /* Return number of bytes written */
+    long int numElsWritten;
 
+    numElsWritten = fwrite(var, elSize, numEls, fp);
+    if(numElsWritten != numEls)
+    {
+        fprintf(stderr, "ERROR in keepWritingToBinaryFile: file \"%s\" terminated early.\n", fName);
+        fprintf(stderr, "Tried to write %li elements of size %d Bytes. Wrote %li elements.\n", numEls, elSize, numElsWritten);
+
+        fclose(fp);
+        exit(-1);
+    }
+    return (long int) numEls * elSize;
+}
+
+long int keepReadingFromBinaryFile(FILE *fp, void *var, long int numEls, int elSize, char *fName)
+{
+    /* Return number of bytes read */
+    long int numElsRead;
+
+    numElsRead = fread(var, elSize, numEls, fp);
+    if(numElsRead != numEls)
+    {
+        fprintf(stderr, "ERROR in keepReadingFromBinaryFile: file \"%s\" terminated early.\n", fName);
+        fprintf(stderr, "Tried to read %li elements of size %d Bytes. Read %li elements.\n", numEls, elSize, numElsRead);
+        fclose(fp);
+        exit(-1);
+    }
+    return (long int) numEls * elSize;
+}
+
+
+void printFileIOInfo( char* functionName, char* fName, long int size, char mode)
+{
+    char readwrite[200];    /* puts the word "Read" or "Write" into the output */
+    switch(mode)
+    {
+        case 'r':   strcpy(readwrite, "Read "); break;
+        case 'w':   strcpy(readwrite, "Write"); break;
+        default:    printf("Error in printFileIOInfo: Use mode 'r' or 'w'\n");
+                    exit(-1);
+    }
+    printf("\n");
+    printf("    ************** FILE ACCESS ********************************\n");
+    printf(" ****  File access in: %s\n", functionName);
+    printf("*****  File name     : %s\n", fName);
+    printf("*****  %-14s: %-15ld bytes\n", readwrite, size);
+    printf("*****                = %-15e kB\n", (double) size*1e-3);
+    printf(" ****                = %-15e MB\n", (double) size*1e-6);
+    printf("    ***********************************************************\n");
+}
+
+void printProgressOfLoop( long int indexOfLoop, long int NumIterations)
+{
+    double percent;
+
+    percent = (double) (1+indexOfLoop) / (double) NumIterations * 100;
+    printf("\r[%.1e%%]", percent );
+    fflush(stdout); 
+
+}
+
+void logAndDisp_message(char *fName, char* message)
+{
+    log_message(fName, message);
+    printf("%s", message);
+}
+
+void log_message(char *fName, char* message)
+{
+    FILE *fp;
+
+    fp = fopen(fName, "a");
+    if (fp != NULL)
+    {
+        fprintf(fp, "%s", message);
+        fclose(fp);
+    }
+    else
+    {
+        fprintf(stderr, "WARNING: In log_message: Could not open file %s\n", fName);
+    }
+
+}
+
+
+void resetFile(char *fName)
+{
+    FILE *filePointer;
+
+    filePointer = fopen(fName, "w");
+    fclose(filePointer);
+        
+}
+
+void printSinoParams(struct SinoParams *params)
+{
+    printf("\nSinogram parameters read:\n");
+
+    printf("\tN_dv = %ld,\n", params->N_dv);
+    printf("\tN_dw = %ld,\n", params->N_dw);
+    printf("\tDelta_dv = %e,\n", params->Delta_dv);
+    printf("\tDelta_dw = %e,\n", params->Delta_dw);
+    printf("\tN_beta = %ld,\n", params->N_beta);
+    printf("\tu_s = %e,\n", params->u_s);
+    printf("\tu_r = %e,\n", params->u_r);
+    printf("\tv_r = %e,\n", params->v_r);
+    printf("\tu_d0 = %e,\n", params->u_d0);
+    printf("\tv_d0 = %e,\n", params->v_d0);
+    printf("\tw_d0 = %e,\n", params->w_d0);
+    printf("\t(potentially uninitialized:)\n");
+    printf("\tweightScaler_value = %e,\n", params->weightScaler_value);
+
+}
+
+void printImgParams(struct ImageParams *params)
+{
+    printf("\nImage parameters read:\n");
+
+    printf("\tx_0 = %e \n", params->x_0);
+    printf("\ty_0 = %e \n", params->y_0);
+    printf("\tz_0 = %e \n", params->z_0);
+    printf("\tN_x = %ld \n", params->N_x);
+    printf("\tN_y = %ld \n", params->N_y);
+    printf("\tN_z = %ld \n", params->N_z);
+    printf("\tDelta_xy = %e \n", params->Delta_xy);
+    printf("\tDelta_z = %e \n", params->Delta_z);
+    printf("\tj_xstart_roi = %ld \n", params->j_xstart_roi);
+    printf("\tj_ystart_roi = %ld \n", params->j_ystart_roi);
+    printf("\tj_zstart_roi = %ld \n", params->j_zstart_roi);
+    printf("\tj_xstop_roi = %ld \n", params->j_xstop_roi);
+    printf("\tj_ystop_roi = %ld \n", params->j_ystop_roi);
+    printf("\tj_zstop_roi = %ld \n", params->j_zstop_roi);
+
+}
+
+
+void printReconParams(struct ReconParams *params)
+{
+
+    printf("\nReconstruction parameters read:\n");
+    
+    printf("\tInitVal_recon = %e \n", params->InitVal_recon);
+    printf("\tinitReconMode = %s \n", params->initReconMode);
+    printf("\tpriorWeight_QGGMRF = %e \n", params->priorWeight_QGGMRF);
+    printf("\tpriorWeight_proxMap = %e \n", params->priorWeight_proxMap);
+    printf("\tq = %e \n", params->q);
+    printf("\tp = %e \n", params->p);
+    printf("\tT = %e \n", params->T);
+    printf("\tsigmaX = %e \n", params->sigmaX);
+    printf("\tbFace = %e \n", params->bFace);
+    printf("\tbEdge = %e \n", params->bEdge);
+    printf("\tbVertex = %e \n", params->bVertex);
+    printf("\tsigma_lambda = %e \n", params->sigma_lambda);
+    printf("\tis_positivity_constraint = %d \n", params->is_positivity_constraint);
+    printf("\tisTGGMRF = %d \n", params->isTGGMRF);
+
+    
+    printf("\tstopThresholdChange_pct = %e \n", params->stopThresholdChange_pct);
+    printf("\tstopThesholdRWFE_pct = %e \n", params->stopThesholdRWFE_pct);
+    printf("\tstopThesholdRUFE_pct = %e \n", params->stopThesholdRUFE_pct);
+    printf("\tMaxIterations = %d \n", params->MaxIterations);
+    printf("\trelativeChangeMode = %s \n", params->relativeChangeMode);
+    printf("\trelativeChangeScaler = %e \n", params->relativeChangeScaler);
+    printf("\trelativeChangePercentile = %e \n", params->relativeChangePercentile);
+
+    printf("\tN_G = %d \n", params->N_G);
+    printf("\tzipLineMode = %d \n", params->zipLineMode);
+    printf("\tnumVoxelsPerZiplineMax = %d \n", params->numVoxelsPerZiplineMax);
+    printf("\tnumVoxelsPerZipline = %d \n", params->numVoxelsPerZipline);
+    printf("\tnumZiplines = %d \n", params->numZiplines);
+    printf("\tnumThreads = %d \n", params->numThreads);
+    printf("\tweightScaler_estimateMode = %s \n", params->weightScaler_estimateMode);
+    printf("\tweightScaler_domain = %s \n", params->weightScaler_domain);
+    printf("\tweightScaler_value = %e \n", params->weightScaler_value);
+
+    printf("\tNHICD_Mode = %s \n", params->NHICD_Mode);
+    printf("\tNHICD_ThresholdAllVoxels_ErrorPercent = %e \n", params->NHICD_ThresholdAllVoxels_ErrorPercent);
+    printf("\tNHICD_percentage = %e \n", params->NHICD_percentage);
+    printf("\tNHICD_random = %e \n", params->NHICD_random);
+
+    printf("\tverbosity = %d \n", params->verbosity);
+    printf("\tisComputeCost = %d \n", params->isComputeCost);
+
+}
+
+void printSysMatrixParams(struct SysMatrix *A)
+{
+
+    printf("\nSystemMatrix parameters:\n");
+
+    printf("\ti_vstride_max = %ld \n", A->i_vstride_max);
+    printf("\ti_wstride_max = %ld \n", A->i_wstride_max);
+    printf("\tN_u = %ld \n", A->N_u);
+    printf("\tDelta_u = %e \n", A->Delta_u);
+    printf("\tu_0 = %e \n", A->u_0);
+    printf("\tu_1 = %e \n", A->u_1);
+    printf("\tB_ij_max = %e \n", A->B_ij_max);
+    printf("\tC_ij_max = %e \n", A->C_ij_max);
+    printf("\tB_ij_scaler = %e \n", A->B_ij_scaler);
+    printf("\tC_ij_scaler = %e \n", A->C_ij_scaler);
+
+}
 

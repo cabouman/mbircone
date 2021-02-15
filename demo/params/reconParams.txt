@@ -21,7 +21,7 @@ FDK
 1
 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . QGGMRF . . . . . . . . . . .
 [isTGGMRF] (1: Converts QGGMRF->TGGMRF) (0: Uses QGGMRF)
-1
+0
 
 [q] QGGMRF parameter (q>1, typical choice q=2)
 2
@@ -30,10 +30,10 @@ FDK
 1
 
 [T] QGGMRF parameter 		(=eps TGGMRF parameter)
-0.1
+0.02
 
 [sigmaX] QGGMRF parameter	(=s TGGMRF parameter)
-0.5
+5
 
 [bFace] relative neighbor weight: 6 cube faces 			(Computation when #>=0, omitting when #<0)
 1.0
@@ -59,9 +59,6 @@ FDK
 [stopThesholdRUFE_pct] stop threshold relative unweighted forward error (%)
 0
 
-[stopThesholdRRMSE_pct] stop threshold relative RMSE (x,x0) (%) (only works when phantom present)
-0
-
 [MaxIterations] maximum number of iterations
 10
 . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  Relative Change Computation . . .
@@ -73,15 +70,7 @@ percentile
 
 [relativeChangePercentile] 	used if relativeChangeMode=='percentile': 			change=avg(change)/prctile(x(1:D:end),relativeChangePercentile)
 99.9
-################################################################ Intermediate saving #######
-[downsampleFactorSino] 
-20
 
-[downsampleFactorRecon]
-20
-
-[downsampleFNamePrefix] 
-Downsampled/DS_
 ################################################################ Zipline Stuff #############
 [zipLineMode] (0: off, 1: conventional Zipline, 2: randomized Zipline, 3: Super Voxel ZL)
 2
@@ -126,9 +115,6 @@ off
 
 [isComputeCost]
 0
-
-[isPhantomReconReference]
-1
 
 [backprojlike_type] proj, entropy, kappa
 proj

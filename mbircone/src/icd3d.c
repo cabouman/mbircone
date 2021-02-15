@@ -6,7 +6,6 @@
 
 #include "icd3d.h"
 #include "allocate.h"
-#include "io3d.h"
 
 
 void ICDStep3DCone(struct Sino *sino, struct Image *img, struct SysMatrix *A, struct ICDInfo3DCone *icdInfo, struct ReconParams *reconParams, struct ReconAux *reconAux)
@@ -715,51 +714,22 @@ void updateIterationStatsGroup(struct ReconAux *reconAux, struct ICDInfo3DCone *
 }
 
 
-void dispAndLog_iterationInfo(struct ReconAux *reconAux, struct ReconParams *reconParams, int itNumber, int MaxIterations, double cost, double relUpdate, double stopThresholdChange, double weightScaler_value, double voxelsPerSecond, double ticToc_iteration, double weightedNormSquared_e, double ratioUpdated, double RRMSE, double stopThesholdRRMSE, double totalEquits)
+void disp_iterationInfo(struct ReconAux *reconAux, struct ReconParams *reconParams, int itNumber, int MaxIterations, double cost, double relUpdate, double stopThresholdChange, double weightScaler_value, double voxelsPerSecond, double ticToc_iteration, double weightedNormSquared_e, double ratioUpdated, double totalEquits)
 {
-	char str[2000];
-
-	/**
-	 * 		progress file
-	 */
-	sprintf(str, "\n");
-	sprintf(str, "%s ************************** Iteration %-2d (max. %d) **************************\n", str, itNumber, MaxIterations);
-	sprintf(str, "%s *  Cost                   = %-10.10e\n", str, cost);
-	sprintf(str, "%s *  Rel. Update            = %-10.10e %% (threshold = %-10.10e %%)\n", str, relUpdate*100, stopThresholdChange*100);
-	sprintf(str, "%s *  RWFE = ||e||_W/||y||_W = %-10.10e %% (threshold = %-10.10e %%)\n", str, reconAux->relativeWeightedForwardError*100, reconParams->stopThesholdRWFE_pct);
-	sprintf(str, "%s *  RUFE = ||e|| / ||y||   = %-10.10e %% (threshold = %-10.10e %%)\n", str, reconAux->relativeUnweightedForwardError*100, reconParams->stopThesholdRUFE_pct);
-	sprintf(str, "%s *  RRMSE                  = %-10.10e %% (threshold = %-10.10e %%)\n", str, RRMSE*100, reconParams->stopThesholdRRMSE_pct);
-	sprintf(str, "%s * ----------------------------------------------------------------------------\n", str);
-	sprintf(str, "%s *  1/M ||e||^2_W          = %-10.10e = 1/%-10.10f\n", str, weightedNormSquared_e, 1/weightedNormSquared_e);
-	sprintf(str, "%s *  weightScaler_value     = %-10.10e = 1/%-10.10f\n", str, weightScaler_value, 1/weightScaler_value);
-	sprintf(str, "%s * ----------------------------------------------------------------------------\n", str);
-	sprintf(str, "%s *  voxelsPerSecond        = %-10.10e \n", str, voxelsPerSecond);
-	sprintf(str, "%s *  time icd update        = %-10.10e s\n", str, ticToc_iteration);
-	sprintf(str, "%s *  ratioUpdated           = %-10.10e %%\n", str, ratioUpdated*100);
-	sprintf(str, "%s *  totalEquits            = %-10.10e \n", str, totalEquits);
-	sprintf(str, "%s ******************************************************************************\n", str);
-	sprintf(str, "%s\n", str);
-	logAndDisp_message(LOG_PROGRESS, str);
-
-	/**
-	 * 		stats file
-	 */
-	/*sprintf(str, "\n");
-	sprintf(str, "%sstats.itNumber(%d)   = %.12e;\n", str, itNumber+1, (double) itNumber);
-	sprintf(str, "%sstats.MaxIterations(%d)   = %.12e;\n", str, itNumber+1, (double) MaxIterations);
-	sprintf(str, "%sstats.cost(%d)   = %.12e;\n", str, itNumber+1, (double) cost);
-	sprintf(str, "%sstats.relUpdate(%d)   = %.12e;\n", str, itNumber+1, (double) relUpdate);
-	sprintf(str, "%sstats.stopThresholdChange(%d)   = %.12e;\n", str, itNumber+1, (double) stopThresholdChange);
-	sprintf(str, "%sstats.weightScaler_value(%d)   = %.12e;\n", str, itNumber+1, (double) weightScaler_value);
-	sprintf(str, "%sstats.voxelsPerSecond(%d)   = %.12e;\n", str, itNumber+1, (double) voxelsPerSecond);
-	sprintf(str, "%sstats.ticToc_iteration(%d)   = %.12e;\n", str, itNumber+1, (double) ticToc_iteration);
-	sprintf(str, "%sstats.weightedNormSquared_e(%d)   = %.12e;\n", str, itNumber+1, (double) weightedNormSquared_e);
-	sprintf(str, "%sstats.relativeWeightedForwardError(%d)   = %.12e;\n", str, itNumber+1, (double) reconAux->relativeWeightedForwardError);
-	sprintf(str, "%sstats.ratioUpdated(%d)   = %.12e;\n", str, itNumber+1, (double) ratioUpdated);
-	sprintf(str, "%sstats.RRMSE(%d)   = %.12e;\n", str, itNumber+1, (double) RRMSE);
-	sprintf(str, "%sstats.totalEquits(%d)   = %.12e;\n", str, itNumber+1, (double) totalEquits);
-
-	log_message(LOG_STATS, str);*/
+	printf("************************** Iteration %-2d (max. %d) **************************\n", itNumber, MaxIterations);
+	printf("*  Cost                   = %-10.10e\n", cost);
+	printf("*  Rel. Update            = %-10.10e %% (threshold = %-10.10e %%)\n", relUpdate*100, stopThresholdChange*100);
+	printf("*  RWFE = ||e||_W/||y||_W = %-10.10e %% (threshold = %-10.10e %%)\n", reconAux->relativeWeightedForwardError*100, reconParams->stopThesholdRWFE_pct);
+	printf("*  RUFE = ||e|| / ||y||   = %-10.10e %% (threshold = %-10.10e %%)\n", reconAux->relativeUnweightedForwardError*100, reconParams->stopThesholdRUFE_pct);
+	printf("* ----------------------------------------------------------------------------\n");
+	printf("*  1/M ||e||^2_W          = %-10.10e = 1/%-10.10f\n", weightedNormSquared_e, 1/weightedNormSquared_e);
+	printf("*  weightScaler_value     = %-10.10e = 1/%-10.10f\n", weightScaler_value, 1/weightScaler_value);
+	printf("* ----------------------------------------------------------------------------\n");
+	printf("*  voxelsPerSecond        = %-10.10e \n", voxelsPerSecond);
+	printf("*  time icd update        = %-10.10e s\n", ticToc_iteration);
+	printf("*  ratioUpdated           = %-10.10e %%\n", ratioUpdated*100);
+	printf("*  totalEquits            = %-10.10e \n", totalEquits);
+	printf("******************************************************************************\n\n");
 }
 
 double computeRelUpdate(struct ReconAux *reconAux, struct ReconParams *reconParams, struct Image *img)
@@ -809,23 +779,6 @@ double computeRelUpdate(struct ReconAux *reconAux, struct ReconParams *reconPara
 
 	return relUpdate;
 }
-
-void writeICDLoopStatus2File(char *fName, long int index, long int MaxIndex, int itNumber, double voxelsPerSecond)
-{
-	FILE *filePointer;
-	double percentage;
-
-
-	filePointer = fopen(fName, "a");
-	percentage = ((double)index / (double)MaxIndex) * 100.0;
-	fprintf(filePointer, "(%2d) Loop Progress = %e %%  voxelsPerSecond = %e\n", itNumber, percentage, voxelsPerSecond);
-	 printf(           "\r(%2d) Loop Progress = %e %%  voxelsPerSecond = %e", itNumber, percentage, voxelsPerSecond);
-	 fflush(stdout);
-	fclose(filePointer);
-		
-	
-}
-
 
 
 /* * * * * * * * * * * * parallel * * * * * * * * * * * * **/

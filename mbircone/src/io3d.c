@@ -63,15 +63,13 @@ void readCmdLine(int argc, char *argv[], struct CmdLine *cmdLine)
 
 void printCmdLine(struct CmdLine *cmdLine)
 {
-	char str[500];
-	sprintf(str, 	"\n"
-					"Command line arguments read:\n"
-					"\tmasterFile = %s\n"
-					"\tplainParamsFile = %s\n"
-					"\tmodes = %s\n"
-					"\n",\
-					cmdLine->masterFile, cmdLine->plainParamsFile, cmdLine->modes);					
-	logAndDisp_message(LOG_PROGRESS, str);
+	printf("\n"
+			"Command line arguments read:\n"
+			"\tmasterFile = %s\n"
+			"\tplainParamsFile = %s\n"
+			"\tmodes = %s\n"
+			"\n",\
+			cmdLine->masterFile, cmdLine->plainParamsFile, cmdLine->modes);					
 }
 
 void readLineFromFile(char *fName, char lineNr, char *line, int lineSize)
@@ -164,15 +162,11 @@ void readBinaryFNames(char *masterFile, char *plainParamsFile, struct PathNames 
 
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "recon", pathNames->recon, resolveFlag);
 
-	plainParams(plainParamsFile, get_set, masterFile, masterField, "reconROI", pathNames->reconROI, resolveFlag);
-
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "proxMapInput", pathNames->proxMapInput, resolveFlag);
 
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "lastChange", pathNames->lastChange, resolveFlag);
 
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "timeToChange", pathNames->timeToChange, resolveFlag);
-
-	plainParams(plainParamsFile, get_set, masterFile, masterField, "phantom", pathNames->phantom, resolveFlag);
 
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "sysMatrix", pathNames->sysMatrix, resolveFlag);
 
@@ -357,9 +351,6 @@ void readReconParams(char *masterFile, char *plainParamsFile, struct ReconParams
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "stopThesholdRUFE_pct", temp, resolveFlag);
 	reconParams->stopThesholdRUFE_pct = str2double(temp);
 
-	plainParams(plainParamsFile, get_set, masterFile, masterField, "stopThesholdRRMSE_pct", temp, resolveFlag);
-	reconParams->stopThesholdRRMSE_pct = str2double(temp);
-
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "MaxIterations", temp, resolveFlag);
 	reconParams->MaxIterations = str2int(temp);
 
@@ -371,15 +362,6 @@ void readReconParams(char *masterFile, char *plainParamsFile, struct ReconParams
 
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "relativeChangePercentile", temp, resolveFlag);
 	reconParams->relativeChangePercentile = str2double(temp);
-
-	plainParams(plainParamsFile, get_set, masterFile, masterField, "downsampleFactorSino", temp, resolveFlag);
-	reconParams->downsampleFactorSino = str2int(temp);
-
-	plainParams(plainParamsFile, get_set, masterFile, masterField, "downsampleFactorRecon", temp, resolveFlag);
-	reconParams->downsampleFactorRecon = str2int(temp);
-
-	plainParams(plainParamsFile, get_set, masterFile, masterField, "downsampleFNamePrefix", temp, resolveFlag);
-	strcpy(reconParams->downsampleFNamePrefix, temp);
 
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "N_G", temp, resolveFlag);
 	reconParams->N_G = str2int(temp);
@@ -422,9 +404,6 @@ void readReconParams(char *masterFile, char *plainParamsFile, struct ReconParams
 
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "isComputeCost", temp, resolveFlag);
 	reconParams->isComputeCost = str2int(temp);
-
-	plainParams(plainParamsFile, get_set, masterFile, masterField, "isPhantomReconReference", temp, resolveFlag);
-	reconParams->isPhantomReconReference = str2int(temp);
 
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "backprojlike_type", temp, resolveFlag);
 	strcpy(reconParams->backprojlike_type, temp);
@@ -479,165 +458,30 @@ void readAndAllocateViewAngleList(char *masterFile, char *plainParamsFile, struc
 
 void printPathNames(struct PathNames *pathNames)
 {
-	char str[10000];
+	printf("\nPath Names Read:\n");
 
-	sprintf(str, "\nPath Names Read:\n");
-
-	sprintf(str, "%s\tmasterFile = %s \n", str, pathNames->masterFile);
-	sprintf(str, "%s\tplainParamsFile = %s \n", str, pathNames->plainParamsFile);
-	sprintf(str, "%s\n", str);
-	sprintf(str, "%s\tsino = %s \n", str, pathNames->sino);
-	sprintf(str, "%s\tdriftSino = %s \n", str, pathNames->driftSino);
-	sprintf(str, "%s\twght = %s \n", str, pathNames->wght);
-	sprintf(str, "%s\terrSino = %s \n", str, pathNames->errSino);
-	sprintf(str, "%s\trecon = %s \n", str, pathNames->recon);
-	sprintf(str, "%s\treconROI = %s \n", str, pathNames->reconROI);
-	sprintf(str, "%s\tproxMapInput = %s \n", str, pathNames->proxMapInput);
-	sprintf(str, "%s\tlastChange = %s \n", str, pathNames->lastChange);
-	sprintf(str, "%s\ttimeToChange = %s \n", str, pathNames->timeToChange);
-	sprintf(str, "%s\tphantom = %s \n", str, pathNames->phantom);
-	sprintf(str, "%s\tsysMatrix = %s \n", str, pathNames->sysMatrix);
-	sprintf(str, "%s\twghtRecon = %s \n", str, pathNames->wghtRecon);
-	sprintf(str, "%s\tprojInput = %s \n", str, pathNames->projInput);
-	sprintf(str, "%s\tprojOutput = %s \n", str, pathNames->projOutput);
-	sprintf(str, "%s\tbackprojlikeInput = %s \n", str, pathNames->backprojlikeInput);
-	sprintf(str, "%s\tbackprojlikeOutput = %s \n", str, pathNames->backprojlikeOutput);
-	sprintf(str, "%s\testimateSino = %s \n", str, pathNames->estimateSino);
-	sprintf(str, "%s\tconsensusRecon = %s \n", str, pathNames->consensusRecon);
-	sprintf(str, "%s\tjigMeasurementsSino = %s \n", str, pathNames->jigMeasurementsSino);
-
-	logAndDisp_message(LOG_PROGRESS, str);
-}
-
-
-void printSinoParams(struct SinoParams *params)
-{
-	char str[2000];
-
-	sprintf(str, "\nSinogram parameters read:\n");
-
-	sprintf(str, "%s\tN_dv = %ld,\n", str, params->N_dv);
-	sprintf(str, "%s\tN_dw = %ld,\n", str, params->N_dw);
-	sprintf(str, "%s\tDelta_dv = %e,\n", str, params->Delta_dv);
-	sprintf(str, "%s\tDelta_dw = %e,\n", str, params->Delta_dw);
-	sprintf(str, "%s\tN_beta = %ld,\n", str, params->N_beta);
-	sprintf(str, "%s\tu_s = %e,\n", str, params->u_s);
-	sprintf(str, "%s\tu_r = %e,\n", str, params->u_r);
-	sprintf(str, "%s\tv_r = %e,\n", str, params->v_r);
-	sprintf(str, "%s\tu_d0 = %e,\n", str, params->u_d0);
-	sprintf(str, "%s\tv_d0 = %e,\n", str, params->v_d0);
-	sprintf(str, "%s\tw_d0 = %e,\n", str, params->w_d0);
-	sprintf(str, "%s\t(potentially uninitialized:)\n", str);
-	sprintf(str, "%s\tweightScaler_value = %e,\n", str, params->weightScaler_value);
-	sprintf(str, "%s\n", str);
-	logAndDisp_message(LOG_PROGRESS, str);
-}
-
-void printImgParams(struct ImageParams *params)
-{
-	char str[2000];
-	sprintf(str, "\nImage parameters read:\n");
-
-	sprintf(str, "%s\tx_0 = %e \n", str, params->x_0);
-	sprintf(str, "%s\ty_0 = %e \n", str, params->y_0);
-	sprintf(str, "%s\tz_0 = %e \n", str, params->z_0);
-	sprintf(str, "%s\tN_x = %ld \n", str, params->N_x);
-	sprintf(str, "%s\tN_y = %ld \n", str, params->N_y);
-	sprintf(str, "%s\tN_z = %ld \n", str, params->N_z);
-	sprintf(str, "%s\tDelta_xy = %e \n", str, params->Delta_xy);
-	sprintf(str, "%s\tDelta_z = %e \n", str, params->Delta_z);
-	sprintf(str, "%s\tj_xstart_roi = %ld \n", str, params->j_xstart_roi);
-	sprintf(str, "%s\tj_ystart_roi = %ld \n", str, params->j_ystart_roi);
-	sprintf(str, "%s\tj_zstart_roi = %ld \n", str, params->j_zstart_roi);
-	sprintf(str, "%s\tj_xstop_roi = %ld \n", str, params->j_xstop_roi);
-	sprintf(str, "%s\tj_ystop_roi = %ld \n", str, params->j_ystop_roi);
-	sprintf(str, "%s\tj_zstop_roi = %ld \n", str, params->j_zstop_roi);
-	sprintf(str, "%s\n", str);
-
-	logAndDisp_message(LOG_PROGRESS, str);
+	printf("\tmasterFile = %s \n", pathNames->masterFile);
+	printf("\tplainParamsFile = %s \n", pathNames->plainParamsFile);
+	printf("\tsino = %s \n", pathNames->sino);
+	printf("\tdriftSino = %s \n", pathNames->driftSino);
+	printf("\twght = %s \n", pathNames->wght);
+	printf("\terrSino = %s \n", pathNames->errSino);
+	printf("\trecon = %s \n", pathNames->recon);
+	printf("\tproxMapInput = %s \n", pathNames->proxMapInput);
+	printf("\tlastChange = %s \n", pathNames->lastChange);
+	printf("\ttimeToChange = %s \n", pathNames->timeToChange);
+	printf("\tsysMatrix = %s \n", pathNames->sysMatrix);
+	printf("\twghtRecon = %s \n", pathNames->wghtRecon);
+	printf("\tprojInput = %s \n", pathNames->projInput);
+	printf("\tprojOutput = %s \n", pathNames->projOutput);
+	printf("\tbackprojlikeInput = %s \n", pathNames->backprojlikeInput);
+	printf("\tbackprojlikeOutput = %s \n", pathNames->backprojlikeOutput);
+	printf("\testimateSino = %s \n", pathNames->estimateSino);
+	printf("\tconsensusRecon = %s \n", pathNames->consensusRecon);
+	printf("\tjigMeasurementsSino = %s \n", pathNames->jigMeasurementsSino);
 
 }
 
-
-void printReconParams(struct ReconParams *params)
-{
-	char str[2000];
-	str[0] = '\0';
-
-	sprintf(str, "%s\nReconstruction parameters read:\n", str);
-	
-	sprintf(str, "%s\tInitVal_recon = %e \n", str, params->InitVal_recon);
-	sprintf(str, "%s\tinitReconMode = %s \n", str, params->initReconMode);
-	sprintf(str, "%s\tpriorWeight_QGGMRF = %e \n", str, params->priorWeight_QGGMRF);
-	sprintf(str, "%s\tpriorWeight_proxMap = %e \n", str, params->priorWeight_proxMap);
-	sprintf(str, "%s\tq = %e \n", str, params->q);
-	sprintf(str, "%s\tp = %e \n", str, params->p);
-	sprintf(str, "%s\tT = %e \n", str, params->T);
-	sprintf(str, "%s\tsigmaX = %e \n", str, params->sigmaX);
-	sprintf(str, "%s\tbFace = %e \n", str, params->bFace);
-	sprintf(str, "%s\tbEdge = %e \n", str, params->bEdge);
-	sprintf(str, "%s\tbVertex = %e \n", str, params->bVertex);
-	sprintf(str, "%s\tsigma_lambda = %e \n", str, params->sigma_lambda);
-	sprintf(str, "%s\tis_positivity_constraint = %d \n", str, params->is_positivity_constraint);
-	sprintf(str, "%s\tisTGGMRF = %d \n", str, params->isTGGMRF);
-
-	
-	sprintf(str, "%s\tstopThresholdChange_pct = %e \n", str, params->stopThresholdChange_pct);
-	sprintf(str, "%s\tstopThesholdRWFE_pct = %e \n", str, params->stopThesholdRWFE_pct);
-	sprintf(str, "%s\tstopThesholdRUFE_pct = %e \n", str, params->stopThesholdRUFE_pct);
-	sprintf(str, "%s\tstopThesholdRRMSE_pct = %e \n", str, params->stopThesholdRRMSE_pct);
-	sprintf(str, "%s\tMaxIterations = %d \n", str, params->MaxIterations);
-	sprintf(str, "%s\trelativeChangeMode = %s \n", str, params->relativeChangeMode);
-	sprintf(str, "%s\trelativeChangeScaler = %e \n", str, params->relativeChangeScaler);
-	sprintf(str, "%s\trelativeChangePercentile = %e \n", str, params->relativeChangePercentile);
-
-	sprintf(str, "%s\tdownsampleFactorSino = %d \n", str, params->downsampleFactorSino);
-	sprintf(str, "%s\tdownsampleFactorRecon = %d \n", str, params->downsampleFactorRecon);
-	sprintf(str, "%s\tdownsampleFNamePrefix = %s \n", str, params->downsampleFNamePrefix);
-	sprintf(str, "%s\tN_G = %d \n", str, params->N_G);
-	sprintf(str, "%s\tzipLineMode = %d \n", str, params->zipLineMode);
-	sprintf(str, "%s\tnumVoxelsPerZiplineMax = %d \n", str, params->numVoxelsPerZiplineMax);
-	sprintf(str, "%s\tnumVoxelsPerZipline = %d \n", str, params->numVoxelsPerZipline);
-	sprintf(str, "%s\tnumZiplines = %d \n", str, params->numZiplines);
-	sprintf(str, "%s\tnumThreads = %d \n", str, params->numThreads);
-	sprintf(str, "%s\tweightScaler_estimateMode = %s \n", str, params->weightScaler_estimateMode);
-	sprintf(str, "%s\tweightScaler_domain = %s \n", str, params->weightScaler_domain);
-	sprintf(str, "%s\tweightScaler_value = %e \n", str, params->weightScaler_value);
-
-	sprintf(str, "%s\tNHICD_Mode = %s \n", str, params->NHICD_Mode);
-	sprintf(str, "%s\tNHICD_ThresholdAllVoxels_ErrorPercent = %e \n", str, params->NHICD_ThresholdAllVoxels_ErrorPercent);
-	sprintf(str, "%s\tNHICD_percentage = %e \n", str, params->NHICD_percentage);
-	sprintf(str, "%s\tNHICD_random = %e \n", str, params->NHICD_random);
-
-	sprintf(str, "%s\tverbosity = %d \n", str, params->verbosity);
-	sprintf(str, "%s\tisComputeCost = %d \n", str, params->isComputeCost);
-	sprintf(str, "%s\tisPhantomReconReference = %d \n", str, params->isPhantomReconReference);
-
-	sprintf(str, "%s\n", str);
-
-	logAndDisp_message(LOG_PROGRESS, str);
-}
-
-void printSysMatrixParams(struct SysMatrix *A)
-{
-	char str[1000];
-
-	sprintf(str, "\nSystemMatrix parameters:\n");
-
-	sprintf(str, "%s\ti_vstride_max = %ld \n", str, A->i_vstride_max);
-	sprintf(str, "%s\ti_wstride_max = %ld \n", str, A->i_wstride_max);
-	sprintf(str, "%s\tN_u = %ld \n", str, A->N_u);
-	sprintf(str, "%s\tDelta_u = %e \n", str, A->Delta_u);
-	sprintf(str, "%s\tu_0 = %e \n", str, A->u_0);
-	sprintf(str, "%s\tu_1 = %e \n", str, A->u_1);
-	sprintf(str, "%s\tB_ij_max = %e \n", str, A->B_ij_max);
-	sprintf(str, "%s\tC_ij_max = %e \n", str, A->C_ij_max);
-	sprintf(str, "%s\tB_ij_scaler = %e \n", str, A->B_ij_scaler);
-	sprintf(str, "%s\tC_ij_scaler = %e \n", str, A->C_ij_scaler);
-	sprintf(str, "%s\n", str);
-
-	logAndDisp_message(LOG_PROGRESS, str);
-}
 
 int getDataTypeSize(char *dataType)
 {
@@ -805,138 +649,41 @@ error:
 }
 
 
-void writeDownSampledFloat3D(char *fName, float ***arr, long int N1, long int N2, long int N3, int D1, int D2, int D3)
+
+void writeSinoData3DCone(char *fName, void ***sino, struct SinoParams *sinoParams, char *dataType)
 {
-	float ***arr_DS;
-	int N1DS, N2DS, N3DS;
-	int i1, i2, i3;
 
-	D1 = _MIN_(D1, N1-1);
-	D2 = _MIN_(D2, N2-1);
-	D3 = _MIN_(D3, N3-1);
-
-	N1DS = N1/D1;
-	N2DS = N2/D2;
-	N3DS = N3/D3;
-
-
-	arr_DS = (float***) mem_alloc_3D( N1DS,  N2DS,  N3DS, sizeof(float));
-
-
-	for (i1 = 0; i1 < N1DS; ++i1)
-	for (i2 = 0; i2 < N2DS; ++i2)
-	for (i3 = 0; i3 < N3DS; ++i3)
-	{
-		arr_DS[i1][i2][i3] = arr[i1*D1][i2*D2][i3*D3];
-	}
-
-	write3DData(fName, (void***)arr_DS, N1DS, N2DS, N3DS, "float");
-
-	mem_free_3D((void***)arr_DS);
-
-
+    write3DData(fName, (void***)sino, sinoParams->N_beta, sinoParams->N_dv, sinoParams->N_dw, dataType);
 }
 
-
-
-long int keepWritingToBinaryFile(FILE *fp, void *var, long int numEls, int elSize, char *fName)
+void readSinoData3DCone(char *fName, void ***sino, struct SinoParams *sinoParams, char *dataType)
 {
-	/* Return number of bytes written */
-	long int numElsWritten;
+    read3DData(fName, (void***)sino, sinoParams->N_beta, sinoParams->N_dv, sinoParams->N_dw, dataType);
+}
 
-    numElsWritten = fwrite(var, elSize, numEls, fp);
-    if(numElsWritten != numEls)
+void writeImageData3DCone(char *fName, void ***arr, struct ImageParams *params, int isROI, char *dataType)
+{
+    if (isROI) 
     {
-        fprintf(stderr, "ERROR in keepWritingToBinaryFile: file \"%s\" terminated early.\n", fName);
-        fprintf(stderr, "Tried to write %li elements of size %d Bytes. Wrote %li elements.\n", numEls, elSize, numElsWritten);
-
-        fclose(fp);
-        exit(-1);
+        write3DData(fName, (void***)arr, params->N_x_roi, params->N_y_roi, params->N_z_roi, dataType);
     }
-    return (long int) numEls * elSize;
-}
-
-long int keepReadingFromBinaryFile(FILE *fp, void *var, long int numEls, int elSize, char *fName)
-{
-	/* Return number of bytes read */
-	long int numElsRead;
-
-    numElsRead = fread(var, elSize, numEls, fp);
-    if(numElsRead != numEls)
+    else
     {
-        fprintf(stderr, "ERROR in keepReadingFromBinaryFile: file \"%s\" terminated early.\n", fName);
-        fprintf(stderr, "Tried to read %li elements of size %d Bytes. Read %li elements.\n", numEls, elSize, numElsRead);
-        fclose(fp);
-        exit(-1);
+        write3DData(fName, (void***)arr, params->N_x, params->N_y, params->N_z, dataType);
     }
-    return (long int) numEls * elSize;
 }
 
-
-void printFileIOInfo( char* functionName, char* fName, long int size, char mode)
+void readImageData3DCone(char *fName, void ***arr, struct ImageParams *params, int isROI, char *dataType)
 {
-	char readwrite[200];	/* puts the word "Read" or "Write" into the output */
-	switch(mode)
-	{
-		case 'r': 	strcpy(readwrite, "Read "); break;
-		case 'w': 	strcpy(readwrite, "Write"); break;
-		default:	printf("Error in printFileIOInfo: Use mode 'r' or 'w'\n");
-					exit(-1);
-	}
-	printf("\n");
-	printf("    ************** FILE ACCESS ********************************\n");
-	printf(" ****  File access in: %s\n", functionName);
-	printf("*****  File name     : %s\n", fName);
-	printf("*****  %-14s: %-15ld bytes\n", readwrite, size);
-	printf("*****                = %-15e kB\n", (double) size*1e-3);
-	printf(" ****                = %-15e MB\n", (double) size*1e-6);
-	printf("    ***********************************************************\n");
+    if (isROI) 
+    {
+        read3DData(fName, (void***)arr, params->N_x_roi, params->N_y_roi, params->N_z_roi, dataType);
+    }
+    else
+    {
+        read3DData(fName, (void***)arr, params->N_x, params->N_y, params->N_z, dataType);
+    }
 }
-
-void printProgressOfLoop( long int indexOfLoop, long int NumIterations)
-{
-	double percent;
-
-	percent = (double) (1+indexOfLoop) / (double) NumIterations * 100;
-	printf("\r[%.1e%%]", percent );
-	fflush(stdout);	
-
-}
-
-void logAndDisp_message(char *fName, char* message)
-{
-	log_message(fName, message);
-	printf("%s", message);
-}
-
-void log_message(char *fName, char* message)
-{
-	FILE *fp;
-
-	fp = fopen(fName, "a");
-	if (fp != NULL)
-	{
-		fprintf(fp, "%s", message);
-		fclose(fp);
-	}
-	else
-	{
-		fprintf(stderr, "WARNING: In log_message: Could not open file %s\n", fName);
-	}
-
-}
-
-
-void resetFile(char *fName)
-{
-	FILE *filePointer;
-
-	filePointer = fopen(fName, "w");
-	fclose(filePointer);
-		
-}
-
-
 
 
 

@@ -5,13 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 #include <omp.h>
 #include "allocate.h"
-
-#define LOG_PROGRESS "log_progress.txt"
-#define LOG_STATS "log_stats.m"
-#define LOG_ICDLOOP "log_ICDLoop.txt"
-#define LOG_TIME "log_time.txt"
 
 #define OUTPUT_REFRESH_TIME 1.0
 
@@ -30,7 +26,7 @@
 /*#define WEIGHTDATATYPE unsigned char
 #define WEIGHTDATATYPE_string "unsigned char"*/
 
-#define AMATRIX_RHO 4.0/* System Matrix parameter rho: choose to be about 10<rho<100 */
+#define AMATRIX_RHO 4.0 /* System Matrix parameter rho*/
 
 /* AMATRIXCHANGE */
 #define ISBIJCOMPRESSED 1       /* 1: used compressed mode, 0: use uncompressed mode */
@@ -112,11 +108,9 @@ struct PathNames
     char wght[1000];
     char errSino[1000];
     char recon[1000];
-    char reconROI[1000];
     char proxMapInput[1000];
     char lastChange[1000];
     char timeToChange[1000];
-    char phantom[1000];
     char sysMatrix[1000];
     char wghtRecon[1000];
     char projInput[1000];
@@ -176,7 +170,6 @@ struct Image
                             /*    prox_f(v) = argmin_x{ f(x) + 1/2 ||x-v||^2 } */
     float ***lastChange;
     unsigned char ***timeToChange;
-    float ***phantom;
     float ***projInput;
     float ***backprojlikeOutput;
     struct RandomZiplineAux randomZiplineAux;
@@ -268,18 +261,11 @@ struct ReconParams
     double stopThresholdChange_pct;           /* stop threshold (%) */
     double stopThesholdRWFE_pct;
     double stopThesholdRUFE_pct;
-    double stopThesholdRRMSE_pct;
     int MaxIterations;              /* maximum number of iterations */
     char relativeChangeMode[200];
     double relativeChangeScaler;
     double relativeChangePercentile;
 
-    /**
-     *      Intermediate Saving
-     */
-    int downsampleFactorSino; 
-    int downsampleFactorRecon;             
-    char downsampleFNamePrefix[1000]; 
 
     /**
      *      Zipline Stuff
@@ -312,7 +298,6 @@ struct ReconParams
     /* Misc */
     int verbosity;
     int isComputeCost;
-    int isPhantomReconReference;
     char backprojlike_type[200]; 
 };
 
@@ -486,16 +471,6 @@ void freeSysMatrix(struct SysMatrix *A);
 void freeViewAngleList(struct ViewAngleList *list);
 
 
-
-void writeSinoData3DCone(char *fName, void ***sino, struct SinoParams *sinoParams, char *dataType);
-
-void readSinoData3DCone(char *fName, void ***sino, struct SinoParams *sinoParams, char *dataType);
-
-void writeImageData3DCone(char *fName, void ***arr, struct ImageParams *params, int isROI, char *dataType);
-
-void readImageData3DCone(char *fName, void ***arr, struct ImageParams *params, int isROI, char *dataType);
-
-
 /**************************************** stuff for random update ****************************************/
 void RandomZiplineAux_allocate(struct RandomZiplineAux *aux, struct ImageParams *imgParams, struct ReconParams *reconParams);
 
@@ -536,7 +511,7 @@ void tic(double *ticToc);
 
 void toc(double *ticToc);
 
-void ticToc_logAndDisp(double ticToc, char *ticTocName);
+void ticTocDisp(double ticToc, char *ticTocName);
 
 /**************************************** timer ****************************************/
 
@@ -555,6 +530,32 @@ float prctile(float arr[], long int len, float p);
 
 float prctile_copyFast(float arr[], long int len, float p, int subsampleFactor);
 
-/**************************************** misc ****************************************/
+/**************************************** IO ****************************************/
+
+long int keepWritingToBinaryFile(FILE *fp, void *var, long int numEls, int elSize, char *fName);
+
+long int keepReadingFromBinaryFile(FILE *fp, void *var, long int numEls, int elSize, char *fName);
+
+
+void printFileIOInfo( char* message, char* fName, long int size, char mode);
+
+void printProgressOfLoop( long int indexOfLoop, long int NumIterations);
+
+
+
+void logAndDisp_message(char *fName, char* message);
+
+void log_message(char *fName, char* message);
+
+void resetFile(char *fName);
+
+
+void printSinoParams(struct SinoParams *params);
+
+void printImgParams(struct ImageParams *params);
+
+void printReconParams(struct ReconParams *params);
+
+void printSysMatrixParams(struct SysMatrix *A);
 
 #endif /* MBIR_MODULAR_UTILITIES_3D_H */

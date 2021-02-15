@@ -49,15 +49,6 @@ void readAndAllocateViewAngleList(char *masterFile, char *plainParamsFile, struc
 
 void printPathNames(struct PathNames *pathNames);
 
-void printSinoParams(struct SinoParams *params);
-/**/
-
-void printImgParams(struct ImageParams *params);
-
-
-void printReconParams(struct ReconParams *params);
-
-void printSysMatrixParams(struct SysMatrix *A);
 
 int getDataTypeSize(char *dataType);
 
@@ -67,25 +58,15 @@ void read3DData(char *fName, void ***arr, long int N1, long int N2, long int N3,
 
 void write3DData(char *fName, void ***arr, long int N1, long int N2, long int N3, char *dataType);
 
-void writeDownSampledFloat3D(char *fName, float ***arr, long int N1, long int N2, long int N3, int D1, int D2, int D3);
 
+void writeSinoData3DCone(char *fName, void ***sino, struct SinoParams *sinoParams, char *dataType);
 
-long int keepWritingToBinaryFile(FILE *fp, void *var, long int numEls, int elSize, char *fName);
+void readSinoData3DCone(char *fName, void ***sino, struct SinoParams *sinoParams, char *dataType);
 
-long int keepReadingFromBinaryFile(FILE *fp, void *var, long int numEls, int elSize, char *fName);
+void writeImageData3DCone(char *fName, void ***arr, struct ImageParams *params, int isROI, char *dataType);
 
+void readImageData3DCone(char *fName, void ***arr, struct ImageParams *params, int isROI, char *dataType);
 
-void printFileIOInfo( char* message, char* fName, long int size, char mode);
-
-void printProgressOfLoop( long int indexOfLoop, long int NumIterations);
-
-
-
-void logAndDisp_message(char *fName, char* message);
-
-void log_message(char *fName, char* message);
-
-void resetFile(char *fName);
 
 
 #endif /* #ifndef IO3D_H */

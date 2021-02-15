@@ -4,7 +4,9 @@
 #include "cyInterface.h"
 
 
-void AmatrixComputeToFile(double *angles, struct SinoParams sinoParams, struct ImageParams imgParams, char *Amatrix_fname)
+void AmatrixComputeToFile(double *angles, 
+	struct SinoParams sinoParams, struct ImageParams imgParams, 
+	char *Amatrix_fname, char verbose)
 {
     struct SysMatrix A;
     struct ViewAngleList viewAngleList;
@@ -13,28 +15,38 @@ void AmatrixComputeToFile(double *angles, struct SinoParams sinoParams, struct I
 
     computeSysMatrix(&sinoParams, &imgParams, &A, &viewAngleList);
     
-    printSysMatrixParams(&A);
+    if(verbose){
+    	printSysMatrixParams(&A);
+    }
+
     writeSysMatrix(Amatrix_fname, &sinoParams, &imgParams, &A);
 
 }
 
+void recon(float *x, float *sino, float *wght, float *x_init, float *proxmap_input,
+	struct SinoParams sinoParams, struct ImageParams imgParams, struct ReconParams reconParams, 
+	char *Amatrix_fname)
+{
+	/*float ***img;
 
-// void allocate_3darray_from_flattened(struct matrix_float *A, struct flat_array_2D *array)
-// {
-//     int i;
+	img = (float ***)mem_alloc_float3D_from_flat(x, ImageParams.N_x, ImageParams.N_y, ImageParams.N_x)
 
-//     A->NRows = array->NRows;
-//     A->NCols = array->NCols;
+	mem_free_2D((void**)img);*/
+}
 
-//     /* Allocate and set array of pointers for multialloc array */
-//     A->mat = get_spc(sizeof(float *), A->NRows);
-//     for (i = 0; i < A->NRows ; i ++ ) {
-//         A->mat[i] = array->data_pt + i*(A->NCols);
-//     }
-// }
+void ***mem_alloc_float3D_from_flat(float *dataArray, size_t N1, size_t N2, size_t N3)
+{
+	void ***topTree;
+	long int i1, i2;
 
+	topTree = (void***)mem_alloc_2D(N1, N2, sizeof(void*));
 
-// void deallocate_3darray_to_flattened(struct matrix_float *A)
-// {
-//     free((void **)A->mat);
-// }
+	for(i1 = 0; i1 < N1; i1++)
+	for(i2 = 0; i2 < N2; i2++)
+	{
+		topTree[i1][i2] = dataArray + (i1*N2 + i2)*N3 * sizeof(float);
+	}
+
+	return (topTree);	
+}
+
