@@ -70,23 +70,6 @@ void write3DData(char *fName, void ***arr, long int N1, long int N2, long int N3
 void writeDownSampledFloat3D(char *fName, float ***arr, long int N1, long int N2, long int N3, int D1, int D2, int D3);
 
 
-long int keepWritingToBinaryFile(FILE *fp, void *var, long int numEls, int elSize, char *fName);
-
-long int keepReadingFromBinaryFile(FILE *fp, void *var, long int numEls, int elSize, char *fName);
-
-
-void printFileIOInfo( char* message, char* fName, long int size, char mode);
-
-void printProgressOfLoop( long int indexOfLoop, long int NumIterations);
-
-
-
-void logAndDisp_message(char *fName, char* message);
-
-void log_message(char *fName, char* message);
-
-void resetFile(char *fName);
-
 
 #endif /* #ifndef IO3D_H */
 

@@ -1153,8 +1153,105 @@ float prctile_copyFast(float arr[], long int len, float p, int subsampleFactor)
 }
 
 
+/* IO routines */
 
 
 
+long int keepWritingToBinaryFile(FILE *fp, void *var, long int numEls, int elSize, char *fName)
+{
+    /* Return number of bytes written */
+    long int numElsWritten;
+
+    numElsWritten = fwrite(var, elSize, numEls, fp);
+    if(numElsWritten != numEls)
+    {
+        fprintf(stderr, "ERROR in keepWritingToBinaryFile: file \"%s\" terminated early.\n", fName);
+        fprintf(stderr, "Tried to write %li elements of size %d Bytes. Wrote %li elements.\n", numEls, elSize, numElsWritten);
+
+        fclose(fp);
+        exit(-1);
+    }
+    return (long int) numEls * elSize;
+}
+
+long int keepReadingFromBinaryFile(FILE *fp, void *var, long int numEls, int elSize, char *fName)
+{
+    /* Return number of bytes read */
+    long int numElsRead;
+
+    numElsRead = fread(var, elSize, numEls, fp);
+    if(numElsRead != numEls)
+    {
+        fprintf(stderr, "ERROR in keepReadingFromBinaryFile: file \"%s\" terminated early.\n", fName);
+        fprintf(stderr, "Tried to read %li elements of size %d Bytes. Read %li elements.\n", numEls, elSize, numElsRead);
+        fclose(fp);
+        exit(-1);
+    }
+    return (long int) numEls * elSize;
+}
+
+
+void printFileIOInfo( char* functionName, char* fName, long int size, char mode)
+{
+    char readwrite[200];    /* puts the word "Read" or "Write" into the output */
+    switch(mode)
+    {
+        case 'r':   strcpy(readwrite, "Read "); break;
+        case 'w':   strcpy(readwrite, "Write"); break;
+        default:    printf("Error in printFileIOInfo: Use mode 'r' or 'w'\n");
+                    exit(-1);
+    }
+    printf("\n");
+    printf("    ************** FILE ACCESS ********************************\n");
+    printf(" ****  File access in: %s\n", functionName);
+    printf("*****  File name     : %s\n", fName);
+    printf("*****  %-14s: %-15ld bytes\n", readwrite, size);
+    printf("*****                = %-15e kB\n", (double) size*1e-3);
+    printf(" ****                = %-15e MB\n", (double) size*1e-6);
+    printf("    ***********************************************************\n");
+}
+
+void printProgressOfLoop( long int indexOfLoop, long int NumIterations)
+{
+    double percent;
+
+    percent = (double) (1+indexOfLoop) / (double) NumIterations * 100;
+    printf("\r[%.1e%%]", percent );
+    fflush(stdout); 
+
+}
+
+void logAndDisp_message(char *fName, char* message)
+{
+    log_message(fName, message);
+    printf("%s", message);
+}
+
+void log_message(char *fName, char* message)
+{
+    FILE *fp;
+
+    fp = fopen(fName, "a");
+    if (fp != NULL)
+    {
+        fprintf(fp, "%s", message);
+        fclose(fp);
+    }
+    else
+    {
+        fprintf(stderr, "WARNING: In log_message: Could not open file %s\n", fName);
+    }
+
+}
+
+
+void resetFile(char *fName)
+{
+    FILE *filePointer;
+
+    filePointer = fopen(fName, "w");
+    fclose(filePointer);
+        
+}
 
 

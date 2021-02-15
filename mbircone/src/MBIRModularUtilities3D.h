@@ -555,6 +555,23 @@ float prctile(float arr[], long int len, float p);
 
 float prctile_copyFast(float arr[], long int len, float p, int subsampleFactor);
 
-/**************************************** misc ****************************************/
+/**************************************** IO ****************************************/
+
+long int keepWritingToBinaryFile(FILE *fp, void *var, long int numEls, int elSize, char *fName);
+
+long int keepReadingFromBinaryFile(FILE *fp, void *var, long int numEls, int elSize, char *fName);
+
+
+void printFileIOInfo( char* message, char* fName, long int size, char mode);
+
+void printProgressOfLoop( long int indexOfLoop, long int NumIterations);
+
+
+
+void logAndDisp_message(char *fName, char* message);
+
+void log_message(char *fName, char* message);
+
+void resetFile(char *fName);
 
 #endif /* MBIR_MODULAR_UTILITIES_3D_H */
