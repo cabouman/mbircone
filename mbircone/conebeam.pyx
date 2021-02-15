@@ -118,6 +118,8 @@ def AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname):
     cdef SinoParams c_sinoparams
     cdef ImageParams c_imgparams
 
+    # Get pointer to 1D char array of Amatrix 
+    cdef cnp.ndarray[char, ndim=1, mode="c"] c_Amatrix_fname
     # Get pointer to 1D array of angles
     cdef cnp.ndarray[double, ndim=1, mode="c"] c_angles = angles
 
