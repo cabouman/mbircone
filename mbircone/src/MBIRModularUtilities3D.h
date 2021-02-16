@@ -564,4 +564,13 @@ void log_message(char *fName, char* message);
 
 void resetFile(char *fName);
 
+
+void printSinoParams(struct SinoParams *params);
+
+void printImgParams(struct ImageParams *params);
+
+void printReconParams(struct ReconParams *params);
+
+void printSysMatrixParams(struct SysMatrix *A);
+
 #endif /* MBIR_MODULAR_UTILITIES_3D_H */

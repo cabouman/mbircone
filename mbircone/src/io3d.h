@@ -49,15 +49,6 @@ void readAndAllocateViewAngleList(char *masterFile, char *plainParamsFile, struc
 
 void printPathNames(struct PathNames *pathNames);
 
-void printSinoParams(struct SinoParams *params);
-/**/
-
-void printImgParams(struct ImageParams *params);
-
-
-void printReconParams(struct ReconParams *params);
-
-void printSysMatrixParams(struct SysMatrix *A);
 
 int getDataTypeSize(char *dataType);
 
