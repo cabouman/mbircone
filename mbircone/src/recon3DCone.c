@@ -323,13 +323,13 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 
         if (reconParams->verbosity>1)
         {
-    		ticToc_logAndDisp(ticToc_randomization,	              "randomization              ");
-            ticToc_logAndDisp(ticToc_computeRelUpdate,            "computeRelUpdate           ");
-            ticToc_logAndDisp(ticToc_computeLastChangeThreshold,  "computeLastChangeThreshold ");
-    		ticToc_logAndDisp(ticToc_computeCost, 	              "computeCost                ");
-            ticToc_logAndDisp(ticToc_icdUpdate,                   "icdUpdate                  ");
-    		ticToc_logAndDisp(ticToc_iteration, 	              "iteration                  ");
-    		ticToc_logAndDisp(ticToc_icdUpdate_total, 	          "icdUpdate_total            ");
+    		ticTocDisp(ticToc_randomization,	              "randomization              ");
+            ticTocDisp(ticToc_computeRelUpdate,            "computeRelUpdate           ");
+            ticTocDisp(ticToc_computeLastChangeThreshold,  "computeLastChangeThreshold ");
+    		ticTocDisp(ticToc_computeCost, 	              "computeCost                ");
+            ticTocDisp(ticToc_icdUpdate,                   "icdUpdate                  ");
+    		ticTocDisp(ticToc_iteration, 	              "iteration                  ");
+    		ticTocDisp(ticToc_icdUpdate_total, 	          "icdUpdate_total            ");
         }
 		disp_iterationInfo(&reconAux, reconParams, itNumber, MaxIterations, cost, relUpdate, stopThresholdChange, sino->params.weightScaler_value, speedAuxICD.voxelsPerSecond, ticToc_icdUpdate, weightedNormSquared_e, ratioUpdated, RRMSE, stopThesholdRRMSE, reconAux.totalEquits);
 	}
@@ -348,7 +348,7 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 	freeParallelAux(&parallelAux);
 
 	toc(&ticToc_all);
-	ticToc_logAndDisp(ticToc_all, "MBIR3DCone");
+	ticTocDisp(ticToc_all, "MBIR3DCone");
 
 }
 

@@ -9,7 +9,6 @@
 #include "allocate.h"
 
 #define LOG_ICDLOOP "log_ICDLoop.txt"
-#define LOG_TIME "log_time.txt"
 
 #define OUTPUT_REFRESH_TIME 1.0
 
@@ -524,7 +523,7 @@ void tic(double *ticToc);
 
 void toc(double *ticToc);
 
-void ticToc_logAndDisp(double ticToc, char *ticTocName);
+void ticTocDisp(double ticToc, char *ticTocName);
 
 /**************************************** timer ****************************************/
 

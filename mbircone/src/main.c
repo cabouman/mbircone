@@ -35,10 +35,6 @@ int main(int argc, char *argv[])
 
     char isNeed_sino_DOT_wgt = 0;
     char exist_sino_DOT_wgt = 0;
-    /**
-     *      Reset Log files
-     */
-    resetFile(LOG_TIME);
 
     /**
      *      Process Command Line argument(s)

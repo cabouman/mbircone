@@ -24,7 +24,7 @@ void computeSysMatrix(struct SinoParams *sinoParams, struct ImageParams *imgPara
 
 
     toc(&ticToc);
-    ticToc_logAndDisp(ticToc, "computeSysMatrix");
+    ticTocDisp(ticToc, "computeSysMatrix");
 }
 
 void computeAMatrixParameters(struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A, struct ViewAngleList *viewAngleList)

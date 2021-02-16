@@ -288,7 +288,7 @@ void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageParams *i
 
 
     toc(&ticToc);
-    ticToc_logAndDisp(ticToc, "backProjectlike3DCone");
+    ticTocDisp(ticToc, "backProjectlike3DCone");
 
 }
 
@@ -346,7 +346,7 @@ void initializeWghtRecon(struct SysMatrix *A, struct Sino *sino, struct Image *i
     avg = computeAvgWghtRecon(img);
 
     toc(&ticToc);
-    ticToc_logAndDisp(ticToc, "initializeWghtRecon");
+    ticTocDisp(ticToc, "initializeWghtRecon");
 
     printf("\n -> Average Weight Scaler = %e\n", avg);
 
@@ -985,13 +985,9 @@ void toc(double *ticToc)
     (*ticToc) += omp_get_wtime();
 }
 
-void ticToc_logAndDisp(double ticToc, char *ticTocName)
+void ticTocDisp(double ticToc, char *ticTocName)
 {
-    char str[1000];
-
-    sprintf(str, "[ticToc] %s = %e s\n", ticTocName, ticToc);
-    logAndDisp_message(LOG_TIME, str);
-
+    printf("[ticToc] %s = %e s\n", ticTocName, ticToc);
 }
 
 /**************************************** timer ****************************************/
