@@ -114,7 +114,6 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
      */
 	icdInfoArray = mem_alloc_1D(reconAux.N_M_max, sizeof(struct ICDInfo3DCone));
 	resetFile(LOG_ICDLOOP);
-	resetFile(LOG_STATS);
 
 	timer_reset(&timer_icd_loop);
 	tic(&ticToc_all);

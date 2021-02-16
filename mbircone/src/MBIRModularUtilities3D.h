@@ -8,7 +8,6 @@
 #include <omp.h>
 #include "allocate.h"
 
-#define LOG_STATS "log_stats.m"
 #define LOG_ICDLOOP "log_ICDLoop.txt"
 #define LOG_TIME "log_time.txt"
 
