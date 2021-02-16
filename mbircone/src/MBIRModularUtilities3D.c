@@ -1222,130 +1222,115 @@ void resetFile(char *fName)
 
 void printSinoParams(struct SinoParams *params)
 {
-    char str[2000];
+    printf("\nSinogram parameters read:\n");
 
-    sprintf(str, "\nSinogram parameters read:\n");
+    printf("\tN_dv = %ld,\n", params->N_dv);
+    printf("\tN_dw = %ld,\n", params->N_dw);
+    printf("\tDelta_dv = %e,\n", params->Delta_dv);
+    printf("\tDelta_dw = %e,\n", params->Delta_dw);
+    printf("\tN_beta = %ld,\n", params->N_beta);
+    printf("\tu_s = %e,\n", params->u_s);
+    printf("\tu_r = %e,\n", params->u_r);
+    printf("\tv_r = %e,\n", params->v_r);
+    printf("\tu_d0 = %e,\n", params->u_d0);
+    printf("\tv_d0 = %e,\n", params->v_d0);
+    printf("\tw_d0 = %e,\n", params->w_d0);
+    printf("\t(potentially uninitialized:)\n");
+    printf("\tweightScaler_value = %e,\n", params->weightScaler_value);
 
-    sprintf(str, "%s\tN_dv = %ld,\n", str, params->N_dv);
-    sprintf(str, "%s\tN_dw = %ld,\n", str, params->N_dw);
-    sprintf(str, "%s\tDelta_dv = %e,\n", str, params->Delta_dv);
-    sprintf(str, "%s\tDelta_dw = %e,\n", str, params->Delta_dw);
-    sprintf(str, "%s\tN_beta = %ld,\n", str, params->N_beta);
-    sprintf(str, "%s\tu_s = %e,\n", str, params->u_s);
-    sprintf(str, "%s\tu_r = %e,\n", str, params->u_r);
-    sprintf(str, "%s\tv_r = %e,\n", str, params->v_r);
-    sprintf(str, "%s\tu_d0 = %e,\n", str, params->u_d0);
-    sprintf(str, "%s\tv_d0 = %e,\n", str, params->v_d0);
-    sprintf(str, "%s\tw_d0 = %e,\n", str, params->w_d0);
-    sprintf(str, "%s\t(potentially uninitialized:)\n", str);
-    sprintf(str, "%s\tweightScaler_value = %e,\n", str, params->weightScaler_value);
-    sprintf(str, "%s\n", str);
-    logAndDisp_message(LOG_PROGRESS, str);
 }
 
 void printImgParams(struct ImageParams *params)
 {
-    char str[2000];
-    sprintf(str, "\nImage parameters read:\n");
+    printf("\nImage parameters read:\n");
 
-    sprintf(str, "%s\tx_0 = %e \n", str, params->x_0);
-    sprintf(str, "%s\ty_0 = %e \n", str, params->y_0);
-    sprintf(str, "%s\tz_0 = %e \n", str, params->z_0);
-    sprintf(str, "%s\tN_x = %ld \n", str, params->N_x);
-    sprintf(str, "%s\tN_y = %ld \n", str, params->N_y);
-    sprintf(str, "%s\tN_z = %ld \n", str, params->N_z);
-    sprintf(str, "%s\tDelta_xy = %e \n", str, params->Delta_xy);
-    sprintf(str, "%s\tDelta_z = %e \n", str, params->Delta_z);
-    sprintf(str, "%s\tj_xstart_roi = %ld \n", str, params->j_xstart_roi);
-    sprintf(str, "%s\tj_ystart_roi = %ld \n", str, params->j_ystart_roi);
-    sprintf(str, "%s\tj_zstart_roi = %ld \n", str, params->j_zstart_roi);
-    sprintf(str, "%s\tj_xstop_roi = %ld \n", str, params->j_xstop_roi);
-    sprintf(str, "%s\tj_ystop_roi = %ld \n", str, params->j_ystop_roi);
-    sprintf(str, "%s\tj_zstop_roi = %ld \n", str, params->j_zstop_roi);
-    sprintf(str, "%s\n", str);
-
-    logAndDisp_message(LOG_PROGRESS, str);
+    printf("\tx_0 = %e \n", params->x_0);
+    printf("\ty_0 = %e \n", params->y_0);
+    printf("\tz_0 = %e \n", params->z_0);
+    printf("\tN_x = %ld \n", params->N_x);
+    printf("\tN_y = %ld \n", params->N_y);
+    printf("\tN_z = %ld \n", params->N_z);
+    printf("\tDelta_xy = %e \n", params->Delta_xy);
+    printf("\tDelta_z = %e \n", params->Delta_z);
+    printf("\tj_xstart_roi = %ld \n", params->j_xstart_roi);
+    printf("\tj_ystart_roi = %ld \n", params->j_ystart_roi);
+    printf("\tj_zstart_roi = %ld \n", params->j_zstart_roi);
+    printf("\tj_xstop_roi = %ld \n", params->j_xstop_roi);
+    printf("\tj_ystop_roi = %ld \n", params->j_ystop_roi);
+    printf("\tj_zstop_roi = %ld \n", params->j_zstop_roi);
 
 }
 
 
 void printReconParams(struct ReconParams *params)
 {
-    char str[2000];
-    str[0] = '\0';
 
-    sprintf(str, "%s\nReconstruction parameters read:\n", str);
+    printf("\nReconstruction parameters read:\n");
     
-    sprintf(str, "%s\tInitVal_recon = %e \n", str, params->InitVal_recon);
-    sprintf(str, "%s\tinitReconMode = %s \n", str, params->initReconMode);
-    sprintf(str, "%s\tpriorWeight_QGGMRF = %e \n", str, params->priorWeight_QGGMRF);
-    sprintf(str, "%s\tpriorWeight_proxMap = %e \n", str, params->priorWeight_proxMap);
-    sprintf(str, "%s\tq = %e \n", str, params->q);
-    sprintf(str, "%s\tp = %e \n", str, params->p);
-    sprintf(str, "%s\tT = %e \n", str, params->T);
-    sprintf(str, "%s\tsigmaX = %e \n", str, params->sigmaX);
-    sprintf(str, "%s\tbFace = %e \n", str, params->bFace);
-    sprintf(str, "%s\tbEdge = %e \n", str, params->bEdge);
-    sprintf(str, "%s\tbVertex = %e \n", str, params->bVertex);
-    sprintf(str, "%s\tsigma_lambda = %e \n", str, params->sigma_lambda);
-    sprintf(str, "%s\tis_positivity_constraint = %d \n", str, params->is_positivity_constraint);
-    sprintf(str, "%s\tisTGGMRF = %d \n", str, params->isTGGMRF);
+    printf("\tInitVal_recon = %e \n", params->InitVal_recon);
+    printf("\tinitReconMode = %s \n", params->initReconMode);
+    printf("\tpriorWeight_QGGMRF = %e \n", params->priorWeight_QGGMRF);
+    printf("\tpriorWeight_proxMap = %e \n", params->priorWeight_proxMap);
+    printf("\tq = %e \n", params->q);
+    printf("\tp = %e \n", params->p);
+    printf("\tT = %e \n", params->T);
+    printf("\tsigmaX = %e \n", params->sigmaX);
+    printf("\tbFace = %e \n", params->bFace);
+    printf("\tbEdge = %e \n", params->bEdge);
+    printf("\tbVertex = %e \n", params->bVertex);
+    printf("\tsigma_lambda = %e \n", params->sigma_lambda);
+    printf("\tis_positivity_constraint = %d \n", params->is_positivity_constraint);
+    printf("\tisTGGMRF = %d \n", params->isTGGMRF);
 
     
-    sprintf(str, "%s\tstopThresholdChange_pct = %e \n", str, params->stopThresholdChange_pct);
-    sprintf(str, "%s\tstopThesholdRWFE_pct = %e \n", str, params->stopThesholdRWFE_pct);
-    sprintf(str, "%s\tstopThesholdRUFE_pct = %e \n", str, params->stopThesholdRUFE_pct);
-    sprintf(str, "%s\tstopThesholdRRMSE_pct = %e \n", str, params->stopThesholdRRMSE_pct);
-    sprintf(str, "%s\tMaxIterations = %d \n", str, params->MaxIterations);
-    sprintf(str, "%s\trelativeChangeMode = %s \n", str, params->relativeChangeMode);
-    sprintf(str, "%s\trelativeChangeScaler = %e \n", str, params->relativeChangeScaler);
-    sprintf(str, "%s\trelativeChangePercentile = %e \n", str, params->relativeChangePercentile);
+    printf("\tstopThresholdChange_pct = %e \n", params->stopThresholdChange_pct);
+    printf("\tstopThesholdRWFE_pct = %e \n", params->stopThesholdRWFE_pct);
+    printf("\tstopThesholdRUFE_pct = %e \n", params->stopThesholdRUFE_pct);
+    printf("\tstopThesholdRRMSE_pct = %e \n", params->stopThesholdRRMSE_pct);
+    printf("\tMaxIterations = %d \n", params->MaxIterations);
+    printf("\trelativeChangeMode = %s \n", params->relativeChangeMode);
+    printf("\trelativeChangeScaler = %e \n", params->relativeChangeScaler);
+    printf("\trelativeChangePercentile = %e \n", params->relativeChangePercentile);
 
-    sprintf(str, "%s\tdownsampleFactorSino = %d \n", str, params->downsampleFactorSino);
-    sprintf(str, "%s\tdownsampleFactorRecon = %d \n", str, params->downsampleFactorRecon);
-    sprintf(str, "%s\tdownsampleFNamePrefix = %s \n", str, params->downsampleFNamePrefix);
-    sprintf(str, "%s\tN_G = %d \n", str, params->N_G);
-    sprintf(str, "%s\tzipLineMode = %d \n", str, params->zipLineMode);
-    sprintf(str, "%s\tnumVoxelsPerZiplineMax = %d \n", str, params->numVoxelsPerZiplineMax);
-    sprintf(str, "%s\tnumVoxelsPerZipline = %d \n", str, params->numVoxelsPerZipline);
-    sprintf(str, "%s\tnumZiplines = %d \n", str, params->numZiplines);
-    sprintf(str, "%s\tnumThreads = %d \n", str, params->numThreads);
-    sprintf(str, "%s\tweightScaler_estimateMode = %s \n", str, params->weightScaler_estimateMode);
-    sprintf(str, "%s\tweightScaler_domain = %s \n", str, params->weightScaler_domain);
-    sprintf(str, "%s\tweightScaler_value = %e \n", str, params->weightScaler_value);
+    printf("\tdownsampleFactorSino = %d \n", params->downsampleFactorSino);
+    printf("\tdownsampleFactorRecon = %d \n", params->downsampleFactorRecon);
+    printf("\tdownsampleFNamePrefix = %s \n", params->downsampleFNamePrefix);
+    printf("\tN_G = %d \n", params->N_G);
+    printf("\tzipLineMode = %d \n", params->zipLineMode);
+    printf("\tnumVoxelsPerZiplineMax = %d \n", params->numVoxelsPerZiplineMax);
+    printf("\tnumVoxelsPerZipline = %d \n", params->numVoxelsPerZipline);
+    printf("\tnumZiplines = %d \n", params->numZiplines);
+    printf("\tnumThreads = %d \n", params->numThreads);
+    printf("\tweightScaler_estimateMode = %s \n", params->weightScaler_estimateMode);
+    printf("\tweightScaler_domain = %s \n", params->weightScaler_domain);
+    printf("\tweightScaler_value = %e \n", params->weightScaler_value);
 
-    sprintf(str, "%s\tNHICD_Mode = %s \n", str, params->NHICD_Mode);
-    sprintf(str, "%s\tNHICD_ThresholdAllVoxels_ErrorPercent = %e \n", str, params->NHICD_ThresholdAllVoxels_ErrorPercent);
-    sprintf(str, "%s\tNHICD_percentage = %e \n", str, params->NHICD_percentage);
-    sprintf(str, "%s\tNHICD_random = %e \n", str, params->NHICD_random);
+    printf("\tNHICD_Mode = %s \n", params->NHICD_Mode);
+    printf("\tNHICD_ThresholdAllVoxels_ErrorPercent = %e \n", params->NHICD_ThresholdAllVoxels_ErrorPercent);
+    printf("\tNHICD_percentage = %e \n", params->NHICD_percentage);
+    printf("\tNHICD_random = %e \n", params->NHICD_random);
 
-    sprintf(str, "%s\tverbosity = %d \n", str, params->verbosity);
-    sprintf(str, "%s\tisComputeCost = %d \n", str, params->isComputeCost);
-    sprintf(str, "%s\tisPhantomReconReference = %d \n", str, params->isPhantomReconReference);
+    printf("\tverbosity = %d \n", params->verbosity);
+    printf("\tisComputeCost = %d \n", params->isComputeCost);
+    printf("\tisPhantomReconReference = %d \n", params->isPhantomReconReference);
 
-    sprintf(str, "%s\n", str);
-
-    logAndDisp_message(LOG_PROGRESS, str);
 }
 
 void printSysMatrixParams(struct SysMatrix *A)
 {
-    char str[1000];
 
-    sprintf(str, "\nSystemMatrix parameters:\n");
+    printf("\nSystemMatrix parameters:\n");
 
-    sprintf(str, "%s\ti_vstride_max = %ld \n", str, A->i_vstride_max);
-    sprintf(str, "%s\ti_wstride_max = %ld \n", str, A->i_wstride_max);
-    sprintf(str, "%s\tN_u = %ld \n", str, A->N_u);
-    sprintf(str, "%s\tDelta_u = %e \n", str, A->Delta_u);
-    sprintf(str, "%s\tu_0 = %e \n", str, A->u_0);
-    sprintf(str, "%s\tu_1 = %e \n", str, A->u_1);
-    sprintf(str, "%s\tB_ij_max = %e \n", str, A->B_ij_max);
-    sprintf(str, "%s\tC_ij_max = %e \n", str, A->C_ij_max);
-    sprintf(str, "%s\tB_ij_scaler = %e \n", str, A->B_ij_scaler);
-    sprintf(str, "%s\tC_ij_scaler = %e \n", str, A->C_ij_scaler);
-    sprintf(str, "%s\n", str);
+    printf("\ti_vstride_max = %ld \n", A->i_vstride_max);
+    printf("\ti_wstride_max = %ld \n", A->i_wstride_max);
+    printf("\tN_u = %ld \n", A->N_u);
+    printf("\tDelta_u = %e \n", A->Delta_u);
+    printf("\tu_0 = %e \n", A->u_0);
+    printf("\tu_1 = %e \n", A->u_1);
+    printf("\tB_ij_max = %e \n", A->B_ij_max);
+    printf("\tC_ij_max = %e \n", A->C_ij_max);
+    printf("\tB_ij_scaler = %e \n", A->B_ij_scaler);
+    printf("\tC_ij_scaler = %e \n", A->C_ij_scaler);
 
-    logAndDisp_message(LOG_PROGRESS, str);
 }
 

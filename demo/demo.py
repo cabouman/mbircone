@@ -46,4 +46,4 @@ imgparams['N_y_roi'] = 61
 imgparams['N_z_roi'] = 53
 
 Amatrix_fname = 'test.sysmatrix'
-mbircone.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname, verbose=0)
+mbircone.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname, verbose=1)
