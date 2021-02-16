@@ -39,7 +39,6 @@ int main(int argc, char *argv[])
      *      Reset Log files
      */
     resetFile(LOG_TIME);
-    resetFile(LOG_PROGRESS);
 
     /**
      *      Process Command Line argument(s)

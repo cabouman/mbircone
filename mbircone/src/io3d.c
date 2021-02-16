@@ -477,34 +477,30 @@ void readAndAllocateViewAngleList(char *masterFile, char *plainParamsFile, struc
 
 void printPathNames(struct PathNames *pathNames)
 {
-	char str[10000];
+	printf("\nPath Names Read:\n");
 
-	sprintf(str, "\nPath Names Read:\n");
+	printf("\tmasterFile = %s \n", pathNames->masterFile);
+	printf("\tplainParamsFile = %s \n", pathNames->plainParamsFile);
+	printf("\tsino = %s \n", pathNames->sino);
+	printf("\tdriftSino = %s \n", pathNames->driftSino);
+	printf("\twght = %s \n", pathNames->wght);
+	printf("\terrSino = %s \n", pathNames->errSino);
+	printf("\trecon = %s \n", pathNames->recon);
+	printf("\treconROI = %s \n", pathNames->reconROI);
+	printf("\tproxMapInput = %s \n", pathNames->proxMapInput);
+	printf("\tlastChange = %s \n", pathNames->lastChange);
+	printf("\ttimeToChange = %s \n", pathNames->timeToChange);
+	printf("\tphantom = %s \n", pathNames->phantom);
+	printf("\tsysMatrix = %s \n", pathNames->sysMatrix);
+	printf("\twghtRecon = %s \n", pathNames->wghtRecon);
+	printf("\tprojInput = %s \n", pathNames->projInput);
+	printf("\tprojOutput = %s \n", pathNames->projOutput);
+	printf("\tbackprojlikeInput = %s \n", pathNames->backprojlikeInput);
+	printf("\tbackprojlikeOutput = %s \n", pathNames->backprojlikeOutput);
+	printf("\testimateSino = %s \n", pathNames->estimateSino);
+	printf("\tconsensusRecon = %s \n", pathNames->consensusRecon);
+	printf("\tjigMeasurementsSino = %s \n", pathNames->jigMeasurementsSino);
 
-	sprintf(str, "%s\tmasterFile = %s \n", str, pathNames->masterFile);
-	sprintf(str, "%s\tplainParamsFile = %s \n", str, pathNames->plainParamsFile);
-	sprintf(str, "%s\n", str);
-	sprintf(str, "%s\tsino = %s \n", str, pathNames->sino);
-	sprintf(str, "%s\tdriftSino = %s \n", str, pathNames->driftSino);
-	sprintf(str, "%s\twght = %s \n", str, pathNames->wght);
-	sprintf(str, "%s\terrSino = %s \n", str, pathNames->errSino);
-	sprintf(str, "%s\trecon = %s \n", str, pathNames->recon);
-	sprintf(str, "%s\treconROI = %s \n", str, pathNames->reconROI);
-	sprintf(str, "%s\tproxMapInput = %s \n", str, pathNames->proxMapInput);
-	sprintf(str, "%s\tlastChange = %s \n", str, pathNames->lastChange);
-	sprintf(str, "%s\ttimeToChange = %s \n", str, pathNames->timeToChange);
-	sprintf(str, "%s\tphantom = %s \n", str, pathNames->phantom);
-	sprintf(str, "%s\tsysMatrix = %s \n", str, pathNames->sysMatrix);
-	sprintf(str, "%s\twghtRecon = %s \n", str, pathNames->wghtRecon);
-	sprintf(str, "%s\tprojInput = %s \n", str, pathNames->projInput);
-	sprintf(str, "%s\tprojOutput = %s \n", str, pathNames->projOutput);
-	sprintf(str, "%s\tbackprojlikeInput = %s \n", str, pathNames->backprojlikeInput);
-	sprintf(str, "%s\tbackprojlikeOutput = %s \n", str, pathNames->backprojlikeOutput);
-	sprintf(str, "%s\testimateSino = %s \n", str, pathNames->estimateSino);
-	sprintf(str, "%s\tconsensusRecon = %s \n", str, pathNames->consensusRecon);
-	sprintf(str, "%s\tjigMeasurementsSino = %s \n", str, pathNames->jigMeasurementsSino);
-
-	logAndDisp_message(LOG_PROGRESS, str);
 }
 
 

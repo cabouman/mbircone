@@ -10,7 +10,7 @@ void writeSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImagePara
     long int totsize = 0;
     long int N_x, N_y, N_z, N_beta, i_vstride_max, i_wstride_max, N_u;
     
-    logAndDisp_message(LOG_PROGRESS, "\nWrite System Matrix ... \n");
+    printf("\nWrite System Matrix ... \n");
     
     fp = fopen(fName, "w");
     if (fp == NULL)
@@ -200,7 +200,7 @@ void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageParams *i
         exit(-1);
     }
 
-    logAndDisp_message(LOG_PROGRESS, "\n Computing backProjectlike ...\n");
+    printf("\n Computing backProjectlike ...\n");
 
 
     tic(&ticToc);
@@ -299,7 +299,7 @@ void initializeWghtRecon(struct SysMatrix *A, struct Sino *sino, struct Image *i
     double B_ij, A_ij;
     double ticToc, avg;
 
-    logAndDisp_message(LOG_PROGRESS, "\nInitialize WghtRecon ...\n");
+    printf("\nInitialize WghtRecon ...\n");
 
 
     tic(&ticToc);
@@ -684,7 +684,6 @@ void*** allocateImageData3DCone( struct ImageParams *params, int dataTypeSize, i
 void allocateSysMatrix(struct SysMatrix *A, long int N_x, long int N_y, long int N_z, long int N_beta, long int i_vstride_max, long int i_wstride_max, long int N_u)
 {
     /*double totSizeGB;*/
-    /*logAndDisp_message(LOG_PROGRESS, "\nAllocate Space for A-matrix...\n");*/
 
     /*
     totSizeGB =\
