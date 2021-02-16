@@ -782,23 +782,6 @@ double computeRelUpdate(struct ReconAux *reconAux, struct ReconParams *reconPara
 	return relUpdate;
 }
 
-void writeICDLoopStatus2File(char *fName, long int index, long int MaxIndex, int itNumber, double voxelsPerSecond)
-{
-	FILE *filePointer;
-	double percentage;
-
-
-	filePointer = fopen(fName, "a");
-	percentage = ((double)index / (double)MaxIndex) * 100.0;
-	fprintf(filePointer, "(%2d) Loop Progress = %e %%  voxelsPerSecond = %e\n", itNumber, percentage, voxelsPerSecond);
-	 printf(           "\r(%2d) Loop Progress = %e %%  voxelsPerSecond = %e", itNumber, percentage, voxelsPerSecond);
-	 fflush(stdout);
-	fclose(filePointer);
-		
-	
-}
-
-
 
 /* * * * * * * * * * * * parallel * * * * * * * * * * * * **/
 void prepareParallelAux(struct ParallelAux *parallelAux, long int N_M_max)

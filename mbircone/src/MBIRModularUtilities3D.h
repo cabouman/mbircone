@@ -8,8 +8,6 @@
 #include <omp.h>
 #include "allocate.h"
 
-#define LOG_ICDLOOP "log_ICDLoop.txt"
-
 #define OUTPUT_REFRESH_TIME 1.0
 
 #define _MIN_(a, b) ((a)<(b) ? (a) : (b))

@@ -113,7 +113,6 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
      * 		Loop initialization
      */
 	icdInfoArray = mem_alloc_1D(reconAux.N_M_max, sizeof(struct ICDInfo3DCone));
-	resetFile(LOG_ICDLOOP);
 
 	timer_reset(&timer_icd_loop);
 	tic(&ticToc_all);
@@ -172,7 +171,6 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 						if (timer_hasPassed(&timer_icd_loop, OUTPUT_REFRESH_TIME))
 						{
 							speedAuxICD_computeSpeed(&speedAuxICD);
-							writeICDLoopStatus2File(LOG_ICDLOOP, j_xy, N_x*N_y, itNumber, speedAuxICD.voxelsPerSecond);
 						}
 						
 
@@ -215,7 +213,6 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 					if (timer_hasPassed(&timer_icd_loop, OUTPUT_REFRESH_TIME))
 					{
 						speedAuxICD_computeSpeed(&speedAuxICD);
-						writeICDLoopStatus2File(LOG_ICDLOOP, j_xyz, N_x*N_y*N_z, itNumber, speedAuxICD.voxelsPerSecond);
 					}
 
 					/**

@@ -59,8 +59,6 @@ void disp_iterationInfo(struct ReconAux *reconAux, struct ReconParams *reconPara
 
 double computeRelUpdate(struct ReconAux *reconAux, struct ReconParams *reconParams, struct Image *img);
 
-void writeICDLoopStatus2File(char *fName, long int index, long int MaxIndex, int itNumber, double voxelsPerSecond);
-
 /* * * * * * * * * * * * parallel * * * * * * * * * * * * **/
 void prepareParallelAux(struct ParallelAux *parallelAux, long int N_M_max);
 
