@@ -63,15 +63,13 @@ void readCmdLine(int argc, char *argv[], struct CmdLine *cmdLine)
 
 void printCmdLine(struct CmdLine *cmdLine)
 {
-	char str[500];
-	sprintf(str, 	"\n"
-					"Command line arguments read:\n"
-					"\tmasterFile = %s\n"
-					"\tplainParamsFile = %s\n"
-					"\tmodes = %s\n"
-					"\n",\
-					cmdLine->masterFile, cmdLine->plainParamsFile, cmdLine->modes);					
-	logAndDisp_message(LOG_PROGRESS, str);
+	printf("\n"
+			"Command line arguments read:\n"
+			"\tmasterFile = %s\n"
+			"\tplainParamsFile = %s\n"
+			"\tmodes = %s\n"
+			"\n",\
+			cmdLine->masterFile, cmdLine->plainParamsFile, cmdLine->modes);					
 }
 
 void readLineFromFile(char *fName, char lineNr, char *line, int lineSize)
