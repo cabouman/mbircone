@@ -1,7 +1,6 @@
 
 
 #include "MBIRModularUtilities3D.h"
-#include "io3d.h"
 
 /* write the System matrix to hard drive */
 void writeSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A)

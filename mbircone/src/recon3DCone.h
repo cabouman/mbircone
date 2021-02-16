@@ -1,5 +1,4 @@
 #include "MBIRModularUtilities3D.h"
-#include "io3d.h"
 #include "icd3d.h"
 
 

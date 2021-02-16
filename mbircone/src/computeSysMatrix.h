@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <math.h>
 #include "allocate.h"
-#include "io3d.h"
 #include "MBIRModularUtilities3D.h"
 
 void computeSysMatrix(struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A, struct ViewAngleList *viewAngleList);

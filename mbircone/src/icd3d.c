@@ -6,7 +6,6 @@
 
 #include "icd3d.h"
 #include "allocate.h"
-#include "io3d.h"
 
 
 void ICDStep3DCone(struct Sino *sino, struct Image *img, struct SysMatrix *A, struct ICDInfo3DCone *icdInfo, struct ReconParams *reconParams, struct ReconAux *reconAux)
