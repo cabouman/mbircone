@@ -5,7 +5,7 @@
 #include "recon3DCone.h"
 #include "allocate.h"
 
-void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconParams, struct SysMatrix *A, struct PathNames *pathNames)
+void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconParams, struct SysMatrix *A)
 {
 	int itNumber = 0, MaxIterations;
     double stopThresholdChange;
@@ -108,19 +108,6 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 	omp_set_num_threads(reconParams->numThreads);
 	prepareParallelAux(&parallelAux, reconAux.N_M_max);
 
-	/**
-	 * 		Super Voxel Stuff   
-	 */
-
-
-
-	/**
-	 * 		Print stuff
-	 */
-/*	printPathNames(pathNames);
-	printReconParams(reconParams);
-	printSinoParams(&sino->params);
-	printImgParams(&img->params);*/
 
     /**
      * 		Loop initialization

@@ -380,7 +380,7 @@ int main(int argc, char *argv[])
         /**
          *      Reconstruction
          */
-        MBIR3DCone(&img, &sino, &reconParams, &A, &pathNames);
+        MBIR3DCone(&img, &sino, &reconParams, &A);
 
 
         /**
