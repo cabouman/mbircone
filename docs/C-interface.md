@@ -102,6 +102,6 @@ Add verbose levels
 
 
 Purge data writing from inner functions
-Purgue log file writing from inner functions
+Purge log file writing from inner functions
 Remove plainparams dependency
 
