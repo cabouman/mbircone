@@ -352,8 +352,6 @@ int main(int argc, char *argv[])
         img.proxMapInput = (float***) allocateImageData3DCone( &img.params, sizeof(float), 0);
         img.lastChange = (float***) mem_alloc_3D(img.params.N_x, img.params.N_y, reconParams.numZiplines, sizeof(float));
         img.timeToChange = (unsigned char***) mem_alloc_3D(img.params.N_x, img.params.N_y, reconParams.numZiplines, sizeof(unsigned char));
-        if(reconParams.isPhantomReconReference)
-            img.phantom = (float***) allocateImageData3DCone( &img.params, sizeof(float), 0);
 
         /*
          *      Read sinogram data
@@ -368,9 +366,6 @@ int main(int argc, char *argv[])
         readImageData3DCone(pathNames.proxMapInput, (void***)img.proxMapInput, &img.params, 0, "float");
         read3DData(pathNames.lastChange, (void***)img.lastChange, img.params.N_x, img.params.N_y, reconParams.numZiplines, "float");
         read3DData(pathNames.timeToChange, (void***)img.timeToChange, img.params.N_x, img.params.N_y, reconParams.numZiplines, "unsigned char");
-
-        if(reconParams.isPhantomReconReference)
-            readImageData3DCone(pathNames.phantom, (void***)img.phantom, &img.params, 0, "float");
 
         /**
          *      Reconstruction
@@ -398,8 +393,6 @@ int main(int argc, char *argv[])
         mem_free_3D((void***)img.vox_roi);
         mem_free_3D((void***)img.lastChange);
         mem_free_3D((void***)img.timeToChange);
-        if(reconParams.isPhantomReconReference)
-            mem_free_3D((void***)img.phantom);
 
         mem_free_3D((void***)sino.e);
         mem_free_3D((void***)sino.estimateSino);
