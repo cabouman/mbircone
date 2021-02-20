@@ -172,7 +172,6 @@ struct Image
                             /*    prox_f(v) = argmin_x{ f(x) + 1/2 ||x-v||^2 } */
     float ***lastChange;
     unsigned char ***timeToChange;
-    float ***phantom;
     float ***projInput;
     float ***backprojlikeOutput;
     struct RandomZiplineAux randomZiplineAux;
