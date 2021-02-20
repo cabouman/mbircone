@@ -14,3 +14,5 @@ bash ../mbircone/bin/ConeBeam.sh "${master}" CBMODE_INV_prepare
 
 bash ../mbircone/bin/ConeBeam.sh "${master}" CBMODE_INV_recon
 
+python compare_phantom.py
+
