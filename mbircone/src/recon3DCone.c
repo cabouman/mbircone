@@ -10,8 +10,6 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 	int itNumber = 0, MaxIterations;
     double stopThresholdChange;
     double stopThesholdRWFE, stopThesholdRUFE;
-    double stopThesholdRRMSE;
-    double RRMSE = -1.0;
 	long int j_xy, j_x, j_y, j_z;
 	long int j_xyz;
 	long int N_x, N_y, N_z;
@@ -56,7 +54,6 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
     stopThresholdChange = reconParams->stopThresholdChange_pct/100.0;
     stopThesholdRWFE = reconParams->stopThesholdRWFE_pct/100.0;
     stopThesholdRUFE = reconParams->stopThesholdRUFE_pct/100.0;
-    stopThesholdRRMSE = reconParams->stopThesholdRRMSE_pct/100.0;
 	N_x = img->params.N_x;
 	N_y = img->params.N_y;
 	N_z = img->params.N_z;
@@ -289,11 +286,6 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 
         ratioUpdated = (double) reconAux.NumUpdatedVoxels / numVoxelsInMask;
         reconAux.totalEquits += ratioUpdated;
-
-
-        if(reconParams->isPhantomReconReference){
-        	RRMSE = computeRelativeRMSEFloatArray(&img->vox[0][0][0], &img->phantom[0][0][0], N_x*N_y*N_z);
-        }
 
 
 
