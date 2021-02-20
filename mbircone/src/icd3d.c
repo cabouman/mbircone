@@ -714,14 +714,13 @@ void updateIterationStatsGroup(struct ReconAux *reconAux, struct ICDInfo3DCone *
 }
 
 
-void disp_iterationInfo(struct ReconAux *reconAux, struct ReconParams *reconParams, int itNumber, int MaxIterations, double cost, double relUpdate, double stopThresholdChange, double weightScaler_value, double voxelsPerSecond, double ticToc_iteration, double weightedNormSquared_e, double ratioUpdated, double RRMSE, double stopThesholdRRMSE, double totalEquits)
+void disp_iterationInfo(struct ReconAux *reconAux, struct ReconParams *reconParams, int itNumber, int MaxIterations, double cost, double relUpdate, double stopThresholdChange, double weightScaler_value, double voxelsPerSecond, double ticToc_iteration, double weightedNormSquared_e, double ratioUpdated, double totalEquits)
 {
 	printf("************************** Iteration %-2d (max. %d) **************************\n", itNumber, MaxIterations);
 	printf("*  Cost                   = %-10.10e\n", cost);
 	printf("*  Rel. Update            = %-10.10e %% (threshold = %-10.10e %%)\n", relUpdate*100, stopThresholdChange*100);
 	printf("*  RWFE = ||e||_W/||y||_W = %-10.10e %% (threshold = %-10.10e %%)\n", reconAux->relativeWeightedForwardError*100, reconParams->stopThesholdRWFE_pct);
 	printf("*  RUFE = ||e|| / ||y||   = %-10.10e %% (threshold = %-10.10e %%)\n", reconAux->relativeUnweightedForwardError*100, reconParams->stopThesholdRUFE_pct);
-	printf("*  RRMSE                  = %-10.10e %% (threshold = %-10.10e %%)\n", RRMSE*100, reconParams->stopThesholdRRMSE_pct);
 	printf("* ----------------------------------------------------------------------------\n");
 	printf("*  1/M ||e||^2_W          = %-10.10e = 1/%-10.10f\n", weightedNormSquared_e, 1/weightedNormSquared_e);
 	printf("*  weightScaler_value     = %-10.10e = 1/%-10.10f\n", weightScaler_value, 1/weightScaler_value);

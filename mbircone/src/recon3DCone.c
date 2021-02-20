@@ -328,7 +328,7 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
     		ticTocDisp(ticToc_iteration, 	              "iteration                  ");
     		ticTocDisp(ticToc_icdUpdate_total, 	          "icdUpdate_total            ");
         }
-		disp_iterationInfo(&reconAux, reconParams, itNumber, MaxIterations, cost, relUpdate, stopThresholdChange, sino->params.weightScaler_value, speedAuxICD.voxelsPerSecond, ticToc_icdUpdate, weightedNormSquared_e, ratioUpdated, RRMSE, stopThesholdRRMSE, reconAux.totalEquits);
+		disp_iterationInfo(&reconAux, reconParams, itNumber, MaxIterations, cost, relUpdate, stopThresholdChange, sino->params.weightScaler_value, speedAuxICD.voxelsPerSecond, ticToc_icdUpdate, weightedNormSquared_e, ratioUpdated, reconAux.totalEquits);
 	}
 
 	mem_free_1D((void*)reconAux.NHICD_numUpdatedVoxels);
