@@ -105,3 +105,4 @@ Purge data writing from inner functions
 Purge log file writing from inner functions
 Remove plainparams dependency
 
+add function to convert ROI to ROR
