@@ -312,7 +312,7 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 		 */
         if (itNumber>0)
         {
-            if (relUpdate < stopThresholdChange || reconAux.relativeWeightedForwardError < stopThesholdRWFE || reconAux.relativeUnweightedForwardError < stopThesholdRUFE || (reconParams->isPhantomReconReference && RRMSE < stopThesholdRRMSE) )
+            if (relUpdate < stopThresholdChange || reconAux.relativeWeightedForwardError < stopThesholdRWFE || reconAux.relativeUnweightedForwardError < stopThesholdRUFE )
                 stopFlag = 1;
         }
 
