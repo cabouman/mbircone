@@ -1305,7 +1305,6 @@ void printReconParams(struct ReconParams *params)
 
     printf("\tverbosity = %d \n", params->verbosity);
     printf("\tisComputeCost = %d \n", params->isComputeCost);
-    printf("\tisPhantomReconReference = %d \n", params->isPhantomReconReference);
 
 }
 

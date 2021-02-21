@@ -124,9 +124,6 @@ off
 [isComputeCost]
 0
 
-[isPhantomReconReference]
-1
-
 [backprojlike_type] proj, entropy, kappa
 proj
 ############################################################################################

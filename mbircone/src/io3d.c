@@ -414,9 +414,6 @@ void readReconParams(char *masterFile, char *plainParamsFile, struct ReconParams
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "isComputeCost", temp, resolveFlag);
 	reconParams->isComputeCost = str2int(temp);
 
-	plainParams(plainParamsFile, get_set, masterFile, masterField, "isPhantomReconReference", temp, resolveFlag);
-	reconParams->isPhantomReconReference = str2int(temp);
-
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "backprojlike_type", temp, resolveFlag);
 	strcpy(reconParams->backprojlike_type, temp);
 

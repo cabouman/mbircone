@@ -304,7 +304,6 @@ struct ReconParams
     /* Misc */
     int verbosity;
     int isComputeCost;
-    int isPhantomReconReference;
     char backprojlike_type[200]; 
 };
 
