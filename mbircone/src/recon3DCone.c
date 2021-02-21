@@ -287,10 +287,6 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
         ratioUpdated = (double) reconAux.NumUpdatedVoxels / numVoxelsInMask;
         reconAux.totalEquits += ratioUpdated;
 
-
-
-		copyImage2ROI(img);
-
 		/* estimateSino */
 		floatArray_z_equals_aX_plus_bY(&sino->estimateSino[0][0][0], 1.0, &sino->vox[0][0][0], -1.0, &sino->e[0][0][0], sino->params.N_beta*sino->params.N_dv*sino->params.N_dw);
 

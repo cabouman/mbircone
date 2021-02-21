@@ -259,7 +259,6 @@ int main(int argc, char *argv[])
         sino.estimateSino = (float***) allocateSinoData3DCone(&sino.params, sizeof(float));
         sino.e = (float***) allocateSinoData3DCone(&sino.params, sizeof(float));
         img.vox = (float***) allocateImageData3DCone( &img.params, sizeof(float), 0);
-        img.vox_roi = (float***) allocateImageData3DCone( &img.params, sizeof(float), 1);
         img.proxMapInput = (float***) allocateImageData3DCone( &img.params, sizeof(float), 0);
         img.lastChange = (float***) mem_alloc_3D(img.params.N_x, img.params.N_y, reconParams.numZiplines, sizeof(float));
         img.timeToChange = (unsigned char***) mem_alloc_3D(img.params.N_x, img.params.N_y, reconParams.numZiplines, sizeof(unsigned char));
@@ -286,8 +285,7 @@ int main(int argc, char *argv[])
             exit(-1);
         }
         applyMask(img.vox, img.params.N_x, img.params.N_y, img.params.N_z);
-
-        copyImage2ROI(&img);
+        
         
         setFloatArray2Value(&img.proxMapInput[0][0][0], img.params.N_x*img.params.N_y*img.params.N_z, 0.0);
         setFloatArray2Value(&img.lastChange[0][0][0], img.params.N_x*img.params.N_y*reconParams.numZiplines, 0.0);
@@ -309,7 +307,6 @@ int main(int argc, char *argv[])
          */
         
         writeImageData3DCone(pathNames.recon, (void***)img.vox, &img.params, 0, "float");
-        writeImageData3DCone(pathNames.reconROI, (void***)img.vox_roi, &img.params, 1, "float");
         writeImageData3DCone(pathNames.proxMapInput, (void***)img.proxMapInput, &img.params, 0, "float");
         write3DData(pathNames.lastChange, (void***)img.lastChange, img.params.N_x, img.params.N_y, reconParams.numZiplines, "float");
         write3DData(pathNames.timeToChange, (void***)img.timeToChange, img.params.N_x, img.params.N_y, reconParams.numZiplines, "unsigned char");
@@ -324,7 +321,6 @@ int main(int argc, char *argv[])
         mem_free_3D((void***)sino.e);
 
         mem_free_3D((void***)img.vox);
-        mem_free_3D((void***)img.vox_roi);
         mem_free_3D((void***)img.proxMapInput);
         mem_free_3D((void***)img.lastChange);
         mem_free_3D((void***)img.timeToChange);
@@ -347,7 +343,6 @@ int main(int argc, char *argv[])
          *      Allocate space for image
          */
         img.vox = (float***) allocateImageData3DCone( &img.params, sizeof(float), 0);
-        img.vox_roi = (float***) allocateImageData3DCone( &img.params, sizeof(float), 1);
         img.wghtRecon = (float***) allocateImageData3DCone( &img.params, sizeof(float), 0);
         img.proxMapInput = (float***) allocateImageData3DCone( &img.params, sizeof(float), 0);
         img.lastChange = (float***) mem_alloc_3D(img.params.N_x, img.params.N_y, reconParams.numZiplines, sizeof(float));
@@ -377,7 +372,6 @@ int main(int argc, char *argv[])
          *      Write
          */
         writeImageData3DCone(pathNames.recon, (void***)img.vox, &img.params, 0, "float");
-        writeImageData3DCone(pathNames.reconROI, (void***)img.vox_roi, &img.params, 1, "float");
         write3DData(pathNames.lastChange, (void***)img.lastChange, img.params.N_x, img.params.N_y, reconParams.numZiplines, "float");
         write3DData(pathNames.timeToChange, (void***)img.timeToChange, img.params.N_x, img.params.N_y, reconParams.numZiplines, "unsigned char");
 
@@ -390,7 +384,6 @@ int main(int argc, char *argv[])
          */
         mem_free_3D((void***)img.vox);
         mem_free_3D((void***)img.proxMapInput);
-        mem_free_3D((void***)img.vox_roi);
         mem_free_3D((void***)img.lastChange);
         mem_free_3D((void***)img.timeToChange);
 
