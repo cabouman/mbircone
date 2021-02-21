@@ -37,9 +37,6 @@ recon like files
 [recon] Recon Path (x)
 ../inversion/object.recon
 
-[reconROI] Recon (ROI) Path
-../inversion/object.ROI.recon
-
 [proxMapInput] Proximal Mapping Input Path
 ../inversion/object.proxMapInput.recon
 

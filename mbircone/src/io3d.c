@@ -162,8 +162,6 @@ void readBinaryFNames(char *masterFile, char *plainParamsFile, struct PathNames 
 
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "recon", pathNames->recon, resolveFlag);
 
-	plainParams(plainParamsFile, get_set, masterFile, masterField, "reconROI", pathNames->reconROI, resolveFlag);
-
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "proxMapInput", pathNames->proxMapInput, resolveFlag);
 
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "lastChange", pathNames->lastChange, resolveFlag);
@@ -481,7 +479,6 @@ void printPathNames(struct PathNames *pathNames)
 	printf("\twght = %s \n", pathNames->wght);
 	printf("\terrSino = %s \n", pathNames->errSino);
 	printf("\trecon = %s \n", pathNames->recon);
-	printf("\treconROI = %s \n", pathNames->reconROI);
 	printf("\tproxMapInput = %s \n", pathNames->proxMapInput);
 	printf("\tlastChange = %s \n", pathNames->lastChange);
 	printf("\ttimeToChange = %s \n", pathNames->timeToChange);

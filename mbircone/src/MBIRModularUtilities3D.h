@@ -108,7 +108,6 @@ struct PathNames
     char wght[1000];
     char errSino[1000];
     char recon[1000];
-    char reconROI[1000];
     char proxMapInput[1000];
     char lastChange[1000];
     char timeToChange[1000];
