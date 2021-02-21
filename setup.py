@@ -14,10 +14,10 @@ AUTHOR = "Soumendu Majee"
 
 # Specifies directory containing cython functions to be compiled
 PACKAGE_DIR = "mbircone"
-SRC_FILES = [PACKAGE_DIR+'/src/allocate.c', PACKAGE_DIR+'/src/computeSysMatrix.c',
-             PACKAGE_DIR+'/src/cyInterface.c', PACKAGE_DIR+'/src/icd3d.c', PACKAGE_DIR+'/src/io3d.c',
-             PACKAGE_DIR+'/src/MBIRModularUtilities3D.c', PACKAGE_DIR+'/src/recon3DCone.c', PACKAGE_DIR+'/src/plainParams.c',
-             PACKAGE_DIR+'/conebeam.pyx']
+SRC_FILES = [PACKAGE_DIR+'/src/allocate.c', PACKAGE_DIR+'/src/MBIRModularUtilities3D.c',
+             PACKAGE_DIR+'/src/icd3d.c', PACKAGE_DIR+'/src/recon3DCone.c',
+             PACKAGE_DIR+'/src/computeSysMatrix.c',
+             PACKAGE_DIR+'/src/cyInterface.c', PACKAGE_DIR+'/conebeam.pyx']
 
 
 compiler_str = os.environ.get('CC')
