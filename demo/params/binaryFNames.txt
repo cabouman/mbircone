@@ -46,9 +46,6 @@ recon like files
 [lastChange] Image storing the amount of change from last voxel update
 ../inversion/object.lastChange.recon
 
-[phantom] Phantom image if available
-../inversion/object.phantom.recon
-
 [wghtRecon] Voxel-individual weight scaler
 ../inversion/object.wghtRecon.recon
 

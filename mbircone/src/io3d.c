@@ -170,8 +170,6 @@ void readBinaryFNames(char *masterFile, char *plainParamsFile, struct PathNames 
 
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "timeToChange", pathNames->timeToChange, resolveFlag);
 
-	plainParams(plainParamsFile, get_set, masterFile, masterField, "phantom", pathNames->phantom, resolveFlag);
-
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "sysMatrix", pathNames->sysMatrix, resolveFlag);
 
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "wghtRecon", pathNames->wghtRecon, resolveFlag);
@@ -490,7 +488,6 @@ void printPathNames(struct PathNames *pathNames)
 	printf("\tproxMapInput = %s \n", pathNames->proxMapInput);
 	printf("\tlastChange = %s \n", pathNames->lastChange);
 	printf("\ttimeToChange = %s \n", pathNames->timeToChange);
-	printf("\tphantom = %s \n", pathNames->phantom);
 	printf("\tsysMatrix = %s \n", pathNames->sysMatrix);
 	printf("\twghtRecon = %s \n", pathNames->wghtRecon);
 	printf("\tprojInput = %s \n", pathNames->projInput);

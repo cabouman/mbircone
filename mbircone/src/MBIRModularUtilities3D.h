@@ -112,7 +112,6 @@ struct PathNames
     char proxMapInput[1000];
     char lastChange[1000];
     char timeToChange[1000];
-    char phantom[1000];
     char sysMatrix[1000];
     char wghtRecon[1000];
     char projInput[1000];
