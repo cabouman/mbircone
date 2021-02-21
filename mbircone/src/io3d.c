@@ -353,9 +353,6 @@ void readReconParams(char *masterFile, char *plainParamsFile, struct ReconParams
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "stopThesholdRUFE_pct", temp, resolveFlag);
 	reconParams->stopThesholdRUFE_pct = str2double(temp);
 
-	plainParams(plainParamsFile, get_set, masterFile, masterField, "stopThesholdRRMSE_pct", temp, resolveFlag);
-	reconParams->stopThesholdRRMSE_pct = str2double(temp);
-
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "MaxIterations", temp, resolveFlag);
 	reconParams->MaxIterations = str2int(temp);
 

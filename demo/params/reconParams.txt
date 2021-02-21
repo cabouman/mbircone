@@ -59,9 +59,6 @@ FDK
 [stopThesholdRUFE_pct] stop threshold relative unweighted forward error (%)
 0
 
-[stopThesholdRRMSE_pct] stop threshold relative RMSE (x,x0) (%) (only works when phantom present)
-0
-
 [MaxIterations] maximum number of iterations
 10
 . . . . . . . . . . . . . . . . . . . . . . . . . . . . .  Relative Change Computation . . .

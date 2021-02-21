@@ -1280,7 +1280,6 @@ void printReconParams(struct ReconParams *params)
     printf("\tstopThresholdChange_pct = %e \n", params->stopThresholdChange_pct);
     printf("\tstopThesholdRWFE_pct = %e \n", params->stopThesholdRWFE_pct);
     printf("\tstopThesholdRUFE_pct = %e \n", params->stopThesholdRUFE_pct);
-    printf("\tstopThesholdRRMSE_pct = %e \n", params->stopThesholdRRMSE_pct);
     printf("\tMaxIterations = %d \n", params->MaxIterations);
     printf("\trelativeChangeMode = %s \n", params->relativeChangeMode);
     printf("\trelativeChangeScaler = %e \n", params->relativeChangeScaler);

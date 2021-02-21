@@ -262,7 +262,6 @@ struct ReconParams
     double stopThresholdChange_pct;           /* stop threshold (%) */
     double stopThesholdRWFE_pct;
     double stopThesholdRUFE_pct;
-    double stopThesholdRRMSE_pct;
     int MaxIterations;              /* maximum number of iterations */
     char relativeChangeMode[200];
     double relativeChangeScaler;
