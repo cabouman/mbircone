@@ -253,7 +253,6 @@ struct ReconParams
     /* Proximal Mapping */
         double sigma_lambda;        /* sigma_lambda: Proximal mapping scalar */
         int is_positivity_constraint;
-        int isTGGMRF;
     
     /**
      *      Stopping Conditions
