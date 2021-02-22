@@ -369,9 +369,6 @@ void readReconParams(char *masterFile, char *plainParamsFile, struct ReconParams
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "downsampleFactorRecon", temp, resolveFlag);
 	reconParams->downsampleFactorRecon = str2int(temp);
 
-	plainParams(plainParamsFile, get_set, masterFile, masterField, "downsampleFNamePrefix", temp, resolveFlag);
-	strcpy(reconParams->downsampleFNamePrefix, temp);
-
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "N_G", temp, resolveFlag);
 	reconParams->N_G = str2int(temp);
 

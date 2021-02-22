@@ -1287,7 +1287,6 @@ void printReconParams(struct ReconParams *params)
 
     printf("\tdownsampleFactorSino = %d \n", params->downsampleFactorSino);
     printf("\tdownsampleFactorRecon = %d \n", params->downsampleFactorRecon);
-    printf("\tdownsampleFNamePrefix = %s \n", params->downsampleFNamePrefix);
     printf("\tN_G = %d \n", params->N_G);
     printf("\tzipLineMode = %d \n", params->zipLineMode);
     printf("\tnumVoxelsPerZiplineMax = %d \n", params->numVoxelsPerZiplineMax);

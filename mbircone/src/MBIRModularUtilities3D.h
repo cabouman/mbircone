@@ -270,8 +270,7 @@ struct ReconParams
      *      Intermediate Saving
      */
     int downsampleFactorSino; 
-    int downsampleFactorRecon;             
-    char downsampleFNamePrefix[1000]; 
+    int downsampleFactorRecon;
 
     /**
      *      Zipline Stuff

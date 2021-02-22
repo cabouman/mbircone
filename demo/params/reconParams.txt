@@ -77,8 +77,6 @@ percentile
 [downsampleFactorRecon]
 20
 
-[downsampleFNamePrefix] 
-Downsampled/DS_
 ################################################################ Zipline Stuff #############
 [zipLineMode] (0: off, 1: conventional Zipline, 2: randomized Zipline, 3: Super Voxel ZL)
 2
