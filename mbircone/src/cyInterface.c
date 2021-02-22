@@ -21,23 +21,19 @@ void AmatrixComputeToFile(double *angles, struct SinoParams sinoParams, struct I
 
 }
 
+void ***mem_alloc_float3D_from_flat(float *dataArray, size_t N1, size_t N2, size_t N3)
+{
+	void ***topTree;
+	long int i1, i2;
 
-// void allocate_3darray_from_flattened(struct matrix_float *A, struct flat_array_2D *array)
-// {
-//     int i;
+	topTree = (void***)mem_alloc_2D(N1, N2, sizeof(void*));
 
-//     A->NRows = array->NRows;
-//     A->NCols = array->NCols;
+	for(i1 = 0; i1 < N1; i1++)
+	for(i2 = 0; i2 < N2; i2++)
+	{
+		topTree[i1][i2] = dataArray + (i1*N2 + i2)*N3 * sizeof(float);
+	}
 
-//     /* Allocate and set array of pointers for multialloc array */
-//     A->mat = get_spc(sizeof(float *), A->NRows);
-//     for (i = 0; i < A->NRows ; i ++ ) {
-//         A->mat[i] = array->data_pt + i*(A->NCols);
-//     }
-// }
+	return (topTree);	
+}
 
-
-// void deallocate_3darray_to_flattened(struct matrix_float *A)
-// {
-//     free((void **)A->mat);
-// }
