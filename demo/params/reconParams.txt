@@ -20,8 +20,6 @@ FDK
 [is_positivity_constraint] (1: positivity constraint on, 0: positivity constraint off )
 1
 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . QGGMRF . . . . . . . . . . .
-[isTGGMRF] (1: Converts QGGMRF->TGGMRF) (0: Uses QGGMRF)
-0
 
 [q] QGGMRF parameter (q>1, typical choice q=2)
 2

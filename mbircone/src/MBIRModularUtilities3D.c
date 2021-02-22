@@ -381,7 +381,6 @@ void computeSecondaryReconParams(struct ReconParams *reconParams, struct ImagePa
 {
     double sum;
     int N_max, N_z;
-    double s, eps, p, q, T, sigmaX;
 
     sum = 0;
     sum += reconParams->bFace>=0 ? 6*reconParams->bFace : 0;
@@ -408,40 +407,6 @@ void computeSecondaryReconParams(struct ReconParams *reconParams, struct ImagePa
     reconParams->numVoxelsPerZipline = ceil((double)N_z / ceil((double)N_z/N_max));
 
     reconParams->numZiplines = ceil((double)N_z / reconParams->numVoxelsPerZipline);
-
-    p = reconParams->p;
-    q = reconParams->q;
-
-    if (reconParams->isTGGMRF == 1)
-    {
-        eps = reconParams->T;
-        s = reconParams->sigmaX;
-
-        T = pow( (p/q * pow(eps/s, q)) , 1/p);
-        sigmaX = eps / T;
-
-        reconParams->T = T;
-        reconParams->sigmaX = sigmaX;
-    }
-    else if (reconParams->isTGGMRF == 0)
-    {
-        sigmaX = reconParams->sigmaX;
-        T = reconParams->T;
-
-        eps = sigmaX * T;
-        s = sigmaX * T * pow(p / (pow(T,p) * q), 1/q);
-    }
-    else
-    {
-        fprintf(stderr, "ERROR in computeSecondaryReconParams: Unknown isTGGMRF mode\n");
-        exit(-1);
-    }
-
-    printf("--- sigmaX = %e\n", sigmaX);
-    printf("--- T = %e\n", T);
-    printf("--- eps = %e\n", eps);
-    printf("--- s = %e\n", s);
-
 
 }
 
@@ -1274,7 +1239,6 @@ void printReconParams(struct ReconParams *params)
     printf("\tbVertex = %e \n", params->bVertex);
     printf("\tsigma_lambda = %e \n", params->sigma_lambda);
     printf("\tis_positivity_constraint = %d \n", params->is_positivity_constraint);
-    printf("\tisTGGMRF = %d \n", params->isTGGMRF);
 
     
     printf("\tstopThresholdChange_pct = %e \n", params->stopThresholdChange_pct);

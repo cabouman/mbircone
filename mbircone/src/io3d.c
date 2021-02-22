@@ -339,9 +339,6 @@ void readReconParams(char *masterFile, char *plainParamsFile, struct ReconParams
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "is_positivity_constraint", temp, resolveFlag);
 	reconParams->is_positivity_constraint = str2int(temp);
 
-	plainParams(plainParamsFile, get_set, masterFile, masterField, "isTGGMRF", temp, resolveFlag);
-	reconParams->isTGGMRF = str2int(temp);
-
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "stopThresholdChange_pct", temp, resolveFlag);
 	reconParams->stopThresholdChange_pct = str2double(temp);
 
