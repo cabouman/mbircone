@@ -1285,7 +1285,6 @@ void printReconParams(struct ReconParams *params)
     printf("\trelativeChangeScaler = %e \n", params->relativeChangeScaler);
     printf("\trelativeChangePercentile = %e \n", params->relativeChangePercentile);
 
-    printf("\tdownsampleFactorRecon = %d \n", params->downsampleFactorRecon);
     printf("\tN_G = %d \n", params->N_G);
     printf("\tzipLineMode = %d \n", params->zipLineMode);
     printf("\tnumVoxelsPerZiplineMax = %d \n", params->numVoxelsPerZiplineMax);

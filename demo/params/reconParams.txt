@@ -70,10 +70,6 @@ percentile
 
 [relativeChangePercentile] 	used if relativeChangeMode=='percentile': 			change=avg(change)/prctile(x(1:D:end),relativeChangePercentile)
 99.9
-################################################################ Intermediate saving #######
-
-[downsampleFactorRecon]
-20
 
 ################################################################ Zipline Stuff #############
 [zipLineMode] (0: off, 1: conventional Zipline, 2: randomized Zipline, 3: Super Voxel ZL)

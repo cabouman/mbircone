@@ -266,10 +266,6 @@ struct ReconParams
     double relativeChangeScaler;
     double relativeChangePercentile;
 
-    /**
-     *      Intermediate Saving
-     */
-    int downsampleFactorRecon;
 
     /**
      *      Zipline Stuff
