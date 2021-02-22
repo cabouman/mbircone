@@ -269,7 +269,6 @@ struct ReconParams
     /**
      *      Intermediate Saving
      */
-    int downsampleFactorSino; 
     int downsampleFactorRecon;
 
     /**

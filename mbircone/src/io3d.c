@@ -363,9 +363,6 @@ void readReconParams(char *masterFile, char *plainParamsFile, struct ReconParams
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "relativeChangePercentile", temp, resolveFlag);
 	reconParams->relativeChangePercentile = str2double(temp);
 
-	plainParams(plainParamsFile, get_set, masterFile, masterField, "downsampleFactorSino", temp, resolveFlag);
-	reconParams->downsampleFactorSino = str2int(temp);
-
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "downsampleFactorRecon", temp, resolveFlag);
 	reconParams->downsampleFactorRecon = str2int(temp);
 

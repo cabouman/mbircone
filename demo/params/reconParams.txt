@@ -71,8 +71,6 @@ percentile
 [relativeChangePercentile] 	used if relativeChangeMode=='percentile': 			change=avg(change)/prctile(x(1:D:end),relativeChangePercentile)
 99.9
 ################################################################ Intermediate saving #######
-[downsampleFactorSino] 
-20
 
 [downsampleFactorRecon]
 20
