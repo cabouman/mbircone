@@ -3,6 +3,9 @@
 # uncomment the following line to override mac's readlink with GNU readlink (more info in readme)
 # alias readlink='greadlink'
 
+rm ../mbircone/bin/main
+rm ../mbircone/src/*.o
+
 cur=$(pwd)
 cd ../mbircone
 make
