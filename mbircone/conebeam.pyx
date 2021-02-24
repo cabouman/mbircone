@@ -165,12 +165,12 @@ cdef map_py2c_imgparams(ImageParams* c_imgparams, imgparams):
 
 cdef map_py2c_reconparams(ReconParams* c_reconparams,
                           reconparams,
-                          char[:] cy_initReconMode,
-                          char[:] cy_relativeChangeMode,
-                          char[:] cy_weightScaler_estimateMode,
-                          char[:] cy_weightScaler_domain,
-                          char[:] cy_NHICD_Mode,
-                          char[:] cy_backprojlike_type):
+                          const char* cy_initReconMode,
+                          const char* cy_relativeChangeMode,
+                          const char* cy_weightScaler_estimateMode,
+                          const char* cy_weightScaler_domain,
+                          const char* cy_NHICD_Mode,
+                          const char* cy_backprojlike_type):
         c_reconparams.InitVal_recon = reconparams['InitVal_recon']                  # Initialization value InitVal_proxMapInput (mm-1)
 
         memset(c_reconparams.initReconMode, '\0', sizeof(c_reconparams.initReconMode))
@@ -309,12 +309,12 @@ def recon_cy(x, sino, wght, x_init, proxmap_input,
     map_py2c_imgparams(&c_imgparams, imgparams)
     map_py2c_reconparams(&c_reconparams,
                           reconparams,
-                          cy_initReconMode,
-                          cy_relativeChangeMode,
-                          cy_weightScaler_estimateMode,
-                          cy_weightScaler_domain,
-                          cy_NHICD_Mode,
-                          cy_backprojlike_type)
+                          &cy_initReconMode[0],
+                          &cy_relativeChangeMode[0],
+                          &cy_weightScaler_estimateMode[0],
+                          &cy_weightScaler_domain[0],
+                          &cy_NHICD_Mode[0],
+                          &cy_backprojlike_type[0])
 
     recon(&cy_x[0,0,0],
           &cy_sino[0,0,0],
