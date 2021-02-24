@@ -45,5 +45,48 @@ imgparams['N_x_roi'] = 61
 imgparams['N_y_roi'] = 61
 imgparams['N_z_roi'] = 53
 
+reconparams = dict()
+reconparams['InitVal_recon'] = 0
+reconparams['initReconMode'] = 'constant'
+reconparams['priorWeight_QGGMRF'] = 1
+reconparams['priorWeight_proxMap'] = -1
+reconparams['is_positivity_constraint'] = 1
+reconparams['q'] = 2
+reconparams['p'] = 1
+reconparams['T'] = 0.02
+reconparams['sigmaX'] = 5
+reconparams['bFace'] = 1.0
+reconparams['bEdge'] = 0.70710678118
+reconparams['bVertex'] = 0.57735026919
+reconparams['sigma_lambda'] = 1
+reconparams['stopThresholdChange_pct'] = 0.00
+reconparams['stopThesholdRWFE_pct'] = 0
+reconparams['stopThesholdRUFE_pct'] = 0
+reconparams['MaxIterations'] = 10
+reconparams['relativeChangeMode'] = 'percentile'
+reconparams['relativeChangeScaler'] = 0.1
+reconparams['relativeChangePercentile'] = 99.9
+reconparams['zipLineMode'] = 2
+reconparams['N_G'] = 2
+reconparams['numVoxelsPerZiplineMax'] = 200
+reconparams['numThreads'] = 20
+reconparams['weightScaler_domain'] = 'spatiallyVariant'
+reconparams['weightScaler_estimateMode'] = 'None'
+reconparams['weightScaler_value'] = 1
+reconparams['NHICD_Mode'] = 'off'
+reconparams['NHICD_ThresholdAllVoxels_ErrorPercent'] = 80
+reconparams['NHICD_percentage'] = 15
+reconparams['NHICD_random'] = 20
+reconparams['verbosity'] = 0
+reconparams['isComputeCost'] = 0
+reconparams['backprojlike_type'] = 'proj'
+
+
+
 Amatrix_fname = 'test.sysmatrix'
 mbircone.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname, verbose=1)
+x = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']))
+x_init = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']))
+proxmap_input = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']))
+mbircone.recon_cy(x, sino, wght, x_init, proxmap_input,
+             sinoparams, imgparams, reconparams, Amatrix_fname)
