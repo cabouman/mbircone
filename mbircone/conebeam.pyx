@@ -3,7 +3,7 @@ import numpy as np
 import ctypes           # Import python package required to use cython
 cimport cython          # Import cython package
 cimport numpy as cnp    # Import specialized cython support for numpy
-from libc.string cimport strncpy
+from libc.string cimport memset,strcpy
 
 
 # Import c data structure
@@ -122,7 +122,7 @@ cdef extern from "./src/cyInterface.h":
         char *Amatrix_fname, char verbose);
 
     void recon(float *x, float *sino, float *wght, float *x_init, float *proxmap_input,
-	SinoParams c_sinoparams, ImageParams c_imgparams, ReconParams c_reconParams,
+	SinoParams c_sinoparams, ImageParams c_imgparams, ReconParams c_reconparams,
 	char *Amatrix_fname);
 
 
@@ -163,66 +163,82 @@ cdef map_py2c_imgparams(ImageParams* c_imgparams, imgparams):
     c_imgparams.N_z_roi = imgparams['N_z_roi']
 
 
-cdef map_py2c_reconparams(ReconParams* c_reconparams, reconparams):
-        c_reconparams.InitVal_recon = c_reconparams['InitVal_recon']                  # Initialization value InitVal_proxMapInput (mm-1)
-        char initReconMode[200];
+cdef map_py2c_reconparams(ReconParams* c_reconparams,
+                          reconparams,
+                          char[:] cy_initReconMode,
+                          char[:] cy_relativeChangeMode,
+                          char[:] cy_weightScaler_estimateMode,
+                          char[:] cy_weightScaler_domain,
+                          char[:] cy_NHICD_Mode,
+                          char[:] cy_backprojlike_type):
+        c_reconparams.InitVal_recon = reconparams['InitVal_recon']                  # Initialization value InitVal_proxMapInput (mm-1)
 
-        c_reconparams.priorWeight_QGGMRF = c_reconparams['priorWeight_QGGMRF']                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping)
-        c_reconparams.priorWeight_proxMap = c_reconparams['priorWeight_proxMap']                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping)
+        memset(c_reconparams.initReconMode, '\0', sizeof(c_reconparams.initReconMode))
+        strcpy(c_reconparams.initReconMode, cy_initReconMode)
+
+        c_reconparams.priorWeight_QGGMRF = reconparams['priorWeight_QGGMRF']                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping)
+        c_reconparams.priorWeight_proxMap = reconparams['priorWeight_proxMap']                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping)
 
         # QGGMRF
-        c_reconparams.q = c_reconparams['q']                   # q: QGGMRF parameter (q>1, typical choice q=2)
-        c_reconparams.p = c_reconparams['p']                   # p: QGGMRF parameter (1<=p<q)
-        c_reconparams.T = c_reconparams['T']                   # T: QGGMRF parameter
-        c_reconparams.sigmaX = c_reconparams['sigmaX']              # sigmaX: QGGMRF parameter
-        c_reconparams.bFace = c_reconparams['bFace']               # bFace: relative neighbor weight: cube faces
-        c_reconparams.bEdge = c_reconparams['bEdge']               # bEdge: relative neighbor weight: cube edges
-        c_reconparams.bVertex = c_reconparams['bVertex']             # bVertex: relative neighbor weight: cube vertices
+        c_reconparams.q = reconparams['q']                   # q: QGGMRF parameter (q>1, typical choice q=2)
+        c_reconparams.p = reconparams['p']                   # p: QGGMRF parameter (1<=p<q)
+        c_reconparams.T = reconparams['T']                   # T: QGGMRF parameter
+        c_reconparams.sigmaX = reconparams['sigmaX']              # sigmaX: QGGMRF parameter
+        c_reconparams.bFace = reconparams['bFace']               # bFace: relative neighbor weight: cube faces
+        c_reconparams.bEdge = reconparams['bEdge']               # bEdge: relative neighbor weight: cube edges
+        c_reconparams.bVertex = reconparams['bVertex']             # bVertex: relative neighbor weight: cube vertices
         # Proximal Mapping
-        c_reconparams.sigma_lambda = c_reconparams['sigma_lambda']        # sigma_lambda: Proximal mapping scalar
-        c_reconparams.is_positivity_constraint = c_reconparams['is_positivity_constraint']
+        c_reconparams.sigma_lambda = reconparams['sigma_lambda']        # sigma_lambda: Proximal mapping scalar
+        c_reconparams.is_positivity_constraint = reconparams['is_positivity_constraint']
 
 
          # Stopping Conditions
 
-        c_reconparams.stopThresholdChange_pct = c_reconparams['stopThresholdChange_pct']           # stop threshold (%)
-        c_reconparams.stopThesholdRWFE_pct = c_reconparams['stopThesholdRWFE_pct']
-        c_reconparams.stopThesholdRUFE_pct = c_reconparams['stopThesholdRUFE_pct']
-        c_reconparams.MaxIterations = c_reconparams['MaxIterations']              # maximum number of iterations
-        char relativeChangeMode[200];
-        c_reconparams.relativeChangeScaler = c_reconparams['relativeChangeScaler']
-        c_reconparams.relativeChangePercentile = c_reconparams['relativeChangePercentile']
+        c_reconparams.stopThresholdChange_pct = reconparams['stopThresholdChange_pct']           # stop threshold (%)
+        c_reconparams.stopThesholdRWFE_pct = reconparams['stopThesholdRWFE_pct']
+        c_reconparams.stopThesholdRUFE_pct = reconparams['stopThesholdRUFE_pct']
+        c_reconparams.MaxIterations = reconparams['MaxIterations']              # maximum number of iterations
+        memset(c_reconparams.relativeChangeMode, '\0', sizeof(c_reconparams.relativeChangeMode))
+        strcpy(c_reconparams.relativeChangeMode, cy_relativeChangeMode)
+        c_reconparams.relativeChangeScaler = reconparams['relativeChangeScaler']
+        c_reconparams.relativeChangePercentile = reconparams['relativeChangePercentile']
 
 
          # Zipline Stuff
 
-        c_reconparams.N_G = c_reconparams['N_G']                # Number of groups for group ICD
-        c_reconparams.zipLineMode = c_reconparams['zipLineMode']                # Zipline mode: (0: off, 1: conventional Zipline, 2: randomized Zipline)
-        c_reconparams.numVoxelsPerZiplineMax = c_reconparams['numVoxelsPerZiplineMax']
-        c_reconparams.numVoxelsPerZipline = c_reconparams['numVoxelsPerZipline']
-        c_reconparams.numZiplines = c_reconparams['numZiplines']
+        c_reconparams.N_G = reconparams['N_G']                # Number of groups for group ICD
+        c_reconparams.zipLineMode = reconparams['zipLineMode']                # Zipline mode: (0: off, 1: conventional Zipline, 2: randomized Zipline)
+        c_reconparams.numVoxelsPerZiplineMax = reconparams['numVoxelsPerZiplineMax']
+        c_reconparams.numVoxelsPerZipline = reconparams['numVoxelsPerZipline']
+        c_reconparams.numZiplines = reconparams['numZiplines']
 
 
         # Parallel Stuff
-        c_reconparams.numThreads = c_reconparams['numThreads']                 # numThreads: Number of threads
+        c_reconparams.numThreads = reconparams['numThreads']                 # numThreads: Number of threads
 
         # Weight scaler stuff
 
-        char weightScaler_estimateMode[200];     # Estimate weight scaler? 1: Yes. 0: Use user specified value
-        char weightScaler_domain[200];
-        c_reconparams.weightScaler_value = c_reconparams['weightScaler_value']            # User specified weight scaler
+        # Estimate weight scaler? 1: Yes. 0: Use user specified value
+        memset(c_reconparams.weightScaler_estimateMode, '\0', sizeof(c_reconparams.weightScaler_estimateMode))
+        strcpy(c_reconparams.weightScaler_estimateMode, cy_weightScaler_estimateMode)
+        memset(c_reconparams.weightScaler_domain, '\0', sizeof(c_reconparams.weightScaler_domain))
+        strcpy(c_reconparams.weightScaler_domain, cy_weightScaler_domain)
+
+        c_reconparams.weightScaler_value = reconparams['weightScaler_value']            # User specified weight scaler
 
 
         # NHICD stuff
-        char NHICD_Mode[200];
-        c_reconparams.NHICD_ThresholdAllVoxels_ErrorPercent = c_reconparams['NHICD_ThresholdAllVoxels_ErrorPercent']
-        c_reconparams.NHICD_percentage = c_reconparams['NHICD_percentage']
-        c_reconparams.NHICD_random = c_reconparams['NHICD_random']
+        memset(c_reconparams.NHICD_Mode, '\0', sizeof(c_reconparams.NHICD_Mode))
+        strcpy(c_reconparams.NHICD_Mode, cy_NHICD_Mode)
+        c_reconparams.NHICD_ThresholdAllVoxels_ErrorPercent = reconparams['NHICD_ThresholdAllVoxels_ErrorPercent']
+        c_reconparams.NHICD_percentage = reconparams['NHICD_percentage']
+        c_reconparams.NHICD_random = reconparams['NHICD_random']
 
         # Misc
-        c_reconparams.verbosity = c_reconparams['verbosity']
-        c_reconparams.isComputeCost = c_reconparams['isComputeCost']
-        char backprojlike_type[200];
+        c_reconparams.verbosity = reconparams['verbosity']
+        c_reconparams.isComputeCost = reconparams['isComputeCost']
+        memset(c_reconparams.backprojlike_type, '\0', sizeof(c_reconparams.backprojlike_type))
+        strcpy(c_reconparams.backprojlike_type, cy_backprojlike_type)
 
 
 
@@ -262,4 +278,52 @@ def AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname, verbos
     c_Amatrix_fname = string_to_char_array(Amatrix_fname)
 
     AmatrixComputeToFile(&c_angles[0], c_sinoparams, c_imgparams, &c_Amatrix_fname[0], verbose)
+
+def recon_cy(x, sino, wght, x_init, proxmap_input,
+             sinoparams, imgparams, reconparams, py_Amatrix_fname):
+
+    py_x = np.ascontiguousarray(x, dtype=np.single)
+    py_sino = np.ascontiguousarray(sino, dtype=np.single)
+    py_wght = np.ascontiguousarray(wght, dtype=np.single)
+    py_x_init = np.ascontiguousarray(x_init, dtype=np.single)
+    py_proxmap_input = np.ascontiguousarray(proxmap_input, dtype=np.single)
+
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_x = py_x
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_sino = py_sino
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_wght = py_wght
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_x_init = py_x_init
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_proxmap_input = py_proxmap_input
+    cdef cnp.ndarray[char, ndim=1, mode="c"] c_Amatrix_fname = string_to_char_array(py_Amatrix_fname)
+    cdef cnp.ndarray[char, ndim=1, mode="c"] cy_initReconMode = string_to_char_array(reconparams["initReconMode"])
+    cdef cnp.ndarray[char, ndim=1, mode="c"] cy_relativeChangeMode = string_to_char_array(reconparams["relativeChangeMode"])
+    cdef cnp.ndarray[char, ndim=1, mode="c"] cy_weightScaler_estimateMode = string_to_char_array(reconparams["weightScaler_estimateMode"])
+    cdef cnp.ndarray[char, ndim=1, mode="c"] cy_weightScaler_domain = string_to_char_array(reconparams["weightScaler_domain"])
+    cdef cnp.ndarray[char, ndim=1, mode="c"] cy_NHICD_Mode = string_to_char_array(reconparams["NHICD_Mode"])
+    cdef cnp.ndarray[char, ndim=1, mode="c"] cy_backprojlike_type = string_to_char_array(reconparams["backprojlike_type"])
+
+    cdef ImageParams c_imgparams
+    cdef SinoParams c_sinoparams
+    cdef ReconParams c_reconparams
+
+    map_py2c_sinoparams(&c_sinoparams, sinoparams)
+    map_py2c_imgparams(&c_imgparams, imgparams)
+    map_py2c_reconparams(&c_reconparams,
+                          reconparams,
+                          cy_initReconMode,
+                          cy_relativeChangeMode,
+                          cy_weightScaler_estimateMode,
+                          cy_weightScaler_domain,
+                          cy_NHICD_Mode,
+                          cy_backprojlike_type)
+
+    recon(&cy_x,
+          &cy_sino,
+          &cy_wght,
+          &cy_x_init,
+          &cy_proxmap_input,
+          c_sinoparams,
+          c_imgparams,
+          c_reconparams,
+	      &c_Amatrix_fname)
+
 
