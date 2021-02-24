@@ -102,6 +102,8 @@ Add verbose levels
 
 add function to convert ROI to ROR
 
+remove Ax variable allocation (estimate sino)
+
 
 Done: 
 
