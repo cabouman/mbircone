@@ -316,14 +316,14 @@ def recon_cy(x, sino, wght, x_init, proxmap_input,
                           cy_NHICD_Mode,
                           cy_backprojlike_type)
 
-    recon(&cy_x,
-          &cy_sino,
-          &cy_wght,
-          &cy_x_init,
-          &cy_proxmap_input,
+    recon(&cy_x[0,0,0],
+          &cy_sino[0,0,0],
+          &cy_wght[0,0,0],
+          &cy_x_init[0,0,0],
+          &cy_proxmap_input[0,0,0],
           c_sinoparams,
           c_imgparams,
           c_reconparams,
-	      &c_Amatrix_fname)
+	      &c_Amatrix_fname[0])
 
 
