@@ -32,7 +32,7 @@ void recon(float *x, float *sino, float *wght, float *x_init, float *proxmap_inp
 	img = (float ***)mem_alloc_float3D_from_flat(x, ImageParams.N_x, ImageParams.N_y, ImageParams.N_x)
 
 	mem_free_2D((void**)img);*/
-	printf("initReconMode: %s\n",reconParams.initReconMode)
+	printf("initReconMode: %s\n",reconParams.initReconMode);
 }
 
 void ***mem_alloc_float3D_from_flat(float *dataArray, size_t N1, size_t N2, size_t N3)
