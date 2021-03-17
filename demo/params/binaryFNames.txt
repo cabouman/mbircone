@@ -6,9 +6,6 @@ sinogram like files
 [sino] Sinogram Path (y)
 ../inversion/object.sino
 
-[estimateSino] Forward projection of reconstruction (Ax)
-../inversion/object.estimateSino.sino
-
 [errSino] Error Sinogram Path (e = y - Ax)
 ../inversion/object.err.sino
 

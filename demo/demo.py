@@ -1,7 +1,44 @@
 
+import os
 import numpy as np
 # from mbircone import AmatrixComputeToFile_cy
 import mbircone
+import matplotlib.pyplot as plt
+
+def read_ND(filePath, n_dim, dtype='float32', ntype='int32'):
+
+    with open(filePath, 'rb') as fileID:
+
+        sizesArray = np.fromfile( fileID, dtype=ntype, count=n_dim)
+        numElements = np.prod(sizesArray)
+        dataArray = np.fromfile(fileID, dtype=dtype, count=numElements).reshape(sizesArray)
+
+    return dataArray
+
+def plot_image(img, title=None, filename=None, vmin=None, vmax=None):
+    """
+    Function to display and save a 2D array as an image.
+
+    Args:
+        img: 2D numpy array to display
+        title: Title of plot image
+        filename: A path to save plot image
+        vmin: Value mapped to black
+        vmax: Value mapped to white
+    """
+
+    plt.ion()
+    fig = plt.figure()
+    imgplot = plt.imshow(img, vmin=vmin, vmax=vmax)
+    plt.title(label=title)
+    imgplot.set_cmap('gray')
+    plt.colorbar()
+
+    if not os.path.exists(os.path.dirname(filename)):
+        os.mkdir(os.path.dirname(filename))
+    
+    plt.savefig(filename)
+
 
 
 sino = np.load('sino.npy')
@@ -72,8 +109,8 @@ reconparams['numVoxelsPerZiplineMax'] = 200
 reconparams['numVoxelsPerZipline'] = 200
 reconparams['numZiplines'] = 4
 reconparams['numThreads'] = 20
-reconparams['weightScaler_domain'] = 'spatiallyVariant'
-reconparams['weightScaler_estimateMode'] = 'None'
+reconparams['weightScaler_domain'] = 'spatiallyInvariant'
+reconparams['weightScaler_estimateMode'] = 'avgWghtRecon'
 reconparams['weightScaler_value'] = 1
 reconparams['NHICD_Mode'] = 'off'
 reconparams['NHICD_ThresholdAllVoxels_ErrorPercent'] = 80
@@ -87,8 +124,31 @@ reconparams['backprojlike_type'] = 'proj'
 
 Amatrix_fname = 'test.sysmatrix'
 mbircone.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname, verbose=1)
-x = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']))
 x_init = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']))
 proxmap_input = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']))
-mbircone.recon_cy(x, sino, wght, x_init, proxmap_input,
+
+
+print('Reconstructing ...')
+x = mbircone.recon_cy(sino, wght, x_init, proxmap_input,
              sinoparams, imgparams, reconparams, Amatrix_fname)
+print('Reconstructing done.')
+
+Ax = mbircone.project_cy(x, sinoparams, imgparams, Amatrix_fname)
+
+x = np.swapaxes(x, 0, 2)
+Ax = np.swapaxes(Ax, 1, 2)
+sino = np.swapaxes(sino, 1, 2)
+
+fname_ref = 'inversion/object.phantom.recon'
+ref = read_ND(fname_ref, 3)
+ref = np.swapaxes(ref, 0, 2)
+
+rmse_val = np.sqrt(np.mean((x-ref)**2))
+print("RMSE between reconstruction and reference: {}".format(rmse_val))
+
+plot_image(x[65], title='recon', filename='output/recon.png', vmin=0, vmax=0.1)
+plot_image(ref[65], title='ref', filename='output/ref.png', vmin=0, vmax=0.1)
+
+plot_image(Ax[0], title='Ax', filename='output/proj.png')
+plot_image(sino[0], title='sino', filename='output/sino.png')
+

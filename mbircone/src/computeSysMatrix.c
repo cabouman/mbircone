@@ -317,4 +317,178 @@ void computeCMatrix( struct SinoParams *sinoParams, struct ImageParams *imgParam
 }
 
 
+/* write the System matrix to hard drive */
+void writeSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A)
+{
+    FILE *fp;
+    long int totsize = 0;
+    long int N_x, N_y, N_z, N_beta, i_vstride_max, i_wstride_max, N_u;
+    
+    printf("\nWrite System Matrix ... \n");
+    
+    fp = fopen(fName, "w");
+    if (fp == NULL)
+    {
+        fprintf(stderr, "ERROR in WriteSysMatrix: can't open file %s.\n", fName);
+        exit(-1);
+    }
+    
+    /**
+     *      Writing simple variables
+     *      i_vstride_max, i_wstride_max, N_u, Delta_u, u_0 and u_1
+     *      to file
+     */
+
+    totsize += keepWritingToBinaryFile(fp, &(A->i_vstride_max),     1, sizeof(long int), fName);
+    totsize += keepWritingToBinaryFile(fp, &(A->i_wstride_max),     1, sizeof(long int), fName);
+    totsize += keepWritingToBinaryFile(fp, &(A->N_u),               1, sizeof(long int), fName);
+    totsize += keepWritingToBinaryFile(fp, &(A->B_ij_max),          1, sizeof(double), fName);
+    totsize += keepWritingToBinaryFile(fp, &(A->C_ij_max),          1, sizeof(double), fName);
+    totsize += keepWritingToBinaryFile(fp, &(A->B_ij_scaler),       1, sizeof(double), fName);
+    totsize += keepWritingToBinaryFile(fp, &(A->C_ij_scaler),       1, sizeof(double), fName);
+    totsize += keepWritingToBinaryFile(fp, &(A->Delta_u),           1, sizeof(double), fName);
+    totsize += keepWritingToBinaryFile(fp, &(A->u_0),               1, sizeof(double), fName);
+    totsize += keepWritingToBinaryFile(fp, &(A->u_1),               1, sizeof(double), fName);
+
+    /**
+     *      Writing array variables
+     *      B, i_vstart, i_vstride, j_u, C, i_wstart and i_wstride
+     *      to file
+     */
+    N_x = imgParams->N_x;
+    N_y = imgParams->N_y;
+    N_z = imgParams->N_z;
+    N_beta = sinoParams->N_beta;
+    i_vstride_max = A->i_vstride_max;
+    i_wstride_max = A->i_wstride_max;
+    N_u = A->N_u;
+
+    totsize += keepWritingToBinaryFile(fp, &(A->B[0][0][0]),        N_x*N_y*N_beta*i_vstride_max,   sizeof(BIJDATATYPE), fName);
+    totsize += keepWritingToBinaryFile(fp, &(A->i_vstart[0][0][0]), N_x*N_y*N_beta,                 sizeof(INDEXSTARTSTOPDATATYPE),   fName);
+    totsize += keepWritingToBinaryFile(fp, &(A->i_vstride[0][0][0]),N_x*N_y*N_beta,                 sizeof(INDEXSTRIDEDATATYPE),   fName);
+    totsize += keepWritingToBinaryFile(fp, &(A->j_u[0][0][0]),      N_x*N_y*N_beta,                 sizeof(INDEXJUDATATYPE),   fName);
+
+    totsize += keepWritingToBinaryFile(fp, &(A->C[0][0]),           N_u*N_z*i_wstride_max,          sizeof(CIJDATATYPE), fName);
+    totsize += keepWritingToBinaryFile(fp, &(A->i_wstart[0][0]),    N_u*N_z,                        sizeof(INDEXSTARTSTOPDATATYPE),   fName);
+    totsize += keepWritingToBinaryFile(fp, &(A->i_wstride[0][0]),   N_u*N_z,                        sizeof(INDEXSTRIDEDATATYPE),   fName);
+    
+    printf("Total size written = %e GB\n", totsize/1e9);
+
+    fclose(fp);
+ 
+}
+
+
+
+/* read the System matrix to hard drive */
+/* Utility for reading the Sparse System Matrix */
+/* Returns 0 if no error occurs */
+void readSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A)
+{
+
+    FILE *fp;
+    long int totsize = 0;
+    long int N_x, N_y, N_z, N_beta, i_vstride_max, i_wstride_max, N_u;
+
+
+    fp = fopen(fName, "r");
+    if (fp == NULL)
+    {
+        fprintf(stderr, "ERROR in WriteSysMatrix: can't open file %s.\n", fName);
+        exit(-1);
+    }
+    
+    /**
+     *      Reading simple variables
+     *      i_vstride_max, i_wstride_max, N_u, Delta_u, u_0 and u_1
+     *      from file
+     */
+    
+    totsize += keepReadingFromBinaryFile(fp, &(A->i_vstride_max),   1, sizeof(long int), fName);
+    totsize += keepReadingFromBinaryFile(fp, &(A->i_wstride_max),   1, sizeof(long int), fName);
+    totsize += keepReadingFromBinaryFile(fp, &(A->N_u),             1, sizeof(long int), fName);
+    totsize += keepReadingFromBinaryFile(fp, &(A->B_ij_max),        1, sizeof(double), fName);
+    totsize += keepReadingFromBinaryFile(fp, &(A->C_ij_max),        1, sizeof(double), fName);
+    totsize += keepReadingFromBinaryFile(fp, &(A->B_ij_scaler),     1, sizeof(double), fName);
+    totsize += keepReadingFromBinaryFile(fp, &(A->C_ij_scaler),     1, sizeof(double), fName);
+    totsize += keepReadingFromBinaryFile(fp, &(A->Delta_u),         1, sizeof(double), fName);
+    totsize += keepReadingFromBinaryFile(fp, &(A->u_0),             1, sizeof(double), fName);
+    totsize += keepReadingFromBinaryFile(fp, &(A->u_1),             1, sizeof(double), fName);
+
+    /**
+     *          Note: Allocation has to happen here (after reading part of the file).
+     *          This is because i_vstride_max, i_wstride_max and N_u are unknown before SysMatrix file is read
+     *          but they are required to determine the array dimensions
+     */
+    N_x = imgParams->N_x;
+    N_y = imgParams->N_y;
+    N_z = imgParams->N_z;
+    N_beta = sinoParams->N_beta;
+    i_vstride_max = A->i_vstride_max;
+    i_wstride_max = A->i_wstride_max;
+    N_u = A->N_u;
+
+    allocateSysMatrix(A, N_x, N_y, N_z, N_beta, i_vstride_max, i_wstride_max, N_u);
+
+    /**
+     *      Reading array variables
+     *      B, i_vstart, i_vstride, j_u, C, i_wstart and i_wstride
+     *      from file
+     */
+    totsize += keepReadingFromBinaryFile(fp, &(A->B[0][0][0]),     N_x*N_y*N_beta*i_vstride_max, sizeof(BIJDATATYPE), fName);
+    totsize += keepReadingFromBinaryFile(fp, &(A->i_vstart[0][0][0]), N_x*N_y*N_beta,         sizeof(INDEXSTARTSTOPDATATYPE),   fName);
+    totsize += keepReadingFromBinaryFile(fp, &(A->i_vstride[0][0][0]),N_x*N_y*N_beta,         sizeof(INDEXSTRIDEDATATYPE),   fName);
+    totsize += keepReadingFromBinaryFile(fp, &(A->j_u[0][0][0]),      N_x*N_y*N_beta,         sizeof(INDEXJUDATATYPE),   fName);
+
+    totsize += keepReadingFromBinaryFile(fp, &(A->C[0][0]),        N_u*N_z*i_wstride_max,        sizeof(CIJDATATYPE), fName);
+    totsize += keepReadingFromBinaryFile(fp, &(A->i_wstart[0][0]),    N_u*N_z,                sizeof(INDEXSTARTSTOPDATATYPE),   fName);
+    totsize += keepReadingFromBinaryFile(fp, &(A->i_wstride[0][0]),   N_u*N_z,                sizeof(INDEXSTRIDEDATATYPE),   fName);
+    
+    /*printf("Total size read = %e GB\n", totsize/1e9);*/
+
+    fclose(fp);
+    
+}
+
+
+
+void allocateSysMatrix(struct SysMatrix *A, long int N_x, long int N_y, long int N_z, long int N_beta, long int i_vstride_max, long int i_wstride_max, long int N_u)
+{
+    /*double totSizeGB;*/
+
+    /*
+    totSizeGB =\
+    (\
+    N_x * N_y * N_beta * i_vstride_max * sizeof(BIJDATATYPE) + \
+    N_x * N_y * N_beta * sizeof(INDEXSTARTSTOPDATATYPE) + \
+    N_x * N_y * N_beta * sizeof(INDEXSTRIDEDATATYPE) + \
+    N_x * N_y * N_beta * sizeof(INDEXJUDATATYPE) + \
+    N_u * N_z * i_wstride_max * sizeof(CIJDATATYPE) + \
+    N_u * N_z * sizeof(INDEXSTARTSTOPDATATYPE) + \
+    N_u * N_z * sizeof(INDEXSTRIDEDATATYPE)\
+    )\
+    /1e9;*/
+   /* printf("\tAllocating %e GB ...\n", totSizeGB);*/
+
+
+    A->B =          (BIJDATATYPE***)                mem_alloc_3D(N_x, N_y, N_beta*i_vstride_max,    sizeof(BIJDATATYPE));
+    A->i_vstart =   (INDEXSTARTSTOPDATATYPE***)     mem_alloc_3D(N_x, N_y, N_beta,                  sizeof(INDEXSTARTSTOPDATATYPE));
+    A->i_vstride =    (INDEXSTRIDEDATATYPE***)      mem_alloc_3D(N_x, N_y, N_beta,                  sizeof(INDEXSTRIDEDATATYPE));
+    A->j_u =        (INDEXJUDATATYPE***)            mem_alloc_3D(N_x, N_y, N_beta,                  sizeof(INDEXJUDATATYPE));
+
+    A->C =          (CIJDATATYPE**)                mem_alloc_2D(N_u, N_z*i_wstride_max,            sizeof(CIJDATATYPE));
+    A->i_wstart =   (INDEXSTARTSTOPDATATYPE**)      mem_alloc_2D(N_u, N_z,                          sizeof(INDEXSTARTSTOPDATATYPE));
+    A->i_wstride =    (INDEXSTRIDEDATATYPE**)       mem_alloc_2D(N_u, N_z,                          sizeof(INDEXSTRIDEDATATYPE));
+}
+
+void freeSysMatrix(struct SysMatrix *A)
+{
+    mem_free_3D((void***)A->B);
+    mem_free_3D((void***)A->i_vstart);
+    mem_free_3D((void***)A->i_vstride);
+    mem_free_3D((void***)A->j_u);
+    mem_free_2D((void**)A->C);
+    mem_free_2D((void**)A->i_wstart);
+    mem_free_2D((void**)A->i_wstride);
+}
 

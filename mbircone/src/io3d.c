@@ -180,8 +180,6 @@ void readBinaryFNames(char *masterFile, char *plainParamsFile, struct PathNames 
 
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "backprojlikeOutput", pathNames->backprojlikeOutput, resolveFlag);
 
-	plainParams(plainParamsFile, get_set, masterFile, masterField, "estimateSino", pathNames->estimateSino, resolveFlag);
-
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "consensusRecon", pathNames->consensusRecon, resolveFlag);
 
 	plainParams(plainParamsFile, get_set, masterFile, masterField, "jigMeasurementsSino", pathNames->jigMeasurementsSino, resolveFlag);
@@ -473,7 +471,6 @@ void printPathNames(struct PathNames *pathNames)
 	printf("\tprojOutput = %s \n", pathNames->projOutput);
 	printf("\tbackprojlikeInput = %s \n", pathNames->backprojlikeInput);
 	printf("\tbackprojlikeOutput = %s \n", pathNames->backprojlikeOutput);
-	printf("\testimateSino = %s \n", pathNames->estimateSino);
 	printf("\tconsensusRecon = %s \n", pathNames->consensusRecon);
 	printf("\tjigMeasurementsSino = %s \n", pathNames->jigMeasurementsSino);
 

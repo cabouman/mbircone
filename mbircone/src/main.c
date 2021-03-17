@@ -256,7 +256,6 @@ int main(int argc, char *argv[])
         /**
          *      Allocate
          */
-        sino.estimateSino = (float***) allocateSinoData3DCone(&sino.params, sizeof(float));
         sino.e = (float***) allocateSinoData3DCone(&sino.params, sizeof(float));
         img.vox = (float***) allocateImageData3DCone( &img.params, sizeof(float), 0);
         img.proxMapInput = (float***) allocateImageData3DCone( &img.params, sizeof(float), 0);
@@ -296,9 +295,9 @@ int main(int argc, char *argv[])
         /**
          *      Error Initialization: e = y - Ax
          */
-        forwardProject3DCone( sino.estimateSino, img.vox, &img.params, &A, &sino.params);
+        forwardProject3DCone( sino.e, img.vox, &img.params, &A, &sino.params);
         /*      e = 1.0 * y + (-1.0) * Ax       */
-        floatArray_z_equals_aX_plus_bY(&sino.e[0][0][0], 1.0, &sino.vox[0][0][0], -1.0, &sino.estimateSino[0][0][0], sino.params.N_beta*sino.params.N_dv*sino.params.N_dw);
+        floatArray_z_equals_aX_plus_bY(&sino.e[0][0][0], 1.0, &sino.vox[0][0][0], -1.0, &sino.e[0][0][0], sino.params.N_beta*sino.params.N_dv*sino.params.N_dw);
 
 
         
@@ -310,14 +309,13 @@ int main(int argc, char *argv[])
         writeImageData3DCone(pathNames.proxMapInput, (void***)img.proxMapInput, &img.params, 0, "float");
         write3DData(pathNames.lastChange, (void***)img.lastChange, img.params.N_x, img.params.N_y, reconParams.numZiplines, "float");
         write3DData(pathNames.timeToChange, (void***)img.timeToChange, img.params.N_x, img.params.N_y, reconParams.numZiplines, "unsigned char");
-
+        
         writeSinoData3DCone(pathNames.errSino, (void***)sino.e, &sino.params, "float");
-        writeSinoData3DCone(pathNames.estimateSino, (void***)sino.estimateSino, &sino.params, "float");
+        
         
         /**
          *      Free
          */
-        mem_free_3D((void***)sino.estimateSino);
         mem_free_3D((void***)sino.e);
 
         mem_free_3D((void***)img.vox);
@@ -336,7 +334,6 @@ int main(int argc, char *argv[])
         /**
          *      Allocate space for sinogram
          */
-        sino.estimateSino = (float***) allocateSinoData3DCone(&sino.params, sizeof(float));
         sino.e = (float***) allocateSinoData3DCone(&sino.params, sizeof(float));
 
         /**
@@ -376,7 +373,6 @@ int main(int argc, char *argv[])
         write3DData(pathNames.timeToChange, (void***)img.timeToChange, img.params.N_x, img.params.N_y, reconParams.numZiplines, "unsigned char");
 
         writeSinoData3DCone(pathNames.errSino, (void***)sino.e, &sino.params, "float");
-        writeSinoData3DCone(pathNames.estimateSino, (void***)sino.estimateSino, &sino.params, "float");
         
 
         /**
@@ -388,7 +384,6 @@ int main(int argc, char *argv[])
         mem_free_3D((void***)img.timeToChange);
 
         mem_free_3D((void***)sino.e);
-        mem_free_3D((void***)sino.estimateSino);
 
 
     }

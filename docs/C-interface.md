@@ -8,107 +8,118 @@ Strategy:
 
 
 ```
-struct SinoParams
-{
-    /* Number of detectors in v-direction and w-direction. */
-    long int N_dv;
-    long int N_dw;
+recon(sino, wght, x_init, proxmap_input,
+	N_dv, N_dw, N_beta, Delta_dv, Delta_dw, u_s, u_r, v_r, u_d0, v_d0, w_d0, TotalAngle, 
 
-    /* Detector width and spacing in v-direction and w-direction. */
-    double Delta_dv;
-    double Delta_dw;
-
-    /* Number of discrete view angles. */
-    long int N_beta;
-    
-    /* The source location on the u-axis. Assume u_s < 0. */
-    double u_s;
-    
-    /* The location (u_r, v_r) of the center of rotation. */
-    double u_r;
-    double v_r;
-    
-    /* The location (u,v,w) of the corner of the first detector corresponding to
-     (i_v, i_w) = (0, 0). All points on the detector have u = u_d0. */
-    double u_d0;
-    double v_d0;
-    double w_d0;
-    
-    /* Noise variance estimation */
-    double weightScaler_value;       /* Weight_true = Weight / weightScaler_value */
-};
-
-struct ImageParams
-{
-    /* Location of the corner of the first voxel corresponding to
-     (j_x, j_y, j_z) = (0, 0, 0). */
-    double x_0;
-    double y_0;
-    double z_0;
-    
-    /* Number of voxels in x, y, z direction. */
-    long int N_x;
-    long int N_y;
-    long int N_z;
-
-    /* Dimensions of a voxel */
-    double Delta_xy;
-    double Delta_z;
-    
-    /**
-     *      Region of Interest (roi) parameters
-     */
-    /* indices of the first voxels in the roi */
-    long int j_xstart_roi;
-    long int j_ystart_roi;
-    long int j_zstart_roi;
-
-    /* indices of the last voxesl in the roi */
-    long int j_xstop_roi;
-    long int j_ystop_roi;
-    long int j_zstop_roi;
-
-    long int N_x_roi;
-    long int N_y_roi;
-    long int N_z_roi;
-};
-```
+	reconparams, py_Amatrix_fname):
 
 ```
-void MBIR3DCone(float *x, float *sino, float *wght, 
-    float *x_init, float *proxmap_input,
-	struct ReconParams reconParams, 
-	char *Amatrix_fname);
 
-void forwardProject(float *proj, float *x, 
-	struct SinoParams sinoParams, 
-	struct ImageParams imgParams, 
-	char *Amatrix_fname);
-
-writeSysMatrix(double *angles, 
-	struct SinoParams sinoParams, 
-	struct ImageParams imgParams,
-    char *Amatrix_fname);
-	
-```
 
 TO DO:
 
-Test writeSysMatrix
 clean reconparams
-clean inner c code
-Write recon project function
 Add verbose levels
 
 add function to convert ROI to ROR
 
-remove Ax variable allocation (estimate sino)
+
+============================================
 
 
-Done: 
+- Write python preprocessing: read radiograph tif from fodler and convert to sino np ndarray
+    - Demo with radiographs (metal-weld data)
 
-Purge data writing from inner functions
-Purge log file writing from inner functions
-Remove plainparams dependency
+1) Write preprocess_conebeam function
+2) Visulaize output
+3) Preprocess metal-weld data with python
+
+4) Preprocess metal-weld params with command line
+5) Reconstruct with data (from python preprocessing) amd params (from comamnd line preprocessing)
+
+- Simply recon inputs
 
 
+Recon params:
+```
+
+
+################################################################ Prior Model stuff #########
+[priorWeight_QGGMRF] Weight of [1/2 ||y-Ax||^2_W] term. Skips computation if weight < 0. 
+1
+
+[priorWeight_proxMap] Weight of [1/(2 sigma_lambda^2) ||x-x~||^2] term. Skips computation if weight < 0. 
+-1
+
+[is_positivity_constraint] (1: positivity constraint on, 0: positivity constraint off )
+1
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . QGGMRF . . . . . . . . . . .
+
+[q] QGGMRF parameter (q>1, typical choice q=2)
+2
+
+[p] QGGMRF parameter (1<=p<q)
+1
+
+[T] QGGMRF parameter 		(=eps TGGMRF parameter)
+0.02
+
+[sigmaX] QGGMRF parameter	(=s TGGMRF parameter)
+5
+
+num_neighbors
+
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . Proximal Mapping . . . . . .
+[sigma_lambda] Proximal mapping scaler
+1
+
+
+[MaxIterations] maximum number of iterations
+10
+
+[zipLineMode] (0: off, 1: conventional Zipline, 2: randomized Zipline, 3: Super Voxel ZL)
+2
+
+[N_G] Number of groups for group ICD
+2
+
+[numVoxelsPerZiplineMax] ziplines will have ceil(N_z/ceil(N_z/#)) voxels
+200
+
+################################################################ Parallel stuff ############
+[numThreads] Number of threads
+20
+################################################################ Weight Scaler  ############
+[weightScaler_domain] "spatiallyVariant", "spatiallyInvariant"
+spatiallyInvariant
+spatiallyVariant
+
+[weightScaler_estimateMode] 'None', "errorSino", "avgWghtRecon" (only when "spatiallyInvariant")
+avgWghtRecon
+None
+errorSino
+
+[weightScaler_value] User specified weight scaler (only when 'spatiallyInvariant' and 'None')
+1
+################################################################ NHICD          ############
+[NHICD_Mode] 'off' 'percentile+random'
+off
+
+[NHICD_ThresholdAllVoxels_ErrorPercent] when error greater then all voxels are updated
+80
+
+[NHICD_percentage] lastChange>prctile(lastChange, 100-#) is updated
+15
+
+[NHICD_random] approx #% of remaining voxels are updated randomly
+20
+
+################################################################ Misc           ############
+[verbosity] 0: minimal output, 1: medium output, 2: more, 3: maximum output
+0
+
+[isComputeCost]
+0
+
+
+```

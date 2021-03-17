@@ -117,7 +117,6 @@ struct PathNames
     char projOutput[1000];
     char backprojlikeInput[1000];
     char backprojlikeOutput[1000];
-    char estimateSino[1000];
     char consensusRecon[1000];
     char jigMeasurementsSino[1000];
     
@@ -216,7 +215,6 @@ struct Sino
     float ***e;
     float ***projOutput;
     float ***backprojlikeInput;
-    float ***estimateSino;
 
 
 };
@@ -419,14 +417,7 @@ struct ReconAux
 };
 
 
-
-
-void writeSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A);
-
-void readSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A);
-
-
-void forwardProject3DCone( float ***Ax, float ***x, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoInfo);
+void forwardProject3DCone( float ***Ax, float ***x, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams);
 
 void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams, struct ReconParams *reconParams);
 
@@ -461,11 +452,6 @@ void setUCharArray2Value(unsigned char *arr, long int len, unsigned char value);
 void*** allocateSinoData3DCone(struct SinoParams *params, int dataTypeSize);
 
 void*** allocateImageData3DCone( struct ImageParams *params, int dataTypeSize, int isROI);
-
-void allocateSysMatrix(struct SysMatrix *A, long int N_x, long int N_y, long int N_z, long int N_beta, long int i_vstride_max, long int i_wstride_max, long int N_u);
-
-
-void freeSysMatrix(struct SysMatrix *A);
 
 void freeViewAngleList(struct ViewAngleList *list);
 
@@ -547,6 +533,11 @@ void logAndDisp_message(char *fName, char* message);
 void log_message(char *fName, char* message);
 
 void resetFile(char *fName);
+
+
+void copySinoParams(struct SinoParams *params_src, struct SinoParams *params_dest);
+
+void copyImgParams(struct ImageParams *params_src, struct ImageParams *params_dest);
 
 
 void printSinoParams(struct SinoParams *params);

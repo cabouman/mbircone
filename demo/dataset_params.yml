@@ -1,0 +1,26 @@
+
+object_name : object
+obj_scan_dir : '/depot/bouman/users/smajee/CLS_project/data/injector/CT_before/before_all/tomo'
+blank_scan_dir : /depot/bouman/users/smajee/CLS_project/data/injector/CT_before/before_all/flats
+dark_scan_dir : /depot/bouman/users/smajee/CLS_project/data/injector/CT_before/before_all/darks
+view_range : 
+  - 0
+  - 2499
+angle_span : 180
+num_views : 2500
+zinger:
+  median_filter_size: 0
+  threshold: 0
+downsample_factor :
+  - 1
+  - 1
+crop_limits_lo : 
+  - 0.49
+  - 0
+crop_limits_hi : 
+  - 0.5
+  - 1
+pixel_sizes : 
+    - 1
+    - 1
+CenterOffset : -45.0

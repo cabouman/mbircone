@@ -25,3 +25,5 @@ sftp-config.json
 
 # Pycharm idea folder
 .idea/
+
+demo/output/*
