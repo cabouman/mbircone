@@ -2,6 +2,7 @@
 #include "allocate.h"
 #include "MBIRModularUtilities3D.h"
 #include "cyInterface.h"
+#include "computeSysMatrix.h"
 
 
 void AmatrixComputeToFile(double *angles, 
@@ -27,11 +28,11 @@ void recon(float *x, float *sino, float *wght, float *x_init, float *proxmap_inp
 	struct SinoParams sinoParams, struct ImageParams imgParams, struct ReconParams reconParams, 
 	char *Amatrix_fname)
 {
-	/*float ***img;
+	float ***img;
 
-	img = (float ***)mem_alloc_float3D_from_flat(x, ImageParams.N_x, ImageParams.N_y, ImageParams.N_x)
+	img = (float ***)mem_alloc_float3D_from_flat(x, imgParams.N_x, imgParams.N_y, imgParams.N_z);
 
-	mem_free_2D((void**)img);*/
+	mem_free_2D((void**)img);
 	printf("initReconMode: %s\n",reconParams.initReconMode);
 }
 
