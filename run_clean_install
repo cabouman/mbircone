@@ -6,7 +6,7 @@ conda remove env --name mbircone --all &&
 
 conda env create -f environment.yml &&
 
-conda activate mbircone &&
+source activate mbircone &&
 
 source run_clean &&
 
