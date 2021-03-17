@@ -90,5 +90,12 @@ mbircone.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname, v
 x = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']))
 x_init = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']))
 proxmap_input = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']))
+
+x_init[0,0,0] = 100
+print(x_init[0,0,0])
+
 mbircone.recon_cy(x, sino, wght, x_init, proxmap_input,
              sinoparams, imgparams, reconparams, Amatrix_fname)
+
+print(x_init[0,0,0])
+print(x[0,0,0])
