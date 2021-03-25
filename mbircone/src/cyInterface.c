@@ -37,21 +37,7 @@ void recon(float *x, float *sino, float *wght, float *x_init, float *proxmap_inp
 	}
 
 
-	// for(i_x=0; i_x<imgParams.N_x; i_x++){
-	// 	for(i_y=0; i_y<imgParams.N_x; i_y++){
-	// 		for(i_z=0; i_z<imgParams.N_x; i_z++){
-	// 			img[i_x][i_y][i_z] = img_init[i_x][i_y][i_z];
-	// 		}
-	// 	}
-	// }
-
-	// memcpy(x, x_init, imgParams.N_x*imgParams.N_y*imgParams.N_z*sizeof(float*));
-
 	img = (float ***)mem_alloc_float3D_from_flat(x, imgParams.N_x, imgParams.N_y, imgParams.N_z);
-
-	printf("C: \n");
-	printf("x_init: %f\n", x_init[0]);
-	printf("x: %f\n", x[0]);
 
 	mem_free_2D((void**)img);
 }
