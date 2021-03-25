@@ -28,18 +28,38 @@ void recon(float *x, float *sino, float *wght, float *x_init, float *proxmap_inp
 	struct SinoParams sinoParams, struct ImageParams imgParams, struct ReconParams reconParams, 
 	char *Amatrix_fname)
 {
-	float ***img;
+	struct Sino sino;
+    struct Image img;
 	int i_x, i_y, i_z, i;
 
-
+	/* Initial value */
 	for(i=0; i<imgParams.N_x*imgParams.N_y*imgParams.N_z; i++){
 		x[i] = x_init[i];
 	}
 
+	
+	sino.estimateSino = (float***) allocateSinoData3DCone(&sino.params, sizeof(float));
+    sino.e = (float***) allocateSinoData3DCone(&sino.params, sizeof(float));
 
-	img = (float ***)mem_alloc_float3D_from_flat(x, imgParams.N_x, imgParams.N_y, imgParams.N_z);
+    /**
+     *      Allocate space for image
+     */
+    img.wghtRecon = (float***) allocateImageData3DCone( &img.params, sizeof(float), 0);
+    img.proxMapInput = (float***) allocateImageData3DCone( &img.params, sizeof(float), 0);
+    img.lastChange = (float***) mem_alloc_3D(img.params.N_x, img.params.N_y, reconParams.numZiplines, sizeof(float));
+    img.timeToChange = (unsigned char***) mem_alloc_3D(img.params.N_x, img.params.N_y, reconParams.numZiplines, sizeof(unsigned char));
 
-	mem_free_2D((void**)img);
+
+	img.vox = (float ***)mem_alloc_float3D_from_flat(x, imgParams.N_x, imgParams.N_y, imgParams.N_z);
+
+	mem_free_2D((void**)img.vox);
+
+	mem_free_3D((void***)img.proxMapInput);
+    mem_free_3D((void***)img.lastChange);
+    mem_free_3D((void***)img.timeToChange);
+
+    mem_free_3D((void***)sino.e);
+    mem_free_3D((void***)sino.estimateSino);
 }
 
 void ***mem_alloc_float3D_from_flat(float *dataArray, size_t N1, size_t N2, size_t N3)
