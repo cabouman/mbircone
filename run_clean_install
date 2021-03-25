@@ -10,9 +10,9 @@ source activate mbircone &&
 
 source run_clean &&
 
-pip install . &&
+# pip install . &&
 
-# python setup.py install &&
+python setup.py install &&
 
 cd demo &&
 
