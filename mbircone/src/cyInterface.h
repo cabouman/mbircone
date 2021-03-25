@@ -5,7 +5,7 @@ void AmatrixComputeToFile(double *angles,
 	struct SinoParams sinoParams, struct ImageParams imgParams, 
 	char *Amatrix_fname, char verbose);
 
-void recon(float *x, float *sino, float *wght, float *x_init, float *proxmap_input,
+void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
 	struct SinoParams sinoParams, struct ImageParams imgParams, struct ReconParams reconParams, 
 	char *Amatrix_fname);
 

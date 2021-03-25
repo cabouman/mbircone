@@ -12,6 +12,8 @@ source run_clean &&
 
 pip install . &&
 
+# python setup.py install &&
+
 cd demo &&
 
 python demo.py
