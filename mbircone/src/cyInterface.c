@@ -37,8 +37,7 @@ void recon(float *x, float *sino, float *wght, float *x_init, float *proxmap_inp
 		x[i] = x_init[i];
 	}
 
-	
-	sino.estimateSino = (float***) allocateSinoData3DCone(&sino.params, sizeof(float));
+
     sino.e = (float***) allocateSinoData3DCone(&sino.params, sizeof(float));
 
     /**
@@ -59,7 +58,6 @@ void recon(float *x, float *sino, float *wght, float *x_init, float *proxmap_inp
     mem_free_3D((void***)img.timeToChange);
 
     mem_free_3D((void***)sino.e);
-    mem_free_3D((void***)sino.estimateSino);
 }
 
 void ***mem_alloc_float3D_from_flat(float *dataArray, size_t N1, size_t N2, size_t N3)
