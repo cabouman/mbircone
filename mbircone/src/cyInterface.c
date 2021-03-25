@@ -33,12 +33,15 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
 	int i_x, i_y, i_z, i;
 	
 
+	/* Set img and sino params inside data structure */
+	copySinoParams(&imgParams, &img.params);
+	copySinoParams(&sinoParams, &sino.params);
+
+
 	/* Allocate 3D image from 1D vector */
 	img.vox = (float ***)mem_alloc_float3D_from_flat(x, imgParams.N_x, imgParams.N_y, imgParams.N_z);
 
 	/* Allocate error sinogram */
-
-	printSinoParams(&sino.params);
     sino.e = (float***)allocateSinoData3DCone(&sino.params, sizeof(float));
 
 	// /* Allocate other image data */

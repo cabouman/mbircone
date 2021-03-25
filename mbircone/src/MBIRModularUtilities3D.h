@@ -547,6 +547,11 @@ void log_message(char *fName, char* message);
 void resetFile(char *fName);
 
 
+void copySinoParams(struct SinoParams *params_src, struct SinoParams *params_dest);
+
+void copyImgParams(struct ImageParams *params_src, struct ImageParams *params_dest);
+
+
 void printSinoParams(struct SinoParams *params);
 
 void printImgParams(struct ImageParams *params);

@@ -1179,6 +1179,43 @@ void resetFile(char *fName)
         
 }
 
+
+void copySinoParams(struct SinoParams *params_src, struct SinoParams *params_dest)
+{
+    params_dest->N_dv = params_src->N_dv;
+    params_dest->N_dw = params_src->N_dw;
+    params_dest->Delta_dv = params_src->Delta_dv;
+    params_dest->Delta_dw = params_src->Delta_dw;
+    params_dest->N_beta = params_src->N_beta;
+    params_dest->u_s = params_src->u_s;
+    params_dest->u_r = params_src->u_r;
+    params_dest->v_r = params_src->v_r;
+    params_dest->u_d0 = params_src->u_d0;
+    params_dest->v_d0 = params_src->v_d0;
+    params_dest->w_d0 = params_src->w_d0;
+    params_dest->weightScaler_value = params_src->weightScaler_value;
+}
+
+
+void copyImgParams(struct ImageParams *params_src, struct ImageParams *params_dest)
+{
+    params_dest->x_0 = params_src->x_0;
+    params_dest->y_0 = params_src->y_0;
+    params_dest->z_0 = params_src->z_0;
+    params_dest->N_x = params_src->N_x;
+    params_dest->N_y = params_src->N_y;
+    params_dest->N_z = params_src->N_z;
+    params_dest->Delta_xy = params_src->Delta_xy;
+    params_dest->Delta_z = params_src->Delta_z;
+    params_dest->j_xstart_roi = params_src->j_xstart_roi;
+    params_dest->j_ystart_roi = params_src->j_ystart_roi;
+    params_dest->j_zstart_roi = params_src->j_zstart_roi;
+    params_dest->j_xstop_roi = params_src->j_xstop_roi;
+    params_dest->j_ystop_roi = params_src->j_ystop_roi;
+    params_dest->j_zstop_roi = params_src->j_zstop_roi;
+}
+
+
 void printSinoParams(struct SinoParams *params)
 {
     printf("\nSinogram parameters read:\n");
