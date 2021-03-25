@@ -296,9 +296,9 @@ int main(int argc, char *argv[])
         /**
          *      Error Initialization: e = y - Ax
          */
-        forwardProject3DCone( sino.estimateSino, img.vox, &img.params, &A, &sino.params);
+        forwardProject3DCone( sino.e, img.vox, &img.params, &A, &sino.params);
         /*      e = 1.0 * y + (-1.0) * Ax       */
-        floatArray_z_equals_aX_plus_bY(&sino.e[0][0][0], 1.0, &sino.vox[0][0][0], -1.0, &sino.estimateSino[0][0][0], sino.params.N_beta*sino.params.N_dv*sino.params.N_dw);
+        floatArray_z_equals_aX_plus_bY(&sino.e[0][0][0], 1.0, &sino.vox[0][0][0], -1.0, &sino.e[0][0][0], sino.params.N_beta*sino.params.N_dv*sino.params.N_dw);
 
 
         
