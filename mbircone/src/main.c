@@ -256,7 +256,6 @@ int main(int argc, char *argv[])
         /**
          *      Allocate
          */
-        sino.estimateSino = (float***) allocateSinoData3DCone(&sino.params, sizeof(float));
         sino.e = (float***) allocateSinoData3DCone(&sino.params, sizeof(float));
         img.vox = (float***) allocateImageData3DCone( &img.params, sizeof(float), 0);
         img.proxMapInput = (float***) allocateImageData3DCone( &img.params, sizeof(float), 0);
@@ -310,14 +309,13 @@ int main(int argc, char *argv[])
         writeImageData3DCone(pathNames.proxMapInput, (void***)img.proxMapInput, &img.params, 0, "float");
         write3DData(pathNames.lastChange, (void***)img.lastChange, img.params.N_x, img.params.N_y, reconParams.numZiplines, "float");
         write3DData(pathNames.timeToChange, (void***)img.timeToChange, img.params.N_x, img.params.N_y, reconParams.numZiplines, "unsigned char");
-
+        
         writeSinoData3DCone(pathNames.errSino, (void***)sino.e, &sino.params, "float");
-        writeSinoData3DCone(pathNames.estimateSino, (void***)sino.estimateSino, &sino.params, "float");
+        
         
         /**
          *      Free
          */
-        mem_free_3D((void***)sino.estimateSino);
         mem_free_3D((void***)sino.e);
 
         mem_free_3D((void***)img.vox);
@@ -336,7 +334,6 @@ int main(int argc, char *argv[])
         /**
          *      Allocate space for sinogram
          */
-        sino.estimateSino = (float***) allocateSinoData3DCone(&sino.params, sizeof(float));
         sino.e = (float***) allocateSinoData3DCone(&sino.params, sizeof(float));
 
         /**
@@ -376,7 +373,6 @@ int main(int argc, char *argv[])
         write3DData(pathNames.timeToChange, (void***)img.timeToChange, img.params.N_x, img.params.N_y, reconParams.numZiplines, "unsigned char");
 
         writeSinoData3DCone(pathNames.errSino, (void***)sino.e, &sino.params, "float");
-        writeSinoData3DCone(pathNames.estimateSino, (void***)sino.estimateSino, &sino.params, "float");
         
 
         /**
@@ -388,7 +384,6 @@ int main(int argc, char *argv[])
         mem_free_3D((void***)img.timeToChange);
 
         mem_free_3D((void***)sino.e);
-        mem_free_3D((void***)sino.estimateSino);
 
 
     }
