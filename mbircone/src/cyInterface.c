@@ -30,6 +30,7 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
 {
 	struct Sino sino;
     struct Image img;
+    struct SysMatrix A;
 	int i_x, i_y, i_z, i;
 	
 
