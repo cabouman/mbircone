@@ -117,7 +117,6 @@ struct PathNames
     char projOutput[1000];
     char backprojlikeInput[1000];
     char backprojlikeOutput[1000];
-    char estimateSino[1000];
     char consensusRecon[1000];
     char jigMeasurementsSino[1000];
     
@@ -216,7 +215,6 @@ struct Sino
     float ***e;
     float ***projOutput;
     float ***backprojlikeInput;
-    float ***estimateSino;
 
 
 };
