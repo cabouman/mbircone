@@ -3,6 +3,7 @@
 #include "MBIRModularUtilities3D.h"
 #include "cyInterface.h"
 #include "computeSysMatrix.h"
+#include "recon3DCone.h"
 
 
 void AmatrixComputeToFile(double *angles, 
