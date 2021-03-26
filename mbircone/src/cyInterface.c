@@ -82,6 +82,8 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
     */
     MBIR3DCone(&img, &sino, &reconParams, &A);
     printf("Done recon\n");
+
+    freeSysMatrix(&A);
 	
 	/* Free 2D pointer array for 3D data */
 	mem_free_2D((void**)img.vox);

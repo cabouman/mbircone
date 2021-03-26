@@ -1,16 +1,10 @@
 #!/bin/bash
 
-source run_clean
+conda env create -n test_mbircone python=3.8 pip &&
 
-conda deactivate &&
+source activate test_mbircone &&
 
-conda remove env --name mbircone --all &&
-
-conda env create -f environment.yml &&
-
-source activate mbircone &&
-
-source run_clean &&
+pip install -r requirements.txt &&
 
 # pip install . &&
 
