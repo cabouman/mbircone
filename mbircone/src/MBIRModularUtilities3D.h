@@ -453,11 +453,6 @@ void*** allocateSinoData3DCone(struct SinoParams *params, int dataTypeSize);
 
 void*** allocateImageData3DCone( struct ImageParams *params, int dataTypeSize, int isROI);
 
-void allocateSysMatrix(struct SysMatrix *A, long int N_x, long int N_y, long int N_z, long int N_beta, long int i_vstride_max, long int i_wstride_max, long int N_u);
-
-
-void freeSysMatrix(struct SysMatrix *A);
-
 void freeViewAngleList(struct ViewAngleList *list);
 
 

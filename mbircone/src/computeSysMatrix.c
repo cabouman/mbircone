@@ -450,3 +450,45 @@ void readSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageParam
     
 }
 
+
+
+void allocateSysMatrix(struct SysMatrix *A, long int N_x, long int N_y, long int N_z, long int N_beta, long int i_vstride_max, long int i_wstride_max, long int N_u)
+{
+    /*double totSizeGB;*/
+
+    /*
+    totSizeGB =\
+    (\
+    N_x * N_y * N_beta * i_vstride_max * sizeof(BIJDATATYPE) + \
+    N_x * N_y * N_beta * sizeof(INDEXSTARTSTOPDATATYPE) + \
+    N_x * N_y * N_beta * sizeof(INDEXSTRIDEDATATYPE) + \
+    N_x * N_y * N_beta * sizeof(INDEXJUDATATYPE) + \
+    N_u * N_z * i_wstride_max * sizeof(CIJDATATYPE) + \
+    N_u * N_z * sizeof(INDEXSTARTSTOPDATATYPE) + \
+    N_u * N_z * sizeof(INDEXSTRIDEDATATYPE)\
+    )\
+    /1e9;*/
+   /* printf("\tAllocating %e GB ...\n", totSizeGB);*/
+
+
+    A->B =          (BIJDATATYPE***)                mem_alloc_3D(N_x, N_y, N_beta*i_vstride_max,    sizeof(BIJDATATYPE));
+    A->i_vstart =   (INDEXSTARTSTOPDATATYPE***)     mem_alloc_3D(N_x, N_y, N_beta,                  sizeof(INDEXSTARTSTOPDATATYPE));
+    A->i_vstride =    (INDEXSTRIDEDATATYPE***)      mem_alloc_3D(N_x, N_y, N_beta,                  sizeof(INDEXSTRIDEDATATYPE));
+    A->j_u =        (INDEXJUDATATYPE***)            mem_alloc_3D(N_x, N_y, N_beta,                  sizeof(INDEXJUDATATYPE));
+
+    A->C =          (CIJDATATYPE**)                mem_alloc_2D(N_u, N_z*i_wstride_max,            sizeof(CIJDATATYPE));
+    A->i_wstart =   (INDEXSTARTSTOPDATATYPE**)      mem_alloc_2D(N_u, N_z,                          sizeof(INDEXSTARTSTOPDATATYPE));
+    A->i_wstride =    (INDEXSTRIDEDATATYPE**)       mem_alloc_2D(N_u, N_z,                          sizeof(INDEXSTRIDEDATATYPE));
+}
+
+void freeSysMatrix(struct SysMatrix *A)
+{
+    mem_free_3D((void***)A->B);
+    mem_free_3D((void***)A->i_vstart);
+    mem_free_3D((void***)A->i_vstride);
+    mem_free_3D((void***)A->j_u);
+    mem_free_2D((void**)A->C);
+    mem_free_2D((void**)A->i_wstart);
+    mem_free_2D((void**)A->i_wstride);
+}
+
