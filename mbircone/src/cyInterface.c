@@ -35,9 +35,11 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
 	
 
 	/* Set img and sino params inside data structure */
-	copySinoParams(&imgParams, &img.params);
+	copyImgParams(&imgParams, &img.params);
 	copySinoParams(&sinoParams, &sino.params);
 
+	/* Read system matrix from disk */
+	readSysMatrix(Amatrix_fname, &sino.params, &img.params, &A);
 
 	/* Allocate 3D image from 1D vector */
 	img.vox = (float ***)mem_alloc_float3D_from_flat(x, imgParams.N_x, imgParams.N_y, imgParams.N_z);

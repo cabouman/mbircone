@@ -91,6 +91,7 @@ x_init = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']))
 proxmap_input = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']))
 
 
+print('Reconstructing ...')
 x=mbircone.recon_cy(sino, wght, x_init, proxmap_input,
              sinoparams, imgparams, reconparams, Amatrix_fname)
 

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source run_clean
+
 conda deactivate &&
 
 conda remove env --name mbircone --all &&
