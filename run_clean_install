@@ -1,6 +1,6 @@
 #!/bin/bash
 
-conda env create -n test_mbircone python=3.8 pip &&
+conda env create -n test_mbircone python=3.8 &&
 
 source activate test_mbircone &&
 
@@ -12,6 +12,10 @@ python setup.py install &&
 
 cd demo &&
 
-python demo.py
+python demo.py &&
 
-cd .. 
+cd .. &&
+
+conda deactivate &&
+ 
+conda remove --name test_mbircone --all

@@ -22,6 +22,8 @@ void AmatrixComputeToFile(double *angles,
 
     writeSysMatrix(Amatrix_fname, &sinoParams, &imgParams, &A);
 
+    freeSysMatrix(&A);
+
 }
 
 void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
