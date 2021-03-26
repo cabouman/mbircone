@@ -68,11 +68,8 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
 	applyMask(img.vox, img.params.N_x, img.params.N_y, img.params.N_z);
 
      /* Initialize error sinogram e = y - Ax */
-	printf("Project\n");
     forwardProject3DCone( sino.e, img.vox, &img.params, &A, &sino.params); /* e = Ax */
-    printf("Compute e\n");
     floatArray_z_equals_aX_plus_bY(&sino.e[0][0][0], 1.0, &sino.vox[0][0][0], -1.0, &sino.e[0][0][0], sino.params.N_beta*sino.params.N_dv*sino.params.N_dw); /* e = 1.0 * y + (-1.0) * e */
-    printf("Computed e\n");
 
     /* Initialize other image data */
     initializeWghtRecon(&A, &sino, &img, &reconParams);
@@ -84,18 +81,21 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
     Reconstruct 
     */
     MBIR3DCone(&img, &sino, &reconParams, &A);
+    printf("Done recon\n");
 	
 	/* Free 2D pointer array for 3D data */
 	mem_free_2D((void**)img.vox);
 	mem_free_2D((void**)img.proxMapInput);
 	mem_free_2D((void**)sino.vox);
 	mem_free_2D((void**)sino.wgt);
+	printf("Done free_2D\n");
 
 	/* Free allocated data */
 	mem_free_3D((void***)img.wghtRecon);
     mem_free_3D((void***)img.lastChange);
     mem_free_3D((void***)img.timeToChange);
     mem_free_3D((void***)sino.e);
+    printf("Done free_3D\n");
 }
 
 void ***mem_alloc_float3D_from_flat(float *dataArray, size_t N1, size_t N2, size_t N3)
