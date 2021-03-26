@@ -38,11 +38,17 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
 	copyImgParams(&imgParams, &img.params);
 	copySinoParams(&sinoParams, &sino.params);
 
+	printImgParams(&img.params);
+	printSinoParams(&sino.params);
+
 	/* Read system matrix from disk */
 	readSysMatrix(Amatrix_fname, &sino.params, &img.params, &A);
 
 	/* Allocate 3D image from 1D vector */
 	img.vox = (float ***)mem_alloc_float3D_from_flat(x, imgParams.N_x, imgParams.N_y, imgParams.N_z);
+
+	/* Allocate 3D sino from 1D vector */
+	sino.vox = (float ***)mem_alloc_float3D_from_flat(y, sinoParams.N_beta, sinoParams.N_dv, sinoParams.N_dw);
 
 	/* Allocate error sinogram */
     sino.e = (float***)allocateSinoData3DCone(&sino.params, sizeof(float));
@@ -61,8 +67,11 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
 	applyMask(img.vox, img.params.N_x, img.params.N_y, img.params.N_z);
 
      /* Initialize error sinogram e = y - Ax */
+	printf("Project\n");
     forwardProject3DCone( sino.e, img.vox, &img.params, &A, &sino.params); /* e = Ax */
+    printf("Compute e\n");
     floatArray_z_equals_aX_plus_bY(&sino.e[0][0][0], 1.0, &sino.vox[0][0][0], -1.0, &sino.e[0][0][0], sino.params.N_beta*sino.params.N_dv*sino.params.N_dw); /* e = 1.0 * y + (-1.0) * e */
+    printf("Computed e\n");
 
     /* Initialize other image data */
     initializeWghtRecon(&A, &sino, &img, &reconParams);
@@ -72,7 +81,7 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
 
 
 	
-	/* Free 2D pointer array for 3D image */
+	/* Free 2D pointer array for 3D data */
 	mem_free_2D((void**)img.vox);
 
 	/* Free allocated data */
