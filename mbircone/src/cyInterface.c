@@ -46,6 +46,7 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
 
 	/* Allocate 3D image from 1D vector */
 	img.vox = (float ***)mem_alloc_float3D_from_flat(x, imgParams.N_x, imgParams.N_y, imgParams.N_z);
+	img.proxMapInput = (float ***)mem_alloc_float3D_from_flat(proxmap_input, imgParams.N_x, imgParams.N_y, imgParams.N_z);
 
 	/* Allocate 3D sino from 1D vector */
 	sino.vox = (float ***)mem_alloc_float3D_from_flat(y, sinoParams.N_beta, sinoParams.N_dv, sinoParams.N_dw);
@@ -56,7 +57,6 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
 
 	/* Allocate other image data */
     img.wghtRecon = (float***) allocateImageData3DCone( &img.params, sizeof(float), 0);
-    img.proxMapInput = (float***) allocateImageData3DCone( &img.params, sizeof(float), 0);
     img.lastChange = (float***) mem_alloc_3D(img.params.N_x, img.params.N_y, reconParams.numZiplines, sizeof(float));
     img.timeToChange = (unsigned char***) mem_alloc_3D(img.params.N_x, img.params.N_y, reconParams.numZiplines, sizeof(unsigned char));
 
@@ -87,12 +87,12 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
 	
 	/* Free 2D pointer array for 3D data */
 	mem_free_2D((void**)img.vox);
+	mem_free_2D((void**)img.proxMapInput);
 	mem_free_2D((void**)sino.vox);
 	mem_free_2D((void**)sino.wgt);
 
 	/* Free allocated data */
 	mem_free_3D((void***)img.wghtRecon);
-	mem_free_3D((void***)img.proxMapInput);
     mem_free_3D((void***)img.lastChange);
     mem_free_3D((void***)img.timeToChange);
     mem_free_3D((void***)sino.e);
