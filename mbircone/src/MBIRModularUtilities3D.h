@@ -417,13 +417,6 @@ struct ReconAux
 };
 
 
-
-
-void writeSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A);
-
-void readSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A);
-
-
 void forwardProject3DCone( float ***Ax, float ***x, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoInfo);
 
 void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams, struct ReconParams *reconParams);

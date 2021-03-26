@@ -12,3 +12,7 @@ void computeAMatrixParameters(struct SinoParams *sinoParams, struct ImageParams 
 void computeBMatrix(struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A, struct ViewAngleList *viewAngleList);
 
 void computeCMatrix( struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A);
+
+void writeSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A);
+
+void readSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A);
