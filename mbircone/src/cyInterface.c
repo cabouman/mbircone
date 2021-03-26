@@ -80,10 +80,15 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
     setFloatArray2Value(&img.lastChange[0][0][0], img.params.N_x*img.params.N_y*reconParams.numZiplines, 0.0);
     setUCharArray2Value(&img.timeToChange[0][0][0], img.params.N_x*img.params.N_y*reconParams.numZiplines, 0);
 
-
+    /* 
+    Reconstruct 
+    */
+    MBIR3DCone(&img, &sino, &reconParams, &A);
 	
 	/* Free 2D pointer array for 3D data */
 	mem_free_2D((void**)img.vox);
+	mem_free_2D((void**)sino.vox);
+	mem_free_2D((void**)sino.wgt);
 
 	/* Free allocated data */
 	mem_free_3D((void***)img.wghtRecon);
