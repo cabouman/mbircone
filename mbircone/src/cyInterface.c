@@ -49,6 +49,7 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
 
 	/* Allocate 3D sino from 1D vector */
 	sino.vox = (float ***)mem_alloc_float3D_from_flat(y, sinoParams.N_beta, sinoParams.N_dv, sinoParams.N_dw);
+	sino.wgt = (float ***)mem_alloc_float3D_from_flat(wght, sinoParams.N_beta, sinoParams.N_dv, sinoParams.N_dw);
 
 	/* Allocate error sinogram */
     sino.e = (float***)allocateSinoData3DCone(&sino.params, sizeof(float));
@@ -74,7 +75,7 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
     printf("Computed e\n");
 
     /* Initialize other image data */
-    initializeWghtRecon(&A, &sino, &img, &reconParams);
+    // initializeWghtRecon(&A, &sino, &img, &reconParams);
     setFloatArray2Value(&img.proxMapInput[0][0][0], img.params.N_x*img.params.N_y*img.params.N_z, 0.0);
     setFloatArray2Value(&img.lastChange[0][0][0], img.params.N_x*img.params.N_y*reconParams.numZiplines, 0.0);
     setUCharArray2Value(&img.timeToChange[0][0][0], img.params.N_x*img.params.N_y*reconParams.numZiplines, 0);
@@ -85,6 +86,7 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
 	mem_free_2D((void**)img.vox);
 
 	/* Free allocated data */
+	mem_free_3D((void***)img.wghtRecon);
 	mem_free_3D((void***)img.proxMapInput);
     mem_free_3D((void***)img.lastChange);
     mem_free_3D((void***)img.timeToChange);
