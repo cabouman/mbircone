@@ -16,6 +16,6 @@ python demo.py &&
 
 cd .. &&
 
-conda deactivate &&
+conda deactivate
  
 conda remove --name test_mbircone --all

@@ -326,6 +326,8 @@ def recon_cy(sino, wght, x_init, proxmap_input,
           c_reconparams,
 	      &c_Amatrix_fname[0])
 
+    print("Cython done")
+
     return py_x
 
 
