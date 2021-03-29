@@ -41,9 +41,6 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
 	copyImgParams(&imgParams, &img.params);
 	copySinoParams(&sinoParams, &sino.params);
 
-	printImgParams(&img.params);
-	printSinoParams(&sino.params);
-
 	/* Read system matrix from disk */
 	readSysMatrix(Amatrix_fname, &sino.params, &img.params, &A);
 
@@ -54,6 +51,19 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
 	/* Allocate 3D sino from 1D vector */
 	sino.vox = (float ***)mem_alloc_float3D_from_flat(y, sinoParams.N_beta, sinoParams.N_dv, sinoParams.N_dw);
 	sino.wgt = (float ***)mem_alloc_float3D_from_flat(wght, sinoParams.N_beta, sinoParams.N_dv, sinoParams.N_dw);
+
+
+	for(i_x=0; i_x<2; i_x++){
+		for(i_y=0; i_y<2; i_y++){
+			for(i_z=0; i_z<2; i_z++){
+				printf("%f ", sino.wgt[i_x][i_y][i_z]);
+				printf("\n");
+				printf("%f ", wght[i_x*(sinoParams.N_dv*sinoParams.N_dw)+i_y*sinoParams.N_dw+i_z]);
+				printf("\n");
+				printf("===\n");
+			}
+		}
+	}
 
 	/* Allocate error sinogram */
     sino.e = (float***)allocateSinoData3DCone(&sino.params, sizeof(float));
@@ -86,6 +96,7 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
     MBIR3DCone(&img, &sino, &reconParams, &A);
     printf("Done recon\n");
 
+
     freeSysMatrix(&A);
 	
 	/* Free 2D pointer array for 3D data */
@@ -101,21 +112,27 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
     mem_free_3D((void***)img.timeToChange);
     mem_free_3D((void***)sino.e);
     printf("Done free_3D\n");
+
+
+    printImgParams(&img.params);
+	printSinoParams(&sino.params);
+	printReconParams(&reconParams);
+
 }
 
 void ***mem_alloc_float3D_from_flat(float *dataArray, size_t N1, size_t N2, size_t N3)
 {
-	void ***topTree;
+	float ***topTree;
 	long int i1, i2;
 
-	topTree = (void***)mem_alloc_2D(N1, N2, sizeof(void*));
+	topTree = (float***)mem_alloc_2D(N1, N2, sizeof(void*));
 
 	for(i1 = 0; i1 < N1; i1++)
 	for(i2 = 0; i2 < N2; i2++)
 	{
-		topTree[i1][i2] = dataArray + (i1*N2 + i2)*N3 * sizeof(float);
+		topTree[i1][i2] = dataArray + (i1*N2 + i2)*N3;	
+		// topTree[i1][i2] = &dataArray[i1*N2*N3+i2*N3];
 	}
 
 	return (topTree);	
 }
-

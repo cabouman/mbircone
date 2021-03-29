@@ -2,6 +2,41 @@
 import numpy as np
 # from mbircone import AmatrixComputeToFile_cy
 import mbircone
+import matplotlib.pyplot as plt
+
+def read_ND(filePath, n_dim, dtype='float32', ntype='int32'):
+
+    with open(filePath, 'rb') as fileID:
+
+        sizesArray = np.fromfile( fileID, dtype=ntype, count=n_dim)
+        numElements = np.prod(sizesArray)
+        dataArray = np.fromfile(fileID, dtype=dtype, count=numElements).reshape(sizesArray)
+
+    return dataArray
+
+def plot_image(img, title=None, filename=None, vmin=None, vmax=None):
+    """
+    Function to display and save a 2D array as an image.
+
+    Args:
+        img: 2D numpy array to display
+        title: Title of plot image
+        filename: A path to save plot image
+        vmin: Value mapped to black
+        vmax: Value mapped to white
+    """
+
+    plt.ion()
+    fig = plt.figure()
+    imgplot = plt.imshow(img, vmin=vmin, vmax=vmax)
+    plt.title(label=title)
+    imgplot.set_cmap('gray')
+    plt.colorbar()
+    if filename != None:
+        try:
+            plt.savefig(filename)
+        except:
+            print("plot_image() Warning: Can't write to file {}".format(filename))
 
 
 sino = np.load('sino.npy')
@@ -92,6 +127,25 @@ proxmap_input = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']))
 
 
 print('Reconstructing ...')
-x=mbircone.recon_cy(sino, wght, x_init, proxmap_input,
+x = mbircone.recon_cy(sino, wght, x_init, proxmap_input,
              sinoparams, imgparams, reconparams, Amatrix_fname)
+print('Reconstructing done.')
+
+
+fname_ref = 'inversion/object.phantom.recon'
+ref = read_ND(fname_ref, 3)
+print(ref.shape)
+print(x.shape)
+
+rmse_val = np.sqrt(np.mean((x-ref)**2))
+print("RMSE between reconstruction and phantom: {}".format(rmse_val))
+
+x = np.swapaxes(x, 0, 2)
+print(x.shape)
+
+ref = np.swapaxes(ref, 0, 2)
+print(ref.shape)
+
+plot_image(x[65], title='recon', filename='recon.png', vmin=0, vmax=0.1)
+plot_image(ref[65], title='ref', filename='ref.png', vmin=0, vmax=0.1)
 
