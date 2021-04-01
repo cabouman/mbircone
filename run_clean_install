@@ -6,6 +6,8 @@ source activate test_mbircone &&
 
 pip install -r requirements.txt &&
 
+pip install -r demo/requirements_demo.txt &&
+
 # pip install . &&
 
 python setup.py install &&
