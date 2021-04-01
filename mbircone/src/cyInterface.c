@@ -41,6 +41,9 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
 	copyImgParams(&imgParams, &img.params);
 	copySinoParams(&sinoParams, &sino.params);
 
+	/* Perform normalizations on parameters*/
+	computeSecondaryReconParams(&reconParams, &img.params);
+
 	/* Read system matrix from disk */
 	readSysMatrix(Amatrix_fname, &sino.params, &img.params, &A);
 
@@ -51,19 +54,6 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
 	/* Allocate 3D sino from 1D vector */
 	sino.vox = (float ***)mem_alloc_float3D_from_flat(y, sinoParams.N_beta, sinoParams.N_dv, sinoParams.N_dw);
 	sino.wgt = (float ***)mem_alloc_float3D_from_flat(wght, sinoParams.N_beta, sinoParams.N_dv, sinoParams.N_dw);
-
-
-	for(i_x=0; i_x<2; i_x++){
-		for(i_y=0; i_y<2; i_y++){
-			for(i_z=0; i_z<2; i_z++){
-				printf("%f ", sino.wgt[i_x][i_y][i_z]);
-				printf("\n");
-				printf("%f ", wght[i_x*(sinoParams.N_dv*sinoParams.N_dw)+i_y*sinoParams.N_dw+i_z]);
-				printf("\n");
-				printf("===\n");
-			}
-		}
-	}
 
 	/* Allocate error sinogram */
     sino.e = (float***)allocateSinoData3DCone(&sino.params, sizeof(float));
@@ -112,11 +102,6 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
     mem_free_3D((void***)img.timeToChange);
     mem_free_3D((void***)sino.e);
     printf("Done free_3D\n");
-
-
-    printImgParams(&img.params);
-	printSinoParams(&sino.params);
-	printReconParams(&reconParams);
 
 }
 
