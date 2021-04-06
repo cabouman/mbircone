@@ -138,7 +138,7 @@ print(ref.shape)
 print(x.shape)
 
 rmse_val = np.sqrt(np.mean((x-ref)**2))
-print("RMSE between reconstruction and phantom: {}".format(rmse_val))
+print("RMSE between reconstruction and reference: {}".format(rmse_val))
 
 x = np.swapaxes(x, 0, 2)
 print(x.shape)
