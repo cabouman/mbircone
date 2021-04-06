@@ -146,6 +146,6 @@ print(x.shape)
 ref = np.swapaxes(ref, 0, 2)
 print(ref.shape)
 
-plot_image(x[65], title='recon', filename='recon.png', vmin=0, vmax=0.1)
-plot_image(ref[65], title='ref', filename='ref.png', vmin=0, vmax=0.1)
+plot_image(x[65], title='recon', filename='output/recon.png', vmin=0, vmax=0.1)
+plot_image(ref[65], title='ref', filename='output/ref.png', vmin=0, vmax=0.1)
 
