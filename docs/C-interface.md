@@ -112,3 +112,21 @@ Purge log file writing from inner functions
 Remove plainparams dependency
 
 
+
+
+
+- Write python preprocessing: read radiograph tif from fodler and convert to sino np ndarray
+    - Demo with radiographs (metal-weld data)
+
+1) Write preprocess_conebeam function
+2) Visulaize output
+3) Preprocess metal-weld data with python
+
+4) Preprocess metal-weld params with command line
+5) Reconstruct with data (from python preprocessing) amd params (from comamnd line preprocessing)
+
+- Simply recon inputs
+
+- Write project function
+
+
