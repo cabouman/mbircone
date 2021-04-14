@@ -6,16 +6,16 @@
 
 
 
-void forwardProject3DCone( float ***Ax, float ***x, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoInfo)
+void forwardProject3DCone( float ***Ax, float ***x, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams)
 {
     long int j_u, j_x, j_y, i_beta, i_v, j_z, i_w;
     double B_ij, B_ij_times_x_j;
 
-    setFloatArray2Value( &Ax[0][0][0], sinoInfo->N_beta*sinoInfo->N_dv*sinoInfo->N_dw, 0);
+    setFloatArray2Value( &Ax[0][0][0], sinoParams->N_beta*sinoParams->N_dv*sinoParams->N_dw, 0);
 
 
     #pragma omp parallel for private(j_x, j_y, j_u, i_v, B_ij, j_z, B_ij_times_x_j, i_w)
-    for (i_beta = 0; i_beta <= sinoInfo->N_beta-1; ++i_beta)
+    for (i_beta = 0; i_beta <= sinoParams->N_beta-1; ++i_beta)
     {
 
         for (j_x = 0; j_x <= imgParams->N_x-1; ++j_x)
