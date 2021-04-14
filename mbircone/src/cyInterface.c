@@ -105,6 +105,32 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
 
 }
 
+void forwardProject(float *y, float *x, 
+	struct SinoParams sinoParams, struct ImageParams imgParams, 
+	char *Amatrix_fname)
+{
+	
+	float ***img_3D, ***sino_3D;
+    struct SysMatrix A;
+
+    /* Allocate 3D image from 1D vector */
+	img_3D = (float ***)mem_alloc_float3D_from_flat(x, imgParams.N_x, imgParams.N_y, imgParams.N_z);
+
+	/* Allocate 3D sino from 1D vector */
+	sino_3D = (float ***)mem_alloc_float3D_from_flat(y, sinoParams.N_beta, sinoParams.N_dv, sinoParams.N_dw);
+
+	/* Read system matrix from disk */
+	readSysMatrix(Amatrix_fname, &sinoParams, &imgParams, &A);
+
+	forwardProject3DCone( sino_3D, img_3D, &imgParams, &A, &sinoParams);
+
+	freeSysMatrix(&A);
+
+    mem_free_3D((void***)sino_3D);
+	mem_free_3D((void***)img_3D);
+
+}
+
 void ***mem_alloc_float3D_from_flat(float *dataArray, size_t N1, size_t N2, size_t N3)
 {
 	float ***topTree;
