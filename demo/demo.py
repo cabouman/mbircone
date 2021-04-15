@@ -1,4 +1,5 @@
 
+import os
 import numpy as np
 # from mbircone import AmatrixComputeToFile_cy
 import mbircone
@@ -32,11 +33,12 @@ def plot_image(img, title=None, filename=None, vmin=None, vmax=None):
     plt.title(label=title)
     imgplot.set_cmap('gray')
     plt.colorbar()
-    if filename != None:
-        try:
-            plt.savefig(filename)
-        except:
-            print("plot_image() Warning: Can't write to file {}".format(filename))
+
+    if not os.path.exists(os.path.dirname(filename)):
+        os.mkdir(os.path.dirname(filename))
+    
+    plt.savefig(filename)
+
 
 
 sino = np.load('sino.npy')
@@ -131,20 +133,14 @@ x = mbircone.recon_cy(sino, wght, x_init, proxmap_input,
              sinoparams, imgparams, reconparams, Amatrix_fname)
 print('Reconstructing done.')
 
+x = np.swapaxes(x, 0, 2)
 
 fname_ref = 'inversion/object.phantom.recon'
 ref = read_ND(fname_ref, 3)
-print(ref.shape)
-print(x.shape)
+ref = np.swapaxes(ref, 0, 2)
 
 rmse_val = np.sqrt(np.mean((x-ref)**2))
 print("RMSE between reconstruction and reference: {}".format(rmse_val))
-
-x = np.swapaxes(x, 0, 2)
-print(x.shape)
-
-ref = np.swapaxes(ref, 0, 2)
-print(ref.shape)
 
 plot_image(x[65], title='recon', filename='output/recon.png', vmin=0, vmax=0.1)
 plot_image(ref[65], title='ref', filename='output/ref.png', vmin=0, vmax=0.1)
