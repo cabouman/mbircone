@@ -125,6 +125,10 @@ cdef extern from "./src/cyInterface.h":
 	SinoParams c_sinoparams, ImageParams c_imgparams, ReconParams c_reconparams,
 	char *Amatrix_fname);
 
+    void forwardProject(float *y, float *x, 
+    SinoParams sinoParams, ImageParams imgParams, 
+    char *Amatrix_fname)
+
 
 cdef map_py2c_sinoparams(SinoParams* c_sinoparams, sinoparams):
     
@@ -331,3 +335,28 @@ def recon_cy(sino, wght, x_init, proxmap_input,
     return py_x
 
 
+def project_cy(x, sinoparams, imgparams, py_Amatrix_fname):
+
+    cdef cnp.ndarray[float, ndim=3, mode="c"] py_Ax
+    py_Ax = np.zeros((sinoparams['N_beta'],sinoparams['N_dv'],sinoparams['N_dv']), dtype=ctypes.c_float)
+
+    py_x = np.ascontiguousarray(x, dtype=np.single)
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_x = py_x
+
+    cdef cnp.ndarray[char, ndim=1, mode="c"] c_Amatrix_fname = string_to_char_array(py_Amatrix_fname)
+
+    cdef ImageParams c_imgparams
+    cdef SinoParams c_sinoparams
+    
+    map_py2c_sinoparams(&c_sinoparams, sinoparams)
+    map_py2c_imgparams(&c_imgparams, imgparams)
+
+    forwardProject(&py_Ax[0,0,0], 
+                    &cy_x[0,0,0],
+                    c_sinoparams,
+                    c_imgparams,
+                    &c_Amatrix_fname[0])
+
+    print("Cython done")
+
+    return py_Ax
