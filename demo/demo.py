@@ -133,7 +133,10 @@ x = mbircone.recon_cy(sino, wght, x_init, proxmap_input,
              sinoparams, imgparams, reconparams, Amatrix_fname)
 print('Reconstructing done.')
 
+Ax = mbircone.project_cy(x, sinoparams, imgparams, Amatrix_fname)
+
 x = np.swapaxes(x, 0, 2)
+Ax = np.swapaxes(Ax, 1, 2)
 
 fname_ref = 'inversion/object.phantom.recon'
 ref = read_ND(fname_ref, 3)
@@ -144,4 +147,6 @@ print("RMSE between reconstruction and reference: {}".format(rmse_val))
 
 plot_image(x[65], title='recon', filename='output/recon.png', vmin=0, vmax=0.1)
 plot_image(ref[65], title='ref', filename='output/ref.png', vmin=0, vmax=0.1)
+
+plot_image(Ax[0], title='Ax', filename='output/proj.png')
 

@@ -338,7 +338,7 @@ def recon_cy(sino, wght, x_init, proxmap_input,
 def project_cy(x, sinoparams, imgparams, py_Amatrix_fname):
 
     cdef cnp.ndarray[float, ndim=3, mode="c"] py_Ax
-    py_Ax = np.zeros((sinoparams['N_beta'],sinoparams['N_dv'],sinoparams['N_dv']), dtype=ctypes.c_float)
+    py_Ax = np.zeros((sinoparams['N_beta'],sinoparams['N_dv'],sinoparams['N_dw']), dtype=ctypes.c_float)
 
     py_x = np.ascontiguousarray(x, dtype=np.single)
     cdef cnp.ndarray[float, ndim=3, mode="c"] cy_x = py_x

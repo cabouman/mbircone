@@ -126,8 +126,9 @@ void forwardProject(float *y, float *x,
 
 	freeSysMatrix(&A);
 
-    mem_free_3D((void***)sino_3D);
-	mem_free_3D((void***)img_3D);
+	mem_free_2D((void**)sino_3D);
+	mem_free_2D((void**)img_3D);
+	printf("Done free_2D\n");
 
 }
 
