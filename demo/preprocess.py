@@ -7,12 +7,6 @@ from PIL import Image
 from skimage.measure import block_reduce
 import scipy
 import matplotlib.pyplot as plt
-#from utils import *
-
-# from mbir import *
-
-# from multiprocessing import Pool
-# import matplotlib.pyplot as plt
 
 
 def read_scan_img(img_path):
@@ -226,10 +220,8 @@ def preprocess_conebeam(path_radiographs, path_blank='gain0.tif', path_dark='off
     plt.colorbar()
     plt.savefig('prep_obj.png')
     plt.imshow(sino[0])
-    plt.colorbar()
     plt.savefig('prep_sino.png')
     plt.imshow(wght[0])
-    plt.colorbar()
     plt.savefig('prep_wght.png')
     return sino, wght
 
