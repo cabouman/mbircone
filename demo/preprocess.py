@@ -204,20 +204,33 @@ def write_mbir_params(dataset_params, data_dict, rootPath):
 
 
 def preprocess_conebeam(path_radiographs, path_blank='gain0.tif', path_dark='offset.tif', 
-    view_range=[0,1999], angle_span=360, num_views=500, downsample_factor=[4,4]):
-
-    obj_scan = 
-
-    blank_scan = 
-
-    dark_scan = 
+    view_range=[0,1999], angle_span=360, num_views=20, downsample_factor=[4,4]):
+    view_ids = gen_view_ids(view_range, num_views)
+    angles = gen_angles_full(angle_span, num_views)
+    obj_scan = read_scan_dir(path_radiographs, view_ids)
+    if path_blank is not None:
+        blank_scan = np.expand_dims(read_scan_img(path_blank),axis = 0)
+    if path_dark is not None:
+        dark_scan = np.expand_dims(read_scan_img(path_dark),axis = 0)
 
     # downsampling in views and pixels
+    obj_scan, blank_scan, dark_scan = downsample_scans(obj_scan, blank_scan, dark_scan,
+                                        factor=downsample_factor)
 
-    def downsample_scans(obj_scan, blank_scan, dark_scan, factor=1)
+    # obj_scan, blank_scan, dark_scan = crop_scans(obj_scan, blank_scan, dark_scan,
+    #                                     limits_lo=dataset_params['crop_limits_lo'],
+    #                                     limits_hi=dataset_params['crop_limits_hi'])
 
     sino, wght = compute_sino_wght(obj_scan, blank_scan, dark_scan)
-    
+    plt.imshow(obj_scan[0])
+    plt.colorbar()
+    plt.savefig('prep_obj.png')
+    plt.imshow(sino[0])
+    plt.colorbar()
+    plt.savefig('prep_sino.png')
+    plt.imshow(wght[0])
+    plt.colorbar()
+    plt.savefig('prep_wght.png')
     return sino, wght
 
 
@@ -249,4 +262,8 @@ args, extra = arg_parser.parse_known_args()
 args = vars(args)
 
 if __name__ == '__main__':
-    main(args)
+    #main(args)
+    dataset_dir = "/depot/bouman/users/li3120/datasets/metal_weld_data/"
+    path_radiographs = dataset_dir+"Radiographs-2102414-2019-001-076/"
+    preprocess_conebeam(path_radiographs, path_blank=dataset_dir+'Corrections/gain0.tif', path_dark=dataset_dir+'Corrections/offset.tif',
+                        view_range=[0, 1999], angle_span=360, num_views=20, downsample_factor=[4, 4])
