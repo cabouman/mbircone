@@ -6,8 +6,8 @@ import numpy as np
 from PIL import Image
 from skimage.measure import block_reduce
 import scipy
-
-from utils import *
+import matplotlib.pyplot as plt
+#from utils import *
 
 # from mbir import *
 
