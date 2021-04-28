@@ -8,7 +8,15 @@ from skimage.measure import block_reduce
 import scipy
 import matplotlib.pyplot as plt
 
+def read_ND(filePath, n_dim, dtype='float32', ntype='int32'):
 
+    with open(filePath, 'rb') as fileID:
+
+        sizesArray = np.fromfile( fileID, dtype=ntype, count=n_dim)
+        numElements = np.prod(sizesArray)
+        dataArray = np.fromfile(fileID, dtype=dtype, count=numElements).reshape(sizesArray)
+
+    return dataArray
 def read_scan_img(img_path):
 
     img = np.asarray(Image.open(img_path))
@@ -27,7 +35,7 @@ def read_scan_dir(scan_dir, view_ids=None):
     if view_ids!=None:
         img_path_list = [img_path_list[i] for i in view_ids]
 
-    # print(img_path_list[0])
+    # print(img_path_list)
     # print(img_path_list[-1])
     
     img_list = [ read_scan_img(img_path) for img_path in img_path_list]
@@ -57,12 +65,12 @@ def downsample_scans(obj_scan, blank_scan, dark_scan, factor=1):
 
     assert len(factor)==2, 'factor({}) needs to be of len 2'.format(factor)
 
-    new_size1 = factor[0]*(obj_scan.shape[0]//factor[0])
-    new_size2 = factor[1]*(obj_scan.shape[1]//factor[1])
+    new_size1 = factor[0]*(obj_scan.shape[1]//factor[0])
+    new_size2 = factor[1]*(obj_scan.shape[2]//factor[1])
 
-    obj_scan = obj_scan[0:new_size1,0:new_size2]
-    blank_scan = blank_scan[0:new_size1,0:new_size2]
-    dark_scan = dark_scan[0:new_size1,0:new_size2]
+    obj_scan = obj_scan[:,0:new_size1,0:new_size2]
+    blank_scan = blank_scan[:,0:new_size1,0:new_size2]
+    dark_scan = dark_scan[:,0:new_size1,0:new_size2]
 
     obj_scan = block_reduce(obj_scan, block_size=(1, factor[0], factor[1]), func=np.sum)
     blank_scan = block_reduce(blank_scan, block_size=(1, factor[0], factor[1]), func=np.sum)
@@ -200,8 +208,10 @@ def write_mbir_params(dataset_params, data_dict, rootPath):
 def preprocess_conebeam(path_radiographs, path_blank='gain0.tif', path_dark='offset.tif', 
     view_range=[0,1999], angle_span=360, num_views=20, downsample_factor=[4,4]):
     view_ids = gen_view_ids(view_range, num_views)
+    print(view_ids)
     angles = gen_angles_full(angle_span, num_views)
     obj_scan = read_scan_dir(path_radiographs, view_ids)
+    print(np.shape(obj_scan))
     if path_blank is not None:
         blank_scan = np.expand_dims(read_scan_img(path_blank),axis = 0)
     if path_dark is not None:
@@ -210,7 +220,6 @@ def preprocess_conebeam(path_radiographs, path_blank='gain0.tif', path_dark='off
     # downsampling in views and pixels
     obj_scan, blank_scan, dark_scan = downsample_scans(obj_scan, blank_scan, dark_scan,
                                         factor=downsample_factor)
-
     # obj_scan, blank_scan, dark_scan = crop_scans(obj_scan, blank_scan, dark_scan,
     #                                     limits_lo=dataset_params['crop_limits_lo'],
     #                                     limits_hi=dataset_params['crop_limits_hi'])
@@ -219,10 +228,16 @@ def preprocess_conebeam(path_radiographs, path_blank='gain0.tif', path_dark='off
     plt.imshow(obj_scan[0])
     plt.colorbar()
     plt.savefig('prep_obj.png')
+    plt.close()
     plt.imshow(sino[0])
+    plt.colorbar()
     plt.savefig('prep_sino.png')
+    plt.close()
     plt.imshow(wght[0])
+    plt.colorbar()
     plt.savefig('prep_wght.png')
+    plt.close()
+    print(np.shape(obj_scan))
     return sino, wght
 
 
@@ -257,5 +272,13 @@ if __name__ == '__main__':
     #main(args)
     dataset_dir = "/depot/bouman/users/li3120/datasets/metal_weld_data/"
     path_radiographs = dataset_dir+"Radiographs-2102414-2019-001-076/"
-    preprocess_conebeam(path_radiographs, path_blank=dataset_dir+'Corrections/gain0.tif', path_dark=dataset_dir+'Corrections/offset.tif',
-                        view_range=[0, 1999], angle_span=360, num_views=20, downsample_factor=[4, 4])
+    sino, wght = preprocess_conebeam(path_radiographs, path_blank=dataset_dir+'Corrections/gain0.tif', path_dark=dataset_dir+'Corrections/offset.tif',
+                        view_range=[0, 1999], angle_span=360, num_views=10, downsample_factor=[4, 4])
+    ref_sino = read_ND("./metal_laser_welds_cmp/object.sino", 3)
+    ref_wght = read_ND("./metal_laser_welds_cmp/object.wght", 3)
+    print(np.shape(sino))
+    print(np.shape(ref_sino))
+    plt.imshow(ref_sino[0])
+    plt.colorbar()
+    plt.savefig('ref_sino.png')
+    plt.close()
