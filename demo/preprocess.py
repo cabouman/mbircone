@@ -8,6 +8,21 @@ from skimage.measure import block_reduce
 import scipy
 import matplotlib.pyplot as plt
 
+def nrmse(image, reference_image):
+    """
+    Compute the normalized root mean square error between image and reference_image.
+    Args:
+        image: Calculated image
+        reference_image: Ground truth image
+    Returns:
+        Root mean square of (image - reference_image) divided by RMS of reference_image
+    """
+    rmse = np.sqrt(((image - reference_image) ** 2).mean())
+    denominator = np.sqrt(((reference_image) ** 2).mean())
+
+    return rmse/denominator
+
+
 def read_ND(filePath, n_dim, dtype='float32', ntype='int32'):
 
     with open(filePath, 'rb') as fileID:
@@ -276,9 +291,11 @@ if __name__ == '__main__':
                         view_range=[0, 1999], angle_span=360, num_views=10, downsample_factor=[4, 4])
     ref_sino = read_ND("./metal_laser_welds_cmp/object.sino", 3)
     ref_wght = read_ND("./metal_laser_welds_cmp/object.wght", 3)
+    ref_sino = np.rot90(ref_sino,k=1,axes=(1,2))
     print(np.shape(sino))
     print(np.shape(ref_sino))
     plt.imshow(ref_sino[0])
     plt.colorbar()
     plt.savefig('ref_sino.png')
     plt.close()
+    print(nrmse(sino, ref_sino))
