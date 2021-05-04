@@ -1,54 +1,69 @@
 
-def recon(sino, wght, angles, x_init, proxmap_input, Amatrix_fname,
-	detector_loc_horz, detector_loc_vert, dist_source_obj, dist_detector_obj,
-	delta_pixel_detector, delta_pixel_image, rotation_offset,
-	is_QGGMRF, is_proxMap, is_positivity_constraint,
-	q, p, T, sigma_x, num_neighbors, sigma_proxmap, max_iterations,
-	zipLineMode, N_G, numVoxelsPerZiplineMax, numThreads, 
-	weightScaler_domain, weightScaler_estimateMode, weightScaler_value,
-	NHICD_Mode, NHICD_ThresholdAllVoxels_ErrorPercent, NHICD_percentage, NHICD_random, 
-	verbosity, isComputeCost):
+__lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
+
+def recon(sino, angles, dist_source_detector, magnification,
+    center_offset=(0.0,0.0), rotation_offset=0.0, delta_pixel_detector=1.0, delta_pixel_image=1.0,
+    init_image=0.0, prox_image=None,
+    sigma_y=None, snr_db=30.0, weights=None, weight_type = 'unweighted',
+    is_qggmrf=True, is_proxmap=False, positivity=True, 
+    q=2.0, p=1.2, T=2.0, num_neighbors=26,
+    sigma_x=None, sigma_proxmap=None, max_iterations=20, stop_threshold=0.0,
+    num_threads=None, 
+    is_NHICD=False,
+    verbose=False,
+    lib_path=__lib_path):
     """Summary
     
     Args:
         sino (ndarray): 3D sinogram array with shape (num_views, num_slices, num_channels)
-        wght (ndarray): 3D weights array with same shape as sino.
         angles (ndarray): 1D view angles array in radians.
-        x_init (ndarray): Shape (num_slices,num_rows,num_cols)
-        proxmap_input (ndarray): Shape (num_slices,num_rows,num_cols)
-        Amatrix_fname (string): Filename of system matrix
-        
-        detector_offset_horz (float): Detector offset in horz direction
-        detector_offset_vert (float): Detector offset in vert direction
-        dist_source_obj (float): Source to object distance
-        dist_detector_obj (float): Detector to object distance
-        delta_pixel_detector (float): Pixel pitch in the detector
-        delta_pixel_image (float): Pixel pitch in the reconstruction
-        rotation_offset_u (float): Location of rotation axis wrt center of object along u axis
-        rotation_offset_v (float): Location of rotation axis wrt center of object along v axis
-        
+        dist_source_detector (float): Description
+        magnification (float): Description
+        center_offset (float tuple, optional): Description
+        rotation_offset (flaot, optional): Description
+        delta_pixel_detector (float, optional): Description
+        delta_pixel_image (float, optional): Description
+        init_image (ndarray, optional): Initial value of reconstruction image, specified by either a scalar value or a 3D numpy array with shape (num_slices,num_rows,num_cols)
+        prox_image (ndarray, optional): 3D proximal map input image. 3D numpy array with shape (num_slices,num_rows,num_cols)
+        sigma_y (float, optional): Scalar value of noise standard deviation parameter.
+            If None, automatically set with auto_sigma_y.
+        snr_db (float, optional): Scalar value that controls assumed signal-to-noise ratio of the data in dB.
+            Ignored if sigma_y is not None.
+        weights (ndarray, optional): 3D weights array with same shape as sino.
+        weight_type (string, optional): Type of noise model used for data.
+            If the ``weights`` array is not supplied, then the function ``svmbir.calc_weights`` is used to set weights using specified ``weight_type`` parameter.
+            Option "unweighted" corresponds to unweighted reconstruction;
+            Option "transmission" is the correct weighting for transmission CT with constant dosage;
+            Option "transmission_root" is commonly used with transmission CT data to improve image homogeneity;
+            Option "emission" is appropriate for emission CT data.
 
-        is_QGGMRF (float): 
-        is_proxMap (float): 
-        is_positivity_constraint (float): 
-        q (float): 
-        p (float): 
-        T (float): 
-        sigma_x (float):
-        sigma_proxmap (float):
-        num_neighbors (int): Number of neighbors in qggmrf prior
-        max_iterations (int): 
-        zipLineMode (int): 
-        N_G (int): Number of groups for group ICD
-        numVoxelsPerZiplineMax (int): Max zipline size
-        numThreads (int): Number of threads
-        weightScaler_domain (string): 
-        weightScaler_estimateMode (string): 
-        weightScaler_value (float): 
-        NHICD_Mode (string): 
-        NHICD_ThresholdAllVoxels_ErrorPercent (float): 
-        NHICD_percentage (float): 
-        NHICD_random (float): 
-        verbosity (int): 
-        isComputeCost (int): 
+        is_qggmrf (bool, optional): Boolean value that determines if qggmrf prior is enables.
+            If false, the reconstruction is a proximal operator if prox_image is provided, else it is unregularized.
+        positivity (bool, optional): Boolean value that determines if positivity constraint is enforced. 
+            The positivity parameter defaults to True; however, it should be changed to False when used in applications that can generate negative image values.
+        p (float, optional): Scalar value in range :math:`[1,2]` that specifies the qGGMRF shape parameter.
+        q (float, optional): Scalar value in range :math:`[p,1]` that specifies the qGGMRF shape parameter.
+        T (float, optional): Scalar value :math:`>0` that specifies the qGGMRF threshold parameter.
+        num_neighbors (int, optional):Possible values are {26,18,6}.  Number of neightbors in the qggmrf neighborhood. 
+        sigma_x (float, optional): Scalar value :math:`>0` that specifies the qGGMRF scale parameter.
+            If None, automatically set with auto_sigma_x. The parameter sigma_x can be used to directly control regularization, but this is only recommended for expert users.
+        sigma_proxmap (float, optional): Scalar value :math:`>0` that specifies the proximal map scale parameter.
+        max_iterations (int, optional): Integer valued specifying the maximum number of iterations. 
+        stop_threshold (float, optional): [Default=0.02] Scalar valued stopping threshold in percent.
+            If stop_threshold=0.0, then run max iterations.
+        num_threads (int, optional): Number of compute threads requested when executed.
+            If None, num_threads is set to the number of cores in the system
+        is_NHICD (bool, optional): If true, uses Non-homogeneous ICD updates
+        verbose (bool, optional): If true, displays reconstruction progress information
+        lib_path (str, optional): Path to directory containing library of forward projection matrices.
+    Returns:
+        3D numpy array: 3D reconstruction with shape (num_slices,num_rows,num_cols) in units of :math:`ALU^{-1}`.
     """
+
+    # Internally set
+    # NHICD_ThresholdAllVoxels_ErrorPercent=80, NHICD_percentage=15, NHICD_random=20, 
+    # zipLineMode=2, N_G=2, numVoxelsPerZiplineMax=200
+    
+    pass
+
+    
