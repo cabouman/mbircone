@@ -8,7 +8,7 @@ def recon(sino, angles, dist_source_detector, magnification,
     sigma_y=None, snr_db=30.0, weights=None, weight_type='unweighted',
     is_qggmrf=True, positivity=True, 
     q=2.0, p=1.2, T=2.0, num_neighbors=26,
-    sigma_x=None, sigma_proxmap=None, max_iterations=20, stop_threshold=0.0,
+    sharpness = 1.0, sigma_x=None, sigma_proxmap=None, max_iterations=20, stop_threshold=0.0,
     num_threads=None, 
     is_NHICD=False,
     verbose=False,
@@ -59,6 +59,10 @@ def recon(sino, angles, dist_source_detector, magnification,
         q (float, optional): Scalar value in range :math:`[p,1]` that specifies the qGGMRF shape parameter.
         T (float, optional): Scalar value :math:`>0` that specifies the qGGMRF threshold parameter.
         num_neighbors (int, optional):Possible values are {26,18,6}.  Number of neightbors in the qggmrf neighborhood. 
+        sharpness (float, optional):
+            Scalar value that controls level of sharpness in the reconstruction
+            ``sharpness=0.0`` is neutral; ``sharpness>0`` increases sharpness; ``sharpness<0`` reduces sharpness.
+            Ignored if sigma_x is not None.
         sigma_x (float, optional): Scalar value :math:`>0` that specifies the qGGMRF scale parameter.
             If None, automatically set with auto_sigma_x. The parameter sigma_x can be used to directly control regularization, but this is only recommended for expert users.
         sigma_proxmap (float, optional): Scalar value :math:`>0` that specifies the proximal map scale parameter.
