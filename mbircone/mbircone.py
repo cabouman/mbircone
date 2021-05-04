@@ -3,6 +3,7 @@ __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
 
 def recon(sino, angles, dist_source_detector, magnification,
     center_offset=(0.0,0.0), rotation_offset=0.0, delta_pixel_detector=1.0, delta_pixel_image=1.0,
+    num_rows=None, num_cols=None, num_slices=None, roi_radius=None,
     init_image=0.0, prox_image=None,
     sigma_y=None, snr_db=30.0, weights=None, weight_type='unweighted',
     is_qggmrf=True, is_proxmap=False, positivity=True, 
@@ -24,6 +25,15 @@ def recon(sino, angles, dist_source_detector, magnification,
         rotation_offset (float, optional): Distance between object center and axis of rotatation in units of ALU
         delta_pixel_detector (float, optional): Scalar value of detector pixel spacing in :math:`ALU`.
         delta_pixel_image (float, optional): Scalar value of image pixel spacing in :math:`ALU`.
+        num_rows (int, optional): Integer number of rows in reconstructed image.
+            If None, automatically set.
+        num_cols (int, optional): Integer number of columns in reconstructed image.
+            If None, automatically set.
+        num_slices (int, optional): Integer number of slices in reconstructed image.
+            If None, automatically set.
+        roi_radius (float, optional): Scalar value of radius of reconstruction in :math:`ALU`.
+            If None, automatically set with auto_roi_radius().
+            Pixels outside the radius roi_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
         init_image (ndarray, optional): Initial value of reconstruction image, specified by either a scalar value or a 3D numpy array with shape (num_slices,num_rows,num_cols)
         prox_image (ndarray, optional): 3D proximal map input image. 3D numpy array with shape (num_slices,num_rows,num_cols)
         sigma_y (float, optional): Scalar value of noise standard deviation parameter.
