@@ -6,7 +6,7 @@ def recon(sino, angles, dist_source_detector, magnification,
     num_rows=None, num_cols=None, num_slices=None, roi_radius=None,
     init_image=0.0, prox_image=None,
     sigma_y=None, snr_db=30.0, weights=None, weight_type='unweighted',
-    is_qggmrf=True, is_proxmap=False, positivity=True, 
+    is_qggmrf=True, positivity=True, 
     q=2.0, p=1.2, T=2.0, num_neighbors=26,
     sigma_x=None, sigma_proxmap=None, max_iterations=20, stop_threshold=0.0,
     num_threads=None, 
@@ -18,6 +18,7 @@ def recon(sino, angles, dist_source_detector, magnification,
     Args:
         sino (ndarray): 3D sinogram array with shape (num_views, num_slices, num_channels)
         angles (ndarray): 1D view angles array in radians.
+        
         dist_source_detector (float): Distance between the X-ray source and the detector in units of ALU
         magnification (float): Magnification of the cone-beam geometry
         center_offset (float tuple, optional): Distance between detector center and center of beam in units of ALU.
@@ -34,8 +35,10 @@ def recon(sino, angles, dist_source_detector, magnification,
         roi_radius (float, optional): Scalar value of radius of reconstruction in :math:`ALU`.
             If None, automatically set with auto_roi_radius().
             Pixels outside the radius roi_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
+        
         init_image (ndarray, optional): Initial value of reconstruction image, specified by either a scalar value or a 3D numpy array with shape (num_slices,num_rows,num_cols)
         prox_image (ndarray, optional): 3D proximal map input image. 3D numpy array with shape (num_slices,num_rows,num_cols)
+        
         sigma_y (float, optional): Scalar value of noise standard deviation parameter.
             If None, automatically set with auto_sigma_y.
         snr_db (float, optional): Scalar value that controls assumed signal-to-noise ratio of the data in dB.
@@ -48,8 +51,8 @@ def recon(sino, angles, dist_source_detector, magnification,
             Option "transmission_root" is commonly used with transmission CT data to improve image homogeneity;
             Option "emission" is appropriate for emission CT data.
 
-        is_qggmrf (bool, optional): Boolean value that determines if qggmrf prior is enables.
-            If false, the reconstruction is a proximal operator if prox_image is provided, else it is unregularized.
+        is_qggmrf (bool, optional): Boolean value that determines if qggmrf prior is enabled.
+            If false, the reconstruction is a proximal operation if prox_image is provided, else it is an unregularized reconstruction.
         positivity (bool, optional): Boolean value that determines if positivity constraint is enforced. 
             The positivity parameter defaults to True; however, it should be changed to False when used in applications that can generate negative image values.
         p (float, optional): Scalar value in range :math:`[1,2]` that specifies the qGGMRF shape parameter.
