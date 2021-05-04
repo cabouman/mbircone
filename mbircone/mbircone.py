@@ -4,7 +4,7 @@ __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
 def recon(sino, angles, dist_source_detector, magnification,
     center_offset=(0.0,0.0), rotation_offset=0.0, delta_pixel_detector=1.0, delta_pixel_image=1.0,
     init_image=0.0, prox_image=None,
-    sigma_y=None, snr_db=30.0, weights=None, weight_type = 'unweighted',
+    sigma_y=None, snr_db=30.0, weights=None, weight_type='unweighted',
     is_qggmrf=True, is_proxmap=False, positivity=True, 
     q=2.0, p=1.2, T=2.0, num_neighbors=26,
     sigma_x=None, sigma_proxmap=None, max_iterations=20, stop_threshold=0.0,
