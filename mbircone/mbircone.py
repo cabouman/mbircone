@@ -12,17 +12,18 @@ def recon(sino, angles, dist_source_detector, magnification,
     is_NHICD=False,
     verbose=False,
     lib_path=__lib_path):
-    """Summary
+    """Computes 3D cone beam MBIR reconstruction
     
     Args:
         sino (ndarray): 3D sinogram array with shape (num_views, num_slices, num_channels)
         angles (ndarray): 1D view angles array in radians.
-        dist_source_detector (float): Description
-        magnification (float): Description
-        center_offset (float tuple, optional): Description
-        rotation_offset (flaot, optional): Description
-        delta_pixel_detector (float, optional): Description
-        delta_pixel_image (float, optional): Description
+        dist_source_detector (float): Distance between the X-ray source and the detector in units of ALU
+        magnification (float): Magnification of the cone-beam geometry
+        center_offset (float tuple, optional): Distance between detector center and center of beam in units of ALU.
+            Thhe first element of the tuple is the horizontal distance and the secon element vertical.
+        rotation_offset (float, optional): Distance between object center and axis of rotatation in units of ALU
+        delta_pixel_detector (float, optional): Scalar value of detector pixel spacing in :math:`ALU`.
+        delta_pixel_image (float, optional): Scalar value of image pixel spacing in :math:`ALU`.
         init_image (ndarray, optional): Initial value of reconstruction image, specified by either a scalar value or a 3D numpy array with shape (num_slices,num_rows,num_cols)
         prox_image (ndarray, optional): 3D proximal map input image. 3D numpy array with shape (num_slices,num_rows,num_cols)
         sigma_y (float, optional): Scalar value of noise standard deviation parameter.
@@ -66,4 +67,3 @@ def recon(sino, angles, dist_source_detector, magnification,
     
     pass
 
-    
