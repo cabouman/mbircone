@@ -20,31 +20,18 @@ Divide params into groups (required, optional, internal)
 
 ===========================================================================
 
-Required:
+Uni-directional arrow in diagram
+index 0,1 instead of 1,2
+center offset: offline discussion
+set u_r to zero in fig
 
-```
-sino, angles, 
-dist_source_detector, magnification
-```
+is_qggmrf remove
 
+num_neighbors default to 6
+Specify 6 is fastest, 
 
-Optional:
-```
-center_offset=(0,0), rotation_offset=0, delta_pixel_detector=1, delta_pixel_image=1,
-init_image=0.0, prox_image=None,
-sigma_y=None, snr_db=30.0, weights=None, weight_type = 'unweighted',
-is_qggmrf=True, is_proxmap=False, is_positivity_constraint=True, 
-q=2, p=1.2, T=2, num_neighbors=26,
-sigma_x=None, sigma_proxmap=None, max_iterations=20,
-num_threads=None, 
-is_NHICD=False,
-verbose=False,
-lib_path='~/.cache/mbircone'
-```
+sigma_proxmap remove
 
-Internal:
+is_NHICD -> NHICD
 
-```
-NHICD_ThresholdAllVoxels_ErrorPercent=80, NHICD_percentage=15, NHICD_random=20, 
-zipLineMode=2, N_G=2, numVoxelsPerZiplineMax=200
-```
+plan for implementation of the interface
