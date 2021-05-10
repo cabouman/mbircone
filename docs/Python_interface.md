@@ -21,7 +21,6 @@ Divide params into groups (required, optional, internal)
 ===========================================================================
 
 Uni-directional arrow in diagram
-index 0,1 instead of 1,2
 center offset: offline discussion
 set u_r to zero in fig
 
