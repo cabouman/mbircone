@@ -18,9 +18,10 @@ def recon(sino, angles, dist_source_detector, magnification,
         dist_source_detector (float): Distance between the X-ray source and the detector in units of ALU
         magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
         
-        center_offset (float tuple, optional): [Default=(0.0, 0.0)] Distance between detector center and center of beam in units of ALU.
+        center_offset (float tuple, optional): [Default=(0.0, 0.0)] Distance to the center of the detector from the projection of the X-ray source at the detector in units of ALU.
             The first element of the tuple is the horizontal distance and the second element vertical.
-        rotation_offset (float, optional): [Default=0.0] Distance between the projected center of rotation on the detector and the center of the detector in units of :math:`ALU`.
+        rotation_offset (float, optional): [Default=0.0] Shortest distance between the rotation axis and the line though the X-ray source that is perperndicular to the detector in units of ALU.
+        
         delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
         delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
             If None, automatically set to delta_pixel_detector/magnification
