@@ -17,3 +17,11 @@ center offset: offline discussion
 set u_r to zero in fig
 
 plan for implementation of the interface
+
+
+center_offset:
+Distance to the center of the detector from the projection of the X-ray source at the detector
+Distance to the center of the detector point in the detector closest to the X-ray source.
+
+rotation_offset:
+Shortest distance between the rotation axis and the line though the X-ray source that is perperndicular to the detector in units of ALU.
