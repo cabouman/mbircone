@@ -26,4 +26,7 @@ sftp-config.json
 # Pycharm idea folder
 .idea/
 
+# Powerpoint backup
+~$*.pptx
+
 demo/output/*
