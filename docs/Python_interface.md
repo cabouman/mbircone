@@ -24,11 +24,4 @@ Uni-directional arrow in diagram
 center offset: offline discussion
 set u_r to zero in fig
 
-is_qggmrf remove
-
-num_neighbors default to 6
-Specify 6 is fastest, 
-
-sigma_proxmap remove
-
 plan for implementation of the interface

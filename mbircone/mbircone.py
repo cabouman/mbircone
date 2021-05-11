@@ -6,13 +6,10 @@ def recon(sino, angles, dist_source_detector, magnification,
     num_rows=None, num_cols=None, num_slices=None, roi_radius=None,
     init_image=0.0, prox_image=None,
     sigma_y=None, snr_db=30.0, weights=None, weight_type='unweighted',
-    is_qggmrf=True, positivity=True, 
-    p=1.2, q=2.0, T=1.0, num_neighbors=26,
-    sharpness=0.0, sigma_x=None, sigma_proxmap=None, max_iterations=20, stop_threshold=0.0,
-    num_threads=None, 
-    NHICD=False,
-    verbose=1,
-    lib_path=__lib_path):
+    positivity=True, p=1.2, q=2.0, T=1.0, num_neighbors=6,
+    sharpness=0.0, sigma_x=None, max_iterations=20, stop_threshold=0.0,
+    num_threads=None, NHICD=False, verbose=1, lib_path=__lib_path):
+
     """Computes 3D cone beam MBIR reconstruction
     
     Args:
@@ -52,22 +49,19 @@ def recon(sino, angles, dist_source_detector, magnification,
             Option "transmission_root" is commonly used with transmission CT data to improve image homogeneity;
             Option "emission" is appropriate for emission CT data.
 
-        is_qggmrf (bool, optional): [Default=True] Boolean value that determines if qggmrf prior is enabled.
-            If false, the reconstruction is a proximal operation if prox_image is provided, else it is an unregularized reconstruction.
         positivity (bool, optional): [Default=True] Boolean value that determines if positivity constraint is enforced. 
             The positivity parameter defaults to True; however, it should be changed to False when used in applications that can generate negative image values.
         p (float, optional): [Default=1.2] Scalar value in range :math:`[1,2]` that specifies the qGGMRF shape parameter.
         q (float, optional): [Default=2.0] Scalar value in range :math:`[p,1]` that specifies the qGGMRF shape parameter.
         T (float, optional): [Default=1.0] Scalar value :math:`>0` that specifies the qGGMRF threshold parameter.
-        num_neighbors (int, optional): [Default=26] Possible values are {26,18,6}.  Number of neightbors in the qggmrf neighborhood. 
+        num_neighbors (int, optional): [Default=6] Possible values are {26,18,6}.
+            Number of neightbors in the qggmrf neighborhood. Higher number of neighbors result in a better regularization but a slower reconstruction.
         sharpness (float, optional): [Default=0.0]
             Scalar value that controls level of sharpness in the reconstruction
             ``sharpness=0.0`` is neutral; ``sharpness>0`` increases sharpness; ``sharpness<0`` reduces sharpness.
             Ignored if sigma_x is not None.
-        sigma_x (float, optional): [Default=None] Scalar value :math:`>0` that specifies the qGGMRF scale parameter.
+        sigma_x (float, optional): [Default=None] Scalar value :math:`>0` that specifies the qGGMRF/proxmap scale parameter.
             If None, automatically set with auto_sigma_x. The parameter sigma_x can be used to directly control regularization, but this is only recommended for expert users.
-        sigma_proxmap (float, optional): [Default=None] Scalar value :math:`>0` that specifies the proximal map scale parameter.
-            If None, automatically set with auto_sigma_x.
         max_iterations (int, optional): [Default=20] Integer valued specifying the maximum number of iterations. 
         stop_threshold (float, optional): [Default=0.0] [Default=0.02] Scalar valued stopping threshold in percent.
             If stop_threshold=0.0, then run max iterations.
