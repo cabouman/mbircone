@@ -2,14 +2,6 @@ System matrix: disk / compute / compute and store as variable
 
 Use swapaxes to make arrays correct shape
 
-Set optional params
-
-How to parameterize geometry params in a unitless fashion
-(magnification, dist(beam_center,det_denter))
-
-dist_source_detector,
-magnification
-
 Optional:
 center_offset (distance between detector center and center of beam) default [0, 0] ALU
 rotation_offset (distance between object center and axis of rotatation) default [0] ALU
