@@ -10,7 +10,7 @@ def recon(sino, angles, dist_source_detector, magnification,
     p=1.2, q=2.0, T=1.0, num_neighbors=26,
     sharpness=0.0, sigma_x=None, sigma_proxmap=None, max_iterations=20, stop_threshold=0.0,
     num_threads=None, 
-    is_NHICD=False,
+    NHICD=False,
     verbose=1,
     lib_path=__lib_path):
     """Computes 3D cone beam MBIR reconstruction
@@ -73,7 +73,7 @@ def recon(sino, angles, dist_source_detector, magnification,
             If stop_threshold=0.0, then run max iterations.
         num_threads (int, optional): [Default=None] Number of compute threads requested when executed.
             If None, num_threads is set to the number of cores in the system
-        is_NHICD (bool, optional): [Default=False] If true, uses Non-homogeneous ICD updates
+        NHICD (bool, optional): [Default=False] If true, uses Non-homogeneous ICD updates
         verbose (int, optional): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal reconstruction progress information, and 2 prints the full information.
         lib_path (str, optional): [Default=~/.cache/mbircone] Path to directory containing library of forward projection matrices.
     Returns:

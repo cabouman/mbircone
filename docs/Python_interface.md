@@ -31,6 +31,4 @@ Specify 6 is fastest,
 
 sigma_proxmap remove
 
-is_NHICD -> NHICD
-
 plan for implementation of the interface
