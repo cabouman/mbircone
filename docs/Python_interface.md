@@ -12,10 +12,8 @@ Divide params into groups (required, optional, internal)
 
 ===========================================================================
 
-Uni-directional arrow in diagram
-center offset: offline discussion
-set u_r to zero in fig
 
+center offset: offline discussion
 plan for implementation of the interface
 
 
