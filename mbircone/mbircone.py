@@ -1,6 +1,109 @@
 
 __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
 
+def _mbircone_lib_path():
+    """Returns the path to the cache directory used by mbircone
+    """
+    return __lib_path
+
+
+def _clear_cache(mbircone_lib_path=__lib_path):
+    """Clears the cache files used by mbircone
+    
+    Args:
+        mbircone_lib_path (string): Path to mbircone cache directory. Defaults to __lib_path variable
+    """
+    shutil.rmtree(mbircone_lib_path)
+
+
+def calc_weights(sino, weight_type):
+    """Computes the weights used in MBIR reconstruction.
+
+    Args:
+        sino (ndarray): 3D numpy array of sinogram data with shape (num_views,num_slices,num_channels)
+        weight_type (string):[Default=0] Type of noise model used for data.
+
+            If weight_type="unweighted"        => weights = numpy.ones_like(sino)
+
+            If weight_type="transmission"      => weights = numpy.exp(-sino)
+
+            If weight_type="transmission_root" => weights = numpy.exp(-sino/2)
+
+            If weight_type="emission"         => weights = 1/(sino + 0.1)
+
+    Returns:
+        ndarray: 3D numpy array of weights with same shape as sino.
+
+    Raises:
+        Exception: Description
+    """
+    if weight_type == 'unweighted' :
+        weights = np.ones(sino.shape)
+    elif weight_type == 'transmission' :
+        weights = np.exp(-sino)
+    elif weight_type == 'transmission_root' :
+        weights = np.exp(-sino / 2)
+    elif weight_type == 'emission' :
+        weights = 1 / (sino + 0.1)
+    else :
+        raise Exception("calc_weights: undefined weight_type {}".format(weight_type))
+
+    return weights
+
+
+def auto_sigma_y(sino, weights, snr_db=30.0, delta_pixel_image=1.0, delta_pixel_detector=1.0):
+    """Computes the automatic value of ``sigma_y`` for use in MBIR reconstruction.
+
+    Args:
+        sino (ndarray):
+            3D numpy array of sinogram data with shape (num_views,num_slices,num_channels)
+        weights (ndarray):
+            3D numpy array of weights with same shape as sino.
+            The parameters weights should be the same values as used in mbircone reconstruction.
+        snr_db (float, optional):
+            [Default=30.0] Scalar value that controls assumed signal-to-noise ratio of the data in dB.
+        delta_pixel_image (float, optional):
+            [Default=1.0] Scalar value of pixel spacing in :math:`ALU`.
+        delta_pixel_detector (float, optional):
+            [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
+
+
+    Returns:
+        ndarray: Automatic values of regularization parameter.
+    """
+    
+    pass
+
+
+def auto_sigma_x(sino, delta_pixel_detector=1.0, sharpness=0.0):
+    """Computes the automatic value of ``sigma_x`` for use in MBIR reconstruction.
+
+    Args:
+        sino (ndarray):
+            3D numpy array of sinogram data with shape (num_views,num_slices,num_channels)
+        delta_pixel_detector (float, optional):
+            [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
+        sharpness (float, optional):
+            [Default=0.0] Scalar value that controls level of sharpness.
+            ``sharpness=0.0`` is neutral; ``sharpness>0`` increases sharpness; ``sharpness<0`` reduces sharpness
+
+    Returns:
+        float: Automatic value of regularization parameter.
+    """
+    (num_views, num_slices, num_channels) = sino.shape
+
+    # Compute indicator function for sinogram support
+    sino_indicator = _sino_indicator(sino)
+
+    # Compute a typical image value by dividing average sinogram value by a typical projection path length
+    typical_img_value = np.average(sino, weights=sino_indicator) / (num_channels * delta_pixel_detector)
+
+    # Compute sigma_x as a fraction of the typical image value
+    sigma_x = 0.2 * (2 ** sharpness) * typical_img_value
+
+    return sigma_x
+
+
 def recon(sino, angles, dist_source_detector, magnification,
     center_offset=(0.0,0.0), rotation_offset=0.0, delta_pixel_detector=1.0, delta_pixel_image=None,
     num_rows=None, num_cols=None, num_slices=None, roi_radius=None,
