@@ -104,6 +104,23 @@ def auto_sigma_x(sino, delta_pixel_detector=1.0, sharpness=0.0):
     return sigma_x
 
 
+def compute_sino_params(dist_source_detector, magnification,
+    center_offset=(0.0,0.0), rotation_offset=0.0, delta_pixel_detector=1.0, delta_pixel_image=None):
+
+    # return sinoparams
+
+    pass
+
+def compute_img_params(sinoparams, delta_pixel_image=None,
+    num_rows=None, num_cols=None, num_slices=None, roi_radius=None):
+
+    # port from https://github.com/cabouman/OpenMBIR-ConeBeam/blob/fbf3eddcadad1bd1cfb657f58c5b32f1204a12d1/utils/Preprocessing/Modular_PreprocessingRoutines/computeImgParams.m
+
+    # return imgparams
+
+    pass
+
+
 def recon(sino, angles, dist_source_detector, magnification,
     center_offset=(0.0,0.0), rotation_offset=0.0, delta_pixel_detector=1.0, delta_pixel_image=None,
     num_rows=None, num_cols=None, num_slices=None, roi_radius=None,
