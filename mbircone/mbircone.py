@@ -106,17 +106,50 @@ def auto_sigma_x(sino, delta_pixel_detector=1.0, sharpness=0.0):
 
 def compute_sino_params(dist_source_detector, magnification,
     center_offset=(0.0,0.0), rotation_offset=0.0, delta_pixel_detector=1.0, delta_pixel_image=None):
-
-    # return sinoparams
-
+    """ Computes sinogram parameters required by the Cython code
+    
+    Args:
+        dist_source_detector (float): Distance between the X-ray source and the detector in units of ALU
+        magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
+        
+        center_offset (float tuple, optional): [Default=(0.0, 0.0)] Distance to the center of the detector from the projection of the X-ray source at the detector in units of ALU.
+            The first element of the tuple is the horizontal distance and the second element vertical.
+        rotation_offset (float, optional): [Default=0.0] Shortest distance between the rotation axis and the line though the X-ray source that is perperndicular to the detector in units of ALU.
+        delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
+        delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
+            If None, automatically set to delta_pixel_detector/magnification
+    
+    Returns:
+        Dictionary containing sino parameters as required by the Cython code
+    """
+    
     pass
+
+
 
 def compute_img_params(sinoparams, delta_pixel_image=None,
     num_rows=None, num_cols=None, num_slices=None, roi_radius=None):
-
-    # port from https://github.com/cabouman/OpenMBIR-ConeBeam/blob/fbf3eddcadad1bd1cfb657f58c5b32f1204a12d1/utils/Preprocessing/Modular_PreprocessingRoutines/computeImgParams.m
-
-    # return imgparams
+    """ Computes image parameters required by the Cython code
+    
+    Args:
+        sinoparams (dict): Dictionary containing sinogram parameters as required by the Cython code
+        delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
+            If None, automatically set to delta_pixel_detector/magnification
+        num_rows (int, optional): [Default=None] Integer number of rows in reconstructed image.
+            If None, automatically set.
+        num_cols (int, optional): [Default=None] Integer number of columns in reconstructed image.
+            If None, automatically set.
+        num_slices (int, optional): [Default=None] Integer number of slices in reconstructed image.
+            If None, automatically set.
+        roi_radius (float, optional): [Default=None] Scalar value of radius of reconstruction in :math:`ALU`.
+            If None, automatically set with auto_roi_radius().
+            Pixels outside the radius roi_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
+    
+    Returns:
+        Dictionary containing image parameters as required by the Cython code
+     
+    """
+    # port code from https://github.com/cabouman/OpenMBIR-ConeBeam/blob/fbf3eddcadad1bd1cfb657f58c5b32f1204a12d1/utils/Preprocessing/Modular_PreprocessingRoutines/computeImgParams.m
 
     pass
 
