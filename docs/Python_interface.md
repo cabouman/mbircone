@@ -30,10 +30,6 @@ Plan for implementation of the interface
 ===========================================================================
 
 
-change horizontal/vertical to channel/rows
-
-source-to-detector line define in md file
-
 auto_roi_radius
 
 Change automatically set to automatically set by [routine]
