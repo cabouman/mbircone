@@ -228,11 +228,6 @@ struct ViewAngleList
 
 struct ReconParams
 {
-    /**
-     *      Miscellaneous
-     */
-    double InitVal_recon;                  /* Initialization value InitVal_proxMapInput (mm-1) */
-    char initReconMode[200];
 
     /**
      *     Prior
@@ -295,7 +290,6 @@ struct ReconParams
     /* Misc */
     int verbosity;
     int isComputeCost;
-    char backprojlike_type[200]; 
 };
 
 struct SysMatrix
@@ -419,7 +413,7 @@ struct ReconAux
 
 void forwardProject3DCone( float ***Ax, float ***x, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams);
 
-void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams, struct ReconParams *reconParams);
+void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams, char mode);
 
 void initializeWghtRecon(struct SysMatrix *A, struct Sino *sino, struct Image *img, struct ReconParams *reconParams);
 

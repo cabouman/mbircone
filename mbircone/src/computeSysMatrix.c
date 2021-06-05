@@ -7,19 +7,20 @@ void computeSysMatrix(struct SinoParams *sinoParams, struct ImageParams *imgPara
 {
 	double ticToc;
 	tic(&ticToc);
+    
+    // printf("\nInitialize Sinogram Mask ...\n");
+	// printf("\nCompute SysMatrix Parameters...\n");
 
-    printf("\nInitialize Sinogram Mask ...\n");
-
-	printf("\nCompute SysMatrix Parameters...\n");
     computeAMatrixParameters(sinoParams, imgParams, A, viewAngleList);
 	
 	allocateSysMatrix(A, imgParams->N_x, imgParams->N_y, imgParams->N_z, sinoParams->N_beta, A->i_vstride_max, A->i_wstride_max, A->N_u);
    
-
-	printf("\nPrecompute B...\n");
+	
+	// printf("\nPrecompute B...\n");
     computeBMatrix( sinoParams, imgParams, A, viewAngleList);
 
-    printf("\nPrecompute C...\n");
+    
+    // printf("\nPrecompute C...\n");
     computeCMatrix(sinoParams, imgParams, A);
 
 
@@ -324,7 +325,7 @@ void writeSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImagePara
     long int totsize = 0;
     long int N_x, N_y, N_z, N_beta, i_vstride_max, i_wstride_max, N_u;
     
-    printf("\nWrite System Matrix ... \n");
+    printf("\nWriting System Matrix to %s \n", fName);
     
     fp = fopen(fName, "w");
     if (fp == NULL)

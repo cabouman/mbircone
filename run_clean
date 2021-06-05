@@ -1,4 +1,4 @@
-rm mbircone/conebeam.c
+rm mbircone/*.c
 rm mbircone/*.so
 rm -r build
 rm -r dist

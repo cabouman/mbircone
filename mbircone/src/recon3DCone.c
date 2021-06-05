@@ -86,6 +86,12 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 
     numVoxelsInMask = computeNumVoxelsInImageMask(img);
 
+    if (reconParams->verbosity>0){
+		printImgParams(&img->params);
+		printSinoParams(&sino->params);
+		printReconParams(reconParams);
+	}
+
 
     /**
      * 		Random Auxiliary
@@ -313,7 +319,8 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
     		ticTocDisp(ticToc_iteration, 	              "iteration                  ");
     		ticTocDisp(ticToc_icdUpdate_total, 	          "icdUpdate_total            ");
         }
-		disp_iterationInfo(&reconAux, reconParams, itNumber, MaxIterations, cost, relUpdate, stopThresholdChange, sino->params.weightScaler_value, speedAuxICD.voxelsPerSecond, ticToc_icdUpdate, weightedNormSquared_e, ratioUpdated, reconAux.totalEquits);
+        if (reconParams->verbosity>0)
+			disp_iterationInfo(&reconAux, reconParams, itNumber, MaxIterations, cost, relUpdate, stopThresholdChange, sino->params.weightScaler_value, speedAuxICD.voxelsPerSecond, ticToc_icdUpdate, weightedNormSquared_e, ratioUpdated, reconAux.totalEquits);
 	}
 
 	mem_free_1D((void*)reconAux.NHICD_numUpdatedVoxels);
@@ -329,13 +336,13 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 
 	freeParallelAux(&parallelAux);
 
-	toc(&ticToc_all);
-	ticTocDisp(ticToc_all, "MBIR3DCone");
 
 
-	printImgParams(&img->params);
-	printSinoParams(&sino->params);
-	printReconParams(reconParams);
+	if (reconParams->verbosity>0){
+		toc(&ticToc_all);
+		ticTocDisp(ticToc_all, "MBIR3DCone");
+	}
+	
 
 }
 

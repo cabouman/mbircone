@@ -1,5 +1,11 @@
 #!/bin/bash
 
+rm mbircone/*.c
+rm mbircone/*.so
+rm -r build
+rm -r dist
+rm -r mbircone.egg-info
+
 conda env create -n test_mbircone python=3.8 &&
 
 source activate test_mbircone &&
@@ -8,13 +14,15 @@ pip install -r requirements.txt &&
 
 pip install -r demo/requirements_demo.txt &&
 
-# pip install . &&
+pip install . &&
+# pip install -e . &&
+# python setup.py install &&
 
-python setup.py install &&
 
 cd demo &&
 
 python demo.py &&
+# python demo_cython.py &&
 
 cd ..
 

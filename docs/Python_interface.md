@@ -9,16 +9,14 @@ Plan for implementation of the interface
 - rename cython top level
 - update setup.py
 - Install dummy py interface
+- change data shapes
+- Transform params
+- Simplify recon params
+- auto regularization
+- hash params
 
-1) Implement utility function compute_sino_params
 
-2) Implement utility function compute_img_params
 
-3) Convert geometry parameters of demo to simple form to test utility functions
-
-4) Populate recon function by calling geometry utilities and cython recon
-
-5) Call regularization based utilities in recon function
 
 ===========================================================================
 
@@ -26,3 +24,7 @@ Plan for implementation of the interface
 auto_roi_radius
 
 Change automatically set to automatically set by [routine]
+
+
+===========================================================================
+
