@@ -2,20 +2,13 @@
 Use swapaxes to make arrays correct shape
 
 ===========================================================================
-
-center offset: offline discussion
-
-
-center_offset:
-Distance to the center of the detector from the projection of the X-ray source at the detector
-Distance to the center of the detector point in the detector closest to the X-ray source.
-
-rotation_offset:
-Shortest distance between the rotation axis and the line though the X-ray source that is perperndicular to the detector in units of ALU.
-
-
-===========================================================================
 Plan for implementation of the interface
+
+- remove bash stuff
+- rename c top level
+- rename cython top level
+- update setup.py
+- Install dummy py interface
 
 1) Implement utility function compute_sino_params
 

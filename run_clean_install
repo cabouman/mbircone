@@ -1,39 +1,39 @@
 #!/bin/bash
 
-# conda env create -n test_mbircone python=3.8 &&
+conda env create -n test_mbircone python=3.8 &&
 
-# source activate test_mbircone &&
+source activate test_mbircone &&
 
-# pip install -r requirements.txt &&
+pip install -r requirements.txt &&
 
-# pip install -r demo/requirements_demo.txt &&
+pip install -r demo/requirements_demo.txt &&
 
-# # pip install . &&
+# pip install . &&
 
-# python setup.py install &&
+python setup.py install &&
 
-# cd demo &&
+cd demo &&
 
-# python demo.py &&
+python demo.py &&
 
-# cd ..
+cd ..
 
-# conda deactivate
+conda deactivate
  
-# conda remove --name test_mbircone --all
+conda remove --name test_mbircone --all
 
 
 
 
-conda env create -n mbircone python=3.8
+# conda env create -n mbircone python=3.8
 
-source activate mbircone
+# source activate mbircone
 
-pip install -r requirements.txt
+# pip install -r requirements.txt
 
-pip install -r demo/requirements_demo.txt
+# pip install -r demo/requirements_demo.txt
 
-python setup.py install
+# python setup.py install
 
 # cd demo
 

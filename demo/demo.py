@@ -139,7 +139,7 @@ x = np.swapaxes(x, 0, 2)
 Ax = np.swapaxes(Ax, 1, 2)
 sino = np.swapaxes(sino, 1, 2)
 
-fname_ref = 'inversion/object.phantom.recon'
+fname_ref = 'object.phantom.recon'
 ref = read_ND(fname_ref, 3)
 ref = np.swapaxes(ref, 0, 2)
 
