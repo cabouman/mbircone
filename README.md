@@ -12,3 +12,31 @@ If you publish results based on this code, please cite the following paper:
 
 For other OpenMBIR packages see: https://github.com/cabouman/OpenMBIR-Index
 
+## Installation
+1) Create conda environment
+```
+conda env create -n mbircone python=3.8
+```
+2) Activate conda environment
+```
+source activate mbircone
+```
+3) Install requirements
+```
+pip install -r requirements.txt
+```
+4) Install package
+```
+python setup.py install
+```
+
+## Run demo
+1) Install demo requirements
+```
+cd demo
+pip install -r requirements_demo.txt
+```
+2) Run demo
+```
+python demo.py
+```
