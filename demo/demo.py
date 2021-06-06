@@ -99,7 +99,7 @@ reconparams['sigma_lambda'] = 1
 reconparams['stopThresholdChange_pct'] = 0.00
 reconparams['stopThesholdRWFE_pct'] = 0
 reconparams['stopThesholdRUFE_pct'] = 0
-reconparams['MaxIterations'] = 10
+reconparams['MaxIterations'] = 40
 reconparams['relativeChangeMode'] = 'percentile'
 reconparams['relativeChangeScaler'] = 0.1
 reconparams['relativeChangePercentile'] = 99.9
@@ -149,6 +149,5 @@ print("RMSE between reconstruction and reference: {}".format(rmse_val))
 plot_image(x[65], title='recon', filename='output/recon.png', vmin=0, vmax=0.1)
 plot_image(ref[65], title='ref', filename='output/ref.png', vmin=0, vmax=0.1)
 
-plot_image(Ax[0], title='Ax', filename='output/proj.png')
-plot_image(sino[0], title='sino', filename='output/sino.png')
+plot_image(sino[0]-Ax[0], title='errsino', filename='output/errsino.png')
 
