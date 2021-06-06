@@ -17,7 +17,7 @@ PACKAGE_DIR = "mbircone"
 SRC_FILES = [PACKAGE_DIR+'/src/allocate.c', PACKAGE_DIR+'/src/MBIRModularUtilities3D.c',
              PACKAGE_DIR+'/src/icd3d.c', PACKAGE_DIR+'/src/recon3DCone.c',
              PACKAGE_DIR+'/src/computeSysMatrix.c',
-             PACKAGE_DIR+'/src/cyInterface.c', PACKAGE_DIR+'/conebeam.pyx']
+             PACKAGE_DIR+'/src/interface.c', PACKAGE_DIR+'/conebeam.pyx']
 
 
 compiler_str = os.environ.get('CC')
