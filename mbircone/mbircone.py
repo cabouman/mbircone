@@ -1,3 +1,4 @@
+import mbircone.interface_cy_c as ci
 
 __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
 

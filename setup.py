@@ -7,7 +7,7 @@ from Cython.Distutils import build_ext
 NAME = "mbircone"
 VERSION = "0.1"
 DESCRIPTION = "Python Package for Cone Beam reconstruction"
-REQUIRES = ['numpy', 'cython']
+REQUIRES = ['numpy','Cython','psutil','Pillow']  # external package dependencies
 LICENSE = "BSD-3-Clause"
 AUTHOR = "Soumendu Majee"
 
