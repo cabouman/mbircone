@@ -285,6 +285,8 @@ def AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname, verbos
 
 def recon_cy(sino, wght, x_init, proxmap_input,
              sinoparams, imgparams, reconparams, py_Amatrix_fname):
+    # sino, wght shape : views x slices x channels
+    # recon shape: N_x N_y N_z (source-detector-line, channels, slices)
 
     cdef cnp.ndarray[float, ndim=3, mode="c"] py_x
     py_x = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']), dtype=ctypes.c_float)

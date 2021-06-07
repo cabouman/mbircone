@@ -8,6 +8,7 @@ import demo_utils
 
 sino = np.load('sino.npy')
 wght = np.load('wght.npy')
+#  shape : views x channels x slices
     
 angles = np.linspace(0, 2*np.pi, 40, endpoint=False)
 

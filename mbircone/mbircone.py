@@ -245,9 +245,9 @@ def recon(sino, angles, dist_source_detector, magnification,
     # zipLineMode=2, N_G=2, numVoxelsPerZiplineMax=200
     
     sinoparams = dict()
-    sinoparams['N_dv'] = 64
-    sinoparams['N_dw'] = 64
-    sinoparams['N_beta'] = 40
+    sinoparams['N_dv'] = sino.shape[2]
+    sinoparams['N_dw'] = sino.shape[1]
+    sinoparams['N_beta'] = sino.shape[0]
     sinoparams['Delta_dv'] = 3.2
     sinoparams['Delta_dw'] = 3.2
     sinoparams['u_s'] = -71.6364
@@ -324,9 +324,13 @@ def recon(sino, angles, dist_source_detector, magnification,
 
 
     print('Reconstructing ...')
+    sino = np.swapaxes(sino, 1, 2)
+    weights = np.swapaxes(weights, 1, 2)
     x = ci.recon_cy(sino, weights, x_init, proxmap_input,
                  sinoparams, imgparams, reconparams, Amatrix_fname)
     print('Reconstructing done.')
+
+    x = np.swapaxes(x, 0, 2)
 
     return x
 
