@@ -1,3 +1,5 @@
+
+import numpy as np
 import matplotlib.pyplot as plt
 
 def plot_image(img, title=None, filename=None, vmin=None, vmax=None):
@@ -23,3 +25,15 @@ def plot_image(img, title=None, filename=None, vmin=None, vmax=None):
             plt.savefig(filename)
         except:
             print("plot_image() Warning: Can't write to file {}".format(filename))
+
+
+def read_ND(filePath, n_dim, dtype='float32', ntype='int32'):
+
+    with open(filePath, 'rb') as fileID:
+
+        sizesArray = np.fromfile( fileID, dtype=ntype, count=n_dim)
+        numElements = np.prod(sizesArray)
+        dataArray = np.fromfile(fileID, dtype=dtype, count=numElements).reshape(sizesArray)
+
+    return dataArray
+
