@@ -6,13 +6,13 @@ import demo_utils
 sino = np.load('sino.npy')
 wght = np.load('wght.npy')
 
-sino = np.swapaxes(sino, 1, 2)
-wght = np.swapaxes(wght, 1, 2)
-#  shape : views x slices x channels
+sino = np.copy(np.swapaxes(sino, 1, 2))
+wght = np.copy(np.swapaxes(wght, 1, 2))
+
+# New shape : views x slices x channels
 print(sino.shape)
     
 angles = np.linspace(0, 2*np.pi, 40, endpoint=False)
-
 print(angles)
 
 
