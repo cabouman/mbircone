@@ -1,7 +1,7 @@
 
 #include "allocate.h"
 #include "MBIRModularUtilities3D.h"
-#include "cyInterface.h"
+#include "interface.h"
 #include "computeSysMatrix.h"
 #include "recon3DCone.h"
 

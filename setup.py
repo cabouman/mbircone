@@ -17,7 +17,7 @@ PACKAGE_DIR = "mbircone"
 SRC_FILES = [PACKAGE_DIR+'/src/allocate.c', PACKAGE_DIR+'/src/MBIRModularUtilities3D.c',
              PACKAGE_DIR+'/src/icd3d.c', PACKAGE_DIR+'/src/recon3DCone.c',
              PACKAGE_DIR+'/src/computeSysMatrix.c',
-             PACKAGE_DIR+'/src/interface.c', PACKAGE_DIR+'/conebeam.pyx']
+             PACKAGE_DIR+'/src/interface.c', PACKAGE_DIR+'/interface_cy_c.pyx']
 
 
 compiler_str = os.environ.get('CC')
@@ -29,7 +29,7 @@ if not compiler_str:
 
 # Single threaded clang compile
 if compiler_str == 'clang':
-    c_extension = Extension(PACKAGE_DIR+'.conebeam', SRC_FILES,
+    c_extension = Extension(PACKAGE_DIR+'.interface_cy_c', SRC_FILES,
                     libraries=[],
                     language='c',
                     include_dirs=[np.get_include()])
@@ -37,7 +37,7 @@ if compiler_str == 'clang':
 
 # OpenMP gcc compile
 if compiler_str =='gcc':
-    c_extension = Extension(PACKAGE_DIR+'.conebeam', SRC_FILES,
+    c_extension = Extension(PACKAGE_DIR+'.interface_cy_c', SRC_FILES,
                     libraries=[],
                     language='c',
                     include_dirs=[np.get_include()],
@@ -50,7 +50,7 @@ if compiler_str =='gcc':
 if compiler_str =='icc':
     if sys.platform == 'linux':
             os.environ['LDSHARED'] = 'icc -shared'
-    c_extension = Extension(PACKAGE_DIR+'.conebeam', SRC_FILES,
+    c_extension = Extension(PACKAGE_DIR+'.interface_cy_c', SRC_FILES,
                     libraries=[],
                     language='c',
                     include_dirs=[np.get_include()],

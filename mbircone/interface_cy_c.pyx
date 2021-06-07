@@ -117,7 +117,7 @@ cdef extern from "./src/MBIRModularUtilities3D.h":
 
 
 # Import a c function to compute A matrix.
-cdef extern from "./src/cyInterface.h":
+cdef extern from "./src/interface.h":
     void AmatrixComputeToFile(double *angles, SinoParams c_sinoparams, ImageParams c_imgparams, 
         char *Amatrix_fname, char verbose);
 
