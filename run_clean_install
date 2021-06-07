@@ -21,6 +21,7 @@ python setup.py install &&
 cd demo &&
 
 python demo.py &&
+# python demo_cython.py &&
 
 cd ..
 

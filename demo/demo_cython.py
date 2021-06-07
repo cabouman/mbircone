@@ -3,42 +3,7 @@ import os
 import numpy as np
 # from mbircone import AmatrixComputeToFile_cy
 import mbircone
-import matplotlib.pyplot as plt
-
-def read_ND(filePath, n_dim, dtype='float32', ntype='int32'):
-
-    with open(filePath, 'rb') as fileID:
-
-        sizesArray = np.fromfile( fileID, dtype=ntype, count=n_dim)
-        numElements = np.prod(sizesArray)
-        dataArray = np.fromfile(fileID, dtype=dtype, count=numElements).reshape(sizesArray)
-
-    return dataArray
-
-def plot_image(img, title=None, filename=None, vmin=None, vmax=None):
-    """
-    Function to display and save a 2D array as an image.
-
-    Args:
-        img: 2D numpy array to display
-        title: Title of plot image
-        filename: A path to save plot image
-        vmin: Value mapped to black
-        vmax: Value mapped to white
-    """
-
-    plt.ion()
-    fig = plt.figure()
-    imgplot = plt.imshow(img, vmin=vmin, vmax=vmax)
-    plt.title(label=title)
-    imgplot.set_cmap('gray')
-    plt.colorbar()
-
-    if not os.path.exists(os.path.dirname(filename)):
-        os.mkdir(os.path.dirname(filename))
-    
-    plt.savefig(filename)
-
+import demo_utils
 
 
 sino = np.load('sino.npy')
@@ -140,14 +105,14 @@ Ax = np.swapaxes(Ax, 1, 2)
 sino = np.swapaxes(sino, 1, 2)
 
 fname_ref = 'object.phantom.recon'
-ref = read_ND(fname_ref, 3)
+ref = demo_utils.read_ND(fname_ref, 3)
 ref = np.swapaxes(ref, 0, 2)
 
 rmse_val = np.sqrt(np.mean((x-ref)**2))
 print("RMSE between reconstruction and reference: {}".format(rmse_val))
 
-plot_image(x[65], title='recon', filename='output/recon.png', vmin=0, vmax=0.1)
-plot_image(ref[65], title='ref', filename='output/ref.png', vmin=0, vmax=0.1)
+demo_utils.plot_image(x[65], title='recon', filename='output/recon.png', vmin=0, vmax=0.1)
+demo_utils.plot_image(ref[65], title='ref', filename='output/ref.png', vmin=0, vmax=0.1)
 
-plot_image(sino[0]-Ax[0], title='errsino', filename='output/errsino.png')
+demo_utils.plot_image(sino[0]-Ax[0], title='errsino', filename='output/errsino.png')
 

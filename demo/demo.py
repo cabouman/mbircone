@@ -1,7 +1,6 @@
 
 import numpy as np
 import mbircone
-import matplotlib.pyplot as plt
 import demo_utils
 
 sino = np.load('sino.npy')
