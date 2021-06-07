@@ -5,7 +5,7 @@ __pycache__
 docs/build/
 
 # compiled files
-mbircone/conebeam.c
+mbircone/*.c
 mbircone/*.so
 *.o
 build/
