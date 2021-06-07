@@ -248,15 +248,26 @@ def recon(sino, angles, dist_source_detector, magnification,
     sinoparams['N_dv'] = sino.shape[2]
     sinoparams['N_dw'] = sino.shape[1]
     sinoparams['N_beta'] = sino.shape[0]
-    sinoparams['Delta_dv'] = 3.2
-    sinoparams['Delta_dw'] = 3.2
-    sinoparams['u_s'] = -71.6364
+    sinoparams['Delta_dv'] = delta_pixel_detector
+    sinoparams['Delta_dw'] = delta_pixel_detector
+    sinoparams['u_s'] = - dist_source_detector/magnification
     sinoparams['u_r'] = 0
-    sinoparams['v_r'] = 0
-    sinoparams['u_d0'] = 548.1538
-    sinoparams['v_d0'] = -101.4616
-    sinoparams['w_d0'] = -102.9654
+    sinoparams['v_r'] = rotation_offset
+    sinoparams['u_d0'] = dist_source_detector - dist_source_detector/magnification
+
+
+    dist_dv_to_detector_corner_from_detector_center = - sinoparams['N_dv']*sinoparams['Delta_dv']/2
+    dist_dw_to_detector_corner_from_detector_center = - sinoparams['N_dw']*sinoparams['Delta_dw']/2
+
+    dist_dv_to_detector_center_from_source_detector_line = - channel_offset
+    dist_dw_to_detector_center_from_source_detector_line = - row_offset
+
+    # corner of detector from source-detector-line
+    sinoparams['v_d0'] = dist_dv_to_detector_corner_from_detector_center + dist_dv_to_detector_center_from_source_detector_line
+    sinoparams['w_d0'] = dist_dw_to_detector_corner_from_detector_center + dist_dw_to_detector_center_from_source_detector_line
+
     sinoparams['weightScaler_value'] = -1
+    
 
     imgparams = dict()
     imgparams['x_0'] = -11.9663

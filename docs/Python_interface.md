@@ -9,6 +9,11 @@ Plan for implementation of the interface
 - rename cython top level
 - update setup.py
 - Install dummy py interface
+- change data shapes
+
+- Transform params
+
+
 
 1) Implement utility function compute_sino_params
 
@@ -26,3 +31,7 @@ Plan for implementation of the interface
 auto_roi_radius
 
 Change automatically set to automatically set by [routine]
+
+
+===========================================================================
+
