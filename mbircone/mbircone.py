@@ -204,12 +204,53 @@ def compute_img_params(sinoparams, delta_pixel_image=None,
     C = (sinoparams['u_r'], sinoparams['v_r']);
 
     # r_0 = distance{ line(P0,S), C }
-    r_0 = _distance_line_to_point( P0, S, C);
+    r_0 = _distance_line_to_point( P0, S, C)
 
     # r_1 = distance{ line(P1,S), C }
-    r_1 = _distance_line_to_point( P1, S, C);
+    r_1 = _distance_line_to_point( P1, S, C)
 
     r = max([r_0, r_1]);
+
+
+    # #### Part 2: assignment of parameters ####
+
+    imgparams = dict()
+    imgparams['Delta_xy'] = delta_pixel_image
+    imgparams['Delta_z'] = delta_pixel_image
+
+    imgparams['x_0'] = -(r + imgparams['Delta_xy']/2)
+    imgparams['y_0'] = imgparams['x_0']
+
+    imgparams['N_x'] = 2*math.ceil( r / imgparams['Delta_xy']) + 1
+    imgparams['N_y'] = imgparams['N_x']
+
+
+    ## Computation of z_0 and N_z 
+
+    x_1 = imgparams['x_0'] + imgparams['N_x']*imgparams['Delta_xy']
+    y_1 = x_1
+
+    R_00 = math.sqrt(imgparams['x_0']**2 + imgparams['y_0']**2)
+    R_10 = math.sqrt(x_1**2 + imgparams['y_0']**2)
+    R_01 = math.sqrt(imgparams['x_0']**2 + y_1**2)
+    R_11 = math.sqrt(x_1**2 + y_1**2)
+
+    R = max([R_00, R_10, R_01, R_11])
+
+    w_1 = sinoparams['w_d0'] + sinoparams['N_dw']*sinoparams['Delta_dw']
+
+
+    z_0 = min(  sinoparams['w_d0'] * ( R - sinoparams['u_s']) / (sinoparams['u_d0'] - sinoparams['u_s']), 
+                sinoparams['w_d0'] * (-R - sinoparams['u_s']) / (sinoparams['u_d0'] - sinoparams['u_s']))
+
+    z_1 = max(  w_1 * ( R - sinoparams['u_s']) / (sinoparams['u_d0'] - sinoparams['u_s']),
+                w_1 * (-R - sinoparams['u_s']) / (sinoparams['u_d0'] - sinoparams['u_s']))
+
+    imgparams['z_0'] = z_0
+    imgparams['N_z'] = math.ceil(  (z_1-z_0)/(imgparams['Delta_z'])  )
+
+    print(imgparams)
+
 
 
 def _distance_line_to_point(A, B, P):
@@ -324,6 +365,9 @@ def recon(sino, angles, dist_source_detector, magnification,
     num_views=num_views, num_slices=num_slices, num_channels=num_channels,
     channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset, 
     delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image)
+
+    compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image,
+    num_rows=num_rows, num_cols=num_cols, num_slices=num_slices, roi_radius=roi_radius)
 
     imgparams = dict()
     imgparams['x_0'] = -11.9663
