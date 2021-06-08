@@ -111,14 +111,20 @@ def auto_sigma_x(sino, delta_pixel_detector=1.0, sharpness=0.0):
     return sigma_x
 
 
-def compute_sino_params(dist_source_detector, magnification,
-    channel_offset=0.0, row_offset=0.0, rotation_offset=0.0, delta_pixel_detector=1.0, delta_pixel_image=None):
+def compute_sino_params(dist_source_detector, magnification, 
+    num_views, num_slices, num_channels,
+    channel_offset=0.0, row_offset=0.0, rotation_offset=0.0, 
+    delta_pixel_detector=1.0, delta_pixel_image=None):
     """ Computes sinogram parameters required by the Cython code
     
     Args:
         dist_source_detector (float): Distance between the X-ray source and the detector in units of ALU
         magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
         
+        num_views (int): Number of views in sinogram data
+        num_slices (int): Number of slices in sinogram data
+        num_channels (int): Number of channels in sinogram data
+
         channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
         row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
         rotation_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space.
@@ -131,7 +137,31 @@ def compute_sino_params(dist_source_detector, magnification,
         Dictionary containing sino parameters as required by the Cython code
     """
     
-    pass
+    sinoparams = dict()
+    sinoparams['N_dv'] = num_channels
+    sinoparams['N_dw'] = num_slices
+    sinoparams['N_beta'] = num_views
+    sinoparams['Delta_dv'] = delta_pixel_detector
+    sinoparams['Delta_dw'] = delta_pixel_detector
+    sinoparams['u_s'] = - dist_source_detector/magnification
+    sinoparams['u_r'] = 0
+    sinoparams['v_r'] = rotation_offset
+    sinoparams['u_d0'] = dist_source_detector - dist_source_detector/magnification
+
+
+    dist_dv_to_detector_corner_from_detector_center = - sinoparams['N_dv']*sinoparams['Delta_dv']/2
+    dist_dw_to_detector_corner_from_detector_center = - sinoparams['N_dw']*sinoparams['Delta_dw']/2
+
+    dist_dv_to_detector_center_from_source_detector_line = - channel_offset
+    dist_dw_to_detector_center_from_source_detector_line = - row_offset
+
+    # corner of detector from source-detector-line
+    sinoparams['v_d0'] = dist_dv_to_detector_corner_from_detector_center + dist_dv_to_detector_center_from_source_detector_line
+    sinoparams['w_d0'] = dist_dw_to_detector_corner_from_detector_center + dist_dw_to_detector_center_from_source_detector_line
+
+    sinoparams['weightScaler_value'] = -1
+
+    return sinoparams
 
 
 
@@ -243,31 +273,15 @@ def recon(sino, angles, dist_source_detector, magnification,
     # Internally set
     # NHICD_ThresholdAllVoxels_ErrorPercent=80, NHICD_percentage=15, NHICD_random=20, 
     # zipLineMode=2, N_G=2, numVoxelsPerZiplineMax=200
+
+
+    (num_views, num_slices, num_channels) = sino.shape
     
-    sinoparams = dict()
-    sinoparams['N_dv'] = sino.shape[2]
-    sinoparams['N_dw'] = sino.shape[1]
-    sinoparams['N_beta'] = sino.shape[0]
-    sinoparams['Delta_dv'] = delta_pixel_detector
-    sinoparams['Delta_dw'] = delta_pixel_detector
-    sinoparams['u_s'] = - dist_source_detector/magnification
-    sinoparams['u_r'] = 0
-    sinoparams['v_r'] = rotation_offset
-    sinoparams['u_d0'] = dist_source_detector - dist_source_detector/magnification
-
-
-    dist_dv_to_detector_corner_from_detector_center = - sinoparams['N_dv']*sinoparams['Delta_dv']/2
-    dist_dw_to_detector_corner_from_detector_center = - sinoparams['N_dw']*sinoparams['Delta_dw']/2
-
-    dist_dv_to_detector_center_from_source_detector_line = - channel_offset
-    dist_dw_to_detector_center_from_source_detector_line = - row_offset
-
-    # corner of detector from source-detector-line
-    sinoparams['v_d0'] = dist_dv_to_detector_corner_from_detector_center + dist_dv_to_detector_center_from_source_detector_line
-    sinoparams['w_d0'] = dist_dw_to_detector_corner_from_detector_center + dist_dw_to_detector_center_from_source_detector_line
-
-    sinoparams['weightScaler_value'] = -1
     
+    sinoparams = compute_sino_params(dist_source_detector, magnification,
+    num_views=num_views, num_slices=num_slices, num_channels=num_channels,
+    channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset, 
+    delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image)
 
     imgparams = dict()
     imgparams['x_0'] = -11.9663
