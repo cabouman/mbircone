@@ -209,7 +209,7 @@ def compute_img_params(sinoparams, delta_pixel_image=None,
     # r_1 = distance{ line(P1,S), C }
     r_1 = _distance_line_to_point( P1, S, C)
 
-    r = max([r_0, r_1]);
+    r = max(r_0, r_1);
 
 
     # #### Part 2: assignment of parameters ####
@@ -235,7 +235,7 @@ def compute_img_params(sinoparams, delta_pixel_image=None,
     R_01 = math.sqrt(imgparams['x_0']**2 + y_1**2)
     R_11 = math.sqrt(x_1**2 + y_1**2)
 
-    R = max([R_00, R_10, R_01, R_11])
+    R = max(R_00, R_10, R_01, R_11)
 
     w_1 = sinoparams['w_d0'] + sinoparams['N_dw']*sinoparams['Delta_dw']
 
@@ -249,7 +249,39 @@ def compute_img_params(sinoparams, delta_pixel_image=None,
     imgparams['z_0'] = z_0
     imgparams['N_z'] = math.ceil(  (z_1-z_0)/(imgparams['Delta_z'])  )
 
-    print(imgparams)
+
+    ## ROI parameters
+
+    R_roi = min(r_0, r_1) - imgparams['Delta_xy'];
+
+    w_0_roi = sinoparams['w_d0'] + sinoparams['Delta_dw'];
+    w_1_roi = w_0_roi + (sinoparams['N_dw']-2)*sinoparams['Delta_dw'];
+
+    z_min_roi = max(    w_0_roi * (-R_roi - sinoparams['u_s']) / (sinoparams['u_d0'] - sinoparams['u_s']),
+                        w_0_roi * ( R_roi - sinoparams['u_s']) / (sinoparams['u_d0'] - sinoparams['u_s']))
+
+    z_max_roi = min(    w_1_roi * (-R_roi - sinoparams['u_s']) / (sinoparams['u_d0'] - sinoparams['u_s']),
+                        w_1_roi * ( R_roi - sinoparams['u_s']) / (sinoparams['u_d0'] - sinoparams['u_s']))
+
+    N_x_roi = 2*math.floor(R_roi / imgparams['Delta_xy']) + 1
+    N_y_roi = N_x_roi
+
+    imgparams['j_xstart_roi'] = (imgparams['N_x'] - N_x_roi) / 2
+    imgparams['j_ystart_roi'] = imgparams['j_xstart_roi']
+
+    imgparams['j_xstop_roi'] = imgparams['j_xstart_roi'] + N_x_roi - 1
+    imgparams['j_ystop_roi'] = imgparams['j_xstop_roi']
+
+    imgparams['j_zstart_roi'] = round((z_min_roi - imgparams['z_0']) / imgparams['Delta_z'])
+    imgparams['j_zstop_roi'] = imgparams['j_zstart_roi'] + round((z_max_roi-z_min_roi) / imgparams['Delta_z'])
+
+    # Internally set by C code
+    imgparams['N_x_roi'] = -1
+    imgparams['N_y_roi'] = -1
+    imgparams['N_z_roi'] = -1
+
+
+    return imgparams
 
 
 
@@ -366,27 +398,8 @@ def recon(sino, angles, dist_source_detector, magnification,
     channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset, 
     delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image)
 
-    compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image,
+    imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image,
     num_rows=num_rows, num_cols=num_cols, num_slices=num_slices, roi_radius=roi_radius)
-
-    imgparams = dict()
-    imgparams['x_0'] = -11.9663
-    imgparams['y_0'] = -11.9663
-    imgparams['z_0'] = -14.7378
-    imgparams['N_x'] = 65
-    imgparams['N_y'] = 65
-    imgparams['N_z'] = 80
-    imgparams['Delta_xy'] = delta_pixel_image
-    imgparams['Delta_z'] = delta_pixel_image
-    imgparams['j_xstart_roi'] = 2
-    imgparams['j_ystart_roi'] = 2
-    imgparams['j_zstart_roi'] = 14
-    imgparams['j_xstop_roi'] = 62
-    imgparams['j_ystop_roi'] = 62
-    imgparams['j_zstop_roi'] = 66
-    imgparams['N_x_roi'] = 61
-    imgparams['N_y_roi'] = 61
-    imgparams['N_z_roi'] = 53
 
     reconparams = dict()
     reconparams['InitVal_recon'] = 0
