@@ -451,14 +451,18 @@ def recon(sino, angles, dist_source_detector, magnification,
 
     Amatrix_fname = 'test.sysmatrix'
     ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname, verbose=verbose)
-    x_init = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']))
+
+
+    if np.isscalar(init_image):
+        init_image = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']))+init_image
+        
     proxmap_input = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']))
 
 
     print('Reconstructing ...')
     sino = np.swapaxes(sino, 1, 2)
     weights = np.swapaxes(weights, 1, 2)
-    x = ci.recon_cy(sino, weights, x_init, proxmap_input,
+    x = ci.recon_cy(sino, weights, init_image, proxmap_input,
                  sinoparams, imgparams, reconparams, Amatrix_fname)
     print('Reconstructing done.')
 
