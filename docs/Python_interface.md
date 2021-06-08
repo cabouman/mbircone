@@ -15,16 +15,6 @@ Plan for implementation of the interface
 
 
 
-1) Implement utility function compute_sino_params
-
-2) Implement utility function compute_img_params
-
-3) Convert geometry parameters of demo to simple form to test utility functions
-
-4) Populate recon function by calling geometry utilities and cython recon
-
-5) Call regularization based utilities in recon function
-
 ===========================================================================
 
 

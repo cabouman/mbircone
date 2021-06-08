@@ -276,8 +276,8 @@ def recon(sino, angles, dist_source_detector, magnification,
     imgparams['N_x'] = 65
     imgparams['N_y'] = 65
     imgparams['N_z'] = 80
-    imgparams['Delta_xy'] = 0.36986
-    imgparams['Delta_z'] = 0.36986
+    imgparams['Delta_xy'] = delta_pixel_image
+    imgparams['Delta_z'] = delta_pixel_image
     imgparams['j_xstart_roi'] = 2
     imgparams['j_ystart_roi'] = 2
     imgparams['j_zstart_roi'] = 14
