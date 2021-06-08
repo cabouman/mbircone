@@ -404,7 +404,6 @@ def recon(sino, angles, dist_source_detector, magnification,
     num_rows=num_rows, num_cols=num_cols, num_slices=num_slices, roi_radius=roi_radius)
 
     reconparams = dict()
-    reconparams['InitVal_recon'] = 0
     reconparams['initReconMode'] = 'constant'
     reconparams['priorWeight_QGGMRF'] = 1
     reconparams['priorWeight_proxMap'] = -1
@@ -430,6 +429,8 @@ def recon(sino, angles, dist_source_detector, magnification,
     reconparams['weightScaler_estimateMode'] = 'avgWghtRecon'
     reconparams['weightScaler_value'] = 1
     
+    reconparams['verbosity'] = verbose
+
     # Internally set
     reconparams['zipLineMode'] = 2
     reconparams['N_G'] = 2
@@ -445,7 +446,6 @@ def recon(sino, angles, dist_source_detector, magnification,
     reconparams['NHICD_ThresholdAllVoxels_ErrorPercent'] = 80
     reconparams['NHICD_percentage'] = 15
     reconparams['NHICD_random'] = 20
-    reconparams['verbosity'] = verbose
     reconparams['isComputeCost'] = 1
 
 

@@ -55,7 +55,6 @@ cdef extern from "./src/MBIRModularUtilities3D.h":
 
 
     struct ReconParams:
-        double InitVal_recon;                  # Initialization value InitVal_proxMapInput (mm-1) 
         char initReconMode[200];
     
         double priorWeight_QGGMRF;                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping) 
@@ -173,7 +172,6 @@ cdef map_py2c_reconparams(ReconParams* c_reconparams,
                           const char* cy_weightScaler_estimateMode,
                           const char* cy_weightScaler_domain,
                           const char* cy_NHICD_Mode):
-        c_reconparams.InitVal_recon = reconparams['InitVal_recon']                  # Initialization value InitVal_proxMapInput (mm-1)
 
         memset(c_reconparams.initReconMode, '\0', sizeof(c_reconparams.initReconMode))
         strcpy(c_reconparams.initReconMode, cy_initReconMode)

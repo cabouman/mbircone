@@ -1077,7 +1077,6 @@ void printReconParams(struct ReconParams *params)
 
     printf("\nReconstruction parameters read:\n");
     
-    printf("\tInitVal_recon = %e \n", params->InitVal_recon);
     printf("\tinitReconMode = %s \n", params->initReconMode);
     printf("\tpriorWeight_QGGMRF = %e \n", params->priorWeight_QGGMRF);
     printf("\tpriorWeight_proxMap = %e \n", params->priorWeight_proxMap);

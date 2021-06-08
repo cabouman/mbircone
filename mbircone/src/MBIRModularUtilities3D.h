@@ -231,7 +231,6 @@ struct ReconParams
     /**
      *      Miscellaneous
      */
-    double InitVal_recon;                  /* Initialization value InitVal_proxMapInput (mm-1) */
     char initReconMode[200];
 
     /**
