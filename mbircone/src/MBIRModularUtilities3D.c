@@ -40,35 +40,13 @@ void forwardProject3DCone( float ***Ax, float ***x, struct ImageParams *imgParam
     }
 }
 
-void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams, struct ReconParams *reconParams)
+void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams, char mode)
 {
 
     long int j_u, j_x, j_y, i_beta, i_v, j_z, i_w;
     double B_ij, A_ij;
     double ticToc;
-    char mode;
     float ***normalization, val, val2;
-
-    if (strcmp(reconParams->backprojlike_type,"proj") == 0)
-    {
-        mode = 0;
-    }
-    else if (strcmp(reconParams->backprojlike_type,"entropy") == 0)
-    {
-        mode = 1;
-        normalization = (float***) allocateImageData3DCone( imgParams, sizeof(float), 0);
-    }
-    else if (strcmp(reconParams->backprojlike_type,"kappa") == 0)
-    {
-        mode = 2;
-    }
-    else
-    {
-        fprintf(stderr, "ERROR in backProjectlike3DCone: can't recongnize backprojlike_type.\n");
-        exit(-1);
-    }
-
-    printf("\n Computing backProjectlike ...\n");
 
 
     tic(&ticToc);
@@ -108,9 +86,11 @@ void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageParams *i
                                 
 
                                 if(mode==0){
+                                    /* normal backprojection */
                                     x_out[j_x][j_y][j_z] += A_ij * y_in[i_beta][i_v][i_w] ;
                                 }
                                 else if(mode==1){
+                                    /* entropy */
                                     val = A_ij * y_in[i_beta][i_v][i_w];
                                     if (val!=0){
                                         x_out[j_x][j_y][j_z] += val * log(val) ;
@@ -118,6 +98,7 @@ void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageParams *i
                                     normalization[j_x][j_y][j_z] += A_ij * y_in[i_beta][i_v][i_w] ;
                                 }
                                 else if(mode==2){
+                                    /* kappa */
                                     x_out[j_x][j_y][j_z] += A_ij * y_in[i_beta][i_v][i_w] * A_ij ;
                                 }
                             }
