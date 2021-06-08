@@ -334,9 +334,12 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 	ticTocDisp(ticToc_all, "MBIR3DCone");
 
 
-	printImgParams(&img->params);
-	printSinoParams(&sino->params);
-	printReconParams(reconParams);
+	if (reconParams->verbosity>0){
+		printImgParams(&img->params);
+		printSinoParams(&sino->params);
+		printReconParams(reconParams);
+	}
+	
 
 }
 
