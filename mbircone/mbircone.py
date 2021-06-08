@@ -189,8 +189,50 @@ def compute_img_params(sinoparams, delta_pixel_image=None,
     """
     # port code from https://github.com/cabouman/OpenMBIR-ConeBeam/blob/fbf3eddcadad1bd1cfb657f58c5b32f1204a12d1/utils/Preprocessing/Modular_PreprocessingRoutines/computeImgParams.m
 
-    pass
 
+    # Part 1: find radius of circle
+    # lower cone point P0
+    P0 = (sinoparams['u_d0'], sinoparams['v_d0'])
+
+    # upper cone point P1
+    P1 = (sinoparams['u_d0'], sinoparams['v_d0'] + sinoparams['N_dv']*sinoparams['Delta_dv']);
+
+    # source point S
+    S = (sinoparams['u_s'], 0);
+
+    # Rotation center point C
+    C = (sinoparams['u_r'], sinoparams['v_r']);
+
+    # r_0 = distance{ line(P0,S), C }
+    r_0 = _distance_line_to_point( P0, S, C);
+
+    # r_1 = distance{ line(P1,S), C }
+    r_1 = _distance_line_to_point( P1, S, C);
+
+    r = max([r_0, r_1]);
+
+
+def _distance_line_to_point(A, B, P):
+    """Computes the distance from point P to the line passing through points A and B
+    
+    Args:
+        A (float, 2-tuple): (x,y) coordinate of point A
+        B (float, 2-tuple): (x,y) coordinate of point B
+        P (float, 2-tuple): (x,y) coordinate of point P
+    """
+
+    (x1,y1) = A
+    (x2,y2) = B
+    (x0,y0) = P
+
+    # Line joining A,B has equation ax+by+c=0
+    a = y2-y1
+    b = -(x2-x1)
+    c = y1*x2-x1*y2
+
+    dist = abs(a*x0 + b*y0 + c)/math.sqrt(a**2 + b**2)
+
+    return dist
 
 # def auto_roi_radius():
 
