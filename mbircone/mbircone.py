@@ -390,11 +390,10 @@ def recon(sino, angles, dist_source_detector, magnification,
     # zipLineMode=2, N_G=2, numVoxelsPerZiplineMax=200
 
 
-    (num_views, num_slices, num_channels) = sino.shape
-
     if num_threads is None :
         num_threads = cpu_count(logical=False)
     
+    (num_views, num_slices, num_channels) = sino.shape
     
     sinoparams = compute_sino_params(dist_source_detector, magnification,
     num_views=num_views, num_slices=num_slices, num_channels=num_channels,
