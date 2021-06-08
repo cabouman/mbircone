@@ -55,7 +55,6 @@ cdef extern from "./src/MBIRModularUtilities3D.h":
 
 
     struct ReconParams:
-        char initReconMode[200];
     
         double priorWeight_QGGMRF;                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping) 
         double priorWeight_proxMap;                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping) 
@@ -167,14 +166,10 @@ cdef map_py2c_imgparams(ImageParams* c_imgparams, imgparams):
 
 cdef map_py2c_reconparams(ReconParams* c_reconparams,
                           reconparams,
-                          const char* cy_initReconMode,
                           const char* cy_relativeChangeMode,
                           const char* cy_weightScaler_estimateMode,
                           const char* cy_weightScaler_domain,
                           const char* cy_NHICD_Mode):
-
-        memset(c_reconparams.initReconMode, '\0', sizeof(c_reconparams.initReconMode))
-        strcpy(c_reconparams.initReconMode, cy_initReconMode)
 
         c_reconparams.priorWeight_QGGMRF = reconparams['priorWeight_QGGMRF']                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping)
         c_reconparams.priorWeight_proxMap = reconparams['priorWeight_proxMap']                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping)
@@ -294,7 +289,6 @@ def recon_cy(sino, wght, x_init, proxmap_input,
     cdef cnp.ndarray[float, ndim=3, mode="c"] cy_x_init = py_x_init
     cdef cnp.ndarray[float, ndim=3, mode="c"] cy_proxmap_input = py_proxmap_input
     cdef cnp.ndarray[char, ndim=1, mode="c"] c_Amatrix_fname = string_to_char_array(py_Amatrix_fname)
-    cdef cnp.ndarray[char, ndim=1, mode="c"] cy_initReconMode = string_to_char_array(reconparams["initReconMode"])
     cdef cnp.ndarray[char, ndim=1, mode="c"] cy_relativeChangeMode = string_to_char_array(reconparams["relativeChangeMode"])
     cdef cnp.ndarray[char, ndim=1, mode="c"] cy_weightScaler_estimateMode = string_to_char_array(reconparams["weightScaler_estimateMode"])
     cdef cnp.ndarray[char, ndim=1, mode="c"] cy_weightScaler_domain = string_to_char_array(reconparams["weightScaler_domain"])
@@ -308,7 +302,6 @@ def recon_cy(sino, wght, x_init, proxmap_input,
     map_py2c_imgparams(&c_imgparams, imgparams)
     map_py2c_reconparams(&c_reconparams,
                           reconparams,
-                          &cy_initReconMode[0],
                           &cy_relativeChangeMode[0],
                           &cy_weightScaler_estimateMode[0],
                           &cy_weightScaler_domain[0],

@@ -49,7 +49,6 @@ imgparams['N_y_roi'] = 61
 imgparams['N_z_roi'] = 53
 
 reconparams = dict()
-reconparams['initReconMode'] = 'constant'
 reconparams['priorWeight_QGGMRF'] = 1
 reconparams['priorWeight_proxMap'] = -1
 reconparams['is_positivity_constraint'] = 1

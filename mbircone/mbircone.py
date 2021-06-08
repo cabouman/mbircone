@@ -404,7 +404,6 @@ def recon(sino, angles, dist_source_detector, magnification,
     num_rows=num_rows, num_cols=num_cols, num_slices=num_slices, roi_radius=roi_radius)
 
     reconparams = dict()
-    reconparams['initReconMode'] = 'constant'
     reconparams['priorWeight_QGGMRF'] = 1
     reconparams['priorWeight_proxMap'] = -1
     reconparams['is_positivity_constraint'] = 1

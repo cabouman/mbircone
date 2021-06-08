@@ -228,10 +228,6 @@ struct ViewAngleList
 
 struct ReconParams
 {
-    /**
-     *      Miscellaneous
-     */
-    char initReconMode[200];
 
     /**
      *     Prior
