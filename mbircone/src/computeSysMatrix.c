@@ -8,19 +8,19 @@ void computeSysMatrix(struct SinoParams *sinoParams, struct ImageParams *imgPara
 	double ticToc;
 	tic(&ticToc);
     
-    printf("\nInitialize Sinogram Mask ...\n");
-	printf("\nCompute SysMatrix Parameters...\n");
+    // printf("\nInitialize Sinogram Mask ...\n");
+	// printf("\nCompute SysMatrix Parameters...\n");
 
     computeAMatrixParameters(sinoParams, imgParams, A, viewAngleList);
 	
 	allocateSysMatrix(A, imgParams->N_x, imgParams->N_y, imgParams->N_z, sinoParams->N_beta, A->i_vstride_max, A->i_wstride_max, A->N_u);
    
 	
-	printf("\nPrecompute B...\n");
+	// printf("\nPrecompute B...\n");
     computeBMatrix( sinoParams, imgParams, A, viewAngleList);
 
     
-    printf("\nPrecompute C...\n");
+    // printf("\nPrecompute C...\n");
     computeCMatrix(sinoParams, imgParams, A);
 
 

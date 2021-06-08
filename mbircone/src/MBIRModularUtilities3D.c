@@ -167,7 +167,8 @@ void initializeWghtRecon(struct SysMatrix *A, struct Sino *sino, struct Image *i
     double B_ij, A_ij;
     double ticToc, avg;
 
-    printf("\nInitialize WghtRecon ...\n");
+    if (reconParams->verbosity>0)
+        printf("\nInitialize WghtRecon ...\n");
 
 
     tic(&ticToc);
@@ -213,10 +214,12 @@ void initializeWghtRecon(struct SysMatrix *A, struct Sino *sino, struct Image *i
 
     avg = computeAvgWghtRecon(img);
 
-    toc(&ticToc);
-    ticTocDisp(ticToc, "initializeWghtRecon");
+    if (reconParams->verbosity>0){
+        toc(&ticToc);
+        ticTocDisp(ticToc, "initializeWghtRecon");
+        printf("\n -> Average Weight Scaler = %e\n", avg);
+    }
 
-    printf("\n -> Average Weight Scaler = %e\n", avg);
 
 
 }

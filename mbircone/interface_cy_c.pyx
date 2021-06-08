@@ -332,7 +332,7 @@ def recon_cy(sino, wght, x_init, proxmap_input,
           c_reconparams,
 	      &c_Amatrix_fname[0])
 
-    print("Cython done")
+    # print("Cython done")
 
     return py_x
 
@@ -359,6 +359,6 @@ def project_cy(x, sinoparams, imgparams, py_Amatrix_fname):
                     c_imgparams,
                     &c_Amatrix_fname[0])
 
-    print("Cython done")
+    # print("Cython done")
 
     return py_Ax

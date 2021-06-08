@@ -94,14 +94,14 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
 	mem_free_2D((void**)img.proxMapInput);
 	mem_free_2D((void**)sino.vox);
 	mem_free_2D((void**)sino.wgt);
-	printf("Done free_2D\n");
+	// printf("Done free_2D\n");
 
 	/* Free allocated data */
 	mem_free_3D((void***)img.wghtRecon);
     mem_free_3D((void***)img.lastChange);
     mem_free_3D((void***)img.timeToChange);
     mem_free_3D((void***)sino.e);
-    printf("Done free_3D\n");
+    // printf("Done free_3D\n");
 
 }
 
@@ -128,7 +128,7 @@ void forwardProject(float *y, float *x,
 
 	mem_free_2D((void**)sino_3D);
 	mem_free_2D((void**)img_3D);
-	printf("Done free_2D\n");
+	// printf("Done free_2D\n");
 
 }
 
