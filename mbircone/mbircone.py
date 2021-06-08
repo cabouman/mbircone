@@ -424,16 +424,19 @@ def recon(sino, angles, dist_source_detector, magnification,
     reconparams['relativeChangeMode'] = 'percentile'
     reconparams['relativeChangeScaler'] = 0.1
     reconparams['relativeChangePercentile'] = 99.9
-    reconparams['zipLineMode'] = 2
-    reconparams['N_G'] = 2
-    reconparams['numVoxelsPerZiplineMax'] = 200
-    reconparams['numVoxelsPerZipline'] = 200
-    reconparams['numZiplines'] = 4
+    
     reconparams['numThreads'] = num_threads
     reconparams['weightScaler_domain'] = 'spatiallyInvariant'
     reconparams['weightScaler_estimateMode'] = 'avgWghtRecon'
     reconparams['weightScaler_value'] = 1
     
+    # Internally set
+    reconparams['zipLineMode'] = 2
+    reconparams['N_G'] = 2
+    reconparams['numVoxelsPerZiplineMax'] = 200
+    reconparams['numVoxelsPerZipline'] = 200
+    reconparams['numZiplines'] = 4
+
     if NHICD:
         reconparams['NHICD_Mode'] = 'percentile+random'
     else:
@@ -444,7 +447,6 @@ def recon(sino, angles, dist_source_detector, magnification,
     reconparams['NHICD_random'] = 20
     reconparams['verbosity'] = verbose
     reconparams['isComputeCost'] = 1
-    reconparams['backprojlike_type'] = 'proj'
 
 
 

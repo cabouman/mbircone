@@ -295,7 +295,6 @@ struct ReconParams
     /* Misc */
     int verbosity;
     int isComputeCost;
-    char backprojlike_type[200]; 
 };
 
 struct SysMatrix

@@ -113,7 +113,6 @@ cdef extern from "./src/MBIRModularUtilities3D.h":
         # Misc 
         int verbosity;
         int isComputeCost;
-        char backprojlike_type[200]; 
 
 
 # Import a c function to compute A matrix.
@@ -173,8 +172,7 @@ cdef map_py2c_reconparams(ReconParams* c_reconparams,
                           const char* cy_relativeChangeMode,
                           const char* cy_weightScaler_estimateMode,
                           const char* cy_weightScaler_domain,
-                          const char* cy_NHICD_Mode,
-                          const char* cy_backprojlike_type):
+                          const char* cy_NHICD_Mode):
         c_reconparams.InitVal_recon = reconparams['InitVal_recon']                  # Initialization value InitVal_proxMapInput (mm-1)
 
         memset(c_reconparams.initReconMode, '\0', sizeof(c_reconparams.initReconMode))
@@ -241,8 +239,6 @@ cdef map_py2c_reconparams(ReconParams* c_reconparams,
         # Misc
         c_reconparams.verbosity = reconparams['verbosity']
         c_reconparams.isComputeCost = reconparams['isComputeCost']
-        memset(c_reconparams.backprojlike_type, '\0', sizeof(c_reconparams.backprojlike_type))
-        strcpy(c_reconparams.backprojlike_type, cy_backprojlike_type)
 
 
 
@@ -305,7 +301,6 @@ def recon_cy(sino, wght, x_init, proxmap_input,
     cdef cnp.ndarray[char, ndim=1, mode="c"] cy_weightScaler_estimateMode = string_to_char_array(reconparams["weightScaler_estimateMode"])
     cdef cnp.ndarray[char, ndim=1, mode="c"] cy_weightScaler_domain = string_to_char_array(reconparams["weightScaler_domain"])
     cdef cnp.ndarray[char, ndim=1, mode="c"] cy_NHICD_Mode = string_to_char_array(reconparams["NHICD_Mode"])
-    cdef cnp.ndarray[char, ndim=1, mode="c"] cy_backprojlike_type = string_to_char_array(reconparams["backprojlike_type"])
 
     cdef ImageParams c_imgparams
     cdef SinoParams c_sinoparams
@@ -319,8 +314,7 @@ def recon_cy(sino, wght, x_init, proxmap_input,
                           &cy_relativeChangeMode[0],
                           &cy_weightScaler_estimateMode[0],
                           &cy_weightScaler_domain[0],
-                          &cy_NHICD_Mode[0],
-                          &cy_backprojlike_type[0])
+                          &cy_NHICD_Mode[0])
 
     recon(&py_x[0,0,0],
           &cy_sino[0,0,0],

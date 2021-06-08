@@ -84,7 +84,6 @@ reconparams['NHICD_percentage'] = 15
 reconparams['NHICD_random'] = 20
 reconparams['verbosity'] = 0
 reconparams['isComputeCost'] = 0
-reconparams['backprojlike_type'] = 'proj'
 
 
 
