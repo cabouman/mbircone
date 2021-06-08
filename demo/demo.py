@@ -10,10 +10,8 @@ sino = np.copy(np.swapaxes(sino, 1, 2))
 wght = np.copy(np.swapaxes(wght, 1, 2))
 
 # New shape : views x slices x channels
-print(sino.shape)
     
 angles = np.linspace(0, 2*np.pi, 40, endpoint=False)
-print(angles)
 
 
 dist_source_detector = 619.7902
@@ -27,7 +25,7 @@ row_offset = 0.5654
 x = mbircone.recon(sino, angles, dist_source_detector=dist_source_detector, magnification=magnification, 
 	delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image,
 	channel_offset=channel_offset, row_offset=row_offset,
-	weights=wght, verbose=0)
+	weights=wght)
 
 
 fname_ref = 'object.phantom.recon'
