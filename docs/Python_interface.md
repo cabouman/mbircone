@@ -10,8 +10,11 @@ Plan for implementation of the interface
 - update setup.py
 - Install dummy py interface
 - change data shapes
-
 - Transform params
+
+- Simplify recon params
+- auto regularization
+- hash params
 
 
 

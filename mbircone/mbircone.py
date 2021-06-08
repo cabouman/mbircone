@@ -391,6 +391,9 @@ def recon(sino, angles, dist_source_detector, magnification,
 
 
     (num_views, num_slices, num_channels) = sino.shape
+
+    if num_threads is None :
+        num_threads = cpu_count(logical=False)
     
     
     sinoparams = compute_sino_params(dist_source_detector, magnification,
@@ -427,7 +430,7 @@ def recon(sino, angles, dist_source_detector, magnification,
     reconparams['numVoxelsPerZiplineMax'] = 200
     reconparams['numVoxelsPerZipline'] = 200
     reconparams['numZiplines'] = 4
-    reconparams['numThreads'] = 20
+    reconparams['numThreads'] = num_threads
     reconparams['weightScaler_domain'] = 'spatiallyInvariant'
     reconparams['weightScaler_estimateMode'] = 'avgWghtRecon'
     reconparams['weightScaler_value'] = 1
