@@ -437,14 +437,14 @@ def recon(sino, angles, dist_source_detector, magnification,
     reconparams['NHICD_ThresholdAllVoxels_ErrorPercent'] = 80
     reconparams['NHICD_percentage'] = 15
     reconparams['NHICD_random'] = 20
-    reconparams['verbosity'] = 0
+    reconparams['verbosity'] = verbose
     reconparams['isComputeCost'] = 0
     reconparams['backprojlike_type'] = 'proj'
 
 
 
     Amatrix_fname = 'test.sysmatrix'
-    ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname, verbose=1)
+    ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname, verbose=verbose)
     x_init = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']))
     proxmap_input = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']))
 
