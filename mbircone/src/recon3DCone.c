@@ -86,6 +86,12 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 
     numVoxelsInMask = computeNumVoxelsInImageMask(img);
 
+    if (reconParams->verbosity>0){
+		printImgParams(&img->params);
+		printSinoParams(&sino->params);
+		printReconParams(reconParams);
+	}
+
 
     /**
      * 		Random Auxiliary
@@ -335,9 +341,6 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 	if (reconParams->verbosity>0){
 		toc(&ticToc_all);
 		ticTocDisp(ticToc_all, "MBIR3DCone");
-		printImgParams(&img->params);
-		printSinoParams(&sino->params);
-		printReconParams(reconParams);
 	}
 	
 

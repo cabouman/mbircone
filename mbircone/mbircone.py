@@ -433,12 +433,17 @@ def recon(sino, angles, dist_source_detector, magnification,
     reconparams['weightScaler_domain'] = 'spatiallyInvariant'
     reconparams['weightScaler_estimateMode'] = 'avgWghtRecon'
     reconparams['weightScaler_value'] = 1
-    reconparams['NHICD_Mode'] = 'off'
+    
+    if NHICD:
+        reconparams['NHICD_Mode'] = 'percentile+random'
+    else:
+        reconparams['NHICD_Mode'] = 'off'
+
     reconparams['NHICD_ThresholdAllVoxels_ErrorPercent'] = 80
     reconparams['NHICD_percentage'] = 15
     reconparams['NHICD_random'] = 20
     reconparams['verbosity'] = verbose
-    reconparams['isComputeCost'] = 0
+    reconparams['isComputeCost'] = 1
     reconparams['backprojlike_type'] = 'proj'
 
 
