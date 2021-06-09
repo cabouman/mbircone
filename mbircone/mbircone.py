@@ -23,6 +23,43 @@ def _clear_cache(mbircone_lib_path=__lib_path):
     shutil.rmtree(mbircone_lib_path)
 
 
+def _sino_indicator(sino):
+    """Computes a binary function that indicates the region of sinogram support.
+
+    Args:
+        sino (ndarray):
+            3D numpy array of sinogram data with shape (num_views,num_slices,num_channels)
+
+    Returns:
+        int8: A binary value: =1 within sinogram support; =0 outside sinogram support.
+    """
+    indicator = np.int8(sino > 0.05 * np.mean(np.fabs(sino)))  # for excluding empty space from average
+    return indicator
+
+
+def _distance_line_to_point(A, B, P):
+    """Computes the distance from point P to the line passing through points A and B
+    
+    Args:
+        A (float, 2-tuple): (x,y) coordinate of point A
+        B (float, 2-tuple): (x,y) coordinate of point B
+        P (float, 2-tuple): (x,y) coordinate of point P
+    """
+
+    (x1,y1) = A
+    (x2,y2) = B
+    (x0,y0) = P
+
+    # Line joining A,B has equation ax+by+c=0
+    a = y2-y1
+    b = -(x2-x1)
+    c = y1*x2-x1*y2
+
+    dist = abs(a*x0 + b*y0 + c)/math.sqrt(a**2 + b**2)
+
+    return dist
+
+
 def calc_weights(sino, weight_type):
     """Computes the weights used in MBIR reconstruction.
 
@@ -504,39 +541,3 @@ def recon(sino, angles, dist_source_detector, magnification,
 
     return x
 
-
-def _sino_indicator(sino):
-    """Computes a binary function that indicates the region of sinogram support.
-
-    Args:
-        sino (ndarray):
-            3D numpy array of sinogram data with shape (num_views,num_slices,num_channels)
-
-    Returns:
-        int8: A binary value: =1 within sinogram support; =0 outside sinogram support.
-    """
-    indicator = np.int8(sino > 0.05 * np.mean(np.fabs(sino)))  # for excluding empty space from average
-    return indicator
-
-
-def _distance_line_to_point(A, B, P):
-    """Computes the distance from point P to the line passing through points A and B
-    
-    Args:
-        A (float, 2-tuple): (x,y) coordinate of point A
-        B (float, 2-tuple): (x,y) coordinate of point B
-        P (float, 2-tuple): (x,y) coordinate of point P
-    """
-
-    (x1,y1) = A
-    (x2,y2) = B
-    (x0,y0) = P
-
-    # Line joining A,B has equation ax+by+c=0
-    a = y2-y1
-    b = -(x2-x1)
-    c = y1*x2-x1*y2
-
-    dist = abs(a*x0 + b*y0 + c)/math.sqrt(a**2 + b**2)
-
-    return dist
