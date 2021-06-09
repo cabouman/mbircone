@@ -114,7 +114,7 @@ def auto_sigma_x(sino, delta_pixel_detector=1.0, sharpness=0.0):
 def compute_sino_params(dist_source_detector, magnification, 
     num_views, num_slices, num_channels,
     channel_offset=0.0, row_offset=0.0, rotation_offset=0.0, 
-    delta_pixel_detector=1.0, delta_pixel_image=None):
+    delta_pixel_detector=1.0):
     """ Computes sinogram parameters required by the Cython code
     
     Args:
@@ -130,8 +130,6 @@ def compute_sino_params(dist_source_detector, magnification,
         rotation_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space.
             This is normally set to zero.
         delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
-        delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
-            If None, automatically set to delta_pixel_detector/magnification
     
     Returns:
         Dictionary containing sino parameters as required by the Cython code
@@ -398,7 +396,7 @@ def recon(sino, angles, dist_source_detector, magnification,
     sinoparams = compute_sino_params(dist_source_detector, magnification,
     num_views=num_views, num_slices=num_slices, num_channels=num_channels,
     channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset, 
-    delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image)
+    delta_pixel_detector=delta_pixel_detector)
 
     imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image,
     num_rows=num_rows, num_cols=num_cols, num_slices=num_slices, roi_radius=roi_radius)
