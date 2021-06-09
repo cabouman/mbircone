@@ -476,6 +476,8 @@ def recon(sino, angles, dist_source_detector, magnification,
 
     if np.isscalar(init_image):
         init_image = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']))+init_image
+    else:
+        init_image = np.swapaxes(init_image, 0, 2)
     
     if prox_image is None:
         reconparams['priorWeight_QGGMRF'] = 1
@@ -486,16 +488,15 @@ def recon(sino, angles, dist_source_detector, magnification,
         reconparams['priorWeight_QGGMRF'] = -1
         reconparams['priorWeight_proxMap'] = 1
         reconparams['sigma_lambda'] = sigma_x
-        proxmap_input = prox_image
+        proxmap_input = np.swapaxes(prox_image, 0, 2)
 
 
-    print('Reconstructing ...')
     sino = np.swapaxes(sino, 1, 2)
     weights = np.swapaxes(weights, 1, 2)
     x = ci.recon_cy(sino, weights, init_image, proxmap_input,
                  sinoparams, imgparams, reconparams, Amatrix_fname)
-    print('Reconstructing done.')
 
+    # Convert shape from Cython interface specifications to Python interface specifications
     x = np.swapaxes(x, 0, 2)
 
     return x
