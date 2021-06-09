@@ -428,12 +428,7 @@ def recon(sino, angles, dist_source_detector, magnification,
         reconparams['bVertex'] = 0.57735026919
    
     reconparams['stopThresholdChange_pct'] = stop_threshold
-    reconparams['stopThesholdRWFE_pct'] = 0
-    reconparams['stopThesholdRUFE_pct'] = 0
     reconparams['MaxIterations'] = max_iterations
-    reconparams['relativeChangeMode'] = 'percentile'
-    reconparams['relativeChangeScaler'] = 0.1
-    reconparams['relativeChangePercentile'] = 99.9
     
     reconparams['weightScaler_domain'] = 'spatiallyInvariant'
     reconparams['weightScaler_estimateMode'] = 'avgWghtRecon'
@@ -442,22 +437,33 @@ def recon(sino, angles, dist_source_detector, magnification,
     reconparams['numThreads'] = num_threads
     reconparams['verbosity'] = verbose
 
-    # Internally set
+    ################ Internally set
+
+    # Stopping
+    reconparams['stopThesholdRWFE_pct'] = 0
+    reconparams['stopThesholdRUFE_pct'] = 0
+    reconparams['relativeChangeMode'] = 'meanImage'
+    reconparams['relativeChangeScaler'] = 0.1
+    reconparams['relativeChangePercentile'] = 99.9
+    
+    # Zipline
     reconparams['zipLineMode'] = 2
     reconparams['N_G'] = 2
     reconparams['numVoxelsPerZiplineMax'] = 200
     reconparams['numVoxelsPerZipline'] = 200
     reconparams['numZiplines'] = 4
 
+    # NHICD
+    reconparams['NHICD_ThresholdAllVoxels_ErrorPercent'] = 80
+    reconparams['NHICD_percentage'] = 15
+    reconparams['NHICD_random'] = 20
+    reconparams['isComputeCost'] = 1
     if NHICD:
         reconparams['NHICD_Mode'] = 'percentile+random'
     else:
         reconparams['NHICD_Mode'] = 'off'
 
-    reconparams['NHICD_ThresholdAllVoxels_ErrorPercent'] = 80
-    reconparams['NHICD_percentage'] = 15
-    reconparams['NHICD_random'] = 20
-    reconparams['isComputeCost'] = 1
+    
 
 
 
