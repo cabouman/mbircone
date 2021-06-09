@@ -4,9 +4,12 @@ from psutil import cpu_count
 import shutil
 import numpy as np
 import os
+import hashlib
 import mbircone.interface_cy_c as ci
 
-__lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
+__lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')\
+
+__namelen_sysmatrix = 20
 
 def _mbircone_lib_path():
     """Returns the path to the cache directory used by mbircone
@@ -21,6 +24,15 @@ def _clear_cache(mbircone_lib_path=__lib_path):
         mbircone_lib_path (string): Path to mbircone cache directory. Defaults to __lib_path variable
     """
     shutil.rmtree(mbircone_lib_path)
+
+
+
+def _gen_sysmatrix_fname(lib_path=__lib_path, sysmatrix_name='object'):
+    os.makedirs(os.path.join(lib_path, 'sysmatrix'), exist_ok=True)
+
+    sysmatrix_fname = os.path.join(lib_path, sysmatrix_name+'.sysmatrix')
+
+    return sysmatrix_fname
 
 
 def _sino_indicator(sino):
@@ -58,6 +70,15 @@ def _distance_line_to_point(A, B, P):
     dist = abs(a*x0 + b*y0 + c)/math.sqrt(a**2 + b**2)
 
     return dist
+
+
+def hash_params(angles, sinoparams, imgparams):
+
+    hash_input = str(sinoparams) + str(imgparams) + str(np.around(angles, decimals=6))
+
+    hash_val = hashlib.sha512(hash_input.encode()).hexdigest()
+
+    return hash_val
 
 
 def calc_weights(sino, weight_type):
@@ -510,10 +531,6 @@ def recon(sino, angles, dist_source_detector, magnification,
         reconparams['NHICD_Mode'] = 'off'
 
 
-    Amatrix_fname = 'test.sysmatrix'
-    ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname, verbose=verbose)
-
-
     if np.isscalar(init_image):
         init_image = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']))+init_image
     else:
@@ -531,10 +548,14 @@ def recon(sino, angles, dist_source_detector, magnification,
         proxmap_input = np.swapaxes(prox_image, 0, 2)
 
 
+    hash_val = hash_params(angles, sinoparams, imgparams)
+    sysmatrix_fname = _gen_sysmatrix_fname(lib_path=__lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
+    ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, sysmatrix_fname, verbose=verbose)
+
     sino = np.swapaxes(sino, 1, 2)
     weights = np.swapaxes(weights, 1, 2)
     x = ci.recon_cy(sino, weights, init_image, proxmap_input,
-                 sinoparams, imgparams, reconparams, Amatrix_fname)
+                 sinoparams, imgparams, reconparams, sysmatrix_fname)
 
     # Convert shape from Cython interface specifications to Python interface specifications
     x = np.swapaxes(x, 0, 2)
