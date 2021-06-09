@@ -232,7 +232,6 @@ def compute_sino_params(dist_source_detector, magnification,
     return sinoparams
 
 
-
 def compute_img_params(sinoparams, delta_pixel_image=None,
     num_rows=None, num_cols=None, num_slices=None, ror_radius=None):
     """ Computes image parameters required by the Cython code
@@ -248,7 +247,7 @@ def compute_img_params(sinoparams, delta_pixel_image=None,
         num_slices (int, optional): [Default=None] Integer number of slices in reconstructed image.
             If None, automatically set.
         ror_radius (float, optional): [Default=None] Scalar value of radius of reconstruction in :math:`ALU`.
-            If None, automatically set with auto_ror_radius().
+            If None, automatically set.
             Pixels outside the radius ror_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
     
     Returns:
@@ -350,8 +349,6 @@ def compute_img_params(sinoparams, delta_pixel_image=None,
 
 
     return imgparams
-
-# def auto_ror_radius():
 
 
 def recon(sino, angles, dist_source_detector, magnification,
