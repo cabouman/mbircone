@@ -22,16 +22,22 @@ channel_offset = -0.9384
 row_offset = 0.5654
 
 
+# x = mbircone.recon(sino, angles, dist_source_detector=dist_source_detector, magnification=magnification, 
+# 	delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image,
+# 	channel_offset=channel_offset, row_offset=row_offset,
+# 	weights=wght, sigma_x=5, sigma_y=7.574802513536867, p=1, q=2, T=0.02, num_neighbors=26,
+# 	max_iterations=10)
+
 x = mbircone.recon(sino, angles, dist_source_detector=dist_source_detector, magnification=magnification, 
 	delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image,
 	channel_offset=channel_offset, row_offset=row_offset,
-	weights=wght, sigma_x=5, sigma_y=7.574802513536867, p=1, q=2, T=0.02, num_neighbors=26,
-	max_iterations=10)
+	weights=wght, sigma_x=5, sigma_y=0.1, p=1, q=2, T=0.02, num_neighbors=26,
+	max_iterations=200)
 
 # x = mbircone.recon(sino, angles, dist_source_detector=dist_source_detector, magnification=magnification, 
 # 	delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image,
 # 	channel_offset=channel_offset, row_offset=row_offset,
-# 	weights=wght, p=1, q=2, T=0.02, num_neighbors=26,
+# 	weights=wght, num_neighbors=26,
 # 	max_iterations=10)
 
 
@@ -42,6 +48,6 @@ ref = np.swapaxes(ref, 0, 2)
 rmse_val = np.sqrt(np.mean((x-ref)**2))
 print("RMSE between reconstruction and reference: {}".format(rmse_val))
 
-demo_utils.plot_image(x[65], title='recon', filename='output/recon.png', vmin=0, vmax=0.1)
-demo_utils.plot_image(ref[65], title='ref', filename='output/ref.png', vmin=0, vmax=0.1)
+demo_utils.plot_image(x[60], title='recon', filename='output/recon.png', vmin=0, vmax=0.1)
+demo_utils.plot_image(ref[60], title='ref', filename='output/ref.png', vmin=0, vmax=0.1)
 
