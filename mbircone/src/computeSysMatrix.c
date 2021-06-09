@@ -325,7 +325,7 @@ void writeSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImagePara
     long int totsize = 0;
     long int N_x, N_y, N_z, N_beta, i_vstride_max, i_wstride_max, N_u;
     
-    printf("\nWrite System Matrix ... \n");
+    printf("\nWriting System Matrix to %s \n", fName);
     
     fp = fopen(fName, "w");
     if (fp == NULL)
