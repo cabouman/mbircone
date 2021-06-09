@@ -436,14 +436,17 @@ def recon(sino, angles, dist_source_detector, magnification,
     reconparams['stopThresholdChange_pct'] = stop_threshold
     reconparams['MaxIterations'] = max_iterations
 
-    reconparams['weightScaler_domain'] = 'spatiallyInvariant'
-    reconparams['weightScaler_estimateMode'] = 'None'
+    
     reconparams['weightScaler_value'] = sigma_y**2
     
     reconparams['numThreads'] = num_threads
     reconparams['verbosity'] = verbose
 
     ################ Internally set
+
+    # Weight scalar
+    reconparams['weightScaler_domain'] = 'spatiallyInvariant'
+    reconparams['weightScaler_estimateMode'] = 'None'
 
     # Stopping
     reconparams['stopThesholdRWFE_pct'] = 0
