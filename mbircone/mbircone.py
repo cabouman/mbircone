@@ -78,8 +78,20 @@ def auto_sigma_y(sino, weights, snr_db=30.0, delta_pixel_image=1.0, delta_pixel_
     Returns:
         ndarray: Automatic values of regularization parameter.
     """
-    
-    pass
+
+    # Compute indicator function for sinogram support
+    sino_indicator = _sino_indicator(sino)
+
+    # compute RMS value of sinogram excluding empty space
+    signal_rms = np.average(weights * sino ** 2, None, sino_indicator) ** 0.5
+
+    # convert snr to relative noise standard deviation
+    rel_noise_std = 10 ** (-snr_db / 20)
+
+    # compute sigma_y and scale by relative pixel and detector pitch
+    sigma_y = rel_noise_std * signal_rms * (delta_pixel_image / delta_pixel_detector) ** (0.5)
+
+    return sigma_y
 
 
 def auto_sigma_x(sino, delta_pixel_detector=1.0, sharpness=0.0):
@@ -281,30 +293,6 @@ def compute_img_params(sinoparams, delta_pixel_image=None,
 
     return imgparams
 
-
-
-def _distance_line_to_point(A, B, P):
-    """Computes the distance from point P to the line passing through points A and B
-    
-    Args:
-        A (float, 2-tuple): (x,y) coordinate of point A
-        B (float, 2-tuple): (x,y) coordinate of point B
-        P (float, 2-tuple): (x,y) coordinate of point P
-    """
-
-    (x1,y1) = A
-    (x2,y2) = B
-    (x0,y0) = P
-
-    # Line joining A,B has equation ax+by+c=0
-    a = y2-y1
-    b = -(x2-x1)
-    c = y1*x2-x1*y2
-
-    dist = abs(a*x0 + b*y0 + c)/math.sqrt(a**2 + b**2)
-
-    return dist
-
 # def auto_roi_radius():
 
 
@@ -401,6 +389,17 @@ def recon(sino, angles, dist_source_detector, magnification,
     imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image,
     num_rows=num_rows, num_cols=num_cols, num_slices=num_slices, roi_radius=roi_radius)
 
+    # Set automatic value of sigma_y
+    if sigma_y is None:
+        sigma_y = auto_sigma_y(sino, weights, snr_db, delta_pixel_image=delta_pixel_image, delta_pixel_detector=delta_pixel_detector)
+
+    # Set automatic value of sigma_x
+    if sigma_x is None:
+        sigma_x = auto_sigma_x(sino, delta_pixel_detector=delta_pixel_detector, sharpness=sharpness)
+
+    print("sigma_y = {}".format(auto_sigma_y(sino, weights, snr_db, delta_pixel_image=delta_pixel_image, delta_pixel_detector=delta_pixel_detector)))
+    print("sigma_x = {}".format(auto_sigma_x(sino, delta_pixel_detector=delta_pixel_detector, sharpness=sharpness)))
+
     reconparams = dict()
 
     reconparams['is_positivity_constraint'] = int(positivity)
@@ -429,10 +428,11 @@ def recon(sino, angles, dist_source_detector, magnification,
    
     reconparams['stopThresholdChange_pct'] = stop_threshold
     reconparams['MaxIterations'] = max_iterations
-    
+
     reconparams['weightScaler_domain'] = 'spatiallyInvariant'
-    reconparams['weightScaler_estimateMode'] = 'avgWghtRecon'
-    reconparams['weightScaler_value'] = 1
+    reconparams['weightScaler_estimateMode'] = 'None'
+    reconparams['weightScaler_value'] = 1.7428394056e-02
+    # reconparams['weightScaler_value'] = 1/sigma_y**2
     
     reconparams['numThreads'] = num_threads
     reconparams['verbosity'] = verbose
@@ -462,9 +462,6 @@ def recon(sino, angles, dist_source_detector, magnification,
         reconparams['NHICD_Mode'] = 'percentile+random'
     else:
         reconparams['NHICD_Mode'] = 'off'
-
-    
-
 
 
     Amatrix_fname = 'test.sysmatrix'
@@ -497,3 +494,39 @@ def recon(sino, angles, dist_source_detector, magnification,
 
     return x
 
+
+def _sino_indicator(sino):
+    """Computes a binary function that indicates the region of sinogram support.
+
+    Args:
+        sino (ndarray):
+            3D numpy array of sinogram data with shape (num_views,num_slices,num_channels)
+
+    Returns:
+        int8: A binary value: =1 within sinogram support; =0 outside sinogram support.
+    """
+    indicator = np.int8(sino > 0.05 * np.mean(np.fabs(sino)))  # for excluding empty space from average
+    return indicator
+
+
+def _distance_line_to_point(A, B, P):
+    """Computes the distance from point P to the line passing through points A and B
+    
+    Args:
+        A (float, 2-tuple): (x,y) coordinate of point A
+        B (float, 2-tuple): (x,y) coordinate of point B
+        P (float, 2-tuple): (x,y) coordinate of point P
+    """
+
+    (x1,y1) = A
+    (x2,y2) = B
+    (x0,y0) = P
+
+    # Line joining A,B has equation ax+by+c=0
+    a = y2-y1
+    b = -(x2-x1)
+    c = y1*x2-x1*y2
+
+    dist = abs(a*x0 + b*y0 + c)/math.sqrt(a**2 + b**2)
+
+    return dist

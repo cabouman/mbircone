@@ -28,6 +28,12 @@ x = mbircone.recon(sino, angles, dist_source_detector=dist_source_detector, magn
 	weights=wght, sigma_x=5, p=1, q=2, T=0.02, num_neighbors=26,
 	max_iterations=10)
 
+# x = mbircone.recon(sino, angles, dist_source_detector=dist_source_detector, magnification=magnification, 
+# 	delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image,
+# 	channel_offset=channel_offset, row_offset=row_offset,
+# 	weights=wght, p=1, q=2, T=0.02, num_neighbors=26,
+# 	max_iterations=10)
+
 
 fname_ref = 'object.phantom.recon'
 ref = demo_utils.read_ND(fname_ref, 3)
@@ -35,3 +41,7 @@ ref = np.swapaxes(ref, 0, 2)
 
 rmse_val = np.sqrt(np.mean((x-ref)**2))
 print("RMSE between reconstruction and reference: {}".format(rmse_val))
+
+demo_utils.plot_image(x[65], title='recon', filename='output/recon.png', vmin=0, vmax=0.1)
+demo_utils.plot_image(ref[65], title='ref', filename='output/ref.png', vmin=0, vmax=0.1)
+
