@@ -13,8 +13,8 @@ Plan for implementation of the interface
 - Transform params
 - Simplify recon params
 - auto regularization
-
 - hash params
+
 
 
 

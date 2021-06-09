@@ -234,7 +234,7 @@ def compute_sino_params(dist_source_detector, magnification,
 
 
 def compute_img_params(sinoparams, delta_pixel_image=None,
-    num_rows=None, num_cols=None, num_slices=None, roi_radius=None):
+    num_rows=None, num_cols=None, num_slices=None, ror_radius=None):
     """ Computes image parameters required by the Cython code
     
     Args:
@@ -247,9 +247,9 @@ def compute_img_params(sinoparams, delta_pixel_image=None,
             If None, automatically set.
         num_slices (int, optional): [Default=None] Integer number of slices in reconstructed image.
             If None, automatically set.
-        roi_radius (float, optional): [Default=None] Scalar value of radius of reconstruction in :math:`ALU`.
-            If None, automatically set with auto_roi_radius().
-            Pixels outside the radius roi_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
+        ror_radius (float, optional): [Default=None] Scalar value of radius of reconstruction in :math:`ALU`.
+            If None, automatically set with auto_ror_radius().
+            Pixels outside the radius ror_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
     
     Returns:
         Dictionary containing image parameters as required by the Cython code
@@ -351,12 +351,12 @@ def compute_img_params(sinoparams, delta_pixel_image=None,
 
     return imgparams
 
-# def auto_roi_radius():
+# def auto_ror_radius():
 
 
 def recon(sino, angles, dist_source_detector, magnification,
     channel_offset=0.0, row_offset=0.0, rotation_offset=0.0, delta_pixel_detector=1.0, delta_pixel_image=None,
-    num_rows=None, num_cols=None, num_slices=None, roi_radius=None,
+    num_rows=None, num_cols=None, num_slices=None, ror_radius=None,
     init_image=0.0, prox_image=None,
     sigma_y=None, snr_db=30.0, weights=None, weight_type='unweighted',
     positivity=True, p=1.2, q=2.0, T=1.0, num_neighbors=6,
@@ -385,9 +385,9 @@ def recon(sino, angles, dist_source_detector, magnification,
             If None, automatically set.
         num_slices (int, optional): [Default=None] Integer number of slices in reconstructed image.
             If None, automatically set.
-        roi_radius (float, optional): [Default=None] Scalar value of radius of reconstruction in :math:`ALU`.
-            If None, automatically set with auto_roi_radius().
-            Pixels outside the radius roi_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
+        ror_radius (float, optional): [Default=None] Scalar value of radius of reconstruction in :math:`ALU`.
+            If None, automatically set with auto_ror_radius().
+            Pixels outside the radius ror_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
         
         init_image (ndarray, optional): [Default=0.0] Initial value of reconstruction image, specified by either a scalar value or a 3D numpy array with shape (num_slices,num_rows,num_cols)
         prox_image (ndarray, optional): [Default=None] 3D proximal map input image. 3D numpy array with shape (num_slices,num_rows,num_cols)
@@ -448,7 +448,7 @@ def recon(sino, angles, dist_source_detector, magnification,
     delta_pixel_detector=delta_pixel_detector)
 
     imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image,
-    num_rows=num_rows, num_cols=num_cols, num_slices=num_slices, roi_radius=roi_radius)
+    num_rows=num_rows, num_cols=num_cols, num_slices=num_slices, ror_radius=ror_radius)
 
     # Set automatic values for weights
     if weights is None:
