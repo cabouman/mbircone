@@ -378,6 +378,9 @@ def recon(sino, angles, dist_source_detector, magnification,
 
     if num_threads is None :
         num_threads = cpu_count(logical=False)
+
+    if delta_pixel_image is None:
+        delta_pixel_image = delta_pixel_detector/magnification
     
     (num_views, num_slices, num_channels) = sino.shape
     

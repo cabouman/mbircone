@@ -4,12 +4,8 @@ import mbircone
 import demo_utils
 
 sino = np.load('sino.npy')
-wght = np.load('wght.npy')
-
 sino = np.copy(np.swapaxes(sino, 1, 2))
-wght = np.copy(np.swapaxes(wght, 1, 2))
-
-# New shape : views x slices x channels
+# Make shape : views x slices x channels
     
 angles = np.linspace(0, 2*np.pi, 40, endpoint=False)
 
@@ -22,14 +18,8 @@ channel_offset = -0.9384
 row_offset = 0.5654
 
 
-# x = mbircone.recon(sino, angles, dist_source_detector=dist_source_detector, magnification=magnification, 
-# 	delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image,
-# 	channel_offset=channel_offset, row_offset=row_offset,
-# 	weights=wght, sigma_x=5, sigma_y=7.574802513536867, p=1, q=2, T=0.02, num_neighbors=26,
-# 	max_iterations=10)
-
 x = mbircone.recon(sino, angles, dist_source_detector=dist_source_detector, magnification=magnification, 
-	delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image,
+	delta_pixel_detector=delta_pixel_detector,
 	channel_offset=channel_offset, row_offset=row_offset, sharpness=1,
 	max_iterations=10)
 

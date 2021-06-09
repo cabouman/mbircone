@@ -11,9 +11,9 @@ Plan for implementation of the interface
 - Install dummy py interface
 - change data shapes
 - Transform params
-
 - Simplify recon params
 - auto regularization
+
 - hash params
 
 
