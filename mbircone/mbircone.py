@@ -401,14 +401,12 @@ def recon(sino, angles, dist_source_detector, magnification,
     imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image,
     num_rows=num_rows, num_cols=num_cols, num_slices=num_slices, roi_radius=roi_radius)
 
-    sigma_x = 5
-
     reconparams = dict()
 
-    reconparams['is_positivity_constraint'] = 1
-    reconparams['q'] = 2
-    reconparams['p'] = 1
-    reconparams['T'] = 0.02
+    reconparams['is_positivity_constraint'] = int(positivity)
+    reconparams['q'] = q
+    reconparams['p'] = p
+    reconparams['T'] = T
     reconparams['sigmaX'] = sigma_x
     reconparams['bFace'] = 1.0
     reconparams['bEdge'] = 0.70710678118
