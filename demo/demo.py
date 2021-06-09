@@ -31,7 +31,7 @@ row_offset = 0.5654
 x = mbircone.recon(sino, angles, dist_source_detector=dist_source_detector, magnification=magnification, 
 	delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image,
 	channel_offset=channel_offset, row_offset=row_offset,
-	weights=wght, num_neighbors=26,
+	weights=wght,
 	max_iterations=10)
 
 
