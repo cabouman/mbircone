@@ -403,18 +403,19 @@ def recon(sino, angles, dist_source_detector, magnification,
     imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image,
     num_rows=num_rows, num_cols=num_cols, num_slices=num_slices, roi_radius=roi_radius)
 
+    sigma_x = 5
+
     reconparams = dict()
-    reconparams['priorWeight_QGGMRF'] = 1
-    reconparams['priorWeight_proxMap'] = -1
+
     reconparams['is_positivity_constraint'] = 1
     reconparams['q'] = 2
     reconparams['p'] = 1
     reconparams['T'] = 0.02
-    reconparams['sigmaX'] = 5
+    reconparams['sigmaX'] = sigma_x
     reconparams['bFace'] = 1.0
     reconparams['bEdge'] = 0.70710678118
     reconparams['bVertex'] = 0.57735026919
-    reconparams['sigma_lambda'] = 1
+   
     reconparams['stopThresholdChange_pct'] = 0.00
     reconparams['stopThesholdRWFE_pct'] = 0
     reconparams['stopThesholdRUFE_pct'] = 0
@@ -423,11 +424,11 @@ def recon(sino, angles, dist_source_detector, magnification,
     reconparams['relativeChangeScaler'] = 0.1
     reconparams['relativeChangePercentile'] = 99.9
     
-    reconparams['numThreads'] = num_threads
     reconparams['weightScaler_domain'] = 'spatiallyInvariant'
     reconparams['weightScaler_estimateMode'] = 'avgWghtRecon'
     reconparams['weightScaler_value'] = 1
     
+    reconparams['numThreads'] = num_threads
     reconparams['verbosity'] = verbose
 
     # Internally set
@@ -455,8 +456,17 @@ def recon(sino, angles, dist_source_detector, magnification,
 
     if np.isscalar(init_image):
         init_image = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']))+init_image
-        
-    proxmap_input = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']))
+    
+    if prox_image is None:
+        reconparams['priorWeight_QGGMRF'] = 1
+        reconparams['priorWeight_proxMap'] = -1
+        proxmap_input = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']))
+        reconparams['sigma_lambda'] = 1
+    else:
+        reconparams['priorWeight_QGGMRF'] = -1
+        reconparams['priorWeight_proxMap'] = 1
+        reconparams['sigma_lambda'] = sigma_x
+        proxmap_input = prox_image
 
 
     print('Reconstructing ...')
