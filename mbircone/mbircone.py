@@ -314,7 +314,7 @@ def recon(sino, angles, dist_source_detector, magnification,
     init_image=0.0, prox_image=None,
     sigma_y=None, snr_db=30.0, weights=None, weight_type='unweighted',
     positivity=True, p=1.2, q=2.0, T=1.0, num_neighbors=6,
-    sharpness=0.0, sigma_x=None, max_iterations=20, stop_threshold=0.0,
+    sharpness=0.0, sigma_x=None, max_iterations=20, stop_threshold=0.02,
     num_threads=None, NHICD=False, verbose=1, lib_path=__lib_path):
 
     """Computes 3D cone beam MBIR reconstruction
@@ -427,10 +427,10 @@ def recon(sino, angles, dist_source_detector, magnification,
         reconparams['bEdge'] = 0.70710678118
         reconparams['bVertex'] = 0.57735026919
    
-    reconparams['stopThresholdChange_pct'] = 0.00
+    reconparams['stopThresholdChange_pct'] = stop_threshold
     reconparams['stopThesholdRWFE_pct'] = 0
     reconparams['stopThesholdRUFE_pct'] = 0
-    reconparams['MaxIterations'] = 10
+    reconparams['MaxIterations'] = max_iterations
     reconparams['relativeChangeMode'] = 'percentile'
     reconparams['relativeChangeScaler'] = 0.1
     reconparams['relativeChangePercentile'] = 99.9
