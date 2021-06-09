@@ -389,6 +389,10 @@ def recon(sino, angles, dist_source_detector, magnification,
     imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image,
     num_rows=num_rows, num_cols=num_cols, num_slices=num_slices, roi_radius=roi_radius)
 
+    # Set automatic values for weights
+    if weights is None:
+        weights = calc_weights(sino, weight_type)
+
     # Set automatic value of sigma_y
     if sigma_y is None:
         sigma_y = auto_sigma_y(sino, weights, snr_db, delta_pixel_image=delta_pixel_image, delta_pixel_detector=delta_pixel_detector)
