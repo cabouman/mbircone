@@ -431,8 +431,7 @@ def recon(sino, angles, dist_source_detector, magnification,
 
     reconparams['weightScaler_domain'] = 'spatiallyInvariant'
     reconparams['weightScaler_estimateMode'] = 'None'
-    reconparams['weightScaler_value'] = 1.7428394056e-02
-    # reconparams['weightScaler_value'] = 1/sigma_y**2
+    reconparams['weightScaler_value'] = 1/sigma_y**2
     
     reconparams['numThreads'] = num_threads
     reconparams['verbosity'] = verbose
