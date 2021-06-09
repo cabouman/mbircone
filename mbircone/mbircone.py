@@ -408,9 +408,24 @@ def recon(sino, angles, dist_source_detector, magnification,
     reconparams['p'] = p
     reconparams['T'] = T
     reconparams['sigmaX'] = sigma_x
-    reconparams['bFace'] = 1.0
-    reconparams['bEdge'] = 0.70710678118
-    reconparams['bVertex'] = 0.57735026919
+
+    if num_neighbors not in [6,18,26]:
+        num_neighbors = 6
+
+    if num_neighbors==6:
+        reconparams['bFace'] = 1.0
+        reconparams['bEdge'] = -1
+        reconparams['bVertex'] = -1
+
+    if num_neighbors==18:
+        reconparams['bFace'] = 1.0
+        reconparams['bEdge'] = 0.70710678118
+        reconparams['bVertex'] = -1
+
+    if num_neighbors==26:
+        reconparams['bFace'] = 1.0
+        reconparams['bEdge'] = 0.70710678118
+        reconparams['bVertex'] = 0.57735026919
    
     reconparams['stopThresholdChange_pct'] = 0.00
     reconparams['stopThesholdRWFE_pct'] = 0
