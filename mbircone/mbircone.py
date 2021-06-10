@@ -185,7 +185,8 @@ def compute_sino_params(dist_source_detector, magnification,
     num_views, num_slices, num_channels,
     channel_offset=0.0, row_offset=0.0, rotation_offset=0.0, 
     delta_pixel_detector=1.0):
-    """ Computes sinogram parameters required by the Cython code
+    """ Computes sinogram parameters specify coordinates and bounds relating to the sinogram
+        For detailed specifications of sinoparams, see mbircone.interface_cy_c
     
     Args:
         dist_source_detector (float): Distance between the X-ray source and the detector in units of ALU
@@ -232,20 +233,14 @@ def compute_sino_params(dist_source_detector, magnification,
     return sinoparams
 
 
-def compute_img_params(sinoparams, delta_pixel_image=None,
-    num_rows=None, num_cols=None, num_slices=None, ror_radius=None):
-    """ Computes image parameters required by the Cython code
+def compute_img_params(sinoparams, delta_pixel_image=None, ror_radius=None):
+    """ Computes image parameters that specify coordinates and bounds relating to the image. 
+        For detailed specifications of imgparams, see mbircone.interface_cy_c
     
     Args:
         sinoparams (dict): Dictionary containing sinogram parameters as required by the Cython code
         delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
             If None, automatically set to delta_pixel_detector/magnification
-        num_rows (int, optional): [Default=None] Integer number of rows in reconstructed image.
-            If None, automatically set.
-        num_cols (int, optional): [Default=None] Integer number of columns in reconstructed image.
-            If None, automatically set.
-        num_slices (int, optional): [Default=None] Integer number of slices in reconstructed image.
-            If None, automatically set.
         ror_radius (float, optional): [Default=None] Scalar value of radius of reconstruction in :math:`ALU`.
             If None, automatically set.
             Pixels outside the radius ror_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
@@ -276,7 +271,10 @@ def compute_img_params(sinoparams, delta_pixel_image=None,
     # r_1 = distance{ line(P1,S), C }
     r_1 = _distance_line_to_point( P1, S, C)
 
-    r = max(r_0, r_1);
+    r = max(r_0, r_1)
+
+    if ror_radius is not None:
+        r = ror_radius 
 
 
     # #### Part 2: assignment of parameters ####
@@ -353,7 +351,7 @@ def compute_img_params(sinoparams, delta_pixel_image=None,
 
 def recon(sino, angles, dist_source_detector, magnification,
     channel_offset=0.0, row_offset=0.0, rotation_offset=0.0, delta_pixel_detector=1.0, delta_pixel_image=None,
-    num_rows=None, num_cols=None, num_slices=None, ror_radius=None,
+    ror_radius=None,
     init_image=0.0, prox_image=None,
     sigma_y=None, snr_db=30.0, weights=None, weight_type='unweighted',
     positivity=True, p=1.2, q=2.0, T=1.0, num_neighbors=6,
@@ -375,15 +373,9 @@ def recon(sino, angles, dist_source_detector, magnification,
         delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
         delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
             If None, automatically set to delta_pixel_detector/magnification
-        
-        num_rows (int, optional): [Default=None] Integer number of rows in reconstructed image.
-            If None, automatically set.
-        num_cols (int, optional): [Default=None] Integer number of columns in reconstructed image.
-            If None, automatically set.
-        num_slices (int, optional): [Default=None] Integer number of slices in reconstructed image.
-            If None, automatically set.
+            
         ror_radius (float, optional): [Default=None] Scalar value of radius of reconstruction in :math:`ALU`.
-            If None, automatically set with auto_ror_radius().
+            If None, automatically set with compute_img_params.
             Pixels outside the radius ror_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
         
         init_image (ndarray, optional): [Default=0.0] Initial value of reconstruction image, specified by either a scalar value or a 3D numpy array with shape (num_slices,num_rows,num_cols)
@@ -444,8 +436,7 @@ def recon(sino, angles, dist_source_detector, magnification,
     channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset, 
     delta_pixel_detector=delta_pixel_detector)
 
-    imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image,
-    num_rows=num_rows, num_cols=num_cols, num_slices=num_slices, ror_radius=ror_radius)
+    imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
 
     # Set automatic values for weights
     if weights is None:

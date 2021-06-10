@@ -13,7 +13,6 @@ angles = np.linspace(0, 2*np.pi, 40, endpoint=False)
 dist_source_detector = 619.7902
 magnification = 8.651889263
 delta_pixel_detector = 3.2
-delta_pixel_image = 0.36986
 channel_offset = -0.9384
 row_offset = 0.5654
 
