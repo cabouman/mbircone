@@ -41,7 +41,7 @@ conda remove --name test_mbircone --all
 
 # pip install -r demo/requirements_demo.txt
 
-# python setup.py install
+# pip install .
 
 # cd demo
 
