@@ -1,4 +1,5 @@
 
+import os
 import numpy as np
 import mbircone
 import demo_utils
@@ -28,6 +29,9 @@ x = mbircone.recon(sino, angles, dist_source_detector=dist_source_detector, magn
 	weights=wght, sigma_x=5, sigma_y=7.574802513536867, p=1, q=2, T=0.02, num_neighbors=26,
 	max_iterations=10)
 
+
+# create output folder
+os.makedirs('output', exist_ok=True)
 
 fname_ref = 'object.phantom.recon'
 ref = demo_utils.read_ND(fname_ref, 3)
