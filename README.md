@@ -33,7 +33,7 @@ pip install -r requirements.txt
 ```
 5) Install package
 ```
-python setup.py install
+pip install .
 ```
 
 ## Run demo
