@@ -102,6 +102,9 @@ x = np.swapaxes(x, 0, 2)
 Ax = np.swapaxes(Ax, 1, 2)
 sino = np.swapaxes(sino, 1, 2)
 
+# create output folder
+os.makedirs('output', exist_ok=True)
+
 fname_ref = 'object.phantom.recon'
 ref = demo_utils.read_ND(fname_ref, 3)
 ref = np.swapaxes(ref, 0, 2)
