@@ -21,7 +21,7 @@ cd mbircone
 
 2) Create conda environment
 ```
-conda env create -n mbircone python=3.8
+conda create -n mbircone python=3.8
 ```
 3) Activate conda environment
 ```
