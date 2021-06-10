@@ -350,8 +350,8 @@ def compute_img_params(sinoparams, delta_pixel_image=None, ror_radius=None):
 
 
 def recon(sino, angles, dist_source_detector, magnification,
-    channel_offset=0.0, row_offset=0.0, rotation_offset=0.0, delta_pixel_detector=1.0, delta_pixel_image=None,
-    ror_radius=None,
+    channel_offset=0.0, row_offset=0.0, rotation_offset=0.0, 
+    delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
     init_image=0.0, prox_image=None,
     sigma_y=None, snr_db=30.0, weights=None, weight_type='unweighted',
     positivity=True, p=1.2, q=2.0, T=1.0, num_neighbors=6,
@@ -370,10 +370,10 @@ def recon(sino, angles, dist_source_detector, magnification,
         row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
         rotation_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space.
             This is normally set to zero.
+        
         delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
         delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
-            If None, automatically set to delta_pixel_detector/magnification
-            
+            If None, automatically set to delta_pixel_detector/magnification  
         ror_radius (float, optional): [Default=None] Scalar value of radius of reconstruction in :math:`ALU`.
             If None, automatically set with compute_img_params.
             Pixels outside the radius ror_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
