@@ -25,7 +25,7 @@ conda create -n mbircone python=3.8
 ```
 3) Activate conda environment
 ```
-source activate mbircone
+conda activate mbircone
 ```
 4) Install requirements
 ```
