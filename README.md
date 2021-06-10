@@ -15,7 +15,7 @@ For other OpenMBIR packages see: https://github.com/cabouman/OpenMBIR-Index
 ## Installation
 1) Create conda environment
 ```
-conda env create -n mbircone python=3.8
+conda create -n mbircone python=3.8
 ```
 2) Activate conda environment
 ```
