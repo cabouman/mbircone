@@ -6,7 +6,7 @@ rm -r build
 rm -r dist
 rm -r mbircone.egg-info
 
-conda env create -n test_mbircone python=3.8 &&
+conda create -n test_mbircone python=3.8 &&
 
 source activate test_mbircone &&
 
@@ -33,7 +33,7 @@ conda remove --name test_mbircone --all
 
 
 
-# conda env create -n mbircone python=3.8
+# conda create -n mbircone python=3.8
 
 # source activate mbircone
 

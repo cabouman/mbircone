@@ -108,7 +108,7 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 	 * 		Parallel stuff
 	 */
 	/*printReconParams(reconParams);*/
-	omp_set_num_threads(reconParams->numThreads);
+	/*omp_set_num_threads(reconParams->numThreads);*/
 	prepareParallelAux(&parallelAux, reconAux.N_M_max);
 
 

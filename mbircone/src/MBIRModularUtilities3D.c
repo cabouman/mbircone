@@ -17,6 +17,7 @@ void forwardProject3DCone( float ***Ax, float ***x, struct ImageParams *imgParam
     #pragma omp parallel for private(j_x, j_y, j_u, i_v, B_ij, j_z, B_ij_times_x_j, i_w)
     for (i_beta = 0; i_beta <= sinoParams->N_beta-1; ++i_beta)
     {
+        printf("forwardProject3DCone Threads: %d\n", omp_get_num_threads());
 
         for (j_x = 0; j_x <= imgParams->N_x-1; ++j_x)
         {
@@ -1103,7 +1104,6 @@ void printReconParams(struct ReconParams *params)
     printf("\tnumVoxelsPerZiplineMax = %d \n", params->numVoxelsPerZiplineMax);
     printf("\tnumVoxelsPerZipline = %d \n", params->numVoxelsPerZipline);
     printf("\tnumZiplines = %d \n", params->numZiplines);
-    printf("\tnumThreads = %d \n", params->numThreads);
     printf("\tweightScaler_estimateMode = %s \n", params->weightScaler_estimateMode);
     printf("\tweightScaler_domain = %s \n", params->weightScaler_domain);
     printf("\tweightScaler_value = %e \n", params->weightScaler_value);
