@@ -426,6 +426,9 @@ def recon(sino, angles, dist_source_detector, magnification,
     if num_threads is None :
         num_threads = cpu_count(logical=False)
 
+    os.environ['OMP_NUM_THREADS'] = str(num_threads)
+    os.environ['OMP_DYNAMIC'] = 'true'
+
     if delta_pixel_image is None:
         delta_pixel_image = delta_pixel_detector/magnification
     
@@ -450,11 +453,8 @@ def recon(sino, angles, dist_source_detector, magnification,
     if sigma_x is None:
         sigma_x = auto_sigma_x(sino, delta_pixel_detector=delta_pixel_detector, sharpness=sharpness)
 
-    print("sigma_y = {}".format(auto_sigma_y(sino, weights, snr_db, delta_pixel_image=delta_pixel_image, delta_pixel_detector=delta_pixel_detector)))
-    print("sigma_x = {}".format(auto_sigma_x(sino, delta_pixel_detector=delta_pixel_detector, sharpness=sharpness)))
 
     reconparams = dict()
-
     reconparams['is_positivity_constraint'] = int(positivity)
     reconparams['q'] = q
     reconparams['p'] = p
@@ -534,9 +534,6 @@ def recon(sino, angles, dist_source_detector, magnification,
         reconparams['sigma_lambda'] = sigma_x
         proxmap_input = np.swapaxes(prox_image, 0, 2)
 
-
-    os.environ['OMP_NUM_THREADS'] = str(num_threads)
-    os.environ['OMP_DYNAMIC'] = 'true'
 
 
     hash_val = hash_params(angles, sinoparams, imgparams)
