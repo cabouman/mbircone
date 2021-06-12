@@ -485,7 +485,6 @@ def recon(sino, angles, dist_source_detector, magnification,
     
     reconparams['weightScaler_value'] = sigma_y**2
     
-    reconparams['numThreads'] = num_threads
     reconparams['verbosity'] = verbose
 
     ################ Internally set
@@ -534,6 +533,10 @@ def recon(sino, angles, dist_source_detector, magnification,
         reconparams['priorWeight_proxMap'] = 1
         reconparams['sigma_lambda'] = sigma_x
         proxmap_input = np.swapaxes(prox_image, 0, 2)
+
+
+    os.environ['OMP_NUM_THREADS'] = str(num_threads)
+    os.environ['OMP_DYNAMIC'] = 'true'
 
 
     hash_val = hash_params(angles, sinoparams, imgparams)

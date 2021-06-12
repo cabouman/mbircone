@@ -91,10 +91,6 @@ cdef extern from "./src/MBIRModularUtilities3D.h":
         int numVoxelsPerZipline;
         int numZiplines;
     
-
-        # Parallel Stuff
-        int numThreads;                 # numThreads: Number of threads 
-    
         # Weight scaler stuff
 
         char weightScaler_estimateMode[200];     # Estimate weight scaler? 1: Yes. 0: Use user specified value 
@@ -206,10 +202,6 @@ cdef map_py2c_reconparams(ReconParams* c_reconparams,
         c_reconparams.numVoxelsPerZiplineMax = reconparams['numVoxelsPerZiplineMax']
         c_reconparams.numVoxelsPerZipline = reconparams['numVoxelsPerZipline']
         c_reconparams.numZiplines = reconparams['numZiplines']
-
-
-        # Parallel Stuff
-        c_reconparams.numThreads = reconparams['numThreads']                 # numThreads: Number of threads
 
         # Weight scaler stuff
 

@@ -269,11 +269,6 @@ struct ReconParams
     int numZiplines;
 
     /**
-     *      Parallel Stuff
-     */
-    int numThreads;                 /* numThreads: Number of threads */
-
-    /**
      *      Weight scaler stuff
      */
     char weightScaler_estimateMode[200];     /* Estimate weight scaler? 1: Yes. 0: Use user specified value */
