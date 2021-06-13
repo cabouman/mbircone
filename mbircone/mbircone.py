@@ -443,7 +443,13 @@ def recon(sino, angles, dist_source_detector, magnification,
 
     hash_val = hash_params(angles, sinoparams, imgparams)
     sysmatrix_fname = _gen_sysmatrix_fname(lib_path=__lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
-    ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, sysmatrix_fname, verbose=verbose)
+    
+    if os.path.exists(sysmatrix_fname) :
+        print('Found system matrix: {}'.format(sysmatrix_fname))
+        os.utime(sysmatrix_fname)  # update file modified time
+    else :
+        ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, sysmatrix_fname, verbose=verbose)
+        
 
     # Set automatic values for weights
     if weights is None:
@@ -610,7 +616,12 @@ def project(angles, image,
 
     hash_val = hash_params(angles, sinoparams, imgparams)
     sysmatrix_fname = _gen_sysmatrix_fname(lib_path=__lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
-    ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, sysmatrix_fname, verbose=verbose)
+
+    if os.path.exists(sysmatrix_fname) :
+        print('Found system matrix: {}'.format(sysmatrix_fname))
+        os.utime(sysmatrix_fname)  # update file modified time
+    else :
+        ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, sysmatrix_fname, verbose=verbose)
 
     image = np.swapaxes(image, 0, 2)
     proj = ci.project_cy(image, sinoparams, imgparams, sysmatrix_fname)
