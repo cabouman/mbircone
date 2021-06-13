@@ -441,6 +441,10 @@ def recon(sino, angles, dist_source_detector, magnification,
 
     imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
 
+    hash_val = hash_params(angles, sinoparams, imgparams)
+    sysmatrix_fname = _gen_sysmatrix_fname(lib_path=__lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
+    ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, sysmatrix_fname, verbose=verbose)
+
     # Set automatic values for weights
     if weights is None:
         weights = calc_weights(sino, weight_type)
@@ -535,11 +539,6 @@ def recon(sino, angles, dist_source_detector, magnification,
         proxmap_input = np.swapaxes(prox_image, 0, 2)
 
 
-
-    hash_val = hash_params(angles, sinoparams, imgparams)
-    sysmatrix_fname = _gen_sysmatrix_fname(lib_path=__lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
-    ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, sysmatrix_fname, verbose=verbose)
-
     sino = np.swapaxes(sino, 1, 2)
     weights = np.swapaxes(weights, 1, 2)
     x = ci.recon_cy(sino, weights, init_image, proxmap_input,
@@ -551,7 +550,9 @@ def recon(sino, angles, dist_source_detector, magnification,
     return x
 
 
-def project(angles, image, dist_source_detector, magnification,
+def project(angles, image,
+    num_slices, num_channels,
+    dist_source_detector, magnification,
     channel_offset=0.0, row_offset=0.0, rotation_offset=0.0, 
     delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
     num_threads=None, verbose=1, lib_path=__lib_path):
@@ -562,7 +563,7 @@ def project(angles, image, dist_source_detector, magnification,
         angles (ndarray): 1D view angles array in radians.
         image (ndarray):
             3D numpy array of image being forward projected.
-            The image is a 3D image with a shape of (num_slices,num_row,num_col) where num_slices is the number of sinogram slices.
+            The image is a 3D image with a shape of (num_slices,num_row,num_col)
 
 
         dist_source_detector (float): Distance between the X-ray source and the detector in units of ALU
@@ -585,6 +586,35 @@ def project(angles, image, dist_source_detector, magnification,
         verbose (int, optional): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal reconstruction progress information, and 2 prints the full information.
         lib_path (str, optional): [Default=~/.cache/mbircone] Path to directory containing library of forward projection matrices.
     Returns:
-        ndarray: 3D numpy array containing sinogram with shape (num_views, num_slices, num_channels).
+        ndarray: 3D numpy array containing sinogram with shape (num_views_sino, num_slices, num_channels).
     """
+
+    if num_threads is None :
+        num_threads = cpu_count(logical=False)
+
+    os.environ['OMP_NUM_THREADS'] = str(num_threads)
+    os.environ['OMP_DYNAMIC'] = 'true'
+
+    if delta_pixel_image is None:
+        delta_pixel_image = delta_pixel_detector/magnification
+    
+
+    num_views = len(angles)
+    
+    sinoparams = compute_sino_params(dist_source_detector, magnification,
+    num_views=num_views, num_slices=num_slices, num_channels=num_channels,
+    channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset, 
+    delta_pixel_detector=delta_pixel_detector)
+
+    imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
+
+    hash_val = hash_params(angles, sinoparams, imgparams)
+    sysmatrix_fname = _gen_sysmatrix_fname(lib_path=__lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
+    ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, sysmatrix_fname, verbose=verbose)
+
+    proj = ci.project_cy(image, sinoparams, imgparams, sysmatrix_fname)
+    # Convert shape from Cython interface specifications to Python interface specifications
+    proj = np.swapaxes(proj, 1, 2)
+
+    return proj
 

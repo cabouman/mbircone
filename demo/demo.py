@@ -24,8 +24,25 @@ x = mbircone.recon(sino, angles, dist_source_detector=dist_source_detector, magn
 	max_iterations=10)
 
 
+
+p = mbircone.project(angles, x,
+	num_slices=sino.shape[1], num_channels=sino.shape[2],
+	dist_source_detector=dist_source_detector, magnification=magnification, 
+	delta_pixel_detector=delta_pixel_detector,
+	channel_offset=channel_offset, row_offset=row_offset)
+
+print(sino.shape)
+print(x.shape)
+
+print(p.shape)
+
+
 # create output folder
 os.makedirs('output', exist_ok=True)
 
 demo_utils.plot_image(x[60], title='recon', filename='output/recon_60.png', vmin=0, vmax=0.1)
 demo_utils.plot_image(x[65], title='recon', filename='output/recon_65.png', vmin=0, vmax=0.1)
+
+
+demo_utils.plot_image(p[0], title='proj', filename='output/projection.png')
+demo_utils.plot_image(sino[0], title='sino', filename='output/sino.png')
