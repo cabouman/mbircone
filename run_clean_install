@@ -22,7 +22,7 @@ pip install . &&
 cd demo &&
 
 python demo.py &&
-# python demo_cython.py &&
+# python demo_compare_ref_cython.py &&
 
 cd ..
 
