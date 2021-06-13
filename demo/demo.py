@@ -31,11 +31,6 @@ p = mbircone.project(angles, x,
 	delta_pixel_detector=delta_pixel_detector,
 	channel_offset=channel_offset, row_offset=row_offset)
 
-print(sino.shape)
-print(x.shape)
-
-print(p.shape)
-
 
 # create output folder
 os.makedirs('output', exist_ok=True)
