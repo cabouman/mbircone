@@ -415,7 +415,7 @@ def recon(sino, angles, dist_source_detector, magnification,
         verbose (int, optional): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal reconstruction progress information, and 2 prints the full information.
         lib_path (str, optional): [Default=~/.cache/mbircone] Path to directory containing library of forward projection matrices.
     Returns:
-        3D numpy array: 3D reconstruction with shape (num_slices,num_rows,num_cols) in units of :math:`ALU^{-1}`.
+        3D numpy array: 3D reconstruction with shape (num_slices, num_rows, num_cols) in units of :math:`ALU^{-1}`.
     """
 
     # Internally set
@@ -569,8 +569,7 @@ def project(angles, image,
         angles (ndarray): 1D view angles array in radians.
         image (ndarray):
             3D numpy array of image being forward projected.
-            The image is a 3D image with a shape of (num_slices,num_row,num_col)
-
+            The image is a 3D array with a shape of (num_slices, num_rows, num_cols)
 
         dist_source_detector (float): Distance between the X-ray source and the detector in units of ALU
         magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
@@ -592,7 +591,7 @@ def project(angles, image,
         verbose (int, optional): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal reconstruction progress information, and 2 prints the full information.
         lib_path (str, optional): [Default=~/.cache/mbircone] Path to directory containing library of forward projection matrices.
     Returns:
-        ndarray: 3D numpy array containing sinogram with shape (num_views_sino, num_slices, num_channels).
+        ndarray: 3D numpy array containing sinogram with shape (num_views, num_slices, num_channels).
     """
 
     if num_threads is None :
