@@ -42,6 +42,7 @@ print("RMSE between reconstruction and reference: {}".format(rmse_val))
 
 demo_utils.plot_image(x[60], title='recon', filename='output/recon_60.png', vmin=0, vmax=0.1)
 demo_utils.plot_image(ref[60], title='ref', filename='output/ref_60.png', vmin=0, vmax=0.1)
-
+demo_utils.plot_image(x[60]-ref[60], title='diff', filename='output/diff_60.png', vmin=-0.1, vmax=0.1)
 demo_utils.plot_image(x[65], title='recon', filename='output/recon_65.png', vmin=0, vmax=0.1)
 demo_utils.plot_image(ref[65], title='ref', filename='output/ref_65.png', vmin=0, vmax=0.1)
+demo_utils.plot_image(x[65]-ref[65], title='diff', filename='output/diff_65.png', vmin=-0.1, vmax=0.1)
