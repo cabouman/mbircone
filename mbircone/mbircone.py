@@ -442,7 +442,7 @@ def recon(sino, angles, dist_source_detector, magnification,
     imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
 
     hash_val = hash_params(angles, sinoparams, imgparams)
-    sysmatrix_fname = _gen_sysmatrix_fname(lib_path=__lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
+    sysmatrix_fname = _gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
     
     if os.path.exists(sysmatrix_fname) :
         print('Found system matrix: {}'.format(sysmatrix_fname))
@@ -614,7 +614,7 @@ def project(angles, image,
     imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
 
     hash_val = hash_params(angles, sinoparams, imgparams)
-    sysmatrix_fname = _gen_sysmatrix_fname(lib_path=__lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
+    sysmatrix_fname = _gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
 
     if os.path.exists(sysmatrix_fname) :
         print('Found system matrix: {}'.format(sysmatrix_fname))
