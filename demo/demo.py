@@ -11,8 +11,11 @@ sino = np.copy(np.swapaxes(sino, 1, 2))
 angles = np.linspace(0, 2*np.pi, 40, endpoint=False)
 
 
-dist_source_detector = 619.7902
+# magnification is unitless.
 magnification = 8.651889263
+
+# All distances are in unit of 1 ALU = 1 mm.
+dist_source_detector = 619.7902
 delta_pixel_detector = 3.2
 channel_offset = -0.9384
 row_offset = 0.5654
