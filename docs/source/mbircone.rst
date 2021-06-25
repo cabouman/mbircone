@@ -1,5 +1,5 @@
 mbircone
-------
+--------
 .. automodule:: mbircone
    :members: 
    :undoc-members:
