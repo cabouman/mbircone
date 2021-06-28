@@ -167,7 +167,7 @@ def preprocess(path_radiographs, path_blank='gain0.tif', path_dark='offset.tif',
     #                                     limits_lo=dataset_params['crop_limits_lo'],
     #                                     limits_hi=dataset_params['crop_limits_hi'])
 
-    sino, wght = compute_sino_wght(obj_scan, blank_scan, dark_scan)
+    sino = compute_sino_wght(obj_scan, blank_scan, dark_scan)
     plt.imshow(obj_scan[0])
     plt.colorbar()
     plt.savefig('prep_obj.png')
