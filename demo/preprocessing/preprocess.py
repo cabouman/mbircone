@@ -32,6 +32,7 @@ def read_ND(filePath, n_dim, dtype='float32', ntype='int32'):
         dataArray = np.fromfile(fileID, dtype=dtype, count=numElements).reshape(sizesArray)
 
     return dataArray
+
 def read_scan_img(img_path):
 
     img = np.asarray(Image.open(img_path))
@@ -111,7 +112,7 @@ def crop_scans(obj_scan, blank_scan, dark_scan, limits_lo=[0,0], limits_hi=[1,1]
     
     return obj_scan, blank_scan, dark_scan
 
-def compute_sino_wght(obj_scan, blank_scan, dark_scan, isClip=True):
+def compute_sino_wght(obj_scan, blank_scan, dark_scan):
 
     blank_scan_mean = 0*obj_scan + np.average(blank_scan, axis=0 )
     dark_scan_mean = 0*obj_scan + np.average(dark_scan, axis=0 )
@@ -127,9 +128,7 @@ def compute_sino_wght(obj_scan, blank_scan, dark_scan, isClip=True):
     sino = np.zeros(obj_scan_corrected.shape)
     sino[normalized_scan>0] = -np.log(normalized_scan[normalized_scan>0])
 
-    wght = normalized_scan
-
-    return sino, wght
+    return sino
 
 def gen_view_ids(view_range, num_views):
 
@@ -146,82 +145,11 @@ def gen_angles_full(angle_span, num_views):
     return np.pi*(angle_span/180.0)*np.array(range(0,num_views))/num_views
 
 
-def preprocess(dataset_params):
-
-    view_ids = gen_view_ids(dataset_params['view_range'], dataset_params['num_views'])
-
-    angles = gen_angles_full(dataset_params['angle_span'], dataset_params['num_views'])
-
-    obj_scan, blank_scan, dark_scan = read_scans_all(dataset_params['obj_scan_dir'], 
-                                        blank_scan_dir=dataset_params['blank_scan_dir'], 
-                                        dark_scan_dir=dataset_params['dark_scan_dir'], 
-                                        view_ids=view_ids)
-
-    if dataset_params['zinger']['median_filter_size']:
-        obj_scan_median = scipy.signal.medfilt(obj_scan, kernel_size=dataset_params['zinger']['median_filter_size'])
-        blank_scan_median = scipy.signal.medfilt(blank_scan, kernel_size=dataset_params['zinger']['median_filter_size'])
-        dark_scan_median = scipy.signal.medfilt(dark_scan, kernel_size=dataset_params['zinger']['median_filter_size'])
-
-        obj_scan[obj_scan>dataset_params['zinger']['threshold']] = obj_scan_median[obj_scan>dataset_params['zinger']['threshold']] 
-        blank_scan[blank_scan>dataset_params['zinger']['threshold']] = blank_scan_median[blank_scan>dataset_params['zinger']['threshold']] 
-        dark_scan[dark_scan>dataset_params['zinger']['threshold']] = dark_scan_median[dark_scan>dataset_params['zinger']['threshold']] 
-
-    
-    obj_scan, blank_scan, dark_scan = downsample_scans(obj_scan, blank_scan, dark_scan, 
-                                        factor=dataset_params['downsample_factor'])
-
-    obj_scan, blank_scan, dark_scan = crop_scans(obj_scan, blank_scan, dark_scan, 
-                                        limits_lo=dataset_params['crop_limits_lo'], 
-                                        limits_hi=dataset_params['crop_limits_hi'])
-
-    sino, wght = compute_sino_wght(obj_scan, blank_scan, dark_scan)
 
 
-    data_dict = {}
-    data_dict['obj_scan'] = obj_scan
-    data_dict['blank_scan'] = blank_scan
-    data_dict['dark_scan'] = dark_scan
-    data_dict['sino'] = sino
-    data_dict['wght'] = wght
-    data_dict['angles'] = angles
 
-    return data_dict
-
-def write_mbir_params(dataset_params, data_dict, rootPath):
-
-    imgparams_fname = rootPath+'.imgparams'
-    sinoparams_fname = rootPath+'.sinoparams'
-    ViewAngleList_fname = rootPath+'.ViewAngleList'
-
-    imgparams = {}
-    imgparams['Nx'] = data_dict['sino'].shape[2]
-    imgparams['Ny'] = data_dict['sino'].shape[2]
-    imgparams['Nz'] = data_dict['sino'].shape[1]
-    imgparams['FirstSliceNumber'] = 0
-    imgparams['Deltaxy'] = dataset_params['pixel_sizes'][1]*dataset_params['downsample_factor'][1]
-    imgparams['DeltaZ'] = dataset_params['pixel_sizes'][0]*dataset_params['downsample_factor'][0]
-    imgparams['ROIRadius'] = imgparams['Nx'] * imgparams['Deltaxy'] / 2
-
-    sinoparams = {}
-    sinoparams['NChannels'] = data_dict['sino'].shape[2]
-    sinoparams['NViews'] = len(data_dict['angles'])
-    sinoparams['NSlices'] = data_dict['sino'].shape[1]
-    sinoparams['DeltaChannel'] = dataset_params['pixel_sizes'][1]*dataset_params['downsample_factor'][1]
-    sinoparams['CenterOffset'] = dataset_params['CenterOffset']/dataset_params['downsample_factor'][1]
-    sinoparams['DeltaSlice'] = dataset_params['pixel_sizes'][0]*dataset_params['downsample_factor'][0]
-    sinoparams['FirstSliceNumber'] = 0
-    sinoparams['ViewAngleList'] = dataset_params['object_name']+'.ViewAngleList'
-
-    modify_params(imgparams_fname, **imgparams)
-    modify_params(sinoparams_fname, **sinoparams)
-
-    with open(ViewAngleList_fname,'w') as fileID:
-        for angle in list(data_dict['angles']):
-            fileID.write(str(angle)+"\n")
-
-
-def preprocess_conebeam(path_radiographs, path_blank='gain0.tif', path_dark='offset.tif', 
-    view_range=[0,1999], angle_span=360, num_views=20, downsample_factor=[4,4]):
+def preprocess(path_radiographs, path_blank='gain0.tif', path_dark='offset.tif',
+               view_range=[0,1999], angle_span=360, num_views=20, downsample_factor=[4,4]):
     view_ids = gen_view_ids(view_range, num_views)
     print(view_ids)
     angles = gen_angles_full(angle_span, num_views)
@@ -233,8 +161,8 @@ def preprocess_conebeam(path_radiographs, path_blank='gain0.tif', path_dark='off
         dark_scan = np.expand_dims(read_scan_img(path_dark),axis = 0)
 
     # downsampling in views and pixels
-    obj_scan, blank_scan, dark_scan = downsample_scans(obj_scan, blank_scan, dark_scan,
-                                        factor=downsample_factor)
+    # obj_scan, blank_scan, dark_scan = downsample_scans(obj_scan, blank_scan, dark_scan,
+    #                                     factor=downsample_factor)
     # obj_scan, blank_scan, dark_scan = crop_scans(obj_scan, blank_scan, dark_scan,
     #                                     limits_lo=dataset_params['crop_limits_lo'],
     #                                     limits_hi=dataset_params['crop_limits_hi'])
@@ -248,49 +176,24 @@ def preprocess_conebeam(path_radiographs, path_blank='gain0.tif', path_dark='off
     plt.colorbar()
     plt.savefig('prep_sino.png')
     plt.close()
-    plt.imshow(wght[0])
-    plt.colorbar()
-    plt.savefig('prep_wght.png')
-    plt.close()
     print(np.shape(obj_scan))
     return sino.astype(np.float32), wght.astype(np.float32)
 
 
-def main(args):
-
-    dataset_params = read_params(args['dataset_params_path'])
-    print_params(dataset_params)
-
-    data_dict = preprocess(dataset_params)
-
-    write_sino3D(data_dict['obj_scan'], os.path.join(args['scan_write_path'],'obj_scan.sino'))
-    write_sino3D(data_dict['blank_scan'], os.path.join(args['scan_write_path'],'blank_scan.sino'))
-    write_sino3D(data_dict['dark_scan'], os.path.join(args['scan_write_path'],'dark_scan.sino'))
-    write_sino3D(data_dict['sino'], os.path.join(args['scan_write_path'],'sino.sino'))
-    write_sino3D(data_dict['wght'], os.path.join(args['scan_write_path'],'wght.sino'))
-
-    write_sino_openmbir(data_dict['sino'], os.path.join(args['mbir_data_path'],'sino',dataset_params['object_name']+'_slice'), '.2Dsinodata')
-    write_sino_openmbir(data_dict['wght'], os.path.join(args['mbir_data_path'],'weight',dataset_params['object_name']+'_slice'), '.2Dweightdata')
-
-    write_mbir_params(dataset_params, data_dict, args['mbir_params_path']+dataset_params['object_name'])
-
-
-arg_parser = argparse.ArgumentParser()
-arg_parser.add_argument('--dataset_params_path', dest='dataset_params_path', default='../params/dataset_params.yml')
-arg_parser.add_argument('--mbir_params_path', dest='mbir_params_path', default='../params/sv-mbirct/')
-arg_parser.add_argument('--mbir_data_path', dest='mbir_data_path', default='../data/sv-mbirct/')
-arg_parser.add_argument('--scan_write_path', dest='scan_write_path', default='../data/scan/')
-args, extra = arg_parser.parse_known_args()
-args = vars(args)
+# arg_parser = argparse.ArgumentParser()
+# arg_parser.add_argument('--dataset_params_path', dest='dataset_params_path', default='../params/dataset_params.yml')
+# arg_parser.add_argument('--mbir_params_path', dest='mbir_params_path', default='../params/sv-mbirct/')
+# arg_parser.add_argument('--mbir_data_path', dest='mbir_data_path', default='../data/sv-mbirct/')
+# arg_parser.add_argument('--scan_write_path', dest='scan_write_path', default='../data/scan/')
+# args, extra = arg_parser.parse_known_args()
+# args = vars(args)
 
 if __name__ == '__main__':
-    #main(args)
     dataset_dir = "/depot/bouman/users/li3120/datasets/metal_weld_data/"
     path_radiographs = dataset_dir+"Radiographs-2102414-2019-001-076/"
-    sino, wght = preprocess_conebeam(path_radiographs, path_blank=dataset_dir+'Corrections/gain0.tif', path_dark=dataset_dir+'Corrections/offset.tif',
-                        view_range=[0, 1999], angle_span=360, num_views=10, downsample_factor=[1, 1])
+    sino, wght = preprocess(path_radiographs, path_blank=dataset_dir + 'Corrections/gain0.tif', path_dark=dataset_dir + 'Corrections/offset.tif',
+                            view_range=[0, 1999], angle_span=360, num_views=500, downsample_factor=[1, 1])
     ref_sino = read_ND("./metal_laser_welds_cmp/object.sino", 3)
-    ref_wght = read_ND("./metal_laser_welds_cmp/object.wght", 3)
     ref_sino = np.rot90(ref_sino,k=1,axes=(1,2))
     np.save("sino.npy",sino)
     print(np.shape(sino))
