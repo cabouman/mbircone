@@ -149,6 +149,7 @@ def gen_angles(angle_span, num_full_views, view_ids):
 def preprocess(path_radiographs, path_blank='gain0.tif', path_dark='offset.tif',
                view_range=[0,1999], angle_span=360, num_views=20, full_views=2000, downsample_factor=[4,4]):
     view_ids = gen_view_ids(view_range, num_views)
+    print(view_ids)
     angles = gen_angles(angle_span, full_views, view_ids)
     obj_scan = read_scan_dir(path_radiographs, view_ids)
     if path_blank is not None:
@@ -176,7 +177,7 @@ def test_1():
     dataset_dir = "/depot/bouman/users/li3120/datasets/metal_weld_data/"
     path_radiographs = dataset_dir+"Radiographs-2102414-2019-001-076/"
     sino, angles= preprocess(path_radiographs, path_blank=dataset_dir + 'Corrections/gain0.tif', path_dark=dataset_dir + 'Corrections/offset.tif',
-                            view_range=[0, 1999], angle_span=360, num_views=10, downsample_factor=[1, 1])
+                            view_range=[0, 1999], angle_span=360, num_views=13, downsample_factor=[1, 1])
     ref_sino = read_ND("./metal_laser_welds_cmp/object.sino", 3)
     ref_sino = np.copy(np.swapaxes(ref_sino, 1, 2))
     ref_sino = np.flip(ref_sino,axis = 1)
