@@ -179,6 +179,7 @@ def test_1():
                             view_range=[0, 1999], angle_span=360, num_views=10, downsample_factor=[1, 1])
     ref_sino = read_ND("./metal_laser_welds_cmp/object.sino", 3)
     ref_sino = np.copy(np.swapaxes(ref_sino, 1, 2))
+    ref_sino = np.flip(ref_sino,axis = 1)
     np.save("sino.npy", sino)
     print(np.shape(sino))
     print(np.shape(ref_sino))
