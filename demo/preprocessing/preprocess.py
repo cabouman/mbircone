@@ -177,7 +177,7 @@ def preprocess(path_radiographs, path_blank='gain0.tif', path_dark='offset.tif',
     plt.savefig('prep_sino.png')
     plt.close()
     print(np.shape(obj_scan))
-    return sino.astype(np.float32), wght.astype(np.float32)
+    return sino.astype(np.float32)
 
 
 # arg_parser = argparse.ArgumentParser()
@@ -191,8 +191,8 @@ def preprocess(path_radiographs, path_blank='gain0.tif', path_dark='offset.tif',
 if __name__ == '__main__':
     dataset_dir = "/depot/bouman/users/li3120/datasets/metal_weld_data/"
     path_radiographs = dataset_dir+"Radiographs-2102414-2019-001-076/"
-    sino, wght = preprocess(path_radiographs, path_blank=dataset_dir + 'Corrections/gain0.tif', path_dark=dataset_dir + 'Corrections/offset.tif',
-                            view_range=[0, 1999], angle_span=360, num_views=500, downsample_factor=[1, 1])
+    sino= preprocess(path_radiographs, path_blank=dataset_dir + 'Corrections/gain0.tif', path_dark=dataset_dir + 'Corrections/offset.tif',
+                            view_range=[0, 1999], angle_span=360, num_views=10, downsample_factor=[1, 1])
     ref_sino = read_ND("./metal_laser_welds_cmp/object.sino", 3)
     ref_sino = np.rot90(ref_sino,k=1,axes=(1,2))
     np.save("sino.npy",sino)
