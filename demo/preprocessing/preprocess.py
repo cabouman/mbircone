@@ -147,11 +147,11 @@ def compute_angles_list( view_index_list, num_acquired_scans, total_angles,  rot
     if rotation_direction not in ["positive",  "negative"]:
         warnings.warn("Parameter rotation_direction is not valid string; Setting center_offset = 'positive'.")
         rotation_direction = "positive"
-
+    view_index_list = np.array(view_index_list)
     if rotation_direction == "positive":
-        angles_list = ((2*np.pi/360) * total_angles * view_index_list / num_acquired_scans)% 2*np.pi
+        angles_list = ((2*np.pi/360) * total_angles * view_index_list / num_acquired_scans)% (2*np.pi)
     if rotation_direction == "negative":
-        angles_list = (-(2*np.pi/360) * total_angles * view_index_list / num_acquired_scans)% 2*np.pi
+        angles_list = (-(2*np.pi/360) * total_angles * view_index_list / num_acquired_scans)% (2*np.pi)
 
     return angles_list
 
@@ -188,7 +188,7 @@ def test_1():
     dataset_dir = "/depot/bouman/users/li3120/datasets/metal_weld_data/"
     path_radiographs = dataset_dir+"Radiographs-2102414-2019-001-076/"
     sino, angles= preprocess(path_radiographs, path_blank=dataset_dir + 'Corrections/gain0.tif', path_dark=dataset_dir + 'Corrections/offset.tif',
-                            view_range=[0, 1999], angle_span=360, num_views=13, downsample_factor=[1, 1])
+                            view_range=[0, 1999], angle_span=360, num_views=13,rotation_direction="negative", downsample_factor=[1, 1])
     ref_sino = read_ND("./metal_laser_welds_cmp/object.sino", 3)
     ref_sino = np.copy(np.swapaxes(ref_sino, 1, 2))
     ref_sino = np.flip(ref_sino,axis = 1)
