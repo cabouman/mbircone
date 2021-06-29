@@ -14,10 +14,14 @@ AUTHOR = "Soumendu Majee"
 
 # Specifies directory containing cython functions to be compiled
 PACKAGE_DIR = "mbircone"
-SRC_FILES = [PACKAGE_DIR+'/src/allocate.c', PACKAGE_DIR+'/src/MBIRModularUtilities3D.c',
-             PACKAGE_DIR+'/src/icd3d.c', PACKAGE_DIR+'/src/recon3DCone.c',
-             PACKAGE_DIR+'/src/computeSysMatrix.c',
-             PACKAGE_DIR+'/src/interface.c', PACKAGE_DIR+'/interface_cy_c.pyx']
+CONE3D_NAME = "cone3D"
+CONE3D_DIR = PACKAGE_DIR + "/" + CONE3D_NAME
+PYX_DIR = PACKAGE_DIR + "." + CONE3D_NAME
+
+SRC_FILES = [CONE3D_DIR + '/src/allocate.c', CONE3D_DIR + '/src/MBIRModularUtilities3D.c',
+             CONE3D_DIR + '/src/icd3d.c', CONE3D_DIR + '/src/recon3DCone.c',
+             CONE3D_DIR + '/src/computeSysMatrix.c',
+             CONE3D_DIR + '/src/interface.c', CONE3D_DIR + '/interface_cy_c.pyx']
 
 
 compiler_str = os.environ.get('CC')
@@ -29,7 +33,7 @@ if not compiler_str:
 
 # Single threaded clang compile
 if compiler_str == 'clang':
-    c_extension = Extension(PACKAGE_DIR+'.interface_cy_c', SRC_FILES,
+    c_extension = Extension(PYX_DIR+'.interface_cy_c', SRC_FILES,
                     libraries=[],
                     language='c',
                     include_dirs=[np.get_include()])
@@ -37,7 +41,7 @@ if compiler_str == 'clang':
 
 # OpenMP gcc compile
 if compiler_str =='gcc':
-    c_extension = Extension(PACKAGE_DIR+'.interface_cy_c', SRC_FILES,
+    c_extension = Extension(PYX_DIR+'.interface_cy_c', SRC_FILES,
                     libraries=[],
                     language='c',
                     include_dirs=[np.get_include()],
@@ -50,7 +54,7 @@ if compiler_str =='gcc':
 if compiler_str =='icc':
     if sys.platform == 'linux':
             os.environ['LDSHARED'] = 'icc -shared'
-    c_extension = Extension(PACKAGE_DIR+'.interface_cy_c', SRC_FILES,
+    c_extension = Extension(PYX_DIR+'.interface_cy_c', SRC_FILES,
                     libraries=[],
                     language='c',
                     include_dirs=[np.get_include()],
@@ -60,7 +64,7 @@ if compiler_str =='icc':
 
 
 setup(install_requires=REQUIRES,
-      packages=[PACKAGE_DIR],
+      packages=[PACKAGE_DIR,CONE3D_DIR],
       zip_safe=False,
       name=NAME,
       version=VERSION,
