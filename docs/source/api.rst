@@ -1,14 +1,14 @@
 API reference
 =============
 
-* mbircone_ includes functions for tomographic projection and reconstruction
+* cone3D_ includes functions for 3D conebeam tomographic projection and reconstruction
   as well as some helper functions.
 
-.. _mbircone: mbircone.html
+.. _cone3D: cone3D.html
 
 
 .. toctree::
    :titlesonly:
    :hidden:
 
-   mbircone
+   cone3D

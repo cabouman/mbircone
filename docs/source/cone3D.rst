@@ -1,6 +1,6 @@
-mbircone
---------
-.. automodule:: mbircone
+mbircone.cone3D
+---------------
+.. automodule:: mbircone.cone3D
    :members: 
    :undoc-members:
    :show-inheritance:
