@@ -4,7 +4,7 @@ import numpy as np
 import mbircone
 import demo_utils
 
-sino = np.load('sino.npy')
+sino = np.load('./input/sino.npy')
 sino = np.copy(np.swapaxes(sino, 1, 2))
 # Make shape : views x slices x channels
     
@@ -21,14 +21,14 @@ channel_offset = -0.9384
 row_offset = 0.5654
 
 
-x = mbircone.recon(sino, angles, dist_source_detector=dist_source_detector, magnification=magnification, 
+x = mbircone.cone3D.recon(sino, angles, dist_source_detector=dist_source_detector, magnification=magnification,
 	delta_pixel_detector=delta_pixel_detector,
 	channel_offset=channel_offset, row_offset=row_offset, sharpness=1,
 	max_iterations=10)
 
 
 
-p = mbircone.project(angles, x,
+p = mbircone.cone3D.project(angles, x,
 	num_slices=sino.shape[1], num_channels=sino.shape[2],
 	dist_source_detector=dist_source_detector, magnification=magnification, 
 	delta_pixel_detector=delta_pixel_detector,

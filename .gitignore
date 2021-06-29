@@ -5,8 +5,8 @@ __pycache__
 docs/build/
 
 # compiled files
-mbircone/*.c
-mbircone/*.so
+mbircone/cone3D/*.c
+mbircone/cone3D/*.so
 *.o
 build/
 dist/
