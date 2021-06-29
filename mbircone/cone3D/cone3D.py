@@ -5,7 +5,7 @@ import shutil
 import numpy as np
 import os
 import hashlib
-import mbircone.interface_cy_c as ci
+import mbircone.cone3D.interface_cy_c as ci
 
 __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')\
 
