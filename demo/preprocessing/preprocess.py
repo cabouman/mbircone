@@ -1,11 +1,9 @@
 
 import os
-import argparse
 from glob import glob
 import numpy as np
 from PIL import Image
 from skimage.measure import block_reduce
-import scipy
 import matplotlib.pyplot as plt
 
 def nrmse(image, reference_image):
@@ -33,6 +31,7 @@ def read_ND(filePath, n_dim, dtype='float32', ntype='int32'):
 
     return dataArray
 
+
 def read_scan_img(img_path):
 
     img = np.asarray(Image.open(img_path))
@@ -40,9 +39,10 @@ def read_scan_img(img_path):
     if np.issubdtype(img.dtype, np.integer):
         # make float and normalize integer types
         maxval = np.iinfo(img.dtype).max
-        img = img.astype(np.float32)/np.iinfo(img.dtype).max
+        img = img.astype(np.float32)/maxval
 
     return img.astype(np.float32)
+
 
 def read_scan_dir(scan_dir, view_ids=None):
 
@@ -51,13 +51,11 @@ def read_scan_dir(scan_dir, view_ids=None):
     if view_ids!=None:
         img_path_list = [img_path_list[i] for i in view_ids]
 
-    # print(img_path_list)
-    # print(img_path_list[-1])
-    
     img_list = [ read_scan_img(img_path) for img_path in img_path_list]
 
     # return shape = N_theta x N_z x N_y
     return np.stack(img_list, axis=0)
+
 
 def read_scans_all(obj_scan_dir, blank_scan_dir='', dark_scan_dir='', view_ids=None):
 
@@ -77,6 +75,7 @@ def read_scans_all(obj_scan_dir, blank_scan_dir='', dark_scan_dir='', view_ids=N
 
     return obj_scan, blank_scan, dark_scan
 
+
 def downsample_scans(obj_scan, blank_scan, dark_scan, factor=1):
 
     assert len(factor)==2, 'factor({}) needs to be of len 2'.format(factor)
@@ -93,6 +92,7 @@ def downsample_scans(obj_scan, blank_scan, dark_scan, factor=1):
     dark_scan = block_reduce(dark_scan, block_size=(1, factor[0], factor[1]), func=np.sum)
 
     return obj_scan, blank_scan, dark_scan
+
 
 def crop_scans(obj_scan, blank_scan, dark_scan, limits_lo=[0,0], limits_hi=[1,1]):
 
@@ -112,6 +112,7 @@ def crop_scans(obj_scan, blank_scan, dark_scan, limits_lo=[0,0], limits_hi=[1,1]
     
     return obj_scan, blank_scan, dark_scan
 
+
 def compute_sino_wght(obj_scan, blank_scan, dark_scan):
 
     blank_scan_mean = 0*obj_scan + np.average(blank_scan, axis=0 )
@@ -130,35 +131,30 @@ def compute_sino_wght(obj_scan, blank_scan, dark_scan):
 
     return sino
 
+
 def gen_view_ids(view_range, num_views):
 
     index_original = range(view_range[0], view_range[1]+1)
-
-    assert num_views<=len(index_original), 'num_views cannot exceed range of view index'
-
-    index_sampled = [ view_range[0]+round(i*len(index_original)/num_views) for i in range(num_views) ]
-
+    assert num_views <= len(index_original), 'num_views cannot exceed range of view index'
+    index_sampled = [view_range[0]+round(i*len(index_original)/num_views) for i in range(num_views)]
     return index_sampled
 
-def gen_angles_full(angle_span, num_views):
 
-    return np.pi*(angle_span/180.0)*np.array(range(0,num_views))/num_views
+def gen_angles(angle_span, num_full_views, view_ids):
 
-
-
+    full_angle_list = np.pi * (angle_span / 180.0) * np.array(range(0, num_full_views)) / num_full_views
+    return full_angle_list[view_ids]
 
 
 def preprocess(path_radiographs, path_blank='gain0.tif', path_dark='offset.tif',
                view_range=[0,1999], angle_span=360, num_views=20, downsample_factor=[4,4]):
     view_ids = gen_view_ids(view_range, num_views)
-    print(view_ids)
-    angles = gen_angles_full(angle_span, num_views)
+    angles = gen_angles(angle_span, num_views, view_ids)
     obj_scan = read_scan_dir(path_radiographs, view_ids)
-    print(np.shape(obj_scan))
     if path_blank is not None:
-        blank_scan = np.expand_dims(read_scan_img(path_blank),axis = 0)
+        blank_scan = np.expand_dims(read_scan_img(path_blank), axis = 0)
     if path_dark is not None:
-        dark_scan = np.expand_dims(read_scan_img(path_dark),axis = 0)
+        dark_scan = np.expand_dims(read_scan_img(path_dark), axis = 0)
 
     # downsampling in views and pixels
     # obj_scan, blank_scan, dark_scan = downsample_scans(obj_scan, blank_scan, dark_scan,
@@ -168,34 +164,22 @@ def preprocess(path_radiographs, path_blank='gain0.tif', path_dark='offset.tif',
     #                                     limits_hi=dataset_params['crop_limits_hi'])
 
     sino = compute_sino_wght(obj_scan, blank_scan, dark_scan)
-    plt.imshow(obj_scan[0])
-    plt.colorbar()
-    plt.savefig('prep_obj.png')
-    plt.close()
-    plt.imshow(sino[0])
-    plt.colorbar()
-    plt.savefig('prep_sino.png')
-    plt.close()
-    print(np.shape(obj_scan))
-    return sino.astype(np.float32)
+    return sino.astype(np.float32), angles.astype(np.float32)
 
 
-# arg_parser = argparse.ArgumentParser()
-# arg_parser.add_argument('--dataset_params_path', dest='dataset_params_path', default='../params/dataset_params.yml')
-# arg_parser.add_argument('--mbir_params_path', dest='mbir_params_path', default='../params/sv-mbirct/')
-# arg_parser.add_argument('--mbir_data_path', dest='mbir_data_path', default='../data/sv-mbirct/')
-# arg_parser.add_argument('--scan_write_path', dest='scan_write_path', default='../data/scan/')
-# args, extra = arg_parser.parse_known_args()
-# args = vars(args)
+def test_1():
+    """
 
-if __name__ == '__main__':
+    Test preprocessing without downsampling and cropping
+
+    """
     dataset_dir = "/depot/bouman/users/li3120/datasets/metal_weld_data/"
     path_radiographs = dataset_dir+"Radiographs-2102414-2019-001-076/"
     sino= preprocess(path_radiographs, path_blank=dataset_dir + 'Corrections/gain0.tif', path_dark=dataset_dir + 'Corrections/offset.tif',
                             view_range=[0, 1999], angle_span=360, num_views=10, downsample_factor=[1, 1])
     ref_sino = read_ND("./metal_laser_welds_cmp/object.sino", 3)
-    ref_sino = np.rot90(ref_sino,k=1,axes=(1,2))
-    np.save("sino.npy",sino)
+    ref_sino = np.copy(np.swapaxes(ref_sino, 1, 2))
+    np.save("sino.npy", sino)
     print(np.shape(sino))
     print(np.shape(ref_sino))
     plt.imshow(ref_sino[0]-sino[0])
@@ -203,3 +187,14 @@ if __name__ == '__main__':
     plt.savefig('diff_sino.png')
     plt.close()
     print(nrmse(sino[0], ref_sino[0]))
+
+    """
+    Test result：
+    (10, 1920, 1536)
+    (10, 1920, 1536)
+    0.0
+    """
+
+if __name__ == '__main__':
+    test_1()
+
