@@ -5,6 +5,8 @@ import numpy as np
 from PIL import Image
 from skimage.measure import block_reduce
 import matplotlib.pyplot as plt
+import warnings
+
 
 def nrmse(image, reference_image):
     """
@@ -113,7 +115,7 @@ def crop_scans(obj_scan, blank_scan, dark_scan, limits_lo=[0,0], limits_hi=[1,1]
     return obj_scan, blank_scan, dark_scan
 
 
-def compute_sino_wght(obj_scan, blank_scan, dark_scan):
+def compute_sino(obj_scan, blank_scan, dark_scan):
 
     blank_scan_mean = 0*obj_scan + np.average(blank_scan, axis=0 )
     dark_scan_mean = 0*obj_scan + np.average(dark_scan, axis=0 )
@@ -132,7 +134,7 @@ def compute_sino_wght(obj_scan, blank_scan, dark_scan):
     return sino
 
 
-def gen_view_ids(view_range, num_views):
+def compute_views_index_list(view_range, num_views):
 
     index_original = range(view_range[0], view_range[1]+1)
     assert num_views <= len(index_original), 'num_views cannot exceed range of view index'
@@ -140,17 +142,26 @@ def gen_view_ids(view_range, num_views):
     return index_sampled
 
 
-def gen_angles(angle_span, num_full_views, view_ids):
+def compute_angles_list( view_index_list, num_acquired_scans, total_angles,  rotation_direction="positive"):
 
-    full_angle_list = np.pi * (angle_span / 180.0) * np.array(range(0, num_full_views)) / num_full_views
-    return full_angle_list[view_ids]
+    if rotation_direction not in ["positive",  "negative"]:
+        warnings.warn("Parameter rotation_direction is not valid string; Setting center_offset = 'positive'.")
+        rotation_direction = "positive"
+
+    if rotation_direction == "positive":
+        angles_list = ((2*np.pi/360) * total_angles * view_index_list / num_acquired_scans)% 2*np.pi
+    if rotation_direction == "negative":
+        angles_list = (-(2*np.pi/360) * total_angles * view_index_list / num_acquired_scans)% 2*np.pi
+
+    return angles_list
 
 
 def preprocess(path_radiographs, path_blank='gain0.tif', path_dark='offset.tif',
-               view_range=[0,1999], angle_span=360, num_views=20, full_views=2000, downsample_factor=[4,4]):
-    view_ids = gen_view_ids(view_range, num_views)
+               view_range=[0,1999], angle_span=360, num_views=20, full_views=2000,
+               rotation_direction="positive", downsample_factor=[4,4]):
+    view_ids = compute_views_index_list(view_range, num_views)
     print(view_ids)
-    angles = gen_angles(angle_span, full_views, view_ids)
+    angles = compute_angles_list(view_ids, full_views,angle_span, rotation_direction)
     obj_scan = read_scan_dir(path_radiographs, view_ids)
     if path_blank is not None:
         blank_scan = np.expand_dims(read_scan_img(path_blank), axis = 0)
@@ -164,7 +175,7 @@ def preprocess(path_radiographs, path_blank='gain0.tif', path_dark='offset.tif',
     #                                     limits_lo=dataset_params['crop_limits_lo'],
     #                                     limits_hi=dataset_params['crop_limits_hi'])
 
-    sino = compute_sino_wght(obj_scan, blank_scan, dark_scan)
+    sino = compute_sino(obj_scan, blank_scan, dark_scan)
     return sino.astype(np.float32), angles.astype(np.float32)
 
 
