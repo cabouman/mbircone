@@ -138,7 +138,7 @@ def compute_views_index_list(view_range, num_views):
 
     index_original = range(view_range[0], view_range[1]+1)
     assert num_views <= len(index_original), 'num_views cannot exceed range of view index'
-    index_sampled = [view_range[0]+round(i*len(index_original)/num_views) for i in range(num_views)]
+    index_sampled = [view_range[0]+np.floor(i*len(index_original)/num_views) for i in range(num_views)]
     return index_sampled
 
 
