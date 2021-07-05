@@ -37,3 +37,18 @@ def read_ND(filePath, n_dim, dtype='float32', ntype='int32'):
 
     return dataArray
 
+
+
+def nrmse(image, reference_image):
+    """
+    Compute the normalized root mean square error between image and reference_image.
+    Args:
+        image: Calculated image
+        reference_image: Ground truth image
+    Returns:
+        Root mean square of (image - reference_image) divided by RMS of reference_image
+    """
+    rmse = np.sqrt(((image - reference_image) ** 2).mean())
+    denominator = np.sqrt(((reference_image) ** 2).mean())
+
+    return rmse/denominator

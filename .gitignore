@@ -29,4 +29,13 @@ sftp-config.json
 # Powerpoint backup
 ~$*.pptx
 
+# Personal files
 demo/output/*
+demo/input/*
+demo/data/*
+demo/__pycache__/*
+demo/*.out
+demo/*.sub
+demo_compare*
+
+mbircone/preprocess/test_*
