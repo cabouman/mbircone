@@ -8,17 +8,6 @@ import warnings
 import math
 
 
-def read_ND(filePath, n_dim, dtype='float32', ntype='int32'):
-
-    with open(filePath, 'rb') as fileID:
-
-        sizesArray = np.fromfile( fileID, dtype=ntype, count=n_dim)
-        numElements = np.prod(sizesArray)
-        dataArray = np.fromfile(fileID, dtype=dtype, count=numElements).reshape(sizesArray)
-
-    return dataArray
-
-
 def read_scan_img(img_path):
 
     img = np.asarray(Image.open(img_path))
@@ -125,6 +114,22 @@ def compute_views_index_list(view_range, num_views):
     assert num_views <= len(index_original), 'num_views cannot exceed range of view index'
     index_sampled = [view_range[0]+int(np.floor(i*len(index_original)/num_views)) for i in range(num_views)]
     return index_sampled
+
+
+def select_contiguousSubset(indexList, num_chunk=1, ind_chunk=0):
+    assert ind_chunk<num_chunk, 'ind_chunk cannot be larger than num_chunk.'
+
+    len_ind =len(indexList)
+    num_per_set = len_ind//num_chunk
+
+    # distribute the remaining
+    remaining_index_num = len_ind % num_chunk 
+
+    start_id = ind_chunk*num_per_set+np.min(ind_chunk,remaining_index_num)
+    end_id = (ind_chunk+1)*num_per_set+np.min(ind_chunk+1,remaining_index_num)
+
+    indexList_new = indexList[start_id:end_id]
+    return indexList_new
 
 
 def compute_angles_list( view_index_list, num_acquired_scans, total_angles,  rotation_direction="positive"):
@@ -250,9 +255,11 @@ def transfer_NSI_to_MBIRCONE(NSI_system_params):
 
 
 def preprocess(path_radiographs, path_blank, path_dark,
-               view_range=[0,1999], num_views=20, total_angles=360,  num_acquired_scans=2000,
-               rotation_direction="positive", downsample_factor=[1,1], crop_factor=[[0,0],[1,1]]):
+               view_range=[0,360], num_views=20, total_angles=360,  num_acquired_scans=2000,
+               rotation_direction="positive", downsample_factor=[1,1], crop_factor=[[0,0],[1,1]],
+               num_time_points=1,index_time_points=0):
     view_ids = compute_views_index_list(view_range, num_views)
+    view_ids = select_contiguousSubset(view_ids, num_time_points, index_time_points)
     angles = compute_angles_list(view_ids, num_acquired_scans, total_angles, rotation_direction)
     obj_scan = read_scan_dir(path_radiographs, view_ids)
 
