@@ -52,7 +52,7 @@ row_offset = geo_params["row_offset"]
 x = mbircone.cone3D.recon(sino, angles, dist_source_detector=dist_source_detector, magnification=magnification, 
 	delta_pixel_detector=delta_pixel_detector,
 	channel_offset=channel_offset, row_offset=row_offset, weight_type='transmission', p=1.15, q=2.2, sharpness=1, num_neighbors=26,
-	max_iterations=20,lib_path='./output',num_threads=4)
+	max_iterations=20,lib_path='./output')
 
 # create output folder
 os.makedirs('output', exist_ok=True)
