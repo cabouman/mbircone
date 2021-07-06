@@ -62,7 +62,7 @@ if compiler_str =='icc':
                     include_dirs=[np.get_include()],
                     extra_compile_args=["-O3","-DICC","-qopenmp","-no-prec-div","-restrict","-ipo","-inline-calloc",
                             "-qopt-calloc","-no-ansi-alias","-xCORE-AVX2"],
-                    extra_link_args=["-lm"])
+                    extra_link_args=["-lm","-qopenmp"])
 
 
 setup(install_requires=REQUIRES,
