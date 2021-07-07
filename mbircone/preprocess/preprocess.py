@@ -125,8 +125,8 @@ def select_contiguousSubset(indexList, num_chunk=1, ind_chunk=0):
     # distribute the remaining
     remaining_index_num = len_ind % num_chunk 
 
-    start_id = ind_chunk*num_per_set+np.min(ind_chunk,remaining_index_num)
-    end_id = (ind_chunk+1)*num_per_set+np.min(ind_chunk+1,remaining_index_num)
+    start_id = ind_chunk*num_per_set+np.minimum(ind_chunk,remaining_index_num)
+    end_id = (ind_chunk+1)*num_per_set+np.minimum(ind_chunk+1,remaining_index_num)
 
     indexList_new = indexList[start_id:end_id]
     return indexList_new
@@ -282,6 +282,4 @@ def preprocess(path_radiographs, path_blank, path_dark,
 
     sino = compute_sino(obj_scan, blank_scan, dark_scan)
     return sino.astype(np.float32), angles.astype(np.float64)
-
-
 

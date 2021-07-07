@@ -1,1 +1,3 @@
 matplotlib
+dask
+dask_jobqueue
