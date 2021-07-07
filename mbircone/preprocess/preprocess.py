@@ -139,9 +139,9 @@ def compute_angles_list( view_index_list, num_acquired_scans, total_angles,  rot
         rotation_direction = "positive"
     view_index_list = np.array(view_index_list)
     if rotation_direction == "positive":
-        angles_list = ((2*np.pi/360) * total_angles * view_index_list / num_acquired_scans)% (2*np.pi)
+        angles_list = ( total_angles * view_index_list / num_acquired_scans)%360.0/360.0* (2*np.pi)
     if rotation_direction == "negative":
-        angles_list = (-(2*np.pi/360) * total_angles * view_index_list / num_acquired_scans)% (2*np.pi)
+        angles_list = ( -total_angles * view_index_list / num_acquired_scans)%360.0/360.0* (2*np.pi)
 
     return angles_list
 
