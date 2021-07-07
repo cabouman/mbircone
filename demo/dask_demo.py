@@ -2,11 +2,12 @@ import time
 import logging
 import socket
 import os
-from pprint import pprint
+# from pprint import pprint
 import mbircone
 from dask.distributed import Client, as_completed
 import numpy as np
 from dask_jobqueue import SLURMCluster
+import demo_utils
 
 
 # dask.config.set({"distributed.admin.tick.limit":'3h'})
@@ -33,9 +34,9 @@ def mbircone_4d(t):
         num_time_points=NSI_system_params["total_angles"]//360,
         index_time_points=index_time_points)
 
-    print("sinogram shape:", sino.shape)
-    print("Angles List:")
-    print(angles)
+    # print("sinogram shape:", sino.shape)
+    # print("Angles List:")
+    # print(angles)
 
 
     NSI_system_params=mbircone.preprocess.adjust_NSI_sysparam(NSI_system_params,
@@ -43,10 +44,10 @@ def mbircone_4d(t):
         crop_factor=crop_factor)
 
     geo_params = mbircone.preprocess.transfer_NSI_to_MBIRCONE(NSI_system_params)
-    print("NSI system paramemters:")
-    pprint(NSI_system_params)
-    print("MBIRCONE Geometric paramemters:")
-    pprint(geo_params)
+    # print("NSI system paramemters:")
+    # pprint(NSI_system_params)
+    # print("MBIRCONE Geometric paramemters:")
+    # pprint(geo_params)
 
     dist_source_detector = geo_params["dist_source_detector"]
     magnification = geo_params["magnification"]
@@ -80,13 +81,21 @@ def mbircone_4d(t):
             'time': int(time.time())}
 
 
-cluster = SLURMCluster(project='bouman',processes=2 ,n_workers=20,walltime='01:00:00', memory='64GB',
+def print_dict(result):
+    print('{')
+    print('time point:', result['time point'])
+    print('host:', result['host'])
+    print('pid:', result['pid'])
+    print('time:', result['time'])
+    print('}')
+
+cluster = SLURMCluster(project='standby',processes=2 ,n_workers=20,walltime='02:00:00', memory='32GB',
                        death_timeout=60, job_extra=['--nodes=1', '--ntasks-per-node=1'],
                        env_extra=['module load anaconda',
                                   'source activate mbircone'],
                        cores=24)
 
-cluster.scale(jobs=2)
+cluster.scale(jobs=4)
 print(cluster.job_script())
 client = Client(cluster)
 
@@ -94,7 +103,7 @@ nb_workers = 0
 while True:
     nb_workers = len(client.scheduler_info()["workers"])
     print('Got {} workers'.format(nb_workers))
-    if nb_workers >= 4:
+    if nb_workers >= 6:
         break
     time.sleep(1)
 
@@ -102,6 +111,9 @@ while True:
 
 print('client:', client)
 
-for future in as_completed(client.map(mbircone_4d, range(70,170,10))): # FIX
+for future in as_completed(client.map(mbircone_4d, range(75,155,5))): # FIX
     result = future.result()
-    pprint(result)
+    print_dict(result)
+    np.save("./output/kv4d/recon_t%d.npy"%result['time point'],result['x'])
+    demo_utils.plot_gif(result['x'],'./output/kv4d/','t%d'%result['time point'])
+    #pprint(result)
