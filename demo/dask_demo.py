@@ -7,7 +7,7 @@ import mbircone
 from dask.distributed import Client, as_completed
 import numpy as np
 from dask_jobqueue import SLURMCluster
-import demo_utils
+
 
 # dask.config.set({"distributed.admin.tick.limit":'3h'})
 def mbircone_4d(t):
@@ -62,7 +62,7 @@ def mbircone_4d(t):
         max_iterations=20,lib_path='./output')
 
     # create output folder
-    os.makedirs('output/kv4d/', exist_ok=True)
+    #os.makedirs('output/kv4d/', exist_ok=True)
 
     # fname_ref = '/depot-new/bouman/users/li3120/OpenMBIR-ConeBeam-4D/demo_3/data/conebeam/object.recon'
     # ref = demo_utils.read_ND(fname_ref, 3)
@@ -71,16 +71,17 @@ def mbircone_4d(t):
     # rmse_val = demo_utils.nrmse(x,ref)
     # print("NRMSE between reconstruction and reference: {}".format(rmse_val))
 
-    np.save("./output/kv4d/recon_t%d.npy"%index_time_points,x)  
-    demo_utils.plot_gif(x,'./output/kv4d/','t%d'%index_time_points)  
-    return {'time point': t,
+    #np.save("./output/kv4d/recon_t%d.npy"%index_time_points,x)  
+    #demo_utils.plot_gif(x,'./output/kv4d/','t%d'%index_time_points)  
+    return {'x':x,
+            'time point': t,
             'host': socket.gethostname(),
             'pid': os.getpid(),
             'time': int(time.time())}
 
 
 cluster = SLURMCluster(project='bouman',processes=2 ,n_workers=20,walltime='01:00:00', memory='64GB',
-                       death_timeout=60, job_extra=['--nodes=20', '--ntasks-per-node=1'],
+                       death_timeout=60, job_extra=['--nodes=1', '--ntasks-per-node=1'],
                        env_extra=['module load anaconda',
                                   'source activate mbircone'],
                        cores=24)
