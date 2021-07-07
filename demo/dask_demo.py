@@ -7,15 +7,16 @@ import mbircone
 from dask.distributed import Client, as_completed
 import numpy as np
 from dask_jobqueue import SLURMCluster
+import demo_utils
 
 # dask.config.set({"distributed.admin.tick.limit":'3h'})
 def mbircone_4d(t):
     dataset_dir = "/depot/bouman/users/li3120/datasets/Kinetic_Vision_4D_CT_Data/"
     path_radiographs = dataset_dir+"Radiographs-210414_Kinetic-Vision_Fixture-Vision_Dynamic-4D_Cap/"
-    num_views = 72000
-    downsample_factor=[2, 2]
+    num_views = 36000
+    downsample_factor=[4, 4]
     crop_factor=[[0.05,0.05],[0.95,0.95]]
-    index_time_points = 15
+    index_time_points = t
 
     NSI_system_params = mbircone.preprocess.read_NSI_params("/depot/bouman/users/li3120/datasets/Kinetic_Vision_4D_CT_Data/210414_Kinetic-Vision_Fixture-Vision_Dynamic-4D_Cap.nsipro")
 
@@ -70,20 +71,21 @@ def mbircone_4d(t):
     # rmse_val = demo_utils.nrmse(x,ref)
     # print("NRMSE between reconstruction and reference: {}".format(rmse_val))
 
-    np.save("./output/kv4d/recon_t%d.npy"%index_time_points,x)    
+    np.save("./output/kv4d/recon_t%d.npy"%index_time_points,x)  
+    demo_utils.plot_gif(x,'./output/kv4d/','t%d'%index_time_points)  
     return {'time point': t,
             'host': socket.gethostname(),
             'pid': os.getpid(),
-            'time': int(time.time() % 100)}
+            'time': int(time.time())}
 
 
-cluster = SLURMCluster(project='standby',processes=2 ,n_workers=20,walltime='01:00:00', memory='16 GB',
+cluster = SLURMCluster(project='bouman',processes=2 ,n_workers=20,walltime='01:00:00', memory='64GB',
                        death_timeout=60, job_extra=['--nodes=20', '--ntasks-per-node=1'],
                        env_extra=['module load anaconda',
                                   'source activate mbircone'],
-                       cores=20)
+                       cores=24)
 
-cluster.scale(jobs=3)
+cluster.scale(jobs=2)
 print(cluster.job_script())
 client = Client(cluster)
 
@@ -91,7 +93,7 @@ nb_workers = 0
 while True:
     nb_workers = len(client.scheduler_info()["workers"])
     print('Got {} workers'.format(nb_workers))
-    if nb_workers >= 2:
+    if nb_workers >= 4:
         break
     time.sleep(1)
 
@@ -99,6 +101,6 @@ while True:
 
 print('client:', client)
 
-for future in as_completed(client.map(mbircone_4d, range(10,70,10))): # FIX
+for future in as_completed(client.map(mbircone_4d, range(70,170,10))): # FIX
     result = future.result()
     pprint(result)
