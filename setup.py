@@ -15,7 +15,9 @@ AUTHOR = "Soumendu Majee"
 # Specifies directory containing cython functions to be compiled
 PACKAGE_DIR = "mbircone"
 CONE3D_NAME = "cone3D"
+PREPROCESS_NAME = "preprocess"
 CONE3D_DIR = PACKAGE_DIR + "/" + CONE3D_NAME
+PREPROCESS_DIR = PACKAGE_DIR + "/" + PREPROCESS_NAME
 PYX_DIR = PACKAGE_DIR + "." + CONE3D_NAME
 
 SRC_FILES = [CONE3D_DIR + '/src/allocate.c', CONE3D_DIR + '/src/MBIRModularUtilities3D.c',
@@ -60,11 +62,11 @@ if compiler_str =='icc':
                     include_dirs=[np.get_include()],
                     extra_compile_args=["-O3","-DICC","-qopenmp","-no-prec-div","-restrict","-ipo","-inline-calloc",
                             "-qopt-calloc","-no-ansi-alias","-xCORE-AVX2"],
-                    extra_link_args=["-lm"])
+                    extra_link_args=["-lm","-qopenmp"])
 
 
 setup(install_requires=REQUIRES,
-      packages=[PACKAGE_DIR,CONE3D_DIR],
+      packages=[PACKAGE_DIR,CONE3D_DIR,PREPROCESS_DIR],
       zip_safe=False,
       name=NAME,
       version=VERSION,
