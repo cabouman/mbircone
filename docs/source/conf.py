@@ -82,6 +82,7 @@ napoleon_use_admonition_for_references = False
 napoleon_use_ivar = False
 napoleon_use_param = False
 napoleon_use_rtype = False
+#napoleon_custom_sections = [('Returns', 'params_style')]
 
 # -- Options for HTML output -------------------------------------------------
 
