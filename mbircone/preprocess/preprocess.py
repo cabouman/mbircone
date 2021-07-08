@@ -447,6 +447,10 @@ def preprocess(path_radiographs, num_views, path_blank=None, path_dark=None,
             [Default=0] Index of the time point we want to use for 3D reconstruction.
 
     Returns:
+        sino (float):
+            Preprocessed sinogram.
+        angles (double):
+            List of angles corresponding to preprocessed sinogram.
 
     """
 
