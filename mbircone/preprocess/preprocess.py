@@ -418,7 +418,7 @@ def preprocess(path_radiographs, num_views, path_blank=None, path_dark=None,
                                                        downsample_factor=downsample_factor)
     # cropping in pixels
     obj_scan, blank_scan, dark_scan = crop_scans(obj_scan, blank_scan, dark_scan,
-                                                 factor=crop_factor)
+                                                 crop_factor=crop_factor)
 
     sino = compute_sino(obj_scan, blank_scan, dark_scan)
     return sino.astype(np.float32), angles.astype(np.float64)
