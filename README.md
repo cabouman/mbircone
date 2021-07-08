@@ -46,3 +46,19 @@ pip install -r requirements_demo.txt
 ```
 python demo.py
 ```
+
+## Build documentation in local folder
+1) Install docs requirements
+```
+cd docs
+pip install -r requirements.txt
+```
+2) Build documentation
+```
+MBIRCONE_BUILD_DOCS=true make html
+```
+3) Open documentation
+```
+cd build/html
+open(double clicks) index.html
+```
