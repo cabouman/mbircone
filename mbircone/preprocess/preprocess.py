@@ -7,16 +7,12 @@ import math
 
 
 def read_scan_img(img_path):
-    """
-    Read and return single image from a ConeBeam Scan.
+    """Read and return single image from a ConeBeam Scan.
 
     Args:
-        img_path (string):
-            Path to a ConeBeam Scan.
-
+        img_path (string): Path to a ConeBeam Scan.
     Returns:
         ndarray (float): 2D numpy array. A single sinogram.
-
     """
 
     img = np.asarray(Image.open(img_path))
@@ -30,15 +26,11 @@ def read_scan_img(img_path):
 
 
 def read_scan_dir(scan_dir, view_ids=[]):
-    """
-    Read and return a stack of sinograms from a directory.
+    """Read and return a stack of sinograms from a directory.
 
     Args:
-        scan_dir (string):
-            Path to a ConeBeam Scan directory.
-        view_ids (list[int]):
-            List of view indexes to specify which scans to read.
-
+        scan_dir (string): Path to a ConeBeam Scan directory.
+        view_ids (list[int]): List of view indexes to specify which scans to read.
     Returns:
         ndarray (float): 3D numpy array, (num_views, num_slices, num_channels). A stack of sinograms.
     """
@@ -54,72 +46,58 @@ def read_scan_dir(scan_dir, view_ids=[]):
     return np.stack(img_list, axis=0)
 
 
-def downsample_scans(obj_scan, blank_scan, dark_scan, factor=[1, 1]):
-    """
-    Down-sample given scans with given factor.
+def downsample_scans(obj_scan, blank_scan, dark_scan, downsample_factor=[1, 1]):
+    """Down-sample given scans with given factor.
 
     Args:
-        obj_scan (float):
-            A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
-        blank_scan (float) :
-            A blank scan. 3D numpy array, (1, num_slices, num_channels).
-        dark_scan (float):
-            A dark scan. 3D numpy array, (1, num_slices, num_channels).
-        factor ([int, int]):
-            [Default=[1,1]] Two numbers to define down-sample factor.
-
+        obj_scan (float): A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
+        blank_scan (float): A blank scan. 3D numpy array, (1, num_slices, num_channels).
+        dark_scan (float): A dark scan. 3D numpy array, (1, num_slices, num_channels).
+        downsample_factor ([int, int]): Default=[1,1]] Two numbers to define down-sample factor.
     Returns:
-        Down-sampled scans.
-        obj_scan (float):
-            A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
-        blank_scan (float) :
-            A blank scan. 3D numpy array, (1, num_slices, num_channels).
-        dark_scan (float):
-            A dark scan. 3D numpy array, (1, num_slices, num_channels).
+        Downsampled scans
+
+        - **obj_scan** (*ndarray, float*): A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
+        - **blank_scan** (*ndarray, float*): A blank scan. 3D numpy array, (1, num_slices, num_channels).
+        - **dark_scan** (*ndarray, float*): A dark scan. 3D numpy array, (1, num_slices, num_channels).
     """
 
-    assert len(factor) == 2, 'factor({}) needs to be of len 2'.format(factor)
+    assert len(downsample_factor) == 2, 'factor({}) needs to be of len 2'.format(downsample_factor)
 
-    new_size1 = factor[0] * (obj_scan.shape[1] // factor[0])
-    new_size2 = factor[1] * (obj_scan.shape[2] // factor[1])
+    new_size1 = downsample_factor[0] * (obj_scan.shape[1] // downsample_factor[0])
+    new_size2 = downsample_factor[1] * (obj_scan.shape[2] // downsample_factor[1])
 
     obj_scan = obj_scan[:, 0:new_size1, 0:new_size2]
     blank_scan = blank_scan[:, 0:new_size1, 0:new_size2]
     dark_scan = dark_scan[:, 0:new_size1, 0:new_size2]
 
-    obj_scan = obj_scan.reshape(obj_scan.shape[0], obj_scan.shape[1] // factor[0], factor[0],
-                                obj_scan.shape[2] // factor[1], factor[1]).sum((2, 4))
-    blank_scan = blank_scan.reshape(blank_scan.shape[0], blank_scan.shape[1] // factor[0], factor[0],
-                                    blank_scan.shape[2] // factor[1], factor[1]).sum((2, 4))
-    dark_scan = dark_scan.reshape(dark_scan.shape[0], dark_scan.shape[1] // factor[0], factor[0],
-                                  dark_scan.shape[2] // factor[1], factor[1]).sum((2, 4))
+    obj_scan = obj_scan.reshape(obj_scan.shape[0], obj_scan.shape[1] // downsample_factor[0], downsample_factor[0],
+                                obj_scan.shape[2] // downsample_factor[1], downsample_factor[1]).sum((2, 4))
+    blank_scan = blank_scan.reshape(blank_scan.shape[0], blank_scan.shape[1] // downsample_factor[0], downsample_factor[0],
+                                    blank_scan.shape[2] // downsample_factor[1], downsample_factor[1]).sum((2, 4))
+    dark_scan = dark_scan.reshape(dark_scan.shape[0], dark_scan.shape[1] // downsample_factor[0], downsample_factor[0],
+                                  dark_scan.shape[2] // downsample_factor[1], downsample_factor[1]).sum((2, 4))
 
     return obj_scan, blank_scan, dark_scan
 
 
 def crop_scans(obj_scan, blank_scan, dark_scan, crop_factor=[(0, 0), (1, 1)]):
-    """
-    Crop given scans with given factor.
+    """Crop given scans with given factor.
 
     Args:
-        obj_scan (float):
-            A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
-        blank_scan (float) :
-            A blank scan. 3D numpy array, (1, num_slices, num_channels).
-        dark_scan (float):
-            A dark scan. 3D numpy array, (1, num_slices, num_channels).
+        obj_scan (float): A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
+        blank_scan (float) : A blank scan. 3D numpy array, (1, num_slices, num_channels).
+        dark_scan (float): A dark scan. 3D numpy array, (1, num_slices, num_channels).
         crop_factor ([(int, int),(int, int)] or [int, int, int, int]):
             [Default=[(0, 0), (1, 1)]] Two points to define the bounding box. Sequence of [(r0, c0), (r1, c1)] or
             [r0, c0, r1, c1], where 1>=r1 >= r0>=0 and 1>=c1 >= c0>=0.
 
     Returns:
-        Cropped scans.
-        obj_scan (float):
-            A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
-        blank_scan (float) :
-            A blank scan. 3D numpy array, (1, num_slices, num_channels).
-        dark_scan (float):
-            A dark scan. 3D numpy array, (1, num_slices, num_channels).
+        Cropped scans
+
+        - **obj_scan** (*ndarray, float*): A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
+        - **blank_scan** (*ndarray, float*): A blank scan. 3D numpy array, (1, num_slices, num_channels).
+        - **dark_scan** (*ndarray, float*): A dark scan. 3D numpy array, (1, num_slices, num_channels).
 
     """
     if isinstance(crop_factor[0], (list, tuple)):
@@ -145,17 +123,12 @@ def crop_scans(obj_scan, blank_scan, dark_scan, crop_factor=[(0, 0), (1, 1)]):
 
 
 def compute_sino(obj_scan, blank_scan, dark_scan):
-    """
-    Compute sinogram data base on given object scan, blank scan, and dark scan.
+    """Compute sinogram data base on given object scan, blank scan, and dark scan.
 
     Args:
-        obj_scan (float):
-            A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
-        blank_scan (float) :
-            A blank scan. 3D numpy array, (1, num_slices, num_channels).
-        dark_scan (float):
-            A dark scan. 3D numpy array, (1, num_slices, num_channels).
-
+        obj_scan (float): A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
+        blank_scan (float) : A blank scan. 3D numpy array, (1, num_slices, num_channels).
+        dark_scan (float):  A dark scan. 3D numpy array, (1, num_slices, num_channels).
     Returns:
         ndarray (float): Preprocessed sinograms. 3D numpy array, (num_views, num_slices, num_channels).
 
@@ -178,14 +151,11 @@ def compute_sino(obj_scan, blank_scan, dark_scan):
 
 
 def compute_views_index_list(view_range, num_views):
-    """
-    Return a list of sampled indexes of views to use for reconstruction.
+    """Return a list of sampled indexes of views to use for reconstruction.
 
     Args:
-        view_range ([int, int]):
-            Two indexes of views to specify the range of views to use for reconstruction.
-        num_views (int):
-            Number of views to use for reconstruction.
+        view_range ([int, int]): Two indexes of views to specify the range of views to use for reconstruction.
+        num_views (int): Number of views to use for reconstruction.
 
     Returns:
         list[int], a list of sampled indexes of views to use for reconstruction.
@@ -198,16 +168,12 @@ def compute_views_index_list(view_range, num_views):
 
 
 def select_contiguous_subset(indexList, num_time_points=1, time_point=0):
-    """
-    Return a contiguous subset of index list given a time point. Mainly use for 4D datasets with multiple time points.
+    """Return a contiguous subset of index list given a time point. Mainly use for 4D datasets with multiple time points.
 
     Args:
-        indexList (list[int]):
-            A list of indexes.
-        num_time_points (int):
-            [Default=1] Total number of time points.
-        time_point (int):
-            [Default=0] Index of the time point we want to use for 3D reconstruction.
+        indexList (list[int]): A list of indexes.
+        num_time_points (int): [Default=1] Total number of time points.
+        time_point (int): [Default=0] Index of the time point we want to use for 3D reconstruction.
 
     Returns:
         list[int], a contiguous subset of index list.
@@ -228,21 +194,16 @@ def select_contiguous_subset(indexList, num_time_points=1, time_point=0):
 
 
 def compute_angles_list(view_index_list, num_acquired_scans, total_angles, rotation_direction="positive"):
-    """
-    Return angles list from indexes list.
+    """Return angles list from indexes list.
 
     Args:
-        view_index_list (list[int]):
-            Final index list after subsampling and time point selection.
-        num_acquired_scans (int):
-            Total number of acquired scans in the directory.
-        total_angles (int):
-            Total rotation angle for the whole dataset.
-        rotation_direction (string):
-            [Default='positive'] Rotation direction. Should be 'positive' or 'negative'.
+        view_index_list (list[int]): Final index list after subsampling and time point selection.
+        num_acquired_scans (int): Total number of acquired scans in the directory.
+        total_angles (int): Total rotation angle for the whole dataset.
+        rotation_direction (string): [Default='positive'] Rotation direction. Should be 'positive' or 'negative'.
 
     Returns:
-
+        ndarray (float), 1D view angles array in radians.
     """
     if rotation_direction not in ["positive", "negative"]:
         warnings.warn("Parameter rotation_direction is not valid string; Setting center_offset = 'positive'.")
@@ -257,14 +218,11 @@ def compute_angles_list(view_index_list, num_acquired_scans, total_angles, rotat
 
 
 def read_NSI_string(filepath, tags_sections):
-    """
-    Return strings about dataset information read from NSI configuration file.
-    Args:
-        filepath (string):
-            Path to NSI configuration file. The filename extension is '.nsipro'.
-        tags_sections (list[string,string]):
-            Given tags and sections to locate the information we want to read.
+    """Return strings about dataset information read from NSI configuration file.
 
+    Args:
+        filepath (string): Path to NSI configuration file. The filename extension is '.nsipro'.
+        tags_sections (list[string,string]): Given tags and sections to locate the information we want to read.
     Returns:
         list[string], a list of strings have needed dataset information for reconstruction.
 
@@ -299,15 +257,12 @@ def read_NSI_string(filepath, tags_sections):
 
 
 def read_NSI_params(filepath):
-    """
+    """ Read NSI system parameters
 
     Args:
-        filepath (string):
-            Path to NSI configuration file. The filename extension is '.nsipro'.
-
+        filepath (string): Path to NSI configuration file. The filename extension is '.nsipro'.
     Returns:
-        dict of {string:int}: NSI system parameters.
-
+        dict of string-int: NSI system parameters.
     """
     tag_section_list = [['source', 'Result'],
                         ['reference', 'Result'],
@@ -343,20 +298,15 @@ def read_NSI_params(filepath):
 
 
 def adjust_NSI_sysparam(NSI_system_params, downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)]):
-    """
-    Return adjusted NSI system parameters given downsampling factor and cropping factor.
+    """Return adjusted NSI system parameters given downsampling factor and cropping factor.
 
     Args:
-        NSI_system_params (dict of {string:int}):
-            NSI system parameters.
-        downsample_factor: ([int, int]):
-            [Default=[1,1]] Two numbers to define down-sample factor.
-        crop_factor ([(int, int),(int, int)] or [int, int, int, int]):
-            [Default=[(0, 0), (1, 1)]] Two points to define the bounding box. Sequence of [(r0, c0), (r1, c1)] or
-            [r0, c0, r1, c1], where 1>=r1 >= r0>=0 and 1>=c1 >= c0>=0.
-
+        NSI_system_params (dict of string-int): NSI system parameters.
+        downsample_factor ([int, int]): [Default=[1,1]] Two numbers to define down-sample factor.
+        crop_factor ([(int, int),(int, int)] or [int, int, int, int]): [Default=[(0, 0), (1, 1)]]
+            Two points to define the bounding box. Sequence of [(r0, c0), (r1, c1)] or [r0, c0, r1, c1], where 1>=r1 >= r0>=0 and 1>=c1 >= c0>=0.
     Returns:
-        dict of {string:int}: Adjusted NSI system parameters.
+        dict of string-int: Adjusted NSI system parameters.
     """
     if isinstance(crop_factor[0], (list, tuple)):
         (r0, c0), (r1, c1) = crop_factor
@@ -386,14 +336,12 @@ def adjust_NSI_sysparam(NSI_system_params, downsample_factor=[1, 1], crop_factor
 
 
 def transfer_NSI_to_MBIRCONE(NSI_system_params):
-    """
-    Return MBIRCONE format geometric parameters from adjusted NSI system parameters.
+    """Return MBIRCONE format geometric parameters from adjusted NSI system parameters.
 
     Args:
-        NSI_system_params (dict of {string:int}): Adjusted NSI system parameters.
-
+        NSI_system_params (dict of string-int): Adjusted NSI system parameters.
     Returns:
-        dict of {string:int}: MBIRCONE format geometric parameters
+        dict of string-int: MBIRCONE format geometric parameters
 
     """
     geo_params = dict()
@@ -416,41 +364,28 @@ def preprocess(path_radiographs, num_views, path_blank=None, path_dark=None,
                view_range=None, total_angles=360, num_acquired_scans=2000,
                rotation_direction="positive", downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
                num_time_points=1, time_point=0):
-    """
-    Return preprocessed sinogram and angles list use for reconstruction.
+    """Return preprocessed sinogram and angles list use for reconstruction.
 
     Args:
-        path_radiographs (string):
-            Path to a ConeBeam Scan directory.
-        num_views (int):
-            Number of views to use for reconstruction.
-        path_blank (string):
-            [Default=None] Path to blank scan.
-        path_dark:
-            [Default=None] Path to dark scan.
-        view_range (list[int, int]):
-            [Default=None] Two indexes of views to specify the range of views to use for reconstruction.
-        total_angles (int):
-            [Default=360] Total rotation angle for the whole dataset.
-        num_acquired_scans (int):
-            [Default=2000] Total number of acquired scans in the directory.
-        rotation_direction (string):
-            [Default='positive'] Rotation direction. Should be 'positive' or 'negative'.
-        downsample_factor: ([int, int]):
-            [Default=[1,1]] Two numbers to define down-sample factor.
-        crop_factor ([(int, int),(int, int)] or [int, int, int, int]):
-            [Default=[(0, 0), (1, 1)]] Two points to define the bounding box. Sequence of [(r0, c0), (r1, c1)] or
-            [r0, c0, r1, c1], where 1>=r1 >= r0>=0 and 1>=c1 >= c0>=0.
-        num_time_points (int):
-            [Default=1] Total number of time points.
-        time_point (int):
-            [Default=0] Index of the time point we want to use for 3D reconstruction.
-
+        path_radiographs (string): Path to a ConeBeam Scan directory.
+        num_views (int): Number of views to use for reconstruction.
+        path_blank (string): [Default=None] Path to blank scan.
+        path_dark (string): [Default=None] Path to dark scan.
+        view_range (list[int, int]): [Default=None] Two indexes of views to specify the range of views to use for reconstruction.
+        total_angles (int): [Default=360] Total rotation angle for the whole dataset.
+        num_acquired_scans (int): [Default=2000] Total number of acquired scans in the directory.
+        rotation_direction (string): [Default='positive'] Rotation direction. Should be 'positive' or 'negative'.
+        downsample_factor ([int, int]): [Default=[1,1]] Two numbers to define down-sample factor.
+        crop_factor ([(int, int),(int, int)] or [int, int, int, int]): [Default=[(0, 0), (1, 1)]]
+            Two points to define the bounding box. Sequence of [(r0, c0), (r1, c1)] or [r0, c0, r1, c1], where 1>=r1 >= r0>=0 and 1>=c1 >= c0>=0.
+        num_time_points (int): [Default=1] Total number of time points.
+        time_point (int): [Default=0] Index of the time point we want to use for 3D reconstruction.
     Returns:
-        sino (float):
-            Preprocessed sinogram.
-        angles (double):
-            List of angles corresponding to preprocessed sinogram.
+        2-element tuple containing
+
+        - **sino** (*ndarray, float*): Preprocessed 3D sinogram.
+
+        - **angles** (*array, double*): 1D array of angles corresponding to preprocessed sinogram.
 
     """
 
@@ -480,7 +415,7 @@ def preprocess(path_radiographs, num_views, path_blank=None, path_dark=None,
 
     # downsampling in pixels
     obj_scan, blank_scan, dark_scan = downsample_scans(obj_scan, blank_scan, dark_scan,
-                                                       factor=downsample_factor)
+                                                       downsample_factor=downsample_factor)
     # cropping in pixels
     obj_scan, blank_scan, dark_scan = crop_scans(obj_scan, blank_scan, dark_scan,
                                                  factor=crop_factor)
