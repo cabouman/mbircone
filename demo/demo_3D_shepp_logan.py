@@ -10,17 +10,17 @@ num_det_channels = 64
 num_views = 120
 
 # Reconstruction parameters
-sharpness = 2
+sharpness = 1
 snr_db = 30.0
 
 # magnification is unitless.
-magnification = 8.651889263
+magnification = 3
 
 # All distances are in unit of 1 ALU = 1 mm.
-dist_source_detector = 619.7902
+dist_source_detector = 600
 delta_pixel_detector = 3.2
-channel_offset = -0.9384
-row_offset = 0.5654
+channel_offset = 0
+row_offset = 0
 
 # Display parameters
 vmin = 1.0
@@ -47,8 +47,8 @@ display_y = num_rows_cols // 2
 # Generate a phantom
 phantom = mbircone.phantom.gen_shepp_logan_3d(num_rows_cols, num_rows_cols, num_slices_phantom)
 
-# phantom = mbircone.phantom.gen_shepp_logan_3d(num_rows_cols, num_rows_cols, num_slices_sino)
-# total_pad = num_slices_phantom - num_slices_sino
+# phantom = mbircone.phantom.gen_shepp_logan_3d(num_rows_cols, num_rows_cols, num_det_rows)
+# total_pad = num_slices_phantom - num_det_rows
 # left_pad = total_pad // 2
 # phantom = np.pad(phantom, ((left_pad, total_pad - left_pad), (0, 0), (0, 0)), 'constant', constant_values=0)
 
