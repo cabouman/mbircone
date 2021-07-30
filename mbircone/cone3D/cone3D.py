@@ -354,6 +354,45 @@ def compute_img_params(sinoparams, delta_pixel_image=None, ror_radius=None):
     return imgparams
 
 
+def compute_img_size(num_views, num_det_rows, num_det_channels,
+                    dist_source_detector,
+                    magnification,
+                    channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
+                    delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None):
+    """Compute size of reconstruction image, given geometric parameter.
+
+    Args:
+        num_views (int): Number of views in sinogram data
+        num_det_rows (int): Number of rows in sinogram data
+        num_det_channels (int): Number of channels in sinogram data
+
+        dist_source_detector (float): Distance between the X-ray source and the detector in units of ALU
+        magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
+
+        channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
+        row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
+        rotation_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space.
+            This is normally set to zero.
+        delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
+        delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
+            If None, automatically set to delta_pixel_detector/magnification
+        ror_radius (float, optional): [Default=None] Scalar value of radius of reconstruction in :math:`ALU`.
+            If None, automatically set.
+            Pixels outside the radius ror_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
+
+    Returns:
+
+    """
+    if delta_pixel_image is None:
+        delta_pixel_image = delta_pixel_detector/magnification
+    sinoparams = compute_sino_params(dist_source_detector, magnification,
+                                     num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
+                                     channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
+                                     delta_pixel_detector=delta_pixel_detector)
+
+    imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
+    return imgparams['N_z'], imgparams['N_x'], imgparams['N_y']
+
 def recon(sino, angles, dist_source_detector, magnification,
     channel_offset=0.0, row_offset=0.0, rotation_offset=0.0, 
     delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
