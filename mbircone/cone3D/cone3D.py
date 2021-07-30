@@ -1,4 +1,3 @@
-
 import math
 from psutil import cpu_count
 import shutil
@@ -6,6 +5,7 @@ import numpy as np
 import os
 import hashlib
 import mbircone.cone3D.interface_cy_c as ci
+import random
 
 __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')\
 
@@ -30,9 +30,14 @@ def _clear_cache(mbircone_lib_path=__lib_path):
 def _gen_sysmatrix_fname(lib_path=__lib_path, sysmatrix_name='object'):
     os.makedirs(os.path.join(lib_path, 'sysmatrix'), exist_ok=True)
 
-    sysmatrix_fname = os.path.join(lib_path, sysmatrix_name+'.sysmatrix')
+    sysmatrix_fname = os.path.join(lib_path, 'sysmatrix', sysmatrix_name+'.sysmatrix')
 
     return sysmatrix_fname
+
+def _gen_sysmatrix_fname_tmp(lib_path=__lib_path, sysmatrix_name='object'):
+    sysmatrix_fname_tmp = os.path.join(lib_path, 'sysmatrix', sysmatrix_name+'_pid'+str(os.getpid())+'_rndnum'+str(random.randint(0,1000))+'.sysmatrix')
+
+    return sysmatrix_fname_tmp
 
 
 def _sino_indicator(sino):
@@ -448,8 +453,9 @@ def recon(sino, angles, dist_source_detector, magnification,
         print('Found system matrix: {}'.format(sysmatrix_fname))
         os.utime(sysmatrix_fname)  # update file modified time
     else :
-        ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, sysmatrix_fname, verbose=verbose)
-        
+        sysmatrix_fname_tmp = _gen_sysmatrix_fname_tmp(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
+        ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, sysmatrix_fname_tmp, verbose=verbose)
+        os.rename(sysmatrix_fname_tmp, sysmatrix_fname) 
 
     # Set automatic values for weights
     if weights is None:
@@ -620,7 +626,9 @@ def project(angles, image,
         print('Found system matrix: {}'.format(sysmatrix_fname))
         os.utime(sysmatrix_fname)  # update file modified time
     else :
-        ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, sysmatrix_fname, verbose=verbose)
+        sysmatrix_fname_tmp = _gen_sysmatrix_fname_tmp(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
+        ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, sysmatrix_fname_tmp, verbose=verbose)
+        os.rename(sysmatrix_fname_tmp, sysmatrix_fname) 
 
     image = np.swapaxes(image, 0, 2)
     proj = ci.project_cy(image, sinoparams, imgparams, sysmatrix_fname)
