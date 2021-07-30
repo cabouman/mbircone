@@ -3,19 +3,11 @@ import numpy as np
 import mbircone
 from demo_utils import plot_image
 
-# Set phantom Shape
-num_rows_cols = 65  # Assumes a square image
-num_slices_phantom = 80
 
 # Set sinogram shape
-num_slices_sino = 64
-num_channels_sino = 64
+num_det_rows = 64
+num_det_channels = 64
 num_views = 120
-
-# Set display indexes
-display_slice = 32
-display_x = num_rows_cols // 2
-display_y = num_rows_cols // 2
 
 # Reconstruction parameters
 sharpness = 2
@@ -34,13 +26,31 @@ row_offset = 0.5654
 vmin = 1.0
 vmax = 1.1
 
-# Generate a phantom
-# phantom = mbircone.phantom.gen_shepp_logan_3d(num_rows_cols, num_rows_cols, num_slices_phantom)
+Nz, Nx, Ny = mbircone.cone3D.compute_img_size(num_views, num_det_rows, num_det_channels,
+                    dist_source_detector,
+                    magnification,
+                    channel_offset=channel_offset, row_offset=row_offset,
+                    delta_pixel_detector=delta_pixel_detector)
+print('Shape of Recon and phantom should be:', Nz, Nx, Ny)
 
-phantom = mbircone.phantom.gen_shepp_logan_3d(num_rows_cols, num_rows_cols, num_slices_sino)
-total_pad = num_slices_phantom - num_slices_sino
-left_pad = total_pad // 2
-phantom = np.pad(phantom, ((left_pad, total_pad - left_pad), (0, 0), (0, 0)), 'constant', constant_values=0)
+# Set phantom Shape
+num_rows_cols = Nx  # Assumes a square image
+num_slices_phantom = Nz
+# num_rows_cols = 100  # Assumes a square image
+# num_slices_phantom = 100
+
+# Set display indexes
+display_slice = 32
+display_x = num_rows_cols // 2
+display_y = num_rows_cols // 2
+
+# Generate a phantom
+phantom = mbircone.phantom.gen_shepp_logan_3d(num_rows_cols, num_rows_cols, num_slices_phantom)
+
+# phantom = mbircone.phantom.gen_shepp_logan_3d(num_rows_cols, num_rows_cols, num_slices_sino)
+# total_pad = num_slices_phantom - num_slices_sino
+# left_pad = total_pad // 2
+# phantom = np.pad(phantom, ((left_pad, total_pad - left_pad), (0, 0), (0, 0)), 'constant', constant_values=0)
 
 print('phantom shape = ', np.shape(phantom))
 # display phantom
@@ -53,8 +63,8 @@ angles = np.linspace(0, 2 * np.pi, num_views, endpoint=False)
 
 # After setting the geometric parameter, the shape of the phantom is set to a fixed shape.
 # Input a phantom with wrong shape will generate a bunch of issue in C.
-sino = mbircone.cone3D.project(angles, phantom,
-                               num_det_rows=num_slices_sino, num_det_channels=num_channels_sino,
+sino = mbircone.cone3D.project(phantom, angles,
+                               num_det_rows=num_det_rows, num_det_channels=num_det_channels,
                                dist_source_detector=dist_source_detector, magnification=magnification,
                                delta_pixel_detector=delta_pixel_detector,
                                channel_offset=channel_offset, row_offset=row_offset)
