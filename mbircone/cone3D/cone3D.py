@@ -45,7 +45,7 @@ def _sino_indicator(sino):
 
     Args:
         sino (ndarray):
-            3D numpy array of sinogram data with shape (num_views,num_slices,num_channels)
+            3D numpy array of sinogram data with shape (num_views,num_det_rows,num_det_channels)
 
     Returns:
         int8: A binary value: =1 within sinogram support; =0 outside sinogram support.
@@ -90,7 +90,7 @@ def calc_weights(sino, weight_type):
     """Computes the weights used in MBIR reconstruction.
 
     Args:
-        sino (ndarray): 3D numpy array of sinogram data with shape (num_views,num_slices,num_channels)
+        sino (ndarray): 3D numpy array of sinogram data with shape (num_views,num_det_rows,num_det_channels)
         weight_type (string):[Default=0] Type of noise model used for data.
 
             If weight_type="unweighted"        => weights = numpy.ones_like(sino)
@@ -126,7 +126,7 @@ def auto_sigma_y(sino, weights, snr_db=30.0, delta_pixel_image=1.0, delta_pixel_
 
     Args:
         sino (ndarray):
-            3D numpy array of sinogram data with shape (num_views,num_slices,num_channels)
+            3D numpy array of sinogram data with shape (num_views,num_det_rows,num_det_channels)
         weights (ndarray):
             3D numpy array of weights with same shape as sino.
             The parameters weights should be the same values as used in mbircone reconstruction.
@@ -162,7 +162,7 @@ def auto_sigma_x(sino, delta_pixel_detector=1.0, sharpness=0.0):
 
     Args:
         sino (ndarray):
-            3D numpy array of sinogram data with shape (num_views,num_slices,num_channels)
+            3D numpy array of sinogram data with shape (num_views,num_det_rows,num_det_channels)
         delta_pixel_detector (float, optional):
             [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
         sharpness (float, optional):
@@ -172,13 +172,13 @@ def auto_sigma_x(sino, delta_pixel_detector=1.0, sharpness=0.0):
     Returns:
         float: Automatic value of regularization parameter.
     """
-    (num_views, num_slices, num_channels) = sino.shape
+    (num_views, num_det_rows, num_det_channels) = sino.shape
 
     # Compute indicator function for sinogram support
     sino_indicator = _sino_indicator(sino)
 
     # Compute a typical image value by dividing average sinogram value by a typical projection path length
-    typical_img_value = np.average(sino, weights=sino_indicator) / (num_channels * delta_pixel_detector)
+    typical_img_value = np.average(sino, weights=sino_indicator) / (num_det_channels * delta_pixel_detector)
 
     # Compute sigma_x as a fraction of the typical image value
     sigma_x = 0.2 * (2 ** sharpness) * typical_img_value
@@ -186,10 +186,10 @@ def auto_sigma_x(sino, delta_pixel_detector=1.0, sharpness=0.0):
     return sigma_x
 
 
-def compute_sino_params(dist_source_detector, magnification, 
-    num_views, num_slices, num_channels,
-    channel_offset=0.0, row_offset=0.0, rotation_offset=0.0, 
-    delta_pixel_detector=1.0):
+def compute_sino_params(dist_source_detector, magnification,
+                        num_views, num_det_rows, num_det_channels,
+                        channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
+                        delta_pixel_detector=1.0):
     """ Computes sinogram parameters specify coordinates and bounds relating to the sinogram
         For detailed specifications of sinoparams, see mbircone.interface_cy_c
     
@@ -198,8 +198,8 @@ def compute_sino_params(dist_source_detector, magnification,
         magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
         
         num_views (int): Number of views in sinogram data
-        num_slices (int): Number of slices in sinogram data
-        num_channels (int): Number of channels in sinogram data
+        num_det_rows (int): Number of rows in sinogram data
+        num_det_channels (int): Number of channels in sinogram data
 
         channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
         row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
@@ -212,8 +212,8 @@ def compute_sino_params(dist_source_detector, magnification,
     """
     
     sinoparams = dict()
-    sinoparams['N_dv'] = num_channels
-    sinoparams['N_dw'] = num_slices
+    sinoparams['N_dv'] = num_det_channels
+    sinoparams['N_dw'] = num_det_rows
     sinoparams['N_beta'] = num_views
     sinoparams['Delta_dv'] = delta_pixel_detector
     sinoparams['Delta_dw'] = delta_pixel_detector
@@ -366,7 +366,7 @@ def recon(sino, angles, dist_source_detector, magnification,
     """Computes 3D cone beam MBIR reconstruction
     
     Args:
-        sino (ndarray): 3D sinogram array with shape (num_views, num_slices, num_channels)
+        sino (ndarray): 3D sinogram array with shape (num_views, num_det_rows, num_det_channels)
         angles (ndarray): 1D view angles array in radians.
         dist_source_detector (float): Distance between the X-ray source and the detector in units of ALU
         magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
@@ -383,8 +383,8 @@ def recon(sino, angles, dist_source_detector, magnification,
             If None, automatically set with compute_img_params.
             Pixels outside the radius ror_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
         
-        init_image (ndarray, optional): [Default=0.0] Initial value of reconstruction image, specified by either a scalar value or a 3D numpy array with shape (num_slices,num_rows,num_cols)
-        prox_image (ndarray, optional): [Default=None] 3D proximal map input image. 3D numpy array with shape (num_slices,num_rows,num_cols)
+        init_image (ndarray, optional): [Default=0.0] Initial value of reconstruction image, specified by either a scalar value or a 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols)
+        prox_image (ndarray, optional): [Default=None] 3D proximal map input image. 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols)
         
         sigma_y (float, optional): [Default=None] Scalar value of noise standard deviation parameter.
             If None, automatically set with auto_sigma_y.
@@ -420,7 +420,7 @@ def recon(sino, angles, dist_source_detector, magnification,
         verbose (int, optional): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal reconstruction progress information, and 2 prints the full information.
         lib_path (str, optional): [Default=~/.cache/mbircone] Path to directory containing library of forward projection matrices.
     Returns:
-        3D numpy array: 3D reconstruction with shape (num_slices, num_rows, num_cols) in units of :math:`ALU^{-1}`.
+        3D numpy array: 3D reconstruction with shape (num_img_slices, num_img_rows, num_img_cols) in units of :math:`ALU^{-1}`.
     """
 
     # Internally set
@@ -437,12 +437,12 @@ def recon(sino, angles, dist_source_detector, magnification,
     if delta_pixel_image is None:
         delta_pixel_image = delta_pixel_detector/magnification
     
-    (num_views, num_slices, num_channels) = sino.shape
+    (num_views, num_det_rows, num_det_channels) = sino.shape
     
     sinoparams = compute_sino_params(dist_source_detector, magnification,
-    num_views=num_views, num_slices=num_slices, num_channels=num_channels,
-    channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset, 
-    delta_pixel_detector=delta_pixel_detector)
+                                     num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
+                                     channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
+                                     delta_pixel_detector=delta_pixel_detector)
 
     imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
 
@@ -563,11 +563,11 @@ def recon(sino, angles, dist_source_detector, magnification,
 
 
 def project(angles, image,
-    num_slices, num_channels,
-    dist_source_detector, magnification,
-    channel_offset=0.0, row_offset=0.0, rotation_offset=0.0, 
-    delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
-    num_threads=None, verbose=1, lib_path=__lib_path):
+            num_det_rows, num_det_channels,
+            dist_source_detector, magnification,
+            channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
+            delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
+            num_threads=None, verbose=1, lib_path=__lib_path):
 
     """Computes 3D cone beam forward-projection.
     
@@ -575,7 +575,7 @@ def project(angles, image,
         angles (ndarray): 1D view angles array in radians.
         image (ndarray):
             3D numpy array of image being forward projected.
-            The image is a 3D array with a shape of (num_slices, num_rows, num_cols)
+            The image is a 3D array with a shape of (num_img_slices, num_img_rows, num_img_cols)
 
         dist_source_detector (float): Distance between the X-ray source and the detector in units of ALU
         magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
@@ -597,7 +597,7 @@ def project(angles, image,
         verbose (int, optional): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal reconstruction progress information, and 2 prints the full information.
         lib_path (str, optional): [Default=~/.cache/mbircone] Path to directory containing library of forward projection matrices.
     Returns:
-        ndarray: 3D numpy array containing sinogram with shape (num_views, num_slices, num_channels).
+        ndarray: 3D numpy array containing sinogram with shape (num_views, num_det_rows, num_det_channels).
     """
 
     if num_threads is None :
@@ -613,9 +613,9 @@ def project(angles, image,
     num_views = len(angles)
     
     sinoparams = compute_sino_params(dist_source_detector, magnification,
-    num_views=num_views, num_slices=num_slices, num_channels=num_channels,
-    channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset, 
-    delta_pixel_detector=delta_pixel_detector)
+                                     num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
+                                     channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
+                                     delta_pixel_detector=delta_pixel_detector)
 
     imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
 

@@ -54,7 +54,7 @@ angles = np.linspace(0, 2 * np.pi, num_views, endpoint=False)
 # After setting the geometric parameter, the shape of the phantom is set to a fixed shape.
 # Input a phantom with wrong shape will generate a bunch of issue in C.
 sino = mbircone.cone3D.project(angles, phantom,
-                               num_slices=num_slices_sino, num_channels=num_channels_sino,
+                               num_det_rows=num_slices_sino, num_det_channels=num_channels_sino,
                                dist_source_detector=dist_source_detector, magnification=magnification,
                                delta_pixel_detector=delta_pixel_detector,
                                channel_offset=channel_offset, row_offset=row_offset)
