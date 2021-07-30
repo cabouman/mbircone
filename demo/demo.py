@@ -28,7 +28,7 @@ x = mbircone.cone3D.recon(sino, angles, dist_source_detector=dist_source_detecto
 
 
 
-p = mbircone.cone3D.project(angles, x,
+p = mbircone.cone3D.project(x, angles,
 							num_det_rows=sino.shape[1], num_det_channels=sino.shape[2],
 							dist_source_detector=dist_source_detector, magnification=magnification,
 							delta_pixel_detector=delta_pixel_detector,

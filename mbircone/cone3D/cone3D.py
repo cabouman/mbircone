@@ -601,7 +601,7 @@ def recon(sino, angles, dist_source_detector, magnification,
     return x
 
 
-def project(angles, image,
+def project(image, angles,
             num_det_rows, num_det_channels,
             dist_source_detector, magnification,
             channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
@@ -611,10 +611,13 @@ def project(angles, image,
     """Computes 3D cone beam forward-projection.
     
     Args:
-        angles (ndarray): 1D view angles array in radians.
         image (ndarray):
             3D numpy array of image being forward projected.
             The image is a 3D array with a shape of (num_img_slices, num_img_rows, num_img_cols)
+        angles (ndarray): 1D view angles array in radians.
+
+        num_det_rows (int): Number of rows in sinogram data
+        num_det_channels (int): Number of channels in sinogram data
 
         dist_source_detector (float): Distance between the X-ray source and the detector in units of ALU
         magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
@@ -657,6 +660,12 @@ def project(angles, image,
                                      delta_pixel_detector=delta_pixel_detector)
 
     imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
+
+    (num_img_slices, num_img_rows, num_img_cols) = image.shape
+
+    assert (num_img_slices, num_img_rows, num_img_cols) == (imgparams['N_z'], imgparams['N_x'], imgparams['N_y']), \
+        'With given geometric parameter, expected a image with shape: %s, obtained: %s'\
+        %((imgparams['N_z'], imgparams['N_x'], imgparams['N_y']), (num_img_slices, num_img_rows, num_img_cols))
 
     hash_val = hash_params(angles, sinoparams, imgparams)
     sysmatrix_fname = _gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
