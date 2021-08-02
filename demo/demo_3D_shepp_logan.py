@@ -3,22 +3,22 @@ import numpy as np
 import mbircone
 from demo_utils import plot_image
 
-
 # Set sinogram shape
-num_det_rows = 64
-num_det_channels = 64
-num_views = 120
+num_det_rows = 65
+num_det_channels = 128
+num_views = 360
 
 # Reconstruction parameters
 sharpness = 1
-snr_db = 30.0
+snr_db = 28.0
 
 # magnification is unitless.
-magnification = 3
+magnification = 1.5
 
 # All distances are in unit of 1 ALU = 1 mm.
 dist_source_detector = 600
-delta_pixel_detector = 3.2
+delta_pixel_detector = 2
+delta_pixel_image = None
 channel_offset = 0
 row_offset = 0
 
@@ -27,30 +27,29 @@ vmin = 1.0
 vmax = 1.1
 
 Nz, Nx, Ny = mbircone.cone3D.compute_img_size(num_views, num_det_rows, num_det_channels,
-                    dist_source_detector,
-                    magnification,
-                    channel_offset=channel_offset, row_offset=row_offset,
-                    delta_pixel_detector=delta_pixel_detector)
+                                              dist_source_detector,
+                                              magnification,
+                                              channel_offset=channel_offset, row_offset=row_offset,
+                                              delta_pixel_detector=delta_pixel_detector,
+                                              delta_pixel_image=delta_pixel_image)
 print('Shape of Recon and phantom should be:', Nz, Nx, Ny)
 
 # Set phantom Shape
 num_rows_cols = Nx  # Assumes a square image
 num_slices_phantom = Nz
-# num_rows_cols = 100  # Assumes a square image
-# num_slices_phantom = 100
 
 # Set display indexes
-display_slice = 32
+display_slice = 37
 display_x = num_rows_cols // 2
 display_y = num_rows_cols // 2
-
+display_view = 0
 # Generate a phantom
-phantom = mbircone.phantom.gen_shepp_logan_3d(num_rows_cols, num_rows_cols, num_slices_phantom)
-
-# phantom = mbircone.phantom.gen_shepp_logan_3d(num_rows_cols, num_rows_cols, num_det_rows)
-# total_pad = num_slices_phantom - num_det_rows
-# left_pad = total_pad // 2
-# phantom = np.pad(phantom, ((left_pad, total_pad - left_pad), (0, 0), (0, 0)), 'constant', constant_values=0)
+# phantom = mbircone.phantom.gen_shepp_logan_3d(num_rows_cols, num_rows_cols, num_slices_phantom)
+num_phantom_slices = 49
+phantom = mbircone.phantom.gen_shepp_logan_3d(num_rows_cols, num_rows_cols, num_phantom_slices)
+total_pad = num_slices_phantom - num_phantom_slices
+left_pad = total_pad // 2
+phantom = np.pad(phantom, ((left_pad, total_pad - left_pad), (0, 0), (0, 0)), 'constant', constant_values=0)
 
 print('phantom shape = ', np.shape(phantom))
 # display phantom
@@ -66,15 +65,17 @@ angles = np.linspace(0, 2 * np.pi, num_views, endpoint=False)
 sino = mbircone.cone3D.project(phantom, angles,
                                num_det_rows=num_det_rows, num_det_channels=num_det_channels,
                                dist_source_detector=dist_source_detector, magnification=magnification,
-                               delta_pixel_detector=delta_pixel_detector,
+                               delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image,
                                channel_offset=channel_offset, row_offset=row_offset)
 
 print('sino shape = ', np.shape(sino), sino.dtype)
-plot_image(sino[:, display_slice, :], title='sino', filename='output/sino-shepp-logan-3D.png')
+plot_image(sino[:, display_slice, :], title='sino', filename='output/sino-shepp-logan-3D-slice%d.png' % display_slice)
+print('sino shape = ', np.shape(sino), sino.dtype)
+plot_image(sino[display_view, :, :], title='sino', filename='output/sino-shepp-logan-3D-single-view%d.png' % display_view)
 
 recon = mbircone.cone3D.recon(sino, angles,
                               dist_source_detector=dist_source_detector, magnification=magnification,
-                              delta_pixel_detector=delta_pixel_detector,
+                              delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image,
                               channel_offset=channel_offset, row_offset=row_offset,
                               sharpness=sharpness, snr_db=snr_db)
 
