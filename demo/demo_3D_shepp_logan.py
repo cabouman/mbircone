@@ -9,8 +9,8 @@ num_det_channels = 128
 num_views = 360
 
 # Reconstruction parameters
-sharpness = 1
-snr_db = 28.0
+sharpness = 0
+snr_db = 30.0
 
 # magnification is unitless.
 magnification = 1.5
