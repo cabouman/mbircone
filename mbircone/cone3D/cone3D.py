@@ -381,6 +381,7 @@ def compute_img_size(num_views, num_det_rows, num_det_channels,
             Pixels outside the radius ror_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
 
     Returns:
+        num_img_slices (int), num_img_rows(int), num_img_cols(int)
 
     """
     if delta_pixel_image is None:
