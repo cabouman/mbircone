@@ -5,11 +5,12 @@ import os
 import imageio
 
 
-def plot_gif(x,save_dir,name,vmin=0,vmax=0.05):
+def plot_gif(x,save_dir,name,vmin=None,vmax=None):
     images=[]
     for i in range(x.shape[0]):
         fig = plt.figure()
         plt.imshow(x[i], vmin=vmin,  vmax=vmax).set_cmap('gray')
+        plt.title("Slice: %d"%(i+1))
         plt.colorbar()
         fig.canvas.draw() 
         image = np.frombuffer(fig.canvas.tostring_rgb(), dtype='uint8')
