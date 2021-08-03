@@ -665,7 +665,7 @@ def project(image, angles,
     (num_img_slices, num_img_rows, num_img_cols) = image.shape
 
     assert (num_img_slices, num_img_rows, num_img_cols) == (imgparams['N_z'], imgparams['N_x'], imgparams['N_y']), \
-        'With given geometric parameter, expected a image with shape: %s, obtained: %s'\
+        'With given geometric parameters, expect an 3D image with shape: %s, obtained: %s'\
         %((imgparams['N_z'], imgparams['N_x'], imgparams['N_y']), (num_img_slices, num_img_rows, num_img_cols))
 
     hash_val = hash_params(angles, sinoparams, imgparams)
