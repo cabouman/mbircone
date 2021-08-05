@@ -210,7 +210,7 @@ def compute_sino_params(dist_source_detector, magnification,
     Returns:
         Dictionary containing sino parameters as required by the Cython code
     """
-    
+
     sinoparams = dict()
     sinoparams['N_dv'] = num_det_channels
     sinoparams['N_dw'] = num_det_rows
@@ -279,7 +279,7 @@ def compute_img_params(sinoparams, delta_pixel_image=None, ror_radius=None):
     r = max(r_0, r_1)
 
     if ror_radius is not None:
-        r = ror_radius 
+        r = ror_radius
 
 
     # #### Part 2: assignment of parameters ####
@@ -295,7 +295,7 @@ def compute_img_params(sinoparams, delta_pixel_image=None, ror_radius=None):
     imgparams['N_y'] = imgparams['N_x']
 
 
-    ## Computation of z_0 and N_z 
+    ## Computation of z_0 and N_z
 
     x_1 = imgparams['x_0'] + imgparams['N_x']*imgparams['Delta_xy']
     y_1 = x_1
@@ -310,7 +310,7 @@ def compute_img_params(sinoparams, delta_pixel_image=None, ror_radius=None):
     w_1 = sinoparams['w_d0'] + sinoparams['N_dw']*sinoparams['Delta_dw']
 
 
-    z_0 = min(  sinoparams['w_d0'] * ( R - sinoparams['u_s']) / (sinoparams['u_d0'] - sinoparams['u_s']), 
+    z_0 = min(  sinoparams['w_d0'] * ( R - sinoparams['u_s']) / (sinoparams['u_d0'] - sinoparams['u_s']),
                 sinoparams['w_d0'] * (-R - sinoparams['u_s']) / (sinoparams['u_d0'] - sinoparams['u_s']))
 
     z_1 = max(  w_1 * ( R - sinoparams['u_s']) / (sinoparams['u_d0'] - sinoparams['u_s']),
@@ -395,7 +395,7 @@ def compute_img_size(num_views, num_det_rows, num_det_channels,
     return imgparams['N_z'], imgparams['N_x'], imgparams['N_y']
 
 def recon(sino, angles, dist_source_detector, magnification,
-    channel_offset=0.0, row_offset=0.0, rotation_offset=0.0, 
+    channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
     delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
     init_image=0.0, prox_image=None,
     sigma_y=None, snr_db=30.0, weights=None, weight_type='unweighted',
@@ -476,9 +476,9 @@ def recon(sino, angles, dist_source_detector, magnification,
 
     if delta_pixel_image is None:
         delta_pixel_image = delta_pixel_detector/magnification
-    
+
     (num_views, num_det_rows, num_det_channels) = sino.shape
-    
+
     sinoparams = compute_sino_params(dist_source_detector, magnification,
                                      num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
                                      channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
@@ -488,14 +488,14 @@ def recon(sino, angles, dist_source_detector, magnification,
 
     hash_val = hash_params(angles, sinoparams, imgparams)
     sysmatrix_fname = _gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
-    
+
     if os.path.exists(sysmatrix_fname) :
         print('Found system matrix: {}'.format(sysmatrix_fname))
         os.utime(sysmatrix_fname)  # update file modified time
     else :
         sysmatrix_fname_tmp = _gen_sysmatrix_fname_tmp(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
         ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, sysmatrix_fname_tmp, verbose=verbose)
-        os.rename(sysmatrix_fname_tmp, sysmatrix_fname) 
+        os.rename(sysmatrix_fname_tmp, sysmatrix_fname)
 
     # Set automatic values for weights
     if weights is None:
@@ -534,13 +534,13 @@ def recon(sino, angles, dist_source_detector, magnification,
         reconparams['bFace'] = 1.0
         reconparams['bEdge'] = 0.70710678118
         reconparams['bVertex'] = 0.57735026919
-   
+
     reconparams['stopThresholdChange_pct'] = stop_threshold
     reconparams['MaxIterations'] = max_iterations
 
-    
+
     reconparams['weightScaler_value'] = sigma_y**2
-    
+
     reconparams['verbosity'] = verbose
 
     ################ Internally set
@@ -555,7 +555,7 @@ def recon(sino, angles, dist_source_detector, magnification,
     reconparams['relativeChangeMode'] = 'meanImage'
     reconparams['relativeChangeScaler'] = 0.1
     reconparams['relativeChangePercentile'] = 99.9
-    
+
     # Zipline
     reconparams['zipLineMode'] = 2
     reconparams['N_G'] = 2
@@ -578,7 +578,7 @@ def recon(sino, angles, dist_source_detector, magnification,
         init_image = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']))+init_image
     else:
         init_image = np.swapaxes(init_image, 0, 2)
-    
+
     if prox_image is None:
         reconparams['priorWeight_QGGMRF'] = 1
         reconparams['priorWeight_proxMap'] = -1
@@ -651,10 +651,10 @@ def project(image, angles,
 
     if delta_pixel_image is None:
         delta_pixel_image = delta_pixel_detector/magnification
-    
+
 
     num_views = len(angles)
-    
+
     sinoparams = compute_sino_params(dist_source_detector, magnification,
                                      num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
                                      channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
@@ -665,7 +665,7 @@ def project(image, angles,
     (num_img_slices, num_img_rows, num_img_cols) = image.shape
 
     assert (num_img_slices, num_img_rows, num_img_cols) == (imgparams['N_z'], imgparams['N_x'], imgparams['N_y']), \
-        'With given geometric parameters, expect an 3D image with shape: %s, obtained: %s'\
+        'Image size of %s is incorrect! With the specified geometric parameters, expected image should have shape %s, use function `mbircone.cone3D.compute_img_size` to compute the correct image size.'\
         %((imgparams['N_z'], imgparams['N_x'], imgparams['N_y']), (num_img_slices, num_img_rows, num_img_cols))
 
     hash_val = hash_params(angles, sinoparams, imgparams)
@@ -677,7 +677,7 @@ def project(image, angles,
     else :
         sysmatrix_fname_tmp = _gen_sysmatrix_fname_tmp(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
         ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, sysmatrix_fname_tmp, verbose=verbose)
-        os.rename(sysmatrix_fname_tmp, sysmatrix_fname) 
+        os.rename(sysmatrix_fname_tmp, sysmatrix_fname)
 
     image = np.swapaxes(image, 0, 2)
     proj = ci.project_cy(image, sinoparams, imgparams, sysmatrix_fname)
