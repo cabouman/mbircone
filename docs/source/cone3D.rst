@@ -14,5 +14,8 @@ mbircone.cone3D
       calc_weights
       compute_sino_params
       compute_img_params
+      compute_img_size
+      pad_roi2ror
+      extract_roi_from_ror
       project
       recon
