@@ -334,10 +334,10 @@ def compute_img_params(sinoparams, delta_pixel_image=None, ror_radius=None):
     N_y_roi = N_x_roi
 
     # imgparams['N_x'] is odd and N_x_roi is odd, imgparams['N_x'] - N_x_roi is even.
-    imgparams['j_xstart_roi'] = (imgparams['N_x'] - N_x_roi) / 2
+    imgparams['j_xstart_roi'] = int((imgparams['N_x'] - N_x_roi) / 2)
     imgparams['j_ystart_roi'] = imgparams['j_xstart_roi']
 
-    imgparams['j_xstop_roi'] = imgparams['j_xstart_roi'] + N_x_roi - 1
+    imgparams['j_xstop_roi'] = int(imgparams['j_xstart_roi'] + N_x_roi - 1)
     imgparams['j_ystop_roi'] = imgparams['j_xstop_roi']
 
     imgparams['j_zstart_roi'] = round((z_min_roi - imgparams['z_0']) / imgparams['Delta_z'])
@@ -400,7 +400,7 @@ def compute_img_size(num_views, num_det_rows, num_det_channels,
 
     # Summarize Information about the image size.
     ROR = [imgparams['N_z'], imgparams['N_x'], imgparams['N_y']]
-    boundary_size = [ max(imgparams['j_zstart_roi'], imgparams['N_z']-1-imgparams['j_zstop_roi']), imgparams['j_xstart_roi'], imgparams['j_ystart_roi']]
+    boundary_size = [max(imgparams['j_zstart_roi'], imgparams['N_z']-1-imgparams['j_zstop_roi']), imgparams['j_xstart_roi'], imgparams['j_ystart_roi']]
 
     return ROR, boundary_size
 
@@ -409,8 +409,7 @@ def pad_roi2ror(image, boundary_size):
     """Given a 3D phantom image and the boundary size, pad the phantom image to an ROR image with 0.
 
     Args:
-        image (ndarray):
-            The image is a 3D array with a shape of (num_img_slices, num_img_rows, num_img_cols)
+        image (ndarray): 3D numpy array with a shape of (num_img_slices, num_img_rows, num_img_cols)
         boundary_size (list): Number of invalid pixels on each side of a 3D image. A list of 3 integer, [img_slices_boundary_size, img_rows_boundary_size, img_cols_boundary_size].
 
     Returns:
@@ -426,8 +425,7 @@ def extract_roi_from_ror(image, boundary_size):
     """Given a 3D phantom image and the boundary size, extract the ROI of the image.
 
     Args:
-        image (ndarray):
-            The image is a 3D array with a shape of (num_img_slices, num_img_rows, num_img_cols)
+        image (ndarray): 3D numpy array with a shape of (num_img_slices, num_img_rows, num_img_cols)
         boundary_size (list): Number of invalid pixels on each side of a 3D image. A list of 3 integer, [img_slices_boundary_size, img_rows_boundary_size, img_cols_boundary_size].
 
     Returns:
