@@ -37,5 +37,6 @@ demo/__pycache__/*
 demo/*.out
 demo/*.sub
 demo_compare*
+demo/dask-worker-space/*
 
 mbircone/preprocess/test_*
