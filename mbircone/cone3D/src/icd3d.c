@@ -402,29 +402,24 @@ void indexExtraction3D(long int j_xyz, long int *j_x, long int N_x, long int *j_
 double MAPCost3D(struct Sino *sino, struct Image *img, struct ReconParams *reconParams)
 {
 	/**
-	 * 		Cost = 	  1/2 ||e||^{2}_{W}
-	 * 		
-	 * 				+ sum    	b_{s,r} rho(x_s-x_r)
-	 * 		         {s,r} E P
-	 *
-	 * 				+ num_mask / 2 * log(weightScaler_value)
+	 *      Computes MAP cost function
 	 */
-	double cost = 0;
-	long int num_mask;
+	double cost;
 
-	cost += MAPCostForward(sino);
+    // Initialize cost with forward model cost	
+    cost = MAPCostForward(sino);
 
+    // if prior is used, add prior cost
     if(reconParams->priorWeight_QGGMRF >= 0)
 		cost += MAPCostPrior_QGGMRF(img, reconParams);
 
+    // if proximal map is used, add proximal map cost
     if(reconParams->priorWeight_proxMap >= 0)
 		cost += MAPCostPrior_ProxMap(img, reconParams);
 
-	num_mask = sino->params.N_beta * sino->params.N_dv * sino->params.N_dw;
-	cost += num_mask / 2 * log(sino->params.weightScaler_value);
-
 	return cost;
 }
+
 
 double MAPCostForward(struct Sino *sino)
 {
@@ -432,10 +427,9 @@ double MAPCostForward(struct Sino *sino)
 	 * 		ForwardCost =  1/2 ||e||^{2}_{W}
 	 */
 	long int i_beta, i_v, i_w;
-	double cost = 0;
+	double cost;
 
-
-
+    cost = 0;
     for (i_beta = 0; i_beta < sino->params.N_beta; ++i_beta)
     {
         for (i_v = 0; i_v < sino->params.N_dv; ++i_v)
@@ -448,8 +442,6 @@ double MAPCostForward(struct Sino *sino)
             }
         }
     }
-
-
     return cost / (2.0 * sino->params.weightScaler_value);
 }
 
@@ -462,9 +454,10 @@ double MAPCostPrior_QGGMRF(struct Image *img, struct ReconParams *reconParams)
 	
 	long int j_x, j_y, j_z;
 	struct ICDInfo3DCone icdInfo;
-	double cost = 0;
+	double cost;
 	double temp;
-
+    
+    cost = 0;
 	for (j_x = 0; j_x < img->params.N_x; ++j_x)
 	{
 		for (j_y = 0; j_y < img->params.N_y; ++j_y)
@@ -496,23 +489,21 @@ double MAPCostPrior_ProxMap(struct Image *img, struct ReconParams *reconParams)
      */
     
     long int j_x, j_y, j_z;
-    double cost = 0;
+    double cost, diff_voxel;
 
+    cost = 0; 
     for (j_x = 0; j_x < img->params.N_x; ++j_x)
     {
         for (j_y = 0; j_y < img->params.N_y; ++j_y)
         {
             for (j_z = 0; j_z < img->params.N_z; ++j_z)
             {
-                cost +=   img->vox[j_x][j_y][j_z]
-                        * img->proxMapInput[j_x][j_y][j_z]
-                        * isInsideMask(j_x, j_y, img->params.N_x, img->params.N_y);
+                diff_voxel = img->vox[j_x][j_y][j_z] - img->proxMapInput[j_x][j_y][j_z];
+                cost += diff_voxel*diff_voxel*isInsideMask(j_x, j_y, img->params.N_x, img->params.N_y);
             }
         }
     }
-
-    cost /= 2 * reconParams->sigma_lambda;
-
+    cost /= 2 * reconParams->sigma_lambda * reconParams->sigma_lambda;
     return cost;
 }
 
@@ -527,11 +518,11 @@ double MAPCostPrior_QGGMRFSingleVoxel_HalfNeighborhood(struct ICDInfo3DCone *icd
      */
 
 	int i;
-	double sum1Face = 0;
-	double sum1Edge = 0;
-	double sum1Vertex = 0;
+	double sum1Face, sum1Edge, sum1Vertex;
 
-
+    sum1Face = 0;
+    sum1Edge = 0;
+    sum1Vertex = 0;
 	if (reconParams->bFace>=0)
 		for (i = 0; i < 3; ++i) /* Note: only use first half of the neighbors */
 			sum1Face += QGGMRFPotential(icdInfo->old_xj - icdInfo->neighborsFace[i], reconParams);
