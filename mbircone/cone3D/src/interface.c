@@ -76,7 +76,6 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
 
     /* Initialize other image data */
     initializeWghtRecon(&A, &sino, &img, &reconParams);
-    setFloatArray2Value(&img.proxMapInput[0][0][0], img.params.N_x*img.params.N_y*img.params.N_z, 0.0);
     setFloatArray2Value(&img.lastChange[0][0][0], img.params.N_x*img.params.N_y*reconParams.numZiplines, 0.0);
     setUCharArray2Value(&img.timeToChange[0][0][0], img.params.N_x*img.params.N_y*reconParams.numZiplines, 0);
 
