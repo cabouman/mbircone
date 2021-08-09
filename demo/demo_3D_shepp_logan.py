@@ -9,7 +9,7 @@ num_det_channels = 256
 num_views = 288
 
 # Reconstruction parameters
-sharpness = 1.5
+sharpness = 0
 snr_db = 30.0
 
 # magnification is unitless.
@@ -24,7 +24,7 @@ row_offset = 0
 
 # Display parameters
 vmin = 1.0
-vmax = 1.1
+vmax = 1.2
 
 
 # Generate a 3D shepp logan phantom.
