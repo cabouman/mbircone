@@ -4,9 +4,9 @@ import mbircone
 from demo_utils import plot_image, plot_gif
 
 # Set sinogram shape
-num_det_rows = 200
-num_det_channels = 128
-num_views = 144
+num_det_rows = 400
+num_det_channels = 256
+num_views = 288
 
 # Reconstruction parameters
 sharpness = 1.5
@@ -17,8 +17,8 @@ magnification = 2
 
 # All distances are in unit of 1 ALU = 1 mm.
 dist_source_detector = 600
-delta_pixel_detector = 0.9
-delta_pixel_image = 1
+delta_pixel_detector = 0.45
+delta_pixel_image = 0.5
 channel_offset = 0
 row_offset = 0
 
