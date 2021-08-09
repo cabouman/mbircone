@@ -4,21 +4,21 @@ import mbircone
 from demo_utils import plot_image, plot_gif
 
 # Set sinogram shape
-num_det_rows = 129
+num_det_rows = 200
 num_det_channels = 128
-num_views = 360
+num_views = 144
 
 # Reconstruction parameters
 sharpness = 1.5
 snr_db = 30.0
 
 # magnification is unitless.
-magnification = 8
+magnification = 2
 
 # All distances are in unit of 1 ALU = 1 mm.
 dist_source_detector = 600
-delta_pixel_detector = 3.2
-delta_pixel_image = None
+delta_pixel_detector = 0.9
+delta_pixel_image = 1
 channel_offset = 0
 row_offset = 0
 
@@ -77,17 +77,17 @@ os.makedirs('output/3D_shepp_logan/', exist_ok=True)
 
 print('sino shape = ', np.shape(sino), sino.dtype)
 plot_image(sino[:, display_slice, :], title='sino', filename='output/3D_shepp_logan/sino-shepp-logan-3D-slice%d.png' % display_slice)
-#plot_gif(sino, 'output', 'sino-shepp-logan-3D')
+plot_gif(sino, 'output', 'sino-shepp-logan-3D')
 
 recon = mbircone.cone3D.recon(sino, angles,
                               dist_source_detector=dist_source_detector, magnification=magnification,
                               delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image,
                               channel_offset=channel_offset, row_offset=row_offset,
-                              sharpness=sharpness, snr_db=snr_db)
+                              sharpness=sharpness, snr_db=snr_db, max_iterations=100)
 
 print('recon shape = ', np.shape(recon))
-# plot_gif(recon, 'output/3D_shepp_logan', 'recon', vmin=vmin, vmax=vmax)
-# plot_gif(phantom, 'output/3D_shepp_logan', 'phantom', vmin=vmin, vmax=vmax)
+plot_gif(recon, 'output/3D_shepp_logan', 'recon', vmin=vmin, vmax=vmax)
+plot_gif(phantom, 'output/3D_shepp_logan', 'phantom', vmin=vmin, vmax=vmax)
 
 # Compute Normalized Root Mean Squared Error
 nrmse = mbircone.phantom.nrmse(recon, phantom)
