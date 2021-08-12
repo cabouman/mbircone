@@ -4,21 +4,21 @@ import mbircone
 from demo_utils import plot_image, plot_gif, plt_cmp_3dobj
 
 # Set sinogram shape
-num_det_rows = 400
-num_det_channels = 256
-num_views = 288
+num_det_rows = 200
+num_det_channels = 128
+num_views = 144
 
 # Reconstruction parameters
-sharpness = 0
-snr_db = 30.0
+sharpness = 0.2
+snr_db = 31.0
 
 # magnification is unitless.
 magnification = 2
 
 # All distances are in unit of 1 ALU = 1 mm.
 dist_source_detector = 600
-delta_pixel_detector = 0.45
-delta_pixel_image = 0.5
+delta_pixel_detector = 0.9
+delta_pixel_image = 1
 channel_offset = 0
 row_offset = 0
 max_iterations = 20
@@ -39,8 +39,8 @@ Nz, Nx, Ny = ROR
 img_slices_boundary_size, img_rows_boundary_size, img_cols_boundary_size = boundary_size
 print('ROR of the recon is:', (Nz, Nx, Ny))
 
-# Set phantom Shape equal to ROI according to ROR and boundary_size.
-# All valid pixel should inside ROI.
+# Set phantom parameters to generate a phantom inside ROI according to ROR and boundary_size.
+# All valid pixels should be inside ROI.
 num_rows_cols = Nx - 2 * img_rows_boundary_size  # Assumes a square image
 num_slices_phantom = Nz - 2 * img_slices_boundary_size
 print('ROI and shape of phantom is:', num_slices_phantom, num_rows_cols, num_rows_cols)
@@ -60,7 +60,7 @@ print('Padded phantom shape = ', np.shape(phantom))
 # Generate simulated data using forward projector on the 3D shepp logan phantom.
 angles = np.linspace(0, 2 * np.pi, num_views, endpoint=False)
 
-# After setting the geometric parameter, the shape of the phantom is set to a fixed shape.
+# After setting the geometric parameter, the shape of the input phantom should be equal to the calculated geometric parameter.
 # Input a phantom with wrong shape will generate a bunch of issue in C.
 sino = mbircone.cone3D.project(phantom, angles,
                                num_det_rows=num_det_rows, num_det_channels=num_det_channels,
@@ -82,10 +82,9 @@ recon = mbircone.cone3D.recon(sino, angles,
                               sharpness=sharpness, snr_db=snr_db, max_iterations=max_iterations)
 
 print('recon shape = ', np.shape(recon))
-# plot_gif(recon, 'output/3D_shepp_logan', 'recon', vmin=vmin, vmax=vmax)
-# plot_gif(phantom, 'output/3D_shepp_logan', 'phantom', vmin=vmin, vmax=vmax)
 np.save('output/3D_shepp_logan/recon.npy', recon)
 
+#Display and compare reconstruction
 plt_cmp_3dobj(phantom, recon, display_slice, display_x, display_y, vmin, vmax, filename)
 
 input("press Enter")
