@@ -44,7 +44,7 @@ pip install -r requirements_demo.txt
 ```
 2) Run demo
 ```
-python demo.py
+python demo_3D_shepp_logan.py
 ```
 
 ## Build documentation in local folder
