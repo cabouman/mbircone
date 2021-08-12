@@ -31,7 +31,7 @@ sftp-config.json
 
 # Personal files
 demo/output/*
-demo/input/*
+demo/examples/output/*
 demo/data/*
 demo/__pycache__/*
 demo/*.out
