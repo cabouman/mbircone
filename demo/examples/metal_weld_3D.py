@@ -1,8 +1,13 @@
 import os
 import numpy as np
 import mbircone
-import demo_utils
 import pprint
+import sys
+
+current = os.path.dirname(os.path.realpath(__file__))
+parent = os.path.dirname(current)
+sys.path.append(parent)
+import display_utils
 
 dataset_dir = "/depot/bouman/users/li3120/datasets/metal_weld_data/"
 path_radiographs = dataset_dir + "Radiographs-2102414-2019-001-076/"
@@ -57,12 +62,12 @@ os.makedirs('output', exist_ok=True)
 
 np.save("./output/recon.npy", x)
 
-demo_utils.plot_image(sino[0], title='sino', filename='output/sino_%d.png' % 0)
+display_utils.plot_image(sino[0], title='sino', filename='output/sino_%d.png' % 0)
 slice_index = 20
-demo_utils.plot_image(x[slice_index], title='recon', filename='output/recon_%d.png' % slice_index, vmin=0, vmax=0.03)
+display_utils.plot_image(x[slice_index], title='recon', filename='output/recon_%d.png' % slice_index, vmin=0, vmax=0.03)
 slice_index = 30
-demo_utils.plot_image(x[slice_index], title='recon', filename='output/recon_%d.png' % slice_index, vmin=0, vmax=0.03)
+display_utils.plot_image(x[slice_index], title='recon', filename='output/recon_%d.png' % slice_index, vmin=0, vmax=0.03)
 slice_index = 40
-demo_utils.plot_image(x[slice_index], title='recon', filename='output/recon_%d.png' % slice_index, vmin=0, vmax=0.03)
+display_utils.plot_image(x[slice_index], title='recon', filename='output/recon_%d.png' % slice_index, vmin=0, vmax=0.03)
 slice_index = 48
-demo_utils.plot_image(x[slice_index], title='recon', filename='output/recon_%d.png' % slice_index, vmin=0, vmax=0.03)
+display_utils.plot_image(x[slice_index], title='recon', filename='output/recon_%d.png' % slice_index, vmin=0, vmax=0.03)
