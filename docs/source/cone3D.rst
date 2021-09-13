@@ -10,6 +10,7 @@ mbircone.cone3D
    .. autosummary::
 
       auto_sigma_x
+      auto_sigma_p
       auto_sigma_y
       calc_weights
       compute_sino_params
