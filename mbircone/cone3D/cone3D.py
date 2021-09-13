@@ -157,34 +157,30 @@ def auto_sigma_y(sino, weights, snr_db=30.0, delta_pixel_image=1.0, delta_pixel_
 
     return sigma_y
 
-def auto_sigma_prior(sino, delta_channel = 1.0, sharpness = 0.0 ):
-    """Computes the automatic value of prior model regularization term for use in MBIR reconstruction or proximal map estimation. This subroutine is called by ``auto_sigma_x`` in MBIR reconstruction, or ``auto_sigma_p`` in proximal map estimation.
-
+def auto_sigma_prior(sino, delta_pixel_detector=1.0, sharpness=0.0):
+    """Computes the automatic value of prior model regularization for use in MBIR reconstruction.
     Args:
         sino (ndarray):
-            3D numpy array of sinogram data with shape (num_views,num_slices,num_channels)
-        delta_channel (float, optional):
-            [Default=1.0] Scalar value of detector channel spacing in :math:`ALU`.
+            3D numpy array of sinogram data with shape (num_views,num_det_rows,num_det_channels)
+        delta_pixel_detector (float, optional):
+            [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
         sharpness (float, optional):
             [Default=0.0] Scalar value that controls level of sharpness.
             ``sharpness=0.0`` is neutral; ``sharpness>0`` increases sharpness; ``sharpness<0`` reduces sharpness
-
     Returns:
         float: Automatic value of regularization parameter.
     """
-    (num_views, num_slices, num_channels) = sino.shape
+    (num_views, num_det_rows, num_det_channels) = sino.shape
 
     # Compute indicator function for sinogram support
     sino_indicator = _sino_indicator(sino)
 
     # Compute a typical image value by dividing average sinogram value by a typical projection path length
-    typical_img_value = np.average(sino, weights=sino_indicator) / (num_channels * delta_channel)
+    typical_img_value = np.average(sino, weights=sino_indicator) / (num_det_channels * delta_pixel_detector)
 
-    # Compute sigma_p as the typical image value when sharpness==0
+    # Compute sigma_x as a fraction of the typical image value
     sigma_prior = (2 ** sharpness) * typical_img_value
-
     return sigma_prior
-
 
 def auto_sigma_x(sino, delta_pixel_detector=1.0, sharpness=0.0):
     """Computes the automatic value of ``sigma_x`` for use in MBIR reconstruction.
@@ -201,9 +197,9 @@ def auto_sigma_x(sino, delta_pixel_detector=1.0, sharpness=0.0):
     Returns:
         float: Automatic value of regularization parameter.
     """
-    return 0.2 * auto_sigma_prior(sino, delta_channel, sharpness)
+    return 0.2 * auto_sigma_prior(sino, delta_pixel_detector, sharpness)
 
-def auto_sigma_p(sino, delta_channel = 1.0, sharpness = 0.0 ):
+def auto_sigma_p(sino, delta_pixel_detector = 1.0, sharpness = 0.0 ):
     """Computes the automatic value of ``sigma_p`` for use in proximal map estimation.
 
     Args:
@@ -218,7 +214,7 @@ def auto_sigma_p(sino, delta_channel = 1.0, sharpness = 0.0 ):
     Returns:
         float: Automatic value of regularization parameter.
     """
-    return 1.0 * auto_sigma_prior(sino, delta_channel, sharpness)
+    return 1.0 * auto_sigma_prior(sino, delta_pixel_detector, sharpness)
 
 def compute_sino_params(dist_source_detector, magnification,
                         num_views, num_det_rows, num_det_channels,
