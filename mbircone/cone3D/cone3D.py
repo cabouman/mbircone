@@ -157,6 +157,30 @@ def auto_sigma_y(sino, weights, snr_db=30.0, delta_pixel_image=1.0, delta_pixel_
 
     return sigma_y
 
+def auto_sigma_prior(sino, delta_pixel_detector=1.0, sharpness=0.0):
+    """Computes the automatic value of prior model regularization for use in MBIR reconstruction.
+    Args:
+        sino (ndarray):
+            3D numpy array of sinogram data with shape (num_views,num_det_rows,num_det_channels)
+        delta_pixel_detector (float, optional):
+            [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
+        sharpness (float, optional):
+            [Default=0.0] Scalar value that controls level of sharpness.
+            ``sharpness=0.0`` is neutral; ``sharpness>0`` increases sharpness; ``sharpness<0`` reduces sharpness
+    Returns:
+        float: Automatic value of regularization parameter.
+    """
+    (num_views, num_det_rows, num_det_channels) = sino.shape
+
+    # Compute indicator function for sinogram support
+    sino_indicator = _sino_indicator(sino)
+
+    # Compute a typical image value by dividing average sinogram value by a typical projection path length
+    typical_img_value = np.average(sino, weights=sino_indicator) / (num_det_channels * delta_pixel_detector)
+
+    # Compute sigma_x as a fraction of the typical image value
+    sigma_prior = (2 ** sharpness) * typical_img_value
+    return sigma_prior
 
 def auto_sigma_x(sino, delta_pixel_detector=1.0, sharpness=0.0):
     """Computes the automatic value of ``sigma_x`` for use in MBIR reconstruction.
@@ -173,19 +197,24 @@ def auto_sigma_x(sino, delta_pixel_detector=1.0, sharpness=0.0):
     Returns:
         float: Automatic value of regularization parameter.
     """
-    (num_views, num_det_rows, num_det_channels) = sino.shape
+    return 0.2 * auto_sigma_prior(sino, delta_pixel_detector, sharpness)
 
-    # Compute indicator function for sinogram support
-    sino_indicator = _sino_indicator(sino)
+def auto_sigma_p(sino, delta_pixel_detector = 1.0, sharpness = 0.0 ):
+    """Computes the automatic value of ``sigma_p`` for use in proximal map estimation.
 
-    # Compute a typical image value by dividing average sinogram value by a typical projection path length
-    typical_img_value = np.average(sino, weights=sino_indicator) / (num_det_channels * delta_pixel_detector)
+    Args:
+        sino (ndarray):
+            3D numpy array of sinogram data with shape (num_views,num_slices,num_channels)
+        delta_channel (float, optional):
+            [Default=1.0] Scalar value of detector channel spacing in :math:`ALU`.
+        sharpness (float, optional):
+            [Default=0.0] Scalar value that controls level of sharpness.
+            ``sharpness=0.0`` is neutral; ``sharpness>0`` increases sharpness; ``sharpness<0`` reduces sharpness
 
-    # Compute sigma_x as a fraction of the typical image value
-    sigma_x = 0.2 * (2 ** sharpness) * typical_img_value
-
-    return sigma_x
-
+    Returns:
+        float: Automatic value of regularization parameter.
+    """
+    return 1.0 * auto_sigma_prior(sino, delta_pixel_detector, sharpness)
 
 def compute_sino_params(dist_source_detector, magnification,
                         num_views, num_det_rows, num_det_channels,
@@ -494,8 +523,13 @@ def recon(sino, angles, dist_source_detector, magnification,
             Scalar value that controls level of sharpness in the reconstruction
             ``sharpness=0.0`` is neutral; ``sharpness>0`` increases sharpness; ``sharpness<0`` reduces sharpness.
             Ignored if sigma_x is not None.
-        sigma_x (float, optional): [Default=None] Scalar value :math:`>0` that specifies the qGGMRF/proxmap scale parameter.
-            If None, automatically set with auto_sigma_x. The parameter sigma_x can be used to directly control regularization, but this is only recommended for expert users.
+        sigma_x (float, optional): [Default=None] Scalar value :math:`>0` that specifies the qGGMRF scale parameter.
+            Ignored if prox_image is not None.
+            If None and prox_image is also None, automatically set with auto_sigma_x. Regularization should be controled with the ``sharpness`` parameter, but ``sigma_x`` can be set directly by expert users.
+
+        sigma_p (float, optional): [Default=None] Scalar value :math:`>0` that specifies the proximal map parameter.
+            Ignored if prox_image is None.
+            If None and proximal image is not None, automatically set with auto_sigma_p. Regularization should be controled with the ``sharpness`` parameter, but ``sigma_p`` can be set directly by expert users.
         max_iterations (int, optional): [Default=20] Integer valued specifying the maximum number of iterations. 
         stop_threshold (float, optional): [Default=0.0] [Default=0.02] Scalar valued stopping threshold in percent.
             If stop_threshold=0.0, then run max iterations.
@@ -630,7 +664,9 @@ def recon(sino, angles, dist_source_detector, magnification,
     else:
         reconparams['priorWeight_QGGMRF'] = -1
         reconparams['priorWeight_proxMap'] = 1
-        reconparams['sigma_lambda'] = sigma_x
+        if sigma_p is None:
+            sigma_p = auto_sigma_p(sino, delta_channel, sharpness)
+        reconparams['sigma_lambda'] = sigma_p
         proxmap_input = np.swapaxes(prox_image, 0, 2)
 
     sino = np.swapaxes(sino, 1, 2)
