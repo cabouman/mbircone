@@ -475,7 +475,7 @@ def recon(sino, angles, dist_source_detector, magnification,
           init_image=0.0, prox_image=None,
           sigma_y=None, snr_db=30.0, weights=None, weight_type='unweighted',
           positivity=True, p=1.2, q=2.0, T=1.0, num_neighbors=6,
-          sharpness=0.0, sigma_x=None, max_iterations=20, stop_threshold=0.02,
+          sharpness=0.0, sigma_x=None, sigma_p=None, max_iterations=20, stop_threshold=0.02,
           num_threads=None, NHICD=False, verbose=1, lib_path=__lib_path):
     """Computes 3D cone beam MBIR reconstruction
     
@@ -526,7 +526,6 @@ def recon(sino, angles, dist_source_detector, magnification,
         sigma_x (float, optional): [Default=None] Scalar value :math:`>0` that specifies the qGGMRF scale parameter.
             Ignored if prox_image is not None.
             If None and prox_image is also None, automatically set with auto_sigma_x. Regularization should be controled with the ``sharpness`` parameter, but ``sigma_x`` can be set directly by expert users.
-
         sigma_p (float, optional): [Default=None] Scalar value :math:`>0` that specifies the proximal map parameter.
             Ignored if prox_image is None.
             If None and proximal image is not None, automatically set with auto_sigma_p. Regularization should be controled with the ``sharpness`` parameter, but ``sigma_p`` can be set directly by expert users.
