@@ -214,7 +214,7 @@ def auto_sigma_p(sino, delta_pixel_detector = 1.0, sharpness = 0.0 ):
     Returns:
         float: Automatic value of regularization parameter.
     """
-    return 1.0 * auto_sigma_prior(sino, delta_pixel_detector, sharpness)
+    return 2.0 * auto_sigma_prior(sino, delta_pixel_detector, sharpness)
 
 def compute_sino_params(dist_source_detector, magnification,
                         num_views, num_det_rows, num_det_channels,
