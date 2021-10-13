@@ -47,6 +47,21 @@ pip install -r requirements_demo.txt
 python demo_3D_shepp_logan.py
 ```
 
+## Run MACE demo
+1) Install MACE demo requirements
+```
+cd demo
+pip install -r requirements_demo_mace.txt
+```
+2) Run demo
+```
+python demo_mace3D.py
+```
+
+3) Result visualization
+
+Please go to demo/output/mace3D/ to look at phantom, sinogram, and reconstruction images
+
 ## Build documentation in local folder
 1) Install docs requirements
 ```
