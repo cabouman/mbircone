@@ -58,9 +58,9 @@ pip install -r requirements_demo_mace.txt
 python demo_mace3D.py
 ```
 
-3) Result visualization
+3) Result visualization: 
 
-Please go to demo/output/mace3D/ to look at phantom, sinogram, and reconstruction images
+Please go to ```demo/output/mace3D/``` to look at phantom, sinogram, and reconstruction images
 
 ## Build documentation in local folder
 1) Install docs requirements
