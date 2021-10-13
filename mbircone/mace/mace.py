@@ -34,10 +34,10 @@ def denormalize(img_normalized, image_range):
 
 
 def denoiser_wrapper(image_noisy, denoiser, denoiser_args, image_range, permute_vector=(0,1,2), positivity=True):
-    ''' This is a denoiser wrapper function. Given a neural network denoiser interface and an associated pre-trained model, the wrapper function permutes and normalize the input 3D image, pass it into the interface, and finally de-permute and denormalize the denoised image back.
+    ''' This is a denoiser wrapper function. Given an image volume to be denoised, the wrapper function permutes and normalizes the image, passes it to a denoiser function, and permutes and denormalizes the denoised image back.
     Args:
-        image_noisy (ndarray): image to be denoised
-        denoiser (callable): The denoiser function used as the prior agent in MACE.
+        image_noisy (ndarray): image volume to be denoised
+        denoiser (callable): The denoiser function to be used.
             denoiser(x, *denoiser_args) -> ndarray
             where ``x`` is an ndarray of the noisy image volume, and ``denoiser_args`` is a tuple of the fixed parameters needed to completely specify the denoiser function.
         denoiser_args (tuple): [Default=()] Extra arguments passed to the denoiser function.
