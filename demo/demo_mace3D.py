@@ -86,7 +86,7 @@ sino_noisy = sino + noise
 
 ################ Load denoiser function and model
 print("Loading denoiser function and model ...")
-# Load cnn denoiser function
+# Load cnn denoiser function. This function will be used as the prior agent in MACE algorithm. It should be a 2D denoiser that accepts 3D or 4D image volume as input.
 denoiser = denoiser_utils.cnn_denoiser 
 # Load denoiser model structure and weights
 json_file = open(json_path, 'r')
