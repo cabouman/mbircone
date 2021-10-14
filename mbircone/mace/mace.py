@@ -171,7 +171,7 @@ def mace3D(sino, angles, dist_source_detector, magnification,
     if sigma_x is None:
         sigma_x = cone3D.auto_sigma_x(sino, delta_pixel_detector=delta_pixel_detector, sharpness=sharpness)
     if init_image is None:
-        print('Computing qGGMRF recon. This will be use it as MACE initialization point.') 
+        print('Computing qGGMRF recon. This will be used as MACE initialization point.') 
         # variable initialization
         init_image = cone3D.recon(sino, angles, dist_source_detector, magnification,
               channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
