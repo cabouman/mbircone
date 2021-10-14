@@ -568,7 +568,6 @@ def recon(sino, angles, dist_source_detector, magnification,
     sysmatrix_fname = _gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
 
     if os.path.exists(sysmatrix_fname):
-        print('Found system matrix: {}'.format(sysmatrix_fname))
         os.utime(sysmatrix_fname)  # update file modified time
     else:
         sysmatrix_fname_tmp = _gen_sysmatrix_fname_tmp(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
@@ -748,7 +747,6 @@ def project(image, angles,
     sysmatrix_fname = _gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
 
     if os.path.exists(sysmatrix_fname):
-        print('Found system matrix: {}'.format(sysmatrix_fname))
         os.utime(sysmatrix_fname)  # update file modified time
     else:
         sysmatrix_fname_tmp = _gen_sysmatrix_fname_tmp(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
