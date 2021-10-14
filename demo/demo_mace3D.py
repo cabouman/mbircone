@@ -35,7 +35,13 @@ if is_download:
     print("Downloading and extracting data ...")
     # Download phantom and params files.
     download_url = 'https://github.com/dyang37/mbircone_data/raw/master/demo_data.tar.gz'
-    urllib.request.urlretrieve(download_url, 'temp.tar.gz') 
+    try:
+        urllib.request.urlretrieve(download_url, 'temp.tar.gz') 
+    except urllib.error.URLError as e:
+        raise RuntimeError('URL Error Raised!')
+    except urllib.error.HTTPError as e:
+        raise RuntimeError('HTTP Error Raised!')
+
     # Extract tarball file
     tar_file = tarfile.open('temp.tar.gz')
     tar_file.extractall('./demo_data/')
@@ -44,6 +50,7 @@ if is_download:
 else:
     print("Skipped data download and extraction step.")
 
+input("Data download and extraction finished. Press Enter:")
 ################ Generate sinogram
 print("Generating sinogram ...")
 # Generate array of view angles
