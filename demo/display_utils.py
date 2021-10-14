@@ -1,8 +1,7 @@
-
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import imageio
-
 
 def font_setting():
     SMALL_SIZE = 8
@@ -138,3 +137,23 @@ def read_ND(filePath, n_dim, dtype='float32', ntype='int32'):
 
     return dataArray
 
+
+def query_yes_no(question):
+    """Ask a yes/no question via raw_input() and return their answer.
+        Code modified from reference: `https://stackoverflow.com/questions/3041986/apt-command-line-interface-like-yes-no-input/3041990`
+    Args:
+        question (string): Question that is presented to the user.
+    Returns:
+        Boolean value: True for "yes" or "Enter", or False for "no".
+    """
+    valid = {"yes": True, "y": True, "ye": True, "no": False, "n": False}
+    prompt = " [y/n, default=n] "
+    while True:
+        sys.stdout.write(question + prompt)
+        choice = input().lower()
+        if choice == "":
+            return False
+        elif choice in valid:
+            return valid[choice]
+        else:
+            sys.stdout.write("Please respond with 'yes' or 'no' " "(or 'y' or 'n').\n")

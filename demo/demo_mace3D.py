@@ -28,16 +28,21 @@ prior_weight = 0.5
 
 
 ################ Download and extract data
-print("Downloading and extracting data ...")
-# Download phantom and params files
-download_url = 'https://github.com/dyang37/mbircone_data/raw/master/demo_data.tar.gz'
-urllib.request.urlretrieve(download_url, 'temp.tar.gz') 
-# Extract tarball file
-tar_file = tarfile.open('temp.tar.gz')
-tar_file.extractall('./demo_data/')
-tar_file.close()
-os.remove('temp.tar.gz') 
-
+is_download = True
+if os.path.exists('./demo_data/'):
+    is_download = display_utils.query_yes_no("demo_data folder already exists. Do you still want to download and overwrite the files?")
+if is_download:
+    print("Downloading and extracting data ...")
+    # Download phantom and params files.
+    download_url = 'https://github.com/dyang37/mbircone_data/raw/master/demo_data.tar.gz'
+    urllib.request.urlretrieve(download_url, 'temp.tar.gz') 
+    # Extract tarball file
+    tar_file = tarfile.open('temp.tar.gz')
+    tar_file.extractall('./demo_data/')
+    tar_file.close()
+    os.remove('temp.tar.gz') 
+else:
+    print("Skipped data download and extraction step.")
 
 ################ Generate sinogram
 print("Generating sinogram ...")
