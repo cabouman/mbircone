@@ -51,28 +51,28 @@ def plt_cmp_3dobj(phantom, recon, display_slice=None, display_x=None, display_y=
     fig, axs = plt.subplots(2, 3)
 
     title = f'Phantom: Axial Scan {display_slice:d}.'
-    axs[0, 0].imshow(phantom[display_slice], vmin=vmin, vmax=vmax, cmap='gray')
+    axs[0, 0].imshow(phantom[display_slice], vmin=vmin, vmax=vmax, cmap='gray', interpolation='none')
     axs[0, 0].set_title(title)
 
     title = f'Phantom: Coronal Scan {display_x:d}.'
-    axs[0, 1].imshow(phantom[:, display_x, :], vmin=vmin, vmax=vmax, cmap='gray')
+    axs[0, 1].imshow(phantom[:, display_x, :], vmin=vmin, vmax=vmax, cmap='gray', interpolation='none')
     axs[0, 1].set_title(title)
 
     title = f'Phantom: Sagittal Scan {display_y:d}.'
-    axs[0, 2].imshow(phantom[:, :, display_y], vmin=vmin, vmax=vmax, cmap='gray')
+    axs[0, 2].imshow(phantom[:, :, display_y], vmin=vmin, vmax=vmax, cmap='gray', interpolation='none')
     axs[0, 2].set_title(title)
 
     # display reconstruction
     title = f'Recon: Axial Scan {display_slice:d}.'
-    axs[1, 0].imshow(recon[display_slice], vmin=vmin, vmax=vmax, cmap='gray')
+    axs[1, 0].imshow(recon[display_slice], vmin=vmin, vmax=vmax, cmap='gray', interpolation='none')
     axs[1, 0].set_title(title)
 
     title = f'Recon: Coronal Scan {display_y:d}.'
-    axs[1, 1].imshow(recon[:, display_x, :], vmin=vmin, vmax=vmax, cmap='gray')
+    axs[1, 1].imshow(recon[:, display_x, :], vmin=vmin, vmax=vmax, cmap='gray', interpolation='none')
     axs[1, 1].set_title(title)
 
     title = f'Recon: Sagittal Scan {display_x:d}.'
-    im = axs[1, 2].imshow(recon[:, :, display_y], vmin=vmin, vmax=vmax, cmap='gray')
+    im = axs[1, 2].imshow(recon[:, :, display_y], vmin=vmin, vmax=vmax, cmap='gray', interpolation='none')
     axs[1, 2].set_title(title)
 
     # Add colorbar
@@ -93,7 +93,7 @@ def plot_gif(x, save_dir, name, vmin=None, vmax=None):
     images = []
     for i in range(x.shape[0]):
         fig = plt.figure()
-        plt.imshow(x[i], vmin=vmin, vmax=vmax).set_cmap('gray')
+        plt.imshow(x[i], vmin=vmin, vmax=vmax, interpolation='none').set_cmap('gray')
         plt.title("Slice: %d" % (i + 1))
         plt.colorbar()
         fig.canvas.draw()
@@ -119,7 +119,7 @@ def plot_image(img, title=None, filename=None, vmin=None, vmax=None):
 
     plt.ion()
     fig = plt.figure()
-    imgplot = plt.imshow(img, vmin=vmin, vmax=vmax)
+    imgplot = plt.imshow(img, vmin=vmin, vmax=vmax, interpolation='none')
     plt.title(label=title)
     imgplot.set_cmap('gray')
     plt.colorbar()
