@@ -6,8 +6,8 @@ import mbircone.cone3D as cone3D
 __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
 
 def compute_inv_permute_vector(permute_vector):
-    ''' Given a permutation vector, compute its inverse permutation vector s.t. an array will have the same shape after permutation and inverse permutation. 
-    '''
+    """ Given a permutation vector, compute its inverse permutation vector s.t. an array will have the same shape after permutation and inverse permutation. 
+    """
     inv_permute_vector = []
     for i in range(len(permute_vector)):
         # print('i = {}'.format(i))
@@ -34,7 +34,7 @@ def denormalize(img_normalized, image_range):
 
 
 def denoiser_wrapper(image_noisy, denoiser, denoiser_args, image_range, permute_vector=(0,1,2), positivity=True):
-    ''' This is a denoiser wrapper function. Given an image volume to be denoised, the wrapper function permutes and normalizes the image, passes it to a denoiser function, and permutes and denormalizes the denoised image back.
+    """ This is a denoiser wrapper function. Given an image volume to be denoised, the wrapper function permutes and normalizes the image, passes it to a denoiser function, and permutes and denormalizes the denoised image back.
     Args:
         image_noisy (ndarray): image volume to be denoised
         denoiser (callable): The denoiser function to be used.
@@ -48,7 +48,7 @@ def denoiser_wrapper(image_noisy, denoiser, denoiser_args, image_range, permute_
             If True, positivity will be enforced by clipping the denoiser output to be non-negative.
     Returns:
         ndarray: denoised image with same shape and dimensionality as input image ``image_noisy`` 
-    '''
+    """
     # permute the 3D image s.t. the desired denoising dimensionality is moved to axis=0
     image_noisy = np.transpose(image_noisy, permute_vector)
     image_noisy_norm = normalize(image_noisy, image_range)
