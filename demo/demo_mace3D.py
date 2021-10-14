@@ -8,7 +8,7 @@ import display_utils
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' 
 
 """
-This file demonstrates the usage of mace3D reconstruction algorithm by downloading phantom and denoiser data from a url, generating sinogram by projecting the phantom, and finally performing a 3D MACE reconstruction.
+This file demonstrates the usage of mace3D reconstruction algorithm by downloading phantom and denoiser data from a url, generating sinogram by projecting the phantom and adding transmission noise, and finally performing a 3D MACE reconstruction.
 """
 print('This file demonstrates the usage of mace3D reconstruction algorithm by downloading phantom and denoiser data from a url, generating sinogram by projecting the phantom, and finally performing a 3D MACE reconstruction.\n')
 
