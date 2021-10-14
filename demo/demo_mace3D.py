@@ -2,9 +2,9 @@ import os,sys
 import numpy as np
 import urllib.request
 import tarfile
+from keras.models import model_from_json
 import mbircone
 import display_utils
-import denoiser_utils
 
 if __name__ == '__main__':
     ################ Download and extract data for this demo
@@ -54,13 +54,21 @@ if __name__ == '__main__':
     output_dir = './output/mace3D/'
     os.makedirs(output_dir, exist_ok=True)
     
-    ################ initialize denoiser function and model
-    denoiser, denoiser_model = denoiser_utils.load_dncnn_denoiser_model('./demo_data/dncnn_params/model_dncnn/')
+    # initialize denoiser function used in MACE reconstruction
+    denoiser = mbircone.mace.keras_denoiser 
+    # load denoiser model structure and weights
+    json_path = './demo_data/dncnn_params/model_dncnn/model.json'
+    weight_path = './demo_data/dncnn_params/model_dncnn/model.hdf5'
+    json_file = open(json_path, 'r')
+    denoiser_model_json = json_file.read()
+    json_file.close()
+    denoiser_model = model_from_json(denoiser_model_json)
+    denoiser_model.load_weights(weight_path)
     
     ################ MACE reconstruction
     recon_mace = mbircone.mace.mace3D(sino_noisy, angles, dist_source_detector, magnification,
-            max_admm_itr=max_admm_itr, prior_weight=prior_weight,
             denoiser=denoiser, denoiser_args=(denoiser_model),
+            max_admm_itr=max_admm_itr, prior_weight=prior_weight,
             delta_pixel_detector=delta_pixel_detector,
             weight_type='transmission')
     

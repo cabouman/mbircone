@@ -1,6 +1,5 @@
 import numpy as np
 import os
-from keras.models import model_from_json
 
 def _from_tensor(img):
     ''' Given a output tensor from keras model, convert it back to a numpy array by removing axes of length one.
@@ -20,20 +19,7 @@ def _to_tensor(img):
         return np.moveaxis(img,2,0)[...,np.newaxis]
 
 
-def load_dncnn_denoiser_model(denoiser_model_path):
-    json_path=os.path.join(denoiser_model_path,'model.json')
-    weight_path=os.path.join(denoiser_model_path,'model.hdf5')
-    json_file = open(json_path, 'r')
-    denoiser_model_json = json_file.read()
-    json_file.close()
-    denoiser_model = model_from_json(denoiser_model_json)
-    denoiser_model.load_weights(weight_path)
-    print(f'Using 2D DnCNN model trained on natural images')
-    denoiser = dncnn_denoiser
-    return denoiser, denoiser_model
-
-
-def dncnn_denoiser(img_noisy, denoiser_model):
+def keras_denoiser(img_noisy, denoiser_model):
     ''' This is an example of a keras denoiser function. This denoiser works with either 3D or 4D image batch.
         Args:
             img_noisy (ndarray): noisy image batch with shape (N_batch, N0, N1, ... , Nm).

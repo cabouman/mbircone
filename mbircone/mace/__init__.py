@@ -1,2 +1,3 @@
 from .mace import *
-__all__ =['denoiser_wrapper','mace3D']
+from .denoiser import *
+__all__ =['mace3D','keras_denoiser']
