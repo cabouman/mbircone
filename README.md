@@ -62,6 +62,9 @@ python demo_mace3D.py
 
 Please go to ```demo/output/mace3D/``` to look at phantom, sinogram, and reconstruction images
 
+4) In the case where exceptions occur when downloading data, please check your internet connection. If you replaced the default url with the url of your own dataset, please make sure that the url is correct, and points to a public webpage.
+
+
 ## Build documentation in local folder
 1) Install docs requirements
 ```
