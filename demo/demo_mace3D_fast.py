@@ -1,31 +1,33 @@
 import os,sys
 import numpy as np
+import math
 import urllib.request
 import tarfile
 from keras.models import model_from_json
+from PIL import Image
 import mbircone
 import demo_utils, denoiser_utils
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' 
 
 """
-This file demonstrates the usage of mace3D reconstruction algorithm by downloading phantom and denoiser data from a url, generating sinogram by projecting the phantom and adding transmission noise, and finally performing a 3D MACE reconstruction.
+This file is a faster demonstration of the usage of mace3D reconstruction algorithm by downloading phantom and denoiser data from a url, downsampling the phantom along all three dimensions, generating sinogram by projecting the phantom, and finally performing a 3D MACE reconstruction.
 """
-print('This file demonstrates the usage of mace3D reconstruction algorithm by downloading phantom and denoiser data from a url, generating sinogram by projecting the phantom, and finally performing a 3D MACE reconstruction.\n')
+print('This file is a faster demonstration of the usage of mace3D reconstruction algorithm by downloading phantom and denoiser data from a url, downsampling the phantom along all three dimensions, generating sinogram by projecting the phantom, and finally performing a 3D MACE reconstruction.\n')
 
 
 ################ Define Parameters
 # Geometry parameters
 dist_source_detector = 839.0472 # Distance between the X-ray source and the detector in units of ALU
 magnification = 5.572128439964856 # magnification is defined as (source to detector distance)/(source to center-of-rotation distance)
-delta_pixel_detector = 0.25 # Scalar value of detector pixel spacing in units of ALU
-num_det_rows = 28 # number of detector rows
-num_det_channels = 240 # number of detector channels
+delta_pixel_detector = 0.5 # Scalar value of detector pixel spacing in units of ALU
+num_det_rows = 14 # number of detector rows
+num_det_channels = 120 # number of detector channels
 # Simulated sinogram parameters
 num_views = 75 # number of projection views
 sino_noise_sigma = 0.01 # transmission noise level
 # MACE recon parameters 
 max_admm_itr = 10 # max ADMM iterations for MACE reconstruction
-prior_weight = 0.5 # cumulative weights for three prior agents.
+prior_weight = 0.7 # cumulative weights for three prior agents.
 # Download url and extract path.
 download_url = 'https://github.com/dyang37/mbircone_data/raw/master/demo_data.tar.gz' # url to download the demo data
 extract_path = './demo_data/' # destination path to extract the downloaded tarball file
@@ -46,12 +48,27 @@ Download phantom and cnn denoiser params files.
 demo_utils.download_and_extract(download_url, extract_path)
 
 
+################ Generate downsampled phantom
+print("Generating downsampled 3D phantom volume ...")
+# load original phantom
+phantom_orig = np.load(phantom_path)
+print("shape of original phantom = ", phantom_orig.shape)
+# downsample the original phantom along slice axis
+(Nz, Nx, Ny) = phantom_orig.shape
+Nx_ds = Nx//2+1
+Ny_ds = Ny//2+1
+Nz_ds = Nz//2
+phantom = demo_utils.image_resize(phantom_orig, (Nx_ds,Ny_ds))
+# Take first half of the slices to form the downsampled phantom.
+phantom = phantom[:Nz_ds]
+print("shape of downsampled phantom = ", phantom.shape)
+
+
 ################ Generate sinogram
 print("Generating sinogram ...")
 # Generate array of view angles
 angles = np.linspace(0, 2*np.pi, num_views, endpoint=False)
 # Generate clean sinogram by projecting phantom
-phantom = np.load(phantom_path)
 sino = mbircone.cone3D.project(phantom,angles,
             num_det_rows, num_det_channels,
             dist_source_detector, magnification,
@@ -82,14 +99,14 @@ recon_mace = mbircone.mace.mace3D(sino_noisy, angles, dist_source_detector, magn
         max_admm_itr=max_admm_itr, prior_weight=prior_weight,
         delta_pixel_detector=delta_pixel_detector,
         weight_type='transmission')
-
-
 recon_shape = recon_mace.shape
 print("Reconstruction shape = ",recon_shape)
+
+
 ################ Post-process Reconstruction results
 print("Post processing MACE reconstruction results ...")
 # Output image and results directory
-output_dir = './output/mace3D/'
+output_dir = './output/mace3D_fast/'
 os.makedirs(output_dir, exist_ok=True)
 # Save recon results as a numpy array
 np.save(os.path.join(output_dir,"recon_mace.npy"), recon_mace)
@@ -106,7 +123,8 @@ for display_slice in display_slices:
     demo_utils.plot_image(recon_mace[display_slice],title=f'MACE reconstruction, axial slice {display_slice}',filename=os.path.join(output_dir,f'recon_mace_slice{display_slice}.png'),vmin=0,vmax=0.5)
 
 # Plot 3D phantom and recon image volumes as gif images.
-demo_utils.plot_gif(phantom,output_dir,'phantom',vmin=0,vmax=0.5)
+demo_utils.plot_gif(phantom_orig,output_dir,'phantom_original',vmin=0,vmax=0.5)
+demo_utils.plot_gif(phantom,output_dir,'phantom_resized',vmin=0,vmax=0.5)
 demo_utils.plot_gif(recon_mace,output_dir,'recon_mace',vmin=0,vmax=0.5)
 
 

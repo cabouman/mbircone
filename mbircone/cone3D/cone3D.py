@@ -475,7 +475,7 @@ def recon(sino, angles, dist_source_detector, magnification,
           init_image=0.0, prox_image=None,
           sigma_y=None, snr_db=30.0, weights=None, weight_type='unweighted',
           positivity=True, p=1.2, q=2.0, T=1.0, num_neighbors=6,
-          sharpness=0.0, sigma_x=None, sigma_p=None, max_iterations=100, stop_threshold=0.02,
+          sharpness=0.0, sigma_x=None, sigma_p=None, max_iterations=20, stop_threshold=0.02,
           num_threads=None, NHICD=False, verbose=1, lib_path=__lib_path):
     """Computes 3D cone beam MBIR reconstruction
     
@@ -530,7 +530,7 @@ def recon(sino, angles, dist_source_detector, magnification,
         sigma_p (float, optional): [Default=None] Scalar value :math:`>0` that specifies the proximal map parameter.
             Ignored if prox_image is None.
             If None and proximal image is not None, automatically set with auto_sigma_p. Regularization should be controled with the ``sharpness`` parameter, but ``sigma_p`` can be set directly by expert users.
-        max_iterations (int, optional): [Default=100] Integer valued specifying the maximum number of iterations. 
+        max_iterations (int, optional): [Default=20] Integer valued specifying the maximum number of iterations. 
         stop_threshold (float, optional): [Default=0.02] Scalar valued stopping threshold in percent.
             If stop_threshold=0.0, then run max iterations.
         num_threads (int, optional): [Default=None] Number of compute threads requested when executed.
@@ -742,7 +742,7 @@ def project(image, angles,
 
     assert (num_img_slices, num_img_rows, num_img_cols) == (imgparams['N_z'], imgparams['N_x'], imgparams['N_y']), \
         'Image size of %s is incorrect! With the specified geometric parameters, expected image should have shape %s, use function `cone3D.compute_img_size` to compute the correct image size.' \
-        %  (num_img_slices, num_img_rows, num_img_cols)), ((imgparams['N_z'], imgparams['N_x'], imgparams['N_y'])
+        %  ((num_img_slices, num_img_rows, num_img_cols), (imgparams['N_z'], imgparams['N_x'], imgparams['N_y']))
 
     hash_val = hash_params(angles, sinoparams, imgparams)
     sysmatrix_fname = _gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])

@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import imageio
 import urllib.request
 import tarfile
+from PIL import Image
 
 def font_setting():
     SMALL_SIZE = 8
@@ -139,6 +140,27 @@ def read_ND(filePath, n_dim, dtype='float32', ntype='int32'):
 
     return dataArray
 
+
+def image_resize(image, output_shape):
+    """Resizes a 3D image volume by performing 2D resizing along the slices dimension
+
+    Args:
+        image (ndarray): 3D numpy array containing image volume with shape (slices, rows, cols)
+        output_shape (tuple): (num_rows, num_cols) shape of resized output
+
+    Returns:
+        ndarray: 3D numpy array containing interpolated image with shape (num_slices, num_rows, num_cols).
+    """
+
+    image_resized = np.empty((image.shape[0],output_shape[0],output_shape[1]), dtype=image.dtype)
+    for i in range(image.shape[0]):
+        PIL_image = Image.fromarray(image[i])
+        PIL_image_resized = PIL_image.resize((output_shape[1],output_shape[0]), resample=Image.BILINEAR)
+        image_resized[i] = np.array(PIL_image_resized)
+
+    return image_resized
+
+
 def download_and_extract(download_url, extract_path='./demo_data/'):
     is_download = True
     if os.path.exists(extract_path):
@@ -173,6 +195,7 @@ def download_and_extract(download_url, extract_path='./demo_data/'):
     else:
         print("Skipped data download and extraction step.")
     return 
+
 
 def query_yes_no(question):
     """Ask a yes/no question via raw_input() and return their answer.
