@@ -24,7 +24,7 @@ num_det_channels = 240 # number of detector channels
 num_views = 75 # number of projection views
 sino_noise_sigma = 0.01 # transmission noise level
 # MACE recon parameters 
-max_qGGMRF_itr = 40 # max iterations for initial qGGMRF reconstruction
+max_qGGMRF_itr = 20 # max iterations for initial qGGMRF reconstruction
 max_admm_itr = 10 # max ADMM iterations for MACE reconstruction
 prior_weight = 0.5 # cumulative weights for three prior agents.
 # Download url and extract path.
