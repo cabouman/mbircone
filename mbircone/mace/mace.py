@@ -150,41 +150,52 @@ def mace3D(sino, angles, dist_source_detector, magnification,
         num_threads (int, optional): [Default=None] Number of compute threads requested when executed.
             If None, num_threads is set to the number of cores in the system
         NHICD (bool, optional): [Default=False] If true, uses Non-homogeneous ICD updates
-        verbose (int, optional): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal reconstruction progress information, and 2 prints the full information.
+        verbose (int, optional): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints MACE reconstruction progress information, and 2 prints the MACE reconstruction as well as qGGMRF/proximal-map reconstruction progress information.
         lib_path (str, optional): [Default=~/.cache/mbircone] Path to directory containing library of forward projection matrices.
     Returns:
         3D numpy array: 3D reconstruction with shape (num_img_slices, num_img_rows, num_img_cols) in units of :math:`ALU^{-1}`.        
     """
-    
-    print("initializing MACE...")
+    if verbose: 
+        print("initializing MACE...")
+    # verbosity level for qGGMRF recon
+    qGGMRF_verbose = max(0,verbose-1)     
+    # Calculate automatic value of sinogram weights
     if weights is None:
         weights = cone3D.calc_weights(sino,weight_type)
+    # Calculate automatic value of delta_pixel_image
     if delta_pixel_image is None:
         delta_pixel_image = delta_pixel_detector/magnification
-    # Set automatic value of sigma_y
+    # Calculate automatic value of sigma_y
     if sigma_y is None:
         sigma_y = cone3D.auto_sigma_y(sino, weights, snr_db=snr_db, delta_pixel_image=delta_pixel_image, delta_pixel_detector=delta_pixel_detector)
-    # Set automatic value of sigma_p
+    # Calculate automatic value of sigma_p
     if sigma_p is None:
         sigma_p = cone3D.auto_sigma_p(sino, delta_pixel_detector=delta_pixel_detector, sharpness=sharpness)
-    # Set automatic value of sigma_x
+    # Calculate automatic value of sigma_x
     if sigma_x is None:
         sigma_x = cone3D.auto_sigma_x(sino, delta_pixel_detector=delta_pixel_detector, sharpness=sharpness)
     if init_image is None:
-        print('Computing qGGMRF recon. This will be used as MACE initialization point.') 
-        # variable initialization
+        if verbose:
+            start = time.time()
+            print("Computing qGGMRF reconstruction. This will be used as MACE initialization point.") 
         init_image = cone3D.recon(sino, angles, dist_source_detector, magnification,
               channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
               delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius,
               sigma_y=sigma_y, weights=weights,
               positivity=positivity, p=p, q=q, T=T, num_neighbors=num_neighbors,
               sigma_x=sigma_x, stop_threshold=stop_threshold,
-              num_threads=num_threads, NHICD=NHICD, verbose=verbose, lib_path=lib_path)
+              num_threads=num_threads, NHICD=NHICD, verbose=qGGMRF_verbose, lib_path=lib_path)
+        if verbose:
+            end = time.time()
+            elapsed_t = end-start
+            print(f"Done computing qGGMRF reconstruction. Elapsed time: {elapsed_t:.2f} sec.")
         if image_range is None:
-            print("image dynamic range automatically determined by qGGMRF reconstruction.")
+            if verbose:
+                print("image dynamic range automatically determined by qGGMRF reconstruction.")
             image_range_upper = np.percentile(init_image, 95)
             image_range = [0, image_range_upper]
-            print("image dynamic range = ",image_range)
+            if verbose:
+                print("image dynamic range = ",image_range)
     # Throw an exception if image_range is None and init_image is not None.
     assert not (image_range is None), \
         'Image_range needs to be provided if an init_image is given to MACE algorithm.'
@@ -205,10 +216,13 @@ def mace3D(sino, angles, dist_source_detector, magnification,
         beta = [1-prior_weight,prior_weight/(image_dim),prior_weight/(image_dim),prior_weight/(image_dim)]
     assert(all(w>=0 for w in beta)), 'Incorrect value of prior_weight given. All elements in prior_weight should be non-negative, and sum should be no greater than 1.'   
     # begin ADMM iterations
-    print("Begin MACE ADMM iterations")
+    if verbose:
+        print("Begin MACE ADMM iterations:")
     for itr in range(max_admm_itr):
+        if verbose:
+            print(f"Begin MACE iteration {itr}/{max_admm_itr}:")
+            start = time.time()
         # forward model prox map agent
-        start = time.time()
         X[0] = cone3D.recon(sino, angles, dist_source_detector, magnification,
           channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
           delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius,
@@ -216,21 +230,31 @@ def mace3D(sino, angles, dist_source_detector, magnification,
           sigma_y=sigma_y, weights=weights,
           positivity=positivity,
           sigma_p=sigma_p, max_iterations=max_iterations, stop_threshold=stop_threshold,
-          num_threads=num_threads, NHICD=NHICD, verbose=False, lib_path=lib_path)
+          num_threads=num_threads, NHICD=NHICD, verbose=qGGMRF_verbose, lib_path=lib_path)
+        if verbose:
+            print("     Done forward model proximal map estimation.")
         # prior model denoiser agents
         # denoising in XY plane (along Z-axis)
         X[1] = denoiser_wrapper(W[1], denoiser, denoiser_args, image_range, permute_vector=(0,1,2), positivity=positivity)
+        if verbose:
+            print("     Done denoising in XY-plane.")
         # denoising in YZ plane (along X-axis)
         X[2] = denoiser_wrapper(W[2], denoiser, denoiser_args, image_range, permute_vector=(1,0,2), positivity=positivity)
+        if verbose:
+            print("     Done denoising in YZ-plane.")
         # denoising in XZ plane (along Y-axis)
         X[3] = denoiser_wrapper(W[3], denoiser, denoiser_args, image_range, permute_vector=(2,0,1), positivity=positivity) 
+        if verbose:
+            print("     Done denoising in XZ-plane.")
         Z = sum([beta[k]*(2*X[k]-W[k]) for k in range(image_dim+1)])
         for k in range(image_dim+1):
             W[k] += 2*rho*(Z-X[k])
         recon = sum([beta[k]*X[k] for k in range(image_dim+1)])
-        end = time.time()
-        elapsed_t = end-start
-        print(f'MACE iteration {itr}, elapsed time: {elapsed_t:.2f} sec.')
+        if verbose:
+            end = time.time()
+            elapsed_t = end-start
+            print(f"Done MACE iteration. Elapsed time: {elapsed_t:.2f} sec.")
     # end ADMM iterations
+    print("Done MACE reconstruction.")
     return recon
 

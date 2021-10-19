@@ -240,7 +240,7 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 				}
 			}
 		}
-		printf("\r                                                                                    \r");
+		//printf("\r                                                                                    \r");
 		speedAuxICD_computeSpeed(&speedAuxICD);
 		toc(&ticToc_icdUpdate);
 		ticToc_icdUpdate_total += ticToc_icdUpdate;
