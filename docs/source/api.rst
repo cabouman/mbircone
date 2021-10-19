@@ -7,10 +7,11 @@ API reference
 
 .. _cone3D: cone3D.html
 .. _preprocess: preprocess.html
-
+.. _mace: mace.html
 .. toctree::
    :titlesonly:
    :hidden:
 
    cone3D
    preprocess
+   mace

@@ -1,7 +1,9 @@
-import sys
+import os,sys
 import numpy as np
 import matplotlib.pyplot as plt
 import imageio
+import urllib.request
+import tarfile
 
 def font_setting():
     SMALL_SIZE = 8
@@ -137,6 +139,40 @@ def read_ND(filePath, n_dim, dtype='float32', ntype='int32'):
 
     return dataArray
 
+def download_and_extract(download_url, extract_path='./demo_data/'):
+    is_download = True
+    if os.path.exists(extract_path):
+        is_download = query_yes_no(f"{extract_path} folder already exists. Do you still want to download and overwrite the files?")
+    if is_download:
+        # download the data from url.
+        print("Downloading and extracting data ...")
+        # Download phantom and cnn denoiser params files.
+        # A tarball file will be downloaded from the given url and extracted to demo_data/ folder.
+        # the tarball file contains the following files:
+        # an image volume phantom file phantom_3D.npy. You can replace this file with your own phantom data.
+        # dncnn parameter files stored in demo_data/dncnn_params/ directory
+        try:
+            urllib.request.urlretrieve(download_url, 'temp.tar.gz')
+        except urllib.error.HTTPError as e:
+            if e.code == 401:
+                raise RuntimeError(f'HTTP status code {e.code}: URL authentication failed! Currently we do not support downloading data from a url that requires authentication.')
+            elif e.code == 403:
+                raise RuntimeError(f'HTTP status code {e.code}: URL forbidden! Please make sure the provided URL is public.')
+            elif e.code == 404:
+                raise RuntimeError(f'HTTP status code {e.code}: URL not Found! Please check and make sure the download URL provided is correct.')
+            else:
+                raise RuntimeError(f'HTTP status code {e.code}: {e.reason}. For more details please refer to https://en.wikipedia.org/wiki/List_of_HTTP_status_codes')
+        except urllib.error.URLError as e:
+            raise RuntimeError('URLError raised! Please check your internet connection.')
+        # Extract tarball file
+        tar_file = tarfile.open('temp.tar.gz')
+        tar_file.extractall(extract_path)
+        tar_file.close()
+        os.remove('temp.tar.gz')
+        input("Data download and extraction finished. Press Enter to continue.")
+    else:
+        print("Skipped data download and extraction step.")
+    return 
 
 def query_yes_no(question):
     """Ask a yes/no question via raw_input() and return their answer.

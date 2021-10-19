@@ -8,6 +8,7 @@ __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
 def compute_inv_permute_vector(permute_vector):
     """ Given a permutation vector, compute its inverse permutation vector s.t. an array will have the same shape after permutation and inverse permutation. 
     """
+     
     inv_permute_vector = []
     for i in range(len(permute_vector)):
         # print('i = {}'.format(i))
@@ -20,6 +21,7 @@ def compute_inv_permute_vector(permute_vector):
 def normalize(img, image_range):
     """Normalizes ``img`` from specified image range to the range of (0,1).
     """
+    
     #print('original image range:',image_range)
     img_normalized = (img-image_range[0])/(image_range[1]-image_range[0])
     #print('normalized image range:',np.percentile(img_normalized,10),np.percentile(img_normalized,90))
@@ -29,12 +31,14 @@ def normalize(img, image_range):
 def denormalize(img_normalized, image_range):
     """Denormalizes ``img_normalized`` from (0,1) to desired image range.
     """
+    
     img = img_normalized*(image_range[1]-image_range[0])+image_range[0] 
     return img
 
 
 def denoiser_wrapper(image_noisy, denoiser, denoiser_args, image_range, permute_vector=(0,1,2), positivity=True):
     """ This is a denoiser wrapper function. Given an image volume to be denoised, the wrapper function permutes and normalizes the image, passes it to a denoiser function, and permutes and denormalizes the denoised image back.
+    
     Args:
         image_noisy (ndarray): image volume to be denoised
         denoiser (callable): The denoiser function to be used.
@@ -49,6 +53,7 @@ def denoiser_wrapper(image_noisy, denoiser, denoiser_args, image_range, permute_
     Returns:
         ndarray: denoised image with same shape and dimensionality as input image ``image_noisy`` 
     """
+    
     # permute the 3D image s.t. the desired denoising dimensionality is moved to axis=0
     image_noisy = np.transpose(image_noisy, permute_vector)
     image_noisy_norm = normalize(image_noisy, image_range)
@@ -75,86 +80,59 @@ def mace3D(sino, angles, dist_source_detector, magnification,
             sharpness=0.0, sigma_x=None, sigma_p=None, max_iterations=3, stop_threshold=0.02,
             num_threads=None, NHICD=False, verbose=1, lib_path=__lib_path):
     """Computes 3D conebeam beam reconstruction with multi-slice MACE alogorithm by fusing forward model proximal map with 2D denoisers across xy, xz, and yz planes.
-    Required Args:
+    
+    Required arguments: 
         sino (ndarray): 3D sinogram array with shape (num_views, num_det_rows, num_det_channels)
         angles (ndarray): 1D view angles array in radians.
-        dist_source_detector (float): Distance between the X-ray source and the detector in units of ALU
+        jdist_source_detector (float): Distance between the X-ray source and the detector in units of ALU
         magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance). 
-    
-    Args specific to MACE reconstruction algorithm:        
-        denoiser (callable): The denoiser function used as the prior agent in MACE.
-            denoiser(x, *denoiser_args) -> ndarray
+    Arguments specific to MACE reconstruction algorithm:  
+        - **denoiser** (*callable*): The denoiser function used as the prior agent in MACE.
+            
+                ``denoiser(x, *denoiser_args) -> ndarray``
+            
             where ``x`` is an ndarray of the noisy image volume, and ``denoiser_args`` is a tuple of the fixed parameters needed to completely specify the denoiser function. 
-        denoiser_args (tuple): [Default=()] Extra arguments passed to the denoiser function.
-         
-        max_admm_itr (int): [Default=10] Maximum number of MACE ADMM iterations.
-        rho (float): [Default=0.5] step size of ADMM update in MACE, range (0,1).
-            The value of rho mainly controls the convergence speed of MACE algorithm.
-        prior_weight (ndarray): [Default=0.5] weights for prior agents, specified by either a scalar value or a 1D array.
-            If a scalar is specified, then all three prior agents use the same weight of (prior_weight/3).
-            If an array is provided, then the array should have three elements corresponding to the weight of denoisers in XY, YZ, and XZ planes respectively. 
-            The weight for forward model proximal map agent will be calculated as 1-sum(prior_weight) so that the sum of all agent weights are equal to 1.
-            Each entry of prior_weight should have value between 0 and 1. sum(prior_weight) needs to be no greater than 1.
-        
-        init_image: (ndarray, optional): [Default=None] Initial value of MACE reconstruction image, specified by either a scalar value or a 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols)
-            If None, the inital value of MACE will be automatically determined by a qGGMRF reconstruction.
-        image_range (tuple): [default: None] dynamic range of reconstruction image. 
-            If None, the lower bound will be 0, and the upper bound will be determined by 95% pixel value of the qGGMRF reconstruction. 
-            If an init_image is provided, then image_range must be also provided. 
-        
-    Optional Args inherited from ``mbircone.cone3D.recon`` (with changing default value of ``max_iterations``): 
-        channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
-        row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
-        rotation_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space.
-            This is normally set to zero.
-
-        delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
-        delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
-            If None, automatically set to delta_pixel_detector/magnification
-        ror_radius (float, optional): [Default=None] Scalar value of radius of reconstruction in :math:`ALU`.
-            If None, automatically set with compute_img_params.
-            Pixels outside the radius ror_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
-
-        sigma_y (float, optional): [Default=None] Scalar value of noise standard deviation parameter.
-            If None, automatically set with auto_sigma_y.
-        snr_db (float, optional): [Default=30.0] Scalar value that controls assumed signal-to-noise ratio of the data in dB.
-            Ignored if sigma_y is not None.
-        weights (ndarray, optional): [Default=None] 3D weights array with same shape as sino.
-        weight_type (string, optional): [Default='unweighted'] Type of noise model used for data.
-            If the ``weights`` array is not supplied, then the function ``mbircone.calc_weights`` is used to set weights using specified ``weight_type`` parameter.
-            Option "unweighted" corresponds to unweighted reconstruction;
-            Option "transmission" is the correct weighting for transmission CT with constant dosage;
-            Option "transmission_root" is commonly used with transmission CT data to improve image homogeneity;
-            Option "emission" is appropriate for emission CT data.
-
-        positivity (bool, optional): [Default=True] Boolean value that determines if positivity constraint is enforced.
-            The positivity parameter defaults to True; however, it should be changed to False when used in applications that can generate negative image values.
-        p (float, optional): [Default=1.2] Scalar value in range :math:`[1,2]` that specifies the qGGMRF shape parameter.
-        q (float, optional): [Default=2.0] Scalar value in range :math:`[p,1]` that specifies the qGGMRF shape parameter.
-        T (float, optional): [Default=1.0] Scalar value :math:`>0` that specifies the qGGMRF threshold parameter.
-        num_neighbors (int, optional): [Default=6] Possible values are {26,18,6}.
-            Number of neightbors in the qggmrf neighborhood. Higher number of neighbors result in a better regularization but a slower reconstruction.
-        
-        sharpness (float, optional): [Default=0.0]
-            Scalar value that controls level of sharpness in the reconstruction
-            ``sharpness=0.0`` is neutral; ``sharpness>0`` increases sharpness; ``sharpness<0`` reduces sharpness.
-            Ignored in qGGMRF reconstruction if ``sigma_x`` is not None, or in proximal map estimation if ``sigma_p`` is not None.
-        sigma_x (float, optional): [Default=None] Scalar value :math:`>0` that specifies the qGGMRF scale parameter.
-            If None, automatically set with auto_sigma_x. Regularization should be controled with the ``sharpness`` parameter, but ``sigma_x`` can be set directly by expert users.
-        sigma_p (float, optional): [Default=None] Scalar value :math:`>0` that specifies the proximal map parameter.
-            If None, automatically set with auto_sigma_p. Regularization should be controled with the ``sharpness`` parameter, but ``sigma_p`` can be set directly by expert users.
-        max_iterations (int, optional): [Default=3] Integer valued specifying the maximum number of iterations for proximal map estimation.
-        stop_threshold (float, optional): [Default=0.0] [Default=0.02] Scalar valued stopping threshold in percent.
-            If stop_threshold=0.0, then run max iterations.
-        
-        num_threads (int, optional): [Default=None] Number of compute threads requested when executed.
-            If None, num_threads is set to the number of cores in the system
-        NHICD (bool, optional): [Default=False] If true, uses Non-homogeneous ICD updates
-        verbose (int, optional): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints MACE reconstruction progress information, and 2 prints the MACE reconstruction as well as qGGMRF/proximal-map reconstruction progress information.
-        lib_path (str, optional): [Default=~/.cache/mbircone] Path to directory containing library of forward projection matrices.
+        - **denoiser_args** (*tuple*): [Default=()] Extra arguments passed to the denoiser function.
+        - **max_admm_itr** (*int*): [Default=10] Maximum number of MACE ADMM iterations.
+        - **rho** (*float*): [Default=0.5] step size of ADMM update in MACE, range (0,1). The value of ``rho`` mainly controls the convergence speed of MACE algorithm.
+        - **prior_weight** (*ndarray*): [Default=0.5] weights for prior agents, specified by either a scalar value or a 1D array. If a scalar is specified, then all three prior agents use the same weight of (prior_weight/3). If an array is provided, then the array should have three elements corresponding to the weight of denoisers in XY, YZ, and XZ planes respectively. The weight for forward model proximal map agent will be calculated as 1-sum(prior_weight) so that the sum of all agent weights are equal to 1. Each entry of prior_weight should have value between 0 and 1. sum(prior_weight) needs to be no greater than 1.
+        - **init_image** (*ndarray, optional*): [Default=None] Initial value of MACE reconstruction image, specified by either a scalar value or a 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols). If None, the inital value of MACE will be automatically determined by a qGGMRF reconstruction.
+        - **image_range** (*tuple*): [Default=None] dynamic range of reconstruction image. If None, the lower bound will be 0, and the upper bound will be determined by 95% pixel value of the qGGMRF reconstruction. If an init_image is provided, then image_range must be also provided.
+    Optional arguments inherited from ``cone3D.recon`` (with changing default value of ``max_iterations``): 
+        - **channel_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
+        - **row_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
+        - **rotation_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space. This is normally set to zero.
+        - **delta_pixel_detector** (*float, optional*): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
+        - **delta_pixel_image** (*float, optional*): [Default=None] Scalar value of image pixel spacing in :math:`ALU`. If None, automatically set to delta_pixel_detector/magnification
+        - **ror_radius** (*float, optional*): [Default=None] Scalar value of radius of reconstruction in :math:`ALU`. If None, automatically set with compute_img_params. Pixels outside the radius ror_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
+        - **sigma_y** (*float, optional*): [Default=None] Scalar value of noise standard deviation parameter. If None, automatically set with auto_sigma_y.
+        - **snr_db** (*float, optional*): [Default=30.0] Scalar value that controls assumed signal-to-noise ratio of the data in dB. Ignored if sigma_y is not None.
+        - **weights** (*ndarray, optional*): [Default=None] 3D weights array with same shape as sino.
+        - **weight_type** (*string, optional*): [Default='unweighted'] Type of noise model used for data. If the ``weights`` array is not supplied, then the function ``cone3D.calc_weights`` is used to set weights using specified ``weight_type`` parameter.
+                
+                - Option "unweighted" corresponds to unweighted reconstruction;
+                - Option "transmission" is the correct weighting for transmission CT with constant dosage;
+                - Option "transmission_root" is commonly used with transmission CT data to improve image homogeneity;
+                - Option "emission" is appropriate for emission CT data.
+        - **positivity** (*bool, optional*): [Default=True] Boolean value that determines if positivity constraint is enforced. The positivity parameter defaults to True; however, it should be changed to False when used in applications that can generate negative image values.
+        - **p** (*float, optional*): [Default=1.2] Scalar value in range :math:`[1,2]` that specifies the qGGMRF shape parameter.
+        - **q** (*float, optional*): [Default=2.0] Scalar value in range :math:`[p,1]` that specifies the qGGMRF shape parameter.
+        - **T** (*float, optional*): [Default=1.0] Scalar value :math:`>0` that specifies the qGGMRF threshold parameter.
+        - **num_neighbors** (*int, optional*): [Default=6] Possible values are {26,18,6}. Number of neightbors in the qggmrf neighborhood. Higher number of neighbors result in a better regularization but a slower reconstruction.
+        - **sharpness** (*float, optional*): [Default=0.0] Scalar value that controls level of sharpness in the reconstruction. ``sharpness=0.0`` is neutral; ``sharpness>0`` increases sharpness; ``sharpness<0`` reduces sharpness. Ignored in qGGMRF reconstruction if ``sigma_x`` is not None, or in proximal map estimation if ``sigma_p`` is not None.
+        - **sigma_x** (*float, optional*): [Default=None] Scalar value :math:`>0` that specifies the qGGMRF scale parameter. If None, automatically set with auto_sigma_x. Regularization should be controled with the ``sharpness`` parameter, but ``sigma_x`` can be set directly by expert users.
+        - **sigma_p** (*float, optional*): [Default=None] Scalar value :math:`>0` that specifies the proximal map parameter. If None, automatically set with auto_sigma_p. Regularization should be controled with the ``sharpness`` parameter, but ``sigma_p`` can be set directly by expert users.
+        - **max_iterations** (*int, optional*): [Default=3] Integer valued specifying the maximum number of iterations for proximal map estimation.
+        - **stop_threshold** (*float, optional*): [Default=0.02] Scalar valued stopping threshold in percent. If stop_threshold=0.0, then run max iterations.
+        - **num_threads** (*int, optional*): [Default=None] Number of compute threads requested when executed. If None, num_threads is set to the number of cores in the system
+        - **NHICD** (*bool, optional*): [Default=False] If true, uses Non-homogeneous ICD updates
+        - **verbose** (*int, optional*): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints MACE reconstruction progress information, and 2 prints the MACE reconstruction as well as qGGMRF/proximal-map reconstruction progress information.
+        - **lib_path** (*str, optional*): [Default=~/.cache/mbircone] Path to directory containing library of forward projection matrices.
+    
     Returns:
         3D numpy array: 3D reconstruction with shape (num_img_slices, num_img_rows, num_img_cols) in units of :math:`ALU^{-1}`.        
     """
+    
     if verbose: 
         print("initializing MACE...")
     # verbosity level for qGGMRF recon

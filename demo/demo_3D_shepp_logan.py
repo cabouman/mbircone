@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import mbircone
-from display_utils import plot_image, plot_gif, plt_cmp_3dobj
+from demo_utils import plot_image, plot_gif, plt_cmp_3dobj
 
 # Set sinogram shape
 num_det_rows = 200
