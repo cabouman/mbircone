@@ -742,7 +742,7 @@ def project(image, angles,
 
     assert (num_img_slices, num_img_rows, num_img_cols) == (imgparams['N_z'], imgparams['N_x'], imgparams['N_y']), \
         'Image size of %s is incorrect! With the specified geometric parameters, expected image should have shape %s, use function `cone3D.compute_img_size` to compute the correct image size.' \
-        % ((imgparams['N_z'], imgparams['N_x'], imgparams['N_y']), (num_img_slices, num_img_rows, num_img_cols))
+        %  (num_img_slices, num_img_rows, num_img_cols)), ((imgparams['N_z'], imgparams['N_x'], imgparams['N_y'])
 
     hash_val = hash_params(angles, sinoparams, imgparams)
     sysmatrix_fname = _gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
