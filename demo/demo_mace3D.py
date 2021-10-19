@@ -15,20 +15,21 @@ print('This file demonstrates the usage of mace3D reconstruction algorithm by do
 
 ################ Define Parameters
 # Geometry parameters
-dist_source_detector = 839.0472
-magnification = 5.572128439964856
-delta_pixel_detector = 0.25
-num_det_rows = 28
-num_det_channels = 240
+dist_source_detector = 839.0472 # Distance between the X-ray source and the detector in units of ALU
+magnification = 5.572128439964856 # magnification is defined as (source to detector distance)/(source to center-of-rotation distance)
+delta_pixel_detector = 0.25 # Scalar value of detector pixel spacing in units of ALU
+num_det_rows = 28 # number of detector rows
+num_det_channels = 240 # number of detector channels
 # Simulated sinogram parameters
-num_views = 75
+num_views = 75 # number of projection views
 sino_noise_sigma = 0.01 # transmission noise level
 # MACE recon parameters 
-max_admm_itr = 10
-prior_weight = 0.5
+max_qGGMRF_itr = 40 # max iterations for initial qGGMRF reconstruction
+max_admm_itr = 10 # max ADMM iterations for MACE reconstruction
+prior_weight = 0.5 # cumulative weights for three prior agents.
 # Download url and extract path.
-download_url = 'https://github.com/dyang37/mbircone_data/raw/master/demo_data.tar.gz'
-extract_path = './demo_data/'
+download_url = 'https://github.com/dyang37/mbircone_data/raw/master/demo_data.tar.gz' # url to download the demo data
+extract_path = './demo_data/' # destination path to extract the downloaded tarball file
 # path to downloaded files. Please change them accordingly if you replace any of them with your own files.
 phantom_path = os.path.join(extract_path, 'phantom_3D.npy') # 3D image volume phantom file
 json_path = os.path.join(extract_path, 'dncnn_params/model_dncnn/model.json') # model architecture file
@@ -81,7 +82,8 @@ recon_mace = mbircone.mace.mace3D(sino_noisy, angles, dist_source_detector, magn
         denoiser=denoiser, denoiser_args=(denoiser_model),
         max_admm_itr=max_admm_itr, prior_weight=prior_weight,
         delta_pixel_detector=delta_pixel_detector,
-        weight_type='transmission')
+        weight_type='transmission',
+        max_iterations=max_qGGMRF_itr)
 
 
 recon_shape = recon_mace.shape
