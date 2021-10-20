@@ -82,10 +82,10 @@ def mace3D(sino, angles, dist_source_detector, magnification,
     """Computes 3D conebeam beam reconstruction with multi-slice MACE alogorithm by fusing forward model proximal map with 2D denoisers across xy, xz, and yz planes.
     
     Required arguments: 
-        sino (ndarray): 3D sinogram array with shape (num_views, num_det_rows, num_det_channels)
-        angles (ndarray): 1D view angles array in radians.
-        dist_source_detector (float): Distance between the X-ray source and the detector in units of ALU
-        magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance). 
+        - **sino** (*ndarray*): 3D sinogram array with shape (num_views, num_det_rows, num_det_channels)
+        - **angles** (*ndarray*): 1D view angles array in radians.
+        - **dist_source_detector** (*float*): Distance between the X-ray source and the detector in units of ALU
+        - **magnification** (*float*): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance). 
     Arguments specific to MACE reconstruction algorithm:  
         - **denoiser** (*callable*): The denoiser function used as the prior agent in MACE.
             
