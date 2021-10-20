@@ -755,7 +755,7 @@ def project(image, angles,
         os.rename(sysmatrix_fname_tmp, sysmatrix_fname)
 
     image = np.swapaxes(image, 0, 2)
-    proj = ci.project_cy(image, sinoparams, imgparams, sysmatrix_fname)
+    proj = ci.project(image, sinoparams, imgparams, sysmatrix_fname)
     # Convert shape from Cython interface specifications to Python interface specifications
     proj = np.swapaxes(proj, 1, 2)
 

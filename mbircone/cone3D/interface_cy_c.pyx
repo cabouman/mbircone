@@ -315,7 +315,7 @@ def recon_cy(sino, wght, x_init, proxmap_input,
     return py_x
 
 
-def project_cy(image, sinoparams, imgparams, py_Amatrix_fname):
+def project(image, sinoparams, imgparams, py_Amatrix_fname):
     """Forward projection function used by mbircone.project().
 
     Args:
