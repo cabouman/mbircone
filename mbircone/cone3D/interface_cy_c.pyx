@@ -315,7 +315,7 @@ def recon_cy(sino, wght, x_init, proxmap_input,
     return py_x
 
 
-def project_cy(x, sinoparams, imgparams, py_Amatrix_fname):
+def project_cy(image, sinoparams, imgparams, py_Amatrix_fname):
     """Forward projection function used by mbircone.project().
 
     Args:
@@ -328,7 +328,7 @@ def project_cy(x, sinoparams, imgparams, py_Amatrix_fname):
     py_Ax = np.zeros((sinoparams['N_beta'],sinoparams['N_dv'],sinoparams['N_dw']), dtype=ctypes.c_float)
 
     # Ensure image memory is aligned properly
-    py_x = np.ascontiguousarray(x, dtype=np.single)
+    py_x = np.ascontiguousarray(image, dtype=np.single)
     cdef cnp.ndarray[float, ndim=3, mode="c"] cy_x = py_x
 
     cdef cnp.ndarray[char, ndim=1, mode="c"] c_Amatrix_fname = string_to_char_array(py_Amatrix_fname)
