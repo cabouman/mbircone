@@ -36,24 +36,17 @@ pip install -r requirements.txt
 pip install .
 ```
 
-## Run demo
+## Run demos
 1) Install demo requirements
 ```
 cd demo
-pip install -r requirements_demo.txt
+pip install -r requirements.txt
 ```
-2) Run demo
+2) Run basic demo
 ```
 python demo_3D_shepp_logan.py
 ```
-
-## Run MACE demo
-1) Install MACE demo requirements
-```
-cd demo
-pip install -r requirements_demo_mace.txt
-```
-2) Run demo
+3) Run demo
 ```
 python demo_mace3D.py
 ```

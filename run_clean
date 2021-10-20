@@ -1,7 +1,0 @@
-rm mbircone/cone3D/*.c
-rm mbircone/cone3D/*.so
-rm -r build
-rm -r dist
-rm -r mbircone.egg-info
-
-pip uninstall mbircone

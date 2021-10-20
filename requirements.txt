@@ -1,4 +1,4 @@
-numpy
-Cython
-psutil
-Pillow
+numpy>=1.20.3
+Cython~=0.29.24
+psutil~=5.8.0
+Pillow~=8.4.0

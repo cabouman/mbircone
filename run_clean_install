@@ -1,48 +1,25 @@
 #!/bin/bash
 
+# Clean out old installation
 rm mbircone/cone3D/*.c
 rm mbircone/cone3D/*.so
 rm -r build
 rm -r dist
 rm -r mbircone.egg-info
 
-conda create -n test_mbircone python=3.8 &&
+# Create and activate new conda environment
+conda deactivate
+conda create -n mbircone python=3.8 
+source activate mbircone 
 
-source activate test_mbircone &&
+# Install requirements and package
+pip install -r requirements.txt 
+pip install -r demo/requirements.txt 
+pip install -r docs/requirements.txt 
+pip install . 
 
-pip install -r requirements.txt &&
-
-pip install -r demo/requirements_demo.txt &&
-
-pip install . &&
-# pip install -e . &&
-# python setup.py install &&
-
-
-cd demo &&
-
-python demo.py &&
-# python demo_compare_ref_cython.py &&
-
+# Build documentation
+cd docs
+MBIRCONE_BUILD_DOCS=true make html
 cd ..
 
-conda deactivate
- 
-conda remove --name test_mbircone --all
-
-
-
-
-# conda create -n mbircone python=3.8
-
-# source activate mbircone
-
-# pip install -r requirements.txt
-
-# pip install -r demo/requirements_demo.txt
-
-# pip install .
-
-# cd demo
-
-# python demo.py
