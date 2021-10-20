@@ -8,9 +8,10 @@ rm -r dist
 rm -r mbircone.egg-info
 
 # Create and activate new conda environment
-conda deactivate
+conda deactivate 
+conda remove env --name mbircone --all 
 conda create -n mbircone python=3.8 
-source activate mbircone 
+conda activate mbircone 
 
 # Install requirements and package
 pip install -r requirements.txt 
