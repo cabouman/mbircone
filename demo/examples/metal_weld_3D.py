@@ -7,7 +7,7 @@ import sys
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sys.path.append(parent)
-import display_utils
+import demo_utils
 
 dataset_dir = "/depot/bouman/users/li3120/datasets/metal_weld_data/"
 path_radiographs = dataset_dir + "Radiographs-2102414-2019-001-076/"
@@ -62,12 +62,12 @@ os.makedirs('output', exist_ok=True)
 
 np.save("./output/recon.npy", x)
 
-display_utils.plot_image(sino[0], title='sino', filename='output/sino_%d.png' % 0)
+demo_utils.plot_image(sino[0], title='sino', filename='output/sino_%d.png' % 0)
 slice_index = 20
-display_utils.plot_image(x[slice_index], title='recon', filename='output/recon_%d.png' % slice_index, vmin=0, vmax=0.03)
+demo_utils.plot_image(x[slice_index], title='recon', filename='output/recon_%d.png' % slice_index, vmin=0, vmax=0.03)
 slice_index = 30
-display_utils.plot_image(x[slice_index], title='recon', filename='output/recon_%d.png' % slice_index, vmin=0, vmax=0.03)
+demo_utils.plot_image(x[slice_index], title='recon', filename='output/recon_%d.png' % slice_index, vmin=0, vmax=0.03)
 slice_index = 40
-display_utils.plot_image(x[slice_index], title='recon', filename='output/recon_%d.png' % slice_index, vmin=0, vmax=0.03)
+demo_utils.plot_image(x[slice_index], title='recon', filename='output/recon_%d.png' % slice_index, vmin=0, vmax=0.03)
 slice_index = 48
-display_utils.plot_image(x[slice_index], title='recon', filename='output/recon_%d.png' % slice_index, vmin=0, vmax=0.03)
+demo_utils.plot_image(x[slice_index], title='recon', filename='output/recon_%d.png' % slice_index, vmin=0, vmax=0.03)

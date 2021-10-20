@@ -13,6 +13,11 @@ If you publish results based on this code, please cite the following paper:
 For other OpenMBIR packages see: https://github.com/cabouman/OpenMBIR-Index
 
 ## Installation
+In order to install the package, clone the repository to your computer, and run the bash script named ``run_clean_install``.
+The script will create and activate a conda envirnoment named ``mbircone``, install the package and all its requirements, and build the documentation.
+
+The information below provides additional detail.
+
 1) Clone Repository and enter
 ```
 git clone https://github.com/cabouman/mbircone.git
@@ -36,16 +41,27 @@ pip install -r requirements.txt
 pip install .
 ```
 
-## Run demo
+## Run demos
 1) Install demo requirements
 ```
 cd demo
-pip install -r requirements_demo.txt
+pip install -r requirements.txt
 ```
-2) Run demo
+2) Run basic demo
 ```
 python demo_3D_shepp_logan.py
 ```
+3) Run demo
+```
+python demo_mace3D.py
+```
+
+3) Result visualization: 
+
+Please go to ```demo/output/mace3D/``` to look at phantom, sinogram, and reconstruction images
+
+4) In the case where exceptions occur when downloading data, please check your internet connection. If you replaced the default url with the url of your own dataset, please make sure that the url is correct, and points to a public webpage.
+
 
 ## Build documentation in local folder
 1) Install docs requirements

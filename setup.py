@@ -16,8 +16,10 @@ AUTHOR = "Soumendu Majee"
 PACKAGE_DIR = "mbircone"
 CONE3D_NAME = "cone3D"
 PREPROCESS_NAME = "preprocess"
+MACE_NAME = "mace"
 CONE3D_DIR = PACKAGE_DIR + "/" + CONE3D_NAME
 PREPROCESS_DIR = PACKAGE_DIR + "/" + PREPROCESS_NAME
+MACE_DIR = PACKAGE_DIR + "/" + MACE_NAME
 PYX_DIR = PACKAGE_DIR + "." + CONE3D_NAME
 
 SRC_FILES = [CONE3D_DIR + '/src/allocate.c', CONE3D_DIR + '/src/MBIRModularUtilities3D.c',
@@ -66,7 +68,7 @@ if compiler_str =='icc':
 
 
 setup(install_requires=REQUIRES,
-      packages=[PACKAGE_DIR,CONE3D_DIR,PREPROCESS_DIR],
+      packages=[PACKAGE_DIR,CONE3D_DIR,PREPROCESS_DIR,MACE_DIR],
       zip_safe=False,
       name=NAME,
       version=VERSION,

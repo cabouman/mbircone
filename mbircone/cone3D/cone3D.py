@@ -221,7 +221,7 @@ def compute_sino_params(dist_source_detector, magnification,
                         channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
                         delta_pixel_detector=1.0):
     """ Computes sinogram parameters specify coordinates and bounds relating to the sinogram
-        For detailed specifications of sinoparams, see mbircone.interface_cy_c
+        For detailed specifications of sinoparams, see cone3D.interface_cy_c
     
     Args:
         dist_source_detector (float): Distance between the X-ray source and the detector in units of ALU
@@ -271,7 +271,7 @@ def compute_sino_params(dist_source_detector, magnification,
 
 def compute_img_params(sinoparams, delta_pixel_image=None, ror_radius=None):
     """ Computes image parameters that specify coordinates and bounds relating to the image. 
-        For detailed specifications of imgparams, see mbircone.interface_cy_c
+        For detailed specifications of imgparams, see cone3D.interface_cy_c
     
     Args:
         sinoparams (dict): Dictionary containing sinogram parameters as required by the Cython code
@@ -506,11 +506,12 @@ def recon(sino, angles, dist_source_detector, magnification,
             Ignored if sigma_y is not None.
         weights (ndarray, optional): [Default=None] 3D weights array with same shape as sino.
         weight_type (string, optional): [Default='unweighted'] Type of noise model used for data.
-            If the ``weights`` array is not supplied, then the function ``mbircone.calc_weights`` is used to set weights using specified ``weight_type`` parameter.
-            Option "unweighted" corresponds to unweighted reconstruction;
-            Option "transmission" is the correct weighting for transmission CT with constant dosage;
-            Option "transmission_root" is commonly used with transmission CT data to improve image homogeneity;
-            Option "emission" is appropriate for emission CT data.
+            If the ``weights`` array is not supplied, then the function ``cone3D.calc_weights`` is used to set weights using specified ``weight_type`` parameter.
+            
+                - Option "unweighted" corresponds to unweighted reconstruction;
+                - Option "transmission" is the correct weighting for transmission CT with constant dosage;
+                - Option "transmission_root" is commonly used with transmission CT data to improve image homogeneity;
+                - Option "emission" is appropriate for emission CT data.
 
         positivity (bool, optional): [Default=True] Boolean value that determines if positivity constraint is enforced. 
             The positivity parameter defaults to True; however, it should be changed to False when used in applications that can generate negative image values.
@@ -530,7 +531,7 @@ def recon(sino, angles, dist_source_detector, magnification,
             Ignored if prox_image is None.
             If None and proximal image is not None, automatically set with auto_sigma_p. Regularization should be controled with the ``sharpness`` parameter, but ``sigma_p`` can be set directly by expert users.
         max_iterations (int, optional): [Default=20] Integer valued specifying the maximum number of iterations. 
-        stop_threshold (float, optional): [Default=0.0] [Default=0.02] Scalar valued stopping threshold in percent.
+        stop_threshold (float, optional): [Default=0.02] Scalar valued stopping threshold in percent.
             If stop_threshold=0.0, then run max iterations.
         num_threads (int, optional): [Default=None] Number of compute threads requested when executed.
             If None, num_threads is set to the number of cores in the system
@@ -568,7 +569,6 @@ def recon(sino, angles, dist_source_detector, magnification,
     sysmatrix_fname = _gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
 
     if os.path.exists(sysmatrix_fname):
-        print('Found system matrix: {}'.format(sysmatrix_fname))
         os.utime(sysmatrix_fname)  # update file modified time
     else:
         sysmatrix_fname_tmp = _gen_sysmatrix_fname_tmp(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
@@ -741,14 +741,13 @@ def project(image, angles,
     (num_img_slices, num_img_rows, num_img_cols) = image.shape
 
     assert (num_img_slices, num_img_rows, num_img_cols) == (imgparams['N_z'], imgparams['N_x'], imgparams['N_y']), \
-        'Image size of %s is incorrect! With the specified geometric parameters, expected image should have shape %s, use function `mbircone.cone3D.compute_img_size` to compute the correct image size.' \
-        % ((imgparams['N_z'], imgparams['N_x'], imgparams['N_y']), (num_img_slices, num_img_rows, num_img_cols))
+        'Image size of %s is incorrect! With the specified geometric parameters, expected image should have shape %s, use function `cone3D.compute_img_size` to compute the correct image size.' \
+        %  ((num_img_slices, num_img_rows, num_img_cols), (imgparams['N_z'], imgparams['N_x'], imgparams['N_y']))
 
     hash_val = hash_params(angles, sinoparams, imgparams)
     sysmatrix_fname = _gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
 
     if os.path.exists(sysmatrix_fname):
-        print('Found system matrix: {}'.format(sysmatrix_fname))
         os.utime(sysmatrix_fname)  # update file modified time
     else:
         sysmatrix_fname_tmp = _gen_sysmatrix_fname_tmp(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
