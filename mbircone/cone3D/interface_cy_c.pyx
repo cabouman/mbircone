@@ -316,22 +316,31 @@ def recon_cy(sino, wght, x_init, proxmap_input,
 
 
 def project_cy(x, sinoparams, imgparams, py_Amatrix_fname):
+    """Forward projection function used by mbircone.project().
 
+    Args:
+
+    Returns:
+        TYPE: Description
+    """
+    # Allocates memory, without initialization, for matrix to be passed back from C subroutine
     cdef cnp.ndarray[float, ndim=3, mode="c"] py_Ax
     py_Ax = np.zeros((sinoparams['N_beta'],sinoparams['N_dv'],sinoparams['N_dw']), dtype=ctypes.c_float)
 
+    # Ensure image memory is aligned properly
     py_x = np.ascontiguousarray(x, dtype=np.single)
     cdef cnp.ndarray[float, ndim=3, mode="c"] cy_x = py_x
 
     cdef cnp.ndarray[char, ndim=1, mode="c"] c_Amatrix_fname = string_to_char_array(py_Amatrix_fname)
 
+    # Write parameter to c structures based on given py parameter List.
     cdef ImageParams c_imgparams
     cdef SinoParams c_sinoparams
-    
     map_py2c_sinoparams(&c_sinoparams, sinoparams)
     map_py2c_imgparams(&c_imgparams, imgparams)
 
-    forwardProject(&py_Ax[0,0,0], 
+    # Forward projection by calling C subroutine
+    forwardProject(&py_Ax[0,0,0],
                     &cy_x[0,0,0],
                     c_sinoparams,
                     c_imgparams,
