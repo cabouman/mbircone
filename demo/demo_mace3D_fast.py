@@ -4,7 +4,6 @@ import math
 import urllib.request
 import tarfile
 from keras.models import model_from_json
-from PIL import Image
 import mbircone
 import demo_utils, denoiser_utils
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' 

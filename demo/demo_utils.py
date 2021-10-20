@@ -162,6 +162,11 @@ def image_resize(image, output_shape):
 
 
 def download_and_extract(download_url, extract_path='./demo_data/'):
+    """ Given a download url, download and the files from ``download_url`` as a tarball, and extract the tarball file to ``extract_path``. It is assumed that the file from download_url is a tarball file. In case where ``extract_path`` already exists, user will be queried whether it is desired to download and overwrite the existing files.
+    Args:
+        download_url: An url to download the data. This url needs to be public.
+        extract_path: Local path to extract the downloaded tarball file. 
+    """
     is_download = True
     if os.path.exists(extract_path):
         is_download = query_yes_no(f"{extract_path} folder already exists. Do you still want to download and overwrite the files?")
@@ -198,7 +203,7 @@ def download_and_extract(download_url, extract_path='./demo_data/'):
 
 
 def query_yes_no(question):
-    """Ask a yes/no question via raw_input() and return their answer.
+    """Ask a yes/no question via input() and return the answer.
         Code modified from reference: `https://stackoverflow.com/questions/3041986/apt-command-line-interface-like-yes-no-input/3041990`
     Args:
         question (string): Question that is presented to the user.
@@ -216,3 +221,4 @@ def query_yes_no(question):
             return valid[choice]
         else:
             sys.stdout.write("Please respond with 'yes' or 'no' " "(or 'y' or 'n').\n")
+    return
