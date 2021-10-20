@@ -13,6 +13,11 @@ If you publish results based on this code, please cite the following paper:
 For other OpenMBIR packages see: https://github.com/cabouman/OpenMBIR-Index
 
 ## Installation
+In order to install the package, clone the repository to your computer, and run the bash script named ``run_clean_install``.
+The script will create and activate a conda envirnoment named ``mbircone``, install the package and all its requirements, and build the documentation.
+
+The information below provides additional detail.
+
 1) Clone Repository and enter
 ```
 git clone https://github.com/cabouman/mbircone.git
