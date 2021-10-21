@@ -28,7 +28,7 @@ def cnn_denoiser(img_noisy, denoiser_model, data_format="channels_last"):
     """ This is an example of a cnn denoiser function. This denoiser works with either 3D or 4D image batch.
         Args:
             img_noisy (ndarray): noisy image batch with shape (N_batch, N0, N1, ... , Nm).
-            denoiser_model (image_dimeras model instance): A pre-trained cnn denoiser model.
+            denoiser_model (class object): A pre-trained cnn denoiser model object.
             data_format (string): One of ``channels_last``(default) or ``channles_first``. The ordering of the dimensions in the input image volume.
                 ``channels_last`` corresponds to inputs with shape (batch_size, height, width, channels).
                 ``channels_first`` corresponds to inputs with shape (batch_size, channels, height, width).
