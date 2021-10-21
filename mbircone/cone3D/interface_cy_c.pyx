@@ -344,7 +344,7 @@ def project(image, settings):
     cdef cnp.ndarray[float, ndim=3, mode="c"] cy_image = image
 
     # Allocates memory, without initialization, for matrix to be passed back from C subroutine
-    cdef cnp.ndarray[float, ndim=3, mode="c"] proj = np.zeros((num_views, num_det_rows, num_det_channels), dtype=ctypes.c_float)
+    cdef cnp.ndarray[float, ndim=3, mode="c"] proj = np.empty((num_views, num_det_rows, num_det_channels), dtype=ctypes.c_float)
 
     # Write parameter to c structures based on given py parameter List.
     cdef ImageParams c_imgparams
