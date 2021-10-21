@@ -18,7 +18,7 @@ crop_factor = [(0.25, 0.05), (0.75, 0.95)]
 NSI_system_params = mbircone.preprocess.read_NSI_params(
     "/depot/bouman/users/li3120/datasets/metal_weld_data/2102414-2019-001-076_29.58um_0.5BH.nsipro")
 
-sino, angles = mbircone.preprocess.preprocess(path_radiographs,
+sino, angles = mbircone.preprocess.obtain_sino(path_radiographs,
                                               num_views=num_views,
                                               path_blank=dataset_dir + 'Corrections/gain0.tif',
                                               path_dark=dataset_dir + 'Corrections/offset.tif',

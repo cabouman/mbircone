@@ -360,7 +360,7 @@ def transfer_NSI_to_MBIRCONE(NSI_system_params):
     return geo_params
 
 
-def preprocess(path_radiographs, num_views, path_blank=None, path_dark=None,
+def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
                view_range=None, total_angles=360, num_acquired_scans=2000,
                rotation_direction="positive", downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
                num_time_points=1, time_point=0):
