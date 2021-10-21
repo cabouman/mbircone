@@ -754,8 +754,14 @@ def project(image, angles,
         ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, sysmatrix_fname_tmp, verbose=verbose)
         os.rename(sysmatrix_fname_tmp, sysmatrix_fname)
 
+    # Collect settings to pass to C
+    settings = dict()
+    settings['imgparams'] = imgparams
+    settings['sinoparams'] = sinoparams
+    settings['sysmatrix_fname'] = sysmatrix_fname
+
     image = np.swapaxes(image, 0, 2)
-    proj = ci.project_cy(image, sinoparams, imgparams, sysmatrix_fname)
+    proj = ci.project(image, settings)
     # Convert shape from Cython interface specifications to Python interface specifications
     proj = np.swapaxes(proj, 1, 2)
 
