@@ -123,7 +123,7 @@ cdef extern from "./src/interface.h":
     char *Amatrix_fname)
 
 
-cdef map_py2c_sinoparams(SinoParams* c_sinoparams, sinoparams):
+cdef convert_py2c_SinoParams3D(SinoParams* c_sinoparams, sinoparams):
     
     c_sinoparams.N_dv = sinoparams['N_dv']
     c_sinoparams.N_dw = sinoparams['N_dw'] 
@@ -139,7 +139,7 @@ cdef map_py2c_sinoparams(SinoParams* c_sinoparams, sinoparams):
     c_sinoparams.weightScaler_value = sinoparams['weightScaler_value']
 
 
-cdef map_py2c_imgparams(ImageParams* c_imgparams, imgparams):
+cdef convert_py2c_ImageParams3D(ImageParams* c_imgparams, imgparams):
 
     c_imgparams.x_0 = imgparams['x_0']
     c_imgparams.y_0 = imgparams['y_0']
@@ -257,8 +257,8 @@ def AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname, verbos
     # Get pointer to 1D array of angles
     cdef cnp.ndarray[double, ndim=1, mode="c"] c_angles = angles
 
-    map_py2c_sinoparams(&c_sinoparams, sinoparams)
-    map_py2c_imgparams(&c_imgparams, imgparams)
+    convert_py2c_SinoParams3D(&c_sinoparams, sinoparams)
+    convert_py2c_ImageParams3D(&c_imgparams, imgparams)
 
     c_Amatrix_fname = string_to_char_array(Amatrix_fname)
 
@@ -291,8 +291,8 @@ def recon_cy(sino, wght, x_init, proxmap_input,
     cdef SinoParams c_sinoparams
     cdef ReconParams c_reconparams
 
-    map_py2c_sinoparams(&c_sinoparams, sinoparams)
-    map_py2c_imgparams(&c_imgparams, imgparams)
+    convert_py2c_SinoParams3D(&c_sinoparams, sinoparams)
+    convert_py2c_ImageParams3D(&c_imgparams, imgparams)
     map_py2c_reconparams(&c_reconparams,
                           reconparams,
                           &cy_relativeChangeMode[0],
@@ -315,28 +315,52 @@ def recon_cy(sino, wght, x_init, proxmap_input,
     return py_x
 
 
-def project_cy(x, sinoparams, imgparams, py_Amatrix_fname):
+def project(image, settings):
+    """Forward projection function used by mbircone.project().
 
-    cdef cnp.ndarray[float, ndim=3, mode="c"] py_Ax
-    py_Ax = np.zeros((sinoparams['N_beta'],sinoparams['N_dv'],sinoparams['N_dw']), dtype=ctypes.c_float)
+    Args:
+        image (ndarray): 3D Image of shape (num_img_cols, num_img_rows, num_img_slices) to be projected.
+        settings (dict): Dictionary containing projection settings.
 
-    py_x = np.ascontiguousarray(x, dtype=np.single)
-    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_x = py_x
+    Returns:
+        ndarray: 3D numpy array containing projection with shape (num_views, num_det_channels, num_det_rows).
+    """
 
-    cdef cnp.ndarray[char, ndim=1, mode="c"] c_Amatrix_fname = string_to_char_array(py_Amatrix_fname)
+    imgparams = settings['imgparams']
+    sinoparams = settings['sinoparams']
+    sysmatrix_fname = settings['sysmatrix_fname']
 
+    # Get shapes of projection
+    num_views = sinoparams['N_beta']
+    num_det_rows = sinoparams['N_dv']
+    num_det_channels = sinoparams['N_dw']
+
+    # Ensure image memory is aligned properly
+    if not image.flags["C_CONTIGUOUS"]:
+        image = np.ascontiguousarray(image, dtype=np.single)
+    else:
+        image = image.astype(np.single, copy=False)
+
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_image = image
+
+    # Allocates memory, without initialization, for matrix to be passed back from C subroutine
+    cdef cnp.ndarray[float, ndim=3, mode="c"] proj = np.empty((num_views, num_det_rows, num_det_channels), dtype=ctypes.c_float)
+
+    # Write parameter to c structures based on given py parameter List.
     cdef ImageParams c_imgparams
     cdef SinoParams c_sinoparams
-    
-    map_py2c_sinoparams(&c_sinoparams, sinoparams)
-    map_py2c_imgparams(&c_imgparams, imgparams)
+    convert_py2c_SinoParams3D(&c_sinoparams, sinoparams)
+    convert_py2c_ImageParams3D(&c_imgparams, imgparams)
 
-    forwardProject(&py_Ax[0,0,0], 
-                    &cy_x[0,0,0],
+    cdef cnp.ndarray[char, ndim=1, mode="c"] Amatrix_fname = string_to_char_array(sysmatrix_fname)
+
+    # Forward projection by calling C subroutine
+    forwardProject(&proj[0,0,0],
+                    &cy_image[0,0,0],
                     c_sinoparams,
                     c_imgparams,
-                    &c_Amatrix_fname[0])
+                    &Amatrix_fname[0])
 
     # print("Cython done")
 
-    return py_Ax
+    return proj
