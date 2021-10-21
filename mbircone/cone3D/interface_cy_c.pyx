@@ -315,14 +315,20 @@ def recon_cy(sino, wght, x_init, proxmap_input,
     return py_x
 
 
-def project(image, sinoparams, imgparams, py_Amatrix_fname):
+def project(image, settings):
     """Forward projection function used by mbircone.project().
 
     Args:
+        image (ndarray): 3D Image of shape (num_img_cols, num_img_rows, num_img_slices) to be projected.
+        settings (dict): Dictionary containing projection settings.
 
     Returns:
-        TYPE: Description
+        ndarray: 3D numpy array containing projection with shape (num_views, num_det_channels, num_det_rows).
     """
+
+    imgparams = settings['imgparams']
+    sinoparams = settings['sinoparams']
+    sysmatrix_fname = settings['sysmatrix_fname']
 
     # Get shapes of projection
     num_views = sinoparams['N_beta']
@@ -346,7 +352,7 @@ def project(image, sinoparams, imgparams, py_Amatrix_fname):
     convert_py2c_SinoParams3D(&c_sinoparams, sinoparams)
     convert_py2c_ImageParams3D(&c_imgparams, imgparams)
 
-    cdef cnp.ndarray[char, ndim=1, mode="c"] Amatrix_fname = string_to_char_array(py_Amatrix_fname)
+    cdef cnp.ndarray[char, ndim=1, mode="c"] Amatrix_fname = string_to_char_array(sysmatrix_fname)
 
     # Forward projection by calling C subroutine
     forwardProject(&proj[0,0,0],
