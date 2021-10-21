@@ -4,7 +4,7 @@ import shutil
 import numpy as np
 import os
 import hashlib
-import mbircone.cone3D.interface_cy_c as ci
+import mbircone.interface_cy_c as ci
 import random
 
 __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
@@ -170,6 +170,7 @@ def auto_sigma_prior(sino, delta_pixel_detector=1.0, sharpness=0.0):
     Returns:
         float: Automatic value of regularization parameter.
     """
+    
     (num_views, num_det_rows, num_det_channels) = sino.shape
 
     # Compute indicator function for sinogram support
