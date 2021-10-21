@@ -40,4 +40,4 @@ demo/*.sub
 demo_compare*
 demo/dask-worker-space/*
 
-mbircone/preprocess/test_*
+mbircone/test_*
