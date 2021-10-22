@@ -4,7 +4,7 @@ import shutil
 import numpy as np
 import os
 import hashlib
-import mbircone.cone3D.interface_cy_c as ci
+import mbircone.interface_cy_c as ci
 import random
 
 __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
@@ -157,6 +157,7 @@ def auto_sigma_y(sino, weights, snr_db=30.0, delta_pixel_image=1.0, delta_pixel_
 
     return sigma_y
 
+
 def auto_sigma_prior(sino, delta_pixel_detector=1.0, sharpness=0.0):
     """Computes the automatic value of prior model regularization for use in MBIR reconstruction.
     Args:
@@ -170,6 +171,7 @@ def auto_sigma_prior(sino, delta_pixel_detector=1.0, sharpness=0.0):
     Returns:
         float: Automatic value of regularization parameter.
     """
+    
     (num_views, num_det_rows, num_det_channels) = sino.shape
 
     # Compute indicator function for sinogram support
@@ -199,21 +201,20 @@ def auto_sigma_x(sino, delta_pixel_detector=1.0, sharpness=0.0):
     """
     return 0.2 * auto_sigma_prior(sino, delta_pixel_detector, sharpness)
 
+
 def auto_sigma_p(sino, delta_pixel_detector = 1.0, sharpness = 0.0 ):
     """Computes the automatic value of ``sigma_p`` for use in proximal map estimation.
 
     Args:
-        sino (ndarray):
-            3D numpy array of sinogram data with shape (num_views,num_slices,num_channels)
-        delta_channel (float, optional):
-            [Default=1.0] Scalar value of detector channel spacing in :math:`ALU`.
-        sharpness (float, optional):
-            [Default=0.0] Scalar value that controls level of sharpness.
+        sino (ndarray): 3D numpy array of sinogram data with shape (num_views,num_slices,num_channels)
+        delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
+        sharpness (float, optional): [Default=0.0] Scalar value that controls level of sharpness.
             ``sharpness=0.0`` is neutral; ``sharpness>0`` increases sharpness; ``sharpness<0`` reduces sharpness
 
     Returns:
         float: Automatic value of regularization parameter.
     """
+    
     return 2.0 * auto_sigma_prior(sino, delta_pixel_detector, sharpness)
 
 def compute_sino_params(dist_source_detector, magnification,
@@ -664,7 +665,7 @@ def recon(sino, angles, dist_source_detector, magnification,
         reconparams['priorWeight_QGGMRF'] = -1
         reconparams['priorWeight_proxMap'] = 1
         if sigma_p is None:
-            sigma_p = auto_sigma_p(sino, delta_channel, sharpness)
+            sigma_p = auto_sigma_p(sino, delta_pixel_detector, sharpness)
         reconparams['sigma_lambda'] = sigma_p
         proxmap_input = np.swapaxes(prox_image, 0, 2)
 

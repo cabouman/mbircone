@@ -5,8 +5,8 @@ __pycache__
 docs/build/
 
 # compiled files
-mbircone/cone3D/*.c
-mbircone/cone3D/*.so
+mbircone/*.c
+mbircone/*.so
 *.o
 build/
 dist/
@@ -40,4 +40,4 @@ demo/*.sub
 demo_compare*
 demo/dask-worker-space/*
 
-mbircone/preprocess/test_*
+mbircone/test_*

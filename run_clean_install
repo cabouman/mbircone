@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Clean out old installation
-rm mbircone/cone3D/*.c
-rm mbircone/cone3D/*.so
+rm mbircone/*.c
+rm mbircone/*.so
 rm -r build
 rm -r dist
 rm -r mbircone.egg-info

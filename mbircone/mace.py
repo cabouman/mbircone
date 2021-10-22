@@ -1,7 +1,7 @@
 import numpy as np
 import os,sys
 import time
-import mbircone.cone3D as cone3D 
+import mbircone.cone3D as cone3D
 
 __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
 
@@ -50,6 +50,7 @@ def denoiser_wrapper(image_noisy, denoiser, denoiser_args, image_range, permute_
             It contains a permutation of [0,1,..,N-1] where N is the number of axes of image_noisy. The i’th axis of the permuted array will correspond to the axis numbered axes[i] of image_noisy. If not specified, defaults to (0,1,2), which effectively does no permutation.
         positivity: positivity constraint for denoiser output.
             If True, positivity will be enforced by clipping the denoiser output to be non-negative.
+    
     Returns:
         ndarray: denoised image with same shape and dimensionality as input image ``image_noisy`` 
     """
