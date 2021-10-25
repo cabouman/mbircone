@@ -3,6 +3,7 @@ import numpy as np
 import ctypes           # Import python package required to use cython
 cimport cython          # Import cython package
 cimport numpy as cnp    # Import specialized cython support for numpy
+cimport openmp
 from libc.string cimport memset,strcpy
 
 
@@ -266,7 +267,7 @@ def AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname, verbos
 
 
 def recon_cy(sino, wght, x_init, proxmap_input,
-             sinoparams, imgparams, reconparams, py_Amatrix_fname):
+             sinoparams, imgparams, reconparams, py_Amatrix_fname, num_threads):
     # sino, wght shape : views x slices x channels
     # recon shape: N_x N_y N_z (source-detector-line, channels, slices)
 
@@ -300,6 +301,8 @@ def recon_cy(sino, wght, x_init, proxmap_input,
                           &cy_weightScaler_domain[0],
                           &cy_NHICD_Mode[0])
 
+    openmp.omp_set_num_threads(num_threads)
+
     recon(&py_x[0,0,0],
           &cy_sino[0,0,0],
           &cy_wght[0,0,0],
@@ -329,6 +332,9 @@ def project(image, settings):
     imgparams = settings['imgparams']
     sinoparams = settings['sinoparams']
     sysmatrix_fname = settings['sysmatrix_fname']
+    num_threads = settings['num_threads']
+
+    openmp.omp_set_num_threads(num_threads)
 
     # Get shapes of projection
     num_views = sinoparams['N_beta']

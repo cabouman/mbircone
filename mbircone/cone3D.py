@@ -672,7 +672,7 @@ def recon(sino, angles, dist_source_detector, magnification,
     sino = np.swapaxes(sino, 1, 2)
     weights = np.swapaxes(weights, 1, 2)
     x = ci.recon_cy(sino, weights, init_image, proxmap_input,
-                    sinoparams, imgparams, reconparams, sysmatrix_fname)
+                    sinoparams, imgparams, reconparams, sysmatrix_fname, num_threads)
 
     # Convert shape from Cython interface specifications to Python interface specifications
     x = np.swapaxes(x, 0, 2)
@@ -760,6 +760,7 @@ def project(image, angles,
     settings['imgparams'] = imgparams
     settings['sinoparams'] = sinoparams
     settings['sysmatrix_fname'] = sysmatrix_fname
+    settings['num_threads'] = num_threads
 
     image = np.swapaxes(image, 0, 2)
     proj = ci.project(image, settings)
