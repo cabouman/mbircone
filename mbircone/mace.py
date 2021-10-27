@@ -42,7 +42,9 @@ def denoiser_wrapper(image_noisy, denoiser, denoiser_args, image_range, permute_
     Args:
         image_noisy (ndarray): image volume to be denoised
         denoiser (callable): The denoiser function to be used.
-            denoiser(x, *denoiser_args) -> ndarray
+            
+            ``denoiser(x, *denoiser_args) -> ndarray``
+            
             where ``x`` is an ndarray of the noisy image volume, and ``denoiser_args`` is a tuple of the fixed parameters needed to completely specify the denoiser function.
         denoiser_args (tuple): [Default=()] Extra arguments passed to the denoiser function.
         image_range (tuple): dynamic range of reconstruction image. 
