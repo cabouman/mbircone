@@ -4,7 +4,7 @@
 
 
 # Clean out old installation
-source clean.hs
+source clean.sh
 
 # Create and activate new conda environment
 cd ..
