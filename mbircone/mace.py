@@ -59,7 +59,7 @@ def denoiser_wrapper(image_noisy, denoiser, denoiser_args, image_range, permute_
     image_noisy = np.transpose(image_noisy, permute_vector)
     image_noisy_norm = normalize(image_noisy, image_range)
     # denoise!
-    image_denoised_norm = denoiser(image_noisy_norm, denoiser_args) 
+    image_denoised_norm = denoiser(image_noisy_norm, *denoiser_args) 
     # denormalize image from [0,1] to original dynamic range
     image_denoised = denormalize(image_denoised_norm, image_range)
     if positivity:
@@ -194,7 +194,11 @@ def mace3D(sino, angles, dist_source_detector, magnification,
     else:
         beta = [1-prior_weight,prior_weight/(image_dim),prior_weight/(image_dim),prior_weight/(image_dim)]
     assert(all(w>=0 for w in beta)), 'Incorrect value of prior_weight given. All elements in prior_weight should be non-negative, and sum should be no greater than 1.'   
-    # begin ADMM iterations
+    # make denoiser_args an instance if necessary
+    if not isinstance(denoiser_args, tuple):
+        denoiser_args = (denoiser_args,) 
+    
+    #################### begin ADMM iterations
     if verbose:
         print("Begin MACE ADMM iterations:")
     for itr in range(max_admm_itr):
@@ -233,7 +237,7 @@ def mace3D(sino, angles, dist_source_detector, magnification,
             end = time.time()
             elapsed_t = end-start
             print(f"Done MACE iteration. Elapsed time: {elapsed_t:.2f} sec.")
-    # end ADMM iterations
+    #################### end ADMM iterations
     print("Done MACE reconstruction.")
     return recon
 
