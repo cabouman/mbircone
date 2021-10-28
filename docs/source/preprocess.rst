@@ -21,4 +21,4 @@ mbircone.preprocess
       read_NSI_params
       adjust_NSI_sysparam
       transfer_NSI_to_MBIRCONE
-      preprocess
+      obtain_sino

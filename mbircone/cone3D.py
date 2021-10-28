@@ -160,6 +160,7 @@ def auto_sigma_y(sino, weights, snr_db=30.0, delta_pixel_image=1.0, delta_pixel_
 
 def auto_sigma_prior(sino, delta_pixel_detector=1.0, sharpness=0.0):
     """Computes the automatic value of prior model regularization for use in MBIR reconstruction.
+    
     Args:
         sino (ndarray):
             3D numpy array of sinogram data with shape (num_views,num_det_rows,num_det_channels)
