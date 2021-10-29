@@ -83,13 +83,10 @@ sino_noisy = sino + noise
 # denoiser function for DnCNN model trained with keras on natural images
 def dncnn_denoiser_vanila(img_noisy, denoiser_model):
     """ This is an example of a cnn denoiser function. This denoiser works with either 3D or 4D image batch.
+        
         Args:
             img_noisy (ndarray): noisy image batch with shape (Nz,N0,N1,...,Nm).
             denoiser_model (class object): A pre-trained cnn denoiser model object.
-            data_format (string): One of ``channels_last``(default) or ``channles_first``. The ordering of the dimensions in the input image volume.
-                ``channels_last`` corresponds to inputs with shape (batch_size, height, width, channels).
-                ``channels_first`` corresponds to inputs with shape (batch_size, channels, height, width).
-
         Returns:
             ndarray: denoised image batch with shape (Nz,N0,N1,...,Nm).
     """
@@ -101,6 +98,7 @@ def dncnn_denoiser_vanila(img_noisy, denoiser_model):
 # denoiser function for DnCNN model trained with tensorflow on CT images
 def dncnn_denoiser_ct(img_noisy, denoiser_model):
     ''' This is an example of a Tensorflow denoiser. This denoiser works with either 3D or 4D image batch.
+        
         Args:
             img_noisy (ndarray): noisy image batch with shape (Nz,N0,N1,... ,Nm).
             denoiser_model (Tensorflow instance): A pre-trained tensorflow denoiser model.
@@ -120,7 +118,7 @@ print("Loading denoiser function and model ...")
 if denoiser_type = "dncnn_vanila":
     print("Denoiser function: use DnCNN trained on natural images.")
     # use dncnn_denoiser_vanila function as input to MACE
-    denoiser_func = denoiser_utils.dncnn_denoiser_vanila
+    denoiser_func = dncnn_denoiser_vanila
     # Load denoiser model structure and weights
     json_path = os.path.join(data_param_path, 'dncnn_params/model_dncnn/model.json') # model architecture file
     weight_path = os.path.join(data_param_path, 'dncnn_params/model_dncnn/model.hdf5') # model weight file
@@ -134,7 +132,7 @@ else:
     # use dncnn_denoiser_ct function as input to MACE
     denoiser_func = dncnn_denoiser_ct
     denoiser_model_path = os.path.join(data_param_path, 'dncnn_params/model_dncnn_video')
-    denoiser_model = denoiser_utils.denoiser_ct.DenoiserCT(checkpoint_dir=denoiser_model_path)
+    denoiser_model = denoiser_utils.DenoiserCT(checkpoint_dir=denoiser_model_path)
 
 
 ################ Perform MACE reconstruction
