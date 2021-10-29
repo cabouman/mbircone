@@ -18,7 +18,7 @@ print('This file is a faster demonstration of the usage of mace3D reconstruction
 ########## Geometry parameters
 dist_source_detector = 839.0472 # Distance between the X-ray source and the detector in units of ALU
 magnification = 5.572128439964856 # magnification is defined as (source to detector distance)/(source to center-of-rotation distance)
-delta_pixel_detector = 0.5 # Scalar value of detector pixel spacing in units of ALU
+delta_pixel_detector = 0.25 # Scalar value of detector pixel spacing in units of ALU
 num_det_rows = 14 # number of detector rows
 num_det_channels = 120 # number of detector channels
 ########## Simulated sinogram parameters
@@ -29,10 +29,11 @@ download_url = 'https://github.com/dyang37/mbircone_data/raw/master/demo_data.ta
 extract_path = './demo_data/' # destination path to extract the downloaded tarball file
 # path to downloaded files. Please change them accordingly if you replace any of them with your own files.
 phantom_path = os.path.join(extract_path, 'phantom_3D.npy') # 3D image volume phantom file
-model_param_path = os.path.join(extract_path, './dncnn_params/')# pre-trained dncnn model parameter files
+data_param_path = os.path.join(extract_path, './dncnn_params/')# pre-trained dncnn model parameter files
+output_dir = './output/mace3D_fast/' # path to store output recon images
 ########## MACE recon parameters 
 max_admm_itr = 10 # max ADMM iterations for MACE reconstruction
-prior_weight = 0.7 # cumulative weights for three prior agents.
+prior_weight = 0.5 # cumulative weights for three prior agents.
 denoiser_type = 'dncnn_ct' # Denoiser function to be used in MACE. Should be one of dncnn_vanila or dncnn_ct
 
 
@@ -115,13 +116,13 @@ def dncnn_denoiser_ct(img_noisy, denoiser_model):
 
 ################ Load denoiser function and model according to given denoiser type
 print("Loading denoiser function and model ...")
-if denoiser_type = "dncnn_vanila":
+if denoiser_type == "dncnn_vanila":
     print("Denoiser function: use DnCNN trained on natural images.")
     # use dncnn_denoiser_vanila function as input to MACE
     denoiser_func = dncnn_denoiser_vanila
     # Load denoiser model structure and weights
-    json_path = os.path.join(data_param_path, 'dncnn_params/model_dncnn/model.json') # model architecture file
-    weight_path = os.path.join(data_param_path, 'dncnn_params/model_dncnn/model.hdf5') # model weight file
+    json_path = os.path.join(data_param_path, 'model_dncnn/model.json') # model architecture file
+    weight_path = os.path.join(data_param_path, 'model_dncnn/model.hdf5') # model weight file
     json_file = open(json_path, 'r')
     denoiser_model_json = json_file.read() # load model architecture
     json_file.close()
@@ -131,7 +132,7 @@ else:
     print("Denoiser function: use DnCNN trained on CT images.")
     # use dncnn_denoiser_ct function as input to MACE
     denoiser_func = dncnn_denoiser_ct
-    denoiser_model_path = os.path.join(data_param_path, 'dncnn_params/model_dncnn_video')
+    denoiser_model_path = os.path.join(data_param_path, 'model_dncnn_video')
     denoiser_model = denoiser_utils.DenoiserCT(checkpoint_dir=denoiser_model_path)
 
 
@@ -149,7 +150,6 @@ print("Reconstruction shape = ",recon_shape)
 ################ Post-process Reconstruction results
 print("Post processing MACE reconstruction results ...")
 # Output image and results directory
-output_dir = './output/mace3D_fast/'
 os.makedirs(output_dir, exist_ok=True)
 # Save recon results as a numpy array
 np.save(os.path.join(output_dir,"recon_mace.npy"), recon_mace)

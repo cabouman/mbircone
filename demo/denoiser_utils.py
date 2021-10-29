@@ -124,7 +124,7 @@ class DenoiserCT:
     
     def dncnn(self):
         with tf.variable_scope('block1'):
-            layer_out = tf.layers.conv2d(self.network_in, self.width, 3, padding='same', activation=tf.nn.relu)
+            layer_out = tf.layers.conv2d(self.X, self.width, 3, padding='same', activation=tf.nn.relu)
 
         for layers in range(2, self.numLayers):
             with tf.variable_scope('block%d' % layers):
@@ -134,7 +134,7 @@ class DenoiserCT:
         with tf.variable_scope('block17'):
             layer_out = tf.layers.conv2d(layer_out, self.size_z_out, 3, padding='same')
 
-            network_in_sliced = semi2DCNN_select_z_out_from_z_in(self.network_in, self.size_z_in, self.size_z_out)
+            network_in_sliced = semi2DCNN_select_z_out_from_z_in(self.X, self.size_z_in, self.size_z_out)
             network_out = network_in_sliced - layer_out
         return network_out
 
