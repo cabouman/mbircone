@@ -33,7 +33,7 @@ model_param_path = os.path.join(extract_path, './dncnn_params/')# pre-trained dn
 ########## MACE recon parameters 
 max_admm_itr = 10 # max ADMM iterations for MACE reconstruction
 prior_weight = 0.7 # cumulative weights for three prior agents.
-prior_type = 'dncnn_ct' # one of dncnn_vanila or dncnn_ct
+denoiser_type = 'dncnn_ct' # Denoiser function to be used in MACE. Should be one of dncnn_vanila or dncnn_ct
 
 
 ################ Download and extract data
