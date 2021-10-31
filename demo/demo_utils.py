@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import imageio
 import urllib.request
 import tarfile
+import yaml
 from PIL import Image
 
 def font_setting():
@@ -222,3 +223,18 @@ def query_yes_no(question):
         else:
             sys.stdout.write("Please respond with 'yes' or 'no' " "(or 'y' or 'n').\n")
     return
+
+
+def load_yaml(yml_path):
+    """
+    Load parameter from yaml configuration file.
+    Args:
+        yml_path (string): Path to yaml configuration file
+
+    Returns:
+        A dictionary with parameters for cluster.
+
+    """
+    with open(yml_path, 'r') as stream:
+        data_loaded = yaml.safe_load(stream)
+    return data_loaded
