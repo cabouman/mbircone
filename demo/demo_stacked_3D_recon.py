@@ -4,7 +4,8 @@ import mbircone
 import argparse
 import getpass
 from psutil import cpu_count
-from demo_utils import load_yaml
+from demo_utils import load_yaml, plt_cmp_3dobj
+from scipy import ndimage
 
 if __name__ == '__main__':
     # Ask for configuration file
@@ -13,7 +14,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
 
-    num_parallel = 2
+    num_parallel = 8
 
     # Set sinogram shape
     num_det_rows = 200
@@ -38,47 +39,7 @@ if __name__ == '__main__':
     # Display parameters
     vmin = 1.0
     vmax = 1.1
-
-    # Generate a 3D shepp logan phantom.
-    ROR, boundary_size = mbircone.cone3D.compute_img_size(num_views, num_det_rows, num_det_channels,
-                                                          dist_source_detector,
-                                                          magnification,
-                                                          channel_offset=channel_offset, row_offset=row_offset,
-                                                          delta_pixel_detector=delta_pixel_detector,
-                                                          delta_pixel_image=delta_pixel_image)
-    Nz, Nx, Ny = ROR
-    img_slices_boundary_size, img_rows_boundary_size, img_cols_boundary_size = boundary_size
-    print('ROR of the recon is:', (Nz, Nx, Ny))
-
-    # Set phantom parameters to generate a phantom inside ROI according to ROR and boundary_size.
-    # All valid pixels should be inside ROI.
-    num_rows_cols = Nx - 2 * img_rows_boundary_size  # Assumes a square image
-    num_slices_phantom = Nz - 2 * img_slices_boundary_size
-    print('ROI and shape of phantom is:', num_slices_phantom, num_rows_cols, num_rows_cols)
-
-    # Set display indexes
-    display_slice = img_slices_boundary_size + int(0.4 * num_slices_phantom)
-    display_x = num_rows_cols // 2
-    display_y = num_rows_cols // 2
-    display_view = 0
-
-    # Generate a phantom
-    phantom = mbircone.phantom.gen_shepp_logan_3d(num_rows_cols, num_rows_cols, num_slices_phantom)
-    print('Generated phantom shape = ', np.shape(phantom))
-    phantom = mbircone.cone3D.pad_roi2ror(phantom, boundary_size)
-    print('Padded phantom shape = ', np.shape(phantom))
-
-    # Generate simulated data using forward projector on the 3D shepp logan phantom.
-    cone_angles = np.linspace(0, 2 * np.pi, num_views, endpoint=False)
-    angles_list = [np.roll(cone_angles, i * (num_views // num_parallel)) for i in range(num_parallel)]
-
-    # After setting the geometric parameter, the shape of the input phantom should be equal to the calculated geometric parameter.
-    # Input a phantom with wrong shape will generate a bunch of issue in C.
-    sino_list = [mbircone.cone3D.project(phantom, angles,
-                                   num_det_rows=num_det_rows, num_det_channels=num_det_channels,
-                                   dist_source_detector=dist_source_detector, magnification=magnification,
-                                   delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image,
-                                   channel_offset=channel_offset, row_offset=row_offset) for angles in angles_list]
+    filename = 'output/3D_shepp_logan/results_%d.png'
 
 
     # Obtain Cluster or use can define cluster based on below webpage.
@@ -118,6 +79,65 @@ if __name__ == '__main__':
                 log_directory=configs['cluster_params']['log_directory'].replace('$USER', getpass.getuser()))
     print(cluster)
 
+
+    # Generate a 3D shepp logan phantom.
+    ROR, boundary_size = mbircone.cone3D.compute_img_size(num_views, num_det_rows, num_det_channels,
+                                                          dist_source_detector,
+                                                          magnification,
+                                                          channel_offset=channel_offset, row_offset=row_offset,
+                                                          delta_pixel_detector=delta_pixel_detector,
+                                                          delta_pixel_image=delta_pixel_image)
+    Nz, Nx, Ny = ROR
+    img_slices_boundary_size, img_rows_boundary_size, img_cols_boundary_size = boundary_size
+    print('ROR of the recon is:', (Nz, Nx, Ny))
+
+    # Set phantom parameters to generate a phantom inside ROI according to ROR and boundary_size.
+    # All valid pixels should be inside ROI.
+    num_rows_cols = Nx - 2 * img_rows_boundary_size  # Assumes a square image
+    num_slices_phantom = Nz - 2 * img_slices_boundary_size
+    print('ROI and shape of phantom is:', num_slices_phantom, num_rows_cols, num_rows_cols)
+
+    # Set display indexes
+    display_slice = img_slices_boundary_size + int(0.4 * num_slices_phantom)
+    display_x = num_rows_cols // 2
+    display_y = num_rows_cols // 2
+    display_view = 0
+
+    # Generate a phantom
+    phantom = mbircone.phantom.gen_shepp_logan_3d(num_rows_cols, num_rows_cols, num_slices_phantom)
+    print('Generated phantom shape = ', np.shape(phantom))
+    phantom = mbircone.cone3D.pad_roi2ror(phantom, boundary_size)
+    print('Padded phantom shape = ', np.shape(phantom))
+
+    # Generate simulated data using forward projector on the 3D shepp logan phantom.
+    angles = np.linspace(0, 2 * np.pi, num_views, endpoint=False)
+    phantom_rot_para = np.linspace(0, 180, num_parallel, endpoint=False)
+    #phantom_list = [ndimage.rotate(phantom, phantom_rot_ang, order=0, mode='constant', axes=(1, 2), reshape=False) for phantom_rot_ang in phantom_rot_para]
+    variable_args_list = [{'angle': phantom_rot_ang} for phantom_rot_ang in phantom_rot_para]
+    fixed_args = {'input': phantom,
+                'order': 0,
+                'mode': 'constant',
+                'axes':(1, 2),
+                'reshape': False}
+    phantom_list = mbircone.parallel_utils.scatter_gather(ndimage.rotate,
+                                                        variable_args_list=variable_args_list,
+                                                        fixed_args=fixed_args,
+                                                        cluster=cluster,
+                                                        min_nb_worker=min_nb_worker,
+                                                        verbose=1)
+
+    # After setting the geometric parameter, the shape of the input phantom should be equal to the calculated geometric parameter.
+    # Input a phantom with wrong shape will generate a bunch of issue in C.
+    sino_list = [mbircone.cone3D.project(phantom_rot, angles,
+                                   num_det_rows=num_det_rows, num_det_channels=num_det_channels,
+                                   dist_source_detector=dist_source_detector, magnification=magnification,
+                                   delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image,
+                                   channel_offset=channel_offset, row_offset=row_offset) for phantom_rot in phantom_list]
+    angles_list = [np.copy(angles) for i in range(num_parallel)]
+
+
+
+
     # Stacked 3D reconstruction
     variable_args_list = [{'sino': sino, 'angles': angles} for sino, angles in zip(sino_list, angles_list)]
     fixed_args = {'dist_source_detector': dist_source_detector,
@@ -140,6 +160,13 @@ if __name__ == '__main__':
 
     print(np.array(recon_list).shape)
 
+
     # create output folder and save reconstruction list
-    os.makedirs('output', exist_ok=True)
-    np.save("./output/recon_sh4d.npy", np.array(recon_list))
+    os.makedirs('output/3D_shepp_logan/', exist_ok=True)
+    np.save("./output/3D_shepp_logan/recon_sh4d.npy", np.array(recon_list))
+
+
+    #Display and compare reconstruction
+    for i in range(num_parallel):
+        plt_cmp_3dobj(phantom_list[i], recon_list[i], display_slice, display_x, display_y, vmin, vmax, filename % i)
+    input("press Enter")
