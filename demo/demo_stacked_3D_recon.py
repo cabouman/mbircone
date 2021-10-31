@@ -150,7 +150,7 @@ if __name__ == '__main__':
                 'snr_db':snr_db,
                 'max_iterations': max_iterations,
                 'num_threads': num_threads,
-                'verbose': 1}
+                'verbose': 0}
     recon_list = mbircone.parallel_utils.scatter_gather(mbircone.cone3D.recon,
                                                         variable_args_list=variable_args_list,
                                                         fixed_args=fixed_args,
