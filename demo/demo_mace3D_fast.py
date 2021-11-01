@@ -133,7 +133,7 @@ else:
 # ######### Perform MACE reconstruction #########
 print("Performing MACE reconstruction ...")
 recon_mace = mbircone.mace.mace3D(sino_noisy, angles, dist_source_detector, magnification,
-                                  denoiser=denoiser, denoiser_args=None,
+                                  denoiser=denoiser, denoiser_args=(),
                                   max_admm_itr=max_admm_itr, prior_weight=prior_weight,
                                   delta_pixel_detector=delta_pixel_detector,
                                   weight_type='transmission')
