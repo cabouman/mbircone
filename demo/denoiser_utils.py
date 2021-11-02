@@ -6,27 +6,6 @@ tf.disable_v2_behavior()
 import numpy as np
 
 
-def expand_dim(img, data_format):
-    """ Given a numpy array, expand the dimensions to shape that is accepted by cnn model
-    """
-    if data_format == "channels_last":
-        if img.ndim == 2:
-            return img[np.newaxis, ..., np.newaxis] # (1,Nx,Ny,1)
-        elif img.ndim == 3:
-            return img[..., np.newaxis] # (Nz,Nx,Ny,1)
-    elif data_format == "channels_first":
-        if img.ndim == 2:
-            return img[np.newaxis, np.newaxis, ...] # (1,1,Nx,Ny)
-        elif img.ndim == 3:
-            return np.expand_dims(img, axis=1)
-    else:
-        print("Invalid data format! data_format should be either channels_first or channels_last.")
-        raise
-
-
-# Network structure
-
-
 # helper function to calculate psnr
 def tf_psnr(im1, im2, maxval=1.0):
     # assert pixel value range is 0-1

@@ -11,13 +11,13 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 """
 This script is a quick demonstration of the mace3D reconstruction algorithm.  Demo functionality includes
- * downloading phantom and denoiser data from a url
+ * downloading phantom and denoiser data from specified urls
  * downsampling the phantom along all three dimensions
  * generating sinogram by projecting the phantom
  * performing a 3D MACE reconstruction.
 """
 print('This script is a quick demonstration of the mace3D reconstruction algorithm.  Demo functionality includes \
-\n\t * downloading phantom and denoiser data from a url \
+\n\t * downloading phantom and denoiser data from specified urls \
 \n\t * downsampling the phantom along all three dimensions \
 \n\t * generating sinogram by projecting the phantom \
 \n\t * performing a 3D MACE reconstruction.')
@@ -30,13 +30,14 @@ print('This script is a quick demonstration of the mace3D reconstruction algorit
 # in model.json and model.hdf5 in the model_param_path set below
 denoiser_type = 'dncnn_ct'
 
-# The url to phantom data and NN weights and set the local extract path.
-download_url = 'https://github.com/dyang37/mbircone_data/raw/master/demo_data.tar.gz'  # url to download the demo data
-extract_path = './demo_data/'   # destination path to extract the downloaded tarball file
+# The urls to phantom data and NN weights and set the local extract path.
+phantom_url = 'https://github.com/cabouman/mbir_data/raw/master/bottle_cap_3D_phantom.npy'  # url to phantom file
+cnn_params_url = 'https://github.com/cabouman/mbir_data/raw/master/dncnn_params.tar.gz'  # url to NN weights and structure
+target_dir = './demo_data/'   # destination path to download and extract the files from urls specified above
 
-# Path to downloaded files. Please change them accordingly if you replace any of them with your own files.
-model_param_path = os.path.join(extract_path, './dncnn_params/')  # pre-trained dncnn model parameter files
-phantom_path = os.path.join(extract_path, 'phantom_3D.npy')  # 3D image volume phantom file
+# Path to phantom file and NN weights files. This should match to the file names in the urls above. Please change them accordingly if you replace any of them with your own files.
+model_param_path = os.path.join(target_dir, 'dncnn_params/')  # pre-trained dncnn model parameter files
+phantom_path = os.path.join(target_dir, 'bottle_cap_3D_phantom.npy')  # 3D image volume phantom file
 output_dir = './output/mace3D_fast/'  # path to store output recon images
 
 # Geometry parameters
@@ -57,11 +58,10 @@ prior_weight = 0.5           # cumulative weights for three prior agents.
 # ######### End of parameters #########
 
 # ######### Download and extract data #########
-# A tarball file will be downloaded from the given url and extracted to extract_path.
-# The tarball file downloaded from the default url in this demo contains the following files:
-#   phantom_3D.npy:  an image volume phantom file. You can replace this file with your own phantom data.
-#   dncnn_params/ directory:  dncnn parameter files
-demo_utils.download_and_extract(download_url, extract_path)
+# download phantom file
+demo_utils.download_and_extract(phantom_url, target_dir)
+# download and extract NN weights and structure files
+demo_utils.download_and_extract(cnn_params_url, target_dir)
 
 # ######### Generate downsampled phantom #########
 print("Generating downsampled 3D phantom volume ...")

@@ -161,25 +161,28 @@ def image_resize(image, output_shape):
     return image_resized
 
 
-def download_and_extract(download_url, extract_path='./demo_data/'):
-    """ Given a download url, download and the files from ``download_url`` as a tarball, and extract the tarball file to ``extract_path``. It is assumed that the file from download_url is a tarball file. In case where ``extract_path`` already exists, user will be queried whether it is desired to download and overwrite the existing files.
+def download_and_extract(download_url, target_dir='./'):
+    """ Given a download url, download the file from ``download_url`` , and save the file to the directory specified by ``target_dir``. 
+        If the file in ``target_dir`` already exists, user will be queried whether it is desired to download and overwrite the existing files.
+        If the downloaded file is a tarball, then it will be extracted to ``target_dir``.    
     Args:
         download_url: An url to download the data. This url needs to be public.
-        extract_path: Local path to extract the downloaded tarball file. 
+        target_dir: Local path to save (and extract if necessary) the downloaded file. 
+    Return:
+        string: path to downloaded file. None if download step is skipped.
     """
+    
     is_download = True
-    if os.path.exists(extract_path):
-        is_download = query_yes_no(f"{extract_path} folder already exists. Do you still want to download and overwrite the files?")
+    local_file_name = download_url.split('/')[-1]
+    os.makedirs(target_dir, exist_ok=True)
+    target_path = os.path.join(target_dir, local_file_name) 
+    if os.path.exists(target_path):
+        is_download = query_yes_no(f"{target_path} already exists. Do you still want to download and overwrite the file?")
     if is_download:
         # download the data from url.
-        print("Downloading and extracting data ...")
-        # Download phantom and cnn denoiser params files.
-        # A tarball file will be downloaded from the given url and extracted to demo_data/ folder.
-        # the tarball file contains the following files:
-        # an image volume phantom file phantom_3D.npy. You can replace this file with your own phantom data.
-        # dncnn parameter files stored in demo_data/dncnn_params/ directory
+        print("Downloading file ...")
         try:
-            urllib.request.urlretrieve(download_url, 'temp.tar.gz')
+            urllib.request.urlretrieve(download_url, target_path)
         except urllib.error.HTTPError as e:
             if e.code == 401:
                 raise RuntimeError(f'HTTP status code {e.code}: URL authentication failed! Currently we do not support downloading data from a url that requires authentication.')
@@ -191,25 +194,33 @@ def download_and_extract(download_url, extract_path='./demo_data/'):
                 raise RuntimeError(f'HTTP status code {e.code}: {e.reason}. For more details please refer to https://en.wikipedia.org/wiki/List_of_HTTP_status_codes')
         except urllib.error.URLError as e:
             raise RuntimeError('URLError raised! Please check your internet connection.')
-        # Extract tarball file
-        tar_file = tarfile.open('temp.tar.gz')
-        tar_file.extractall(extract_path)
-        tar_file.close()
-        os.remove('temp.tar.gz')
-        input("Data download and extraction finished. Press Enter to continue.")
+        print(f"Download successful! File saved to {target_path}")
+        if target_path.endswith(('.tar','.tar.gz')):
+            print("Extracting tarball file ...")
+            tar_file = tarfile.open(target_path)
+            tar_file.extractall(target_dir)
+            tar_file.close
+            print("Extraction successful!")
     else:
         print("Skipped data download and extraction step.")
-    return 
+    return
+
+
+    tar_file = tarfile.open(tarball_path)
+    tar_file.extractall(extract_path)
+    tar_file.close() 
 
 
 def query_yes_no(question):
     """Ask a yes/no question via input() and return the answer.
         Code modified from reference: `https://stackoverflow.com/questions/3041986/apt-command-line-interface-like-yes-no-input/3041990`
+    
     Args:
         question (string): Question that is presented to the user.
     Returns:
         Boolean value: True for "yes" or "Enter", or False for "no".
     """
+    
     valid = {"yes": True, "y": True, "ye": True, "no": False, "n": False}
     prompt = " [y/n, default=n] "
     while True:
