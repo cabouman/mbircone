@@ -6,17 +6,11 @@ tf.disable_v2_behavior()
 import numpy as np
 
 
-
-
 class DenoiserCT:
     """ DnCNN-CT denoiser class.
-
-        Methods:
     """
     def __init__(self, checkpoint_dir, size_z_in=5, size_z_out=1, numLayers=17, width=64):
         self.checkpoint_dir = checkpoint_dir
-        load_model_status = self._load()
-        assert load_model_status == True, 'Load weights FAILED from {}'.format(self.checkpoint_dir)
         self.sess = tf.Session(config=tf.ConfigProto())
         #self.sess = tf.compat.v1.Session()
         self.size_z_in = size_z_in
@@ -41,9 +35,15 @@ class DenoiserCT:
         initializer = tf.global_variables_initializer()
         self.sess.run(initializer)
         print("############################## Initialized Model Successfully...")
+        
+        load_model_status = self._load()
+        assert load_model_status == True, 'Load weights FAILED from {}'.format(self.checkpoint_dir)
+   
     
-
     def denoise(self, testData_obj):
+        """ Denoise function. This function takes a DataLoader class object as input, denoise the testData_obj.inData, and save the denoised images as testData_obj.outData. 
+        """
+        
         for idx, noisy_img in enumerate(testData_obj):
             denoised_img, _ = self.sess.run([self.Y, self.R], feed_dict={self.X: noisy_img, self.is_training: False})
             testData_obj.setOutput_current(denoised_img)
@@ -69,8 +69,6 @@ class DenoiserCT:
 
 
     def _load(self):
-        """ Load model from checkpoint
-        """
         saver = tf.train.Saver()
         ckpt = tf.train.get_checkpoint_state(self.checkpoint_dir)
 
@@ -85,6 +83,8 @@ class DenoiserCT:
 
 
 class DataLoader:
+    """ DataLoader class that will be used in DenoiserCT. 
+    """
     def __init__(self, img_list):
         self.size_z_in = 5
         self.size_z_out = 1
@@ -107,6 +107,7 @@ class DataLoader:
             for (self.id_z_in,self.id_z_out) in zip(z_out_iter,z_out_iter):
                 yield self.getInput_current()
 
+    
     def getInput_current(self):
         return self.getInput(self.id_t, self.id_z_in)
 

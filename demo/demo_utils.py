@@ -199,17 +199,18 @@ def download_and_extract(download_url, save_dir):
         except urllib.error.URLError as e:
             raise RuntimeError('URLError raised! Please check your internet connection.')
         print(f"Download successful! File saved to {save_path}")
-        # Extract the downloaded file if it is tarball
-        if save_path.endswith(('.tar','.tar.gz')):
+    else:
+        print("Skipped data download and extraction step.")
+    # Extract the downloaded file if it is tarball
+    if save_path.endswith(('.tar','.tar.gz')):
+        if is_download:
             tar_file = tarfile.open(save_path)
             print("Extracting tarball file to {save_dir} ...")
             # Extract to save_dir.
             tar_file.extractall(save_dir)
             tar_file.close
-            print(f"Extraction successful! File extracted to {save_path}")
-            return save_dir
-    else:
-        print("Skipped data download and extraction step.")
+            print(f"Extraction successful! File extracted to {save_dir}")
+        save_path = save_dir
     # Parse extracted dir and extract data if necessary
     return save_path
 

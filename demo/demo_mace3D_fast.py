@@ -13,13 +13,13 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 This script is a quick demonstration of the mace3D reconstruction algorithm.  Demo functionality includes
  * downloading phantom and denoiser data from specified urls
  * downsampling the phantom along all three dimensions
- * generating sinogram by projecting the phantom
+ * generating sinogram by projecting the phantom and then adding transmission noise
  * performing a 3D MACE reconstruction.
 """
 print('This script is a quick demonstration of the mace3D reconstruction algorithm.  Demo functionality includes \
 \n\t * downloading phantom and denoiser data from specified urls \
 \n\t * downsampling the phantom along all three dimensions \
-\n\t * generating sinogram by projecting the phantom \
+\n\t * generating sinogram by projecting the phantom and then adding transmission noise\
 \n\t * performing a 3D MACE reconstruction.')
 
 # ###########################################################################

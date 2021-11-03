@@ -12,31 +12,42 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 """
 This script is a demonstration of the mace3D reconstruction algorithm.  Demo functionality includes
  * downloading phantom and denoiser data from specified urls
- * generating sinogram by projecting the phantom
+ * generating sinogram by projecting the phantom and then adding transmission noise
  * performing a 3D MACE reconstruction.
 """
-print('This script is a quick demonstration of the mace3D reconstruction algorithm.  Demo functionality includes \
+print('This script is a demonstration of the mace3D reconstruction algorithm.  Demo functionality includes \
 \n\t * downloading phantom and denoiser data from specified urls \
-\n\t * generating sinogram by projecting the phantom \
+\n\t * generating sinogram by projecting the phantom and then adding transmission noise\
 \n\t * performing a 3D MACE reconstruction.')
 
-# ######### Set the parameters to get the data and do the recon #########
+# ###########################################################################
+# Set the parameters to get the data and do the recon 
+# ###########################################################################
+
 # Change the parameters below for your own use case.
 
 # Denoiser function to be used in MACE. For the built-in demo, this should be one of dncnn_keras or dncnn_ct
 # Other denoisers built in keras can be used with minimal modification by putting the architecture and weights
-# in model.json and model.hdf5 in the model_param_path set below
+# in model.json and model.hdf5 in the denoiser_path set below
 denoiser_type = 'dncnn_ct'
 
-# The urls to phantom data and NN weights and set the local extract path.
-phantom_url = 'https://github.com/cabouman/mbir_data/raw/master/bottle_cap_3D_phantom.npy'  # url to phantom file
-cnn_params_url = 'https://github.com/cabouman/mbir_data/raw/master/dncnn_params.tar.gz'  # url to NN weights and structure
-target_dir = './demo_data/'   # destination path to download and extract the files from urls specified above
+# The url to the data repo.
+data_repo_url = 'https://github.com/cabouman/mbir_data/raw/master/'
 
-# Path to phantom file and NN weights files. This should match to the file names in the urls above. Please change them accordingly if you replace any of them with your own files.
-model_param_path = os.path.join(target_dir, 'dncnn_params/')  # pre-trained dncnn model parameter files
-phantom_path = os.path.join(target_dir, 'bottle_cap_3D_phantom.npy')  # 3D image volume phantom file
-output_dir = './output/mace3D/'  # path to store output recon images
+# Download url to the index file.
+# This file will be used to retrieve urls to files that we are going to download
+yaml_url = os.path.join(data_repo_url, 'index.yaml')
+
+# Choice of phantom and denoiser files. 
+# These should be valid choices specified in the index file. 
+# The urls to phantom data and NN weights will be parsed from data_repo_url and the choices of phantom and denoiser specified below.
+phantom_name = 'bottle_cap_3D'
+denoiser_name = denoiser_type
+
+# destination path to download and extract the phantom and NN weight files.
+target_dir = './demo_data/'   
+# path to store output recon images
+output_dir = './output/mace3D/'
 
 # Geometry parameters
 dist_source_detector = 839.0472     # Distance between the X-ray source and the detector in units of ALU
@@ -52,23 +63,42 @@ sino_noise_sigma = 0.01      # transmission noise level
 # MACE recon parameters
 max_admm_itr = 10            # max ADMM iterations for MACE reconstruction
 prior_weight = 0.5           # cumulative weights for three prior agents.
-
 # ######### End of parameters #########
 
-# ######### Download and extract data #########
-# download phantom file
-demo_utils.download_and_extract(phantom_url, target_dir)
-# download and extract NN weights and structure files
-demo_utils.download_and_extract(cnn_params_url, target_dir)
 
-# ######### Generate downsampled phantom #########
+# ###########################################################################
+# Download and extract data 
+# ###########################################################################
+
+# Download the url index file and return path to local file. 
+index_path = demo_utils.download_and_extract(yaml_url, target_dir) 
+# Load the url index file as a directionary
+url_index = demo_utils.load_yaml(index_path)
+# get urls to phantom and denoiser parameter file
+phantom_url = os.path.join(data_repo_url, url_index['phantom'][phantom_name])  # url to download the 3D image volume phantom file
+denoiser_url = os.path.join(data_repo_url, url_index['denoiser'][denoiser_name])  # url to download the denoiser parameter file 
+
+# download phantom file
+phantom_path = demo_utils.download_and_extract(phantom_url, target_dir)
+# download and extract NN weights and structure files
+denoiser_path = demo_utils.download_and_extract(denoiser_url, target_dir)
+
+
+# ###########################################################################
+# Generate downsampled phantom 
+# ###########################################################################
 print("Generating downsampled 3D phantom volume ...")
+
 # load original phantom
 phantom = np.load(phantom_path)
-print("shape of original phantom = ", phantom.shape)
+print("shape of phantom = ", phantom.shape)
 
-# ######### Generate sinogram #########
+
+# ###########################################################################
+# Generate sinogram
+# ###########################################################################
 print("Generating sinogram ...")
+
 # Generate view angles and sinogram with weights
 angles = np.linspace(0, 2 * np.pi, num_views, endpoint=False)
 sino = mbircone.cone3D.project(phantom, angles,
@@ -81,42 +111,53 @@ weights = mbircone.cone3D.calc_weights(sino, weight_type='transmission')
 noise = sino_noise_sigma * 1. / np.sqrt(weights) * np.random.normal(size=(num_views, num_det_rows, num_det_channels))
 sino_noisy = sino + noise
 
-# ######### Set up the denoiser #########
-# This demo includes a generic DnCNN in keras and a custom CNN trained on CT images - the choice is set in
-# the parameter section above.
+
+# ###########################################################################
+# Set up the denoiser
+# ###########################################################################
+# This demo includes a custom CNN trained on CT images and a generic DnCNN in keras 
+# The choice is set in the parameter section above.
 print("Loading denoiser function and model ...")
-if denoiser_type == "dncnn_keras":
-    print("Denoiser function: DnCNN trained on natural images.")
-    # Load denoiser model structure and weights
-    json_path = os.path.join(model_param_path, 'model_dncnn/model.json')  # model architecture file
-    weight_path = os.path.join(model_param_path, 'model_dncnn/model.hdf5')  # model weight file
-    with open(json_path, 'r') as json_file:
-        denoiser_model = model_from_json(json_file.read())  # load model architecture
 
-    denoiser_model.load_weights(weight_path)  # load model weights
-
-    # Define the denoiser function using this model
-    def denoiser(img_noisy):
-        img_noisy = img_noisy[..., np.newaxis]  # (Nz,N0,N1,...,Nm,1)
-        img_denoised = denoiser_model.predict(img_noisy)  # inference
-        return np.squeeze(img_denoised)
-
-else:
+# DnCNN denoiser trained on CT images. This is the denoiser that we recommend using.
+if denoiser_type == 'dncnn_ct':
     print("Denoiser function: custom DnCNN trained on CT images.")
 
     # Load denoiser model structure and weights
-    denoiser_model_path = os.path.join(model_param_path, 'model_dncnn_video')
-    denoiser_model = denoiser_utils.DenoiserCT(checkpoint_dir=denoiser_model_path)
+    denoiser_model = denoiser_utils.DenoiserCT(checkpoint_dir=os.path.join(denoiser_path, 'model_dncnn_ct'))
 
     # Define the denoiser using this model.  This version requires some interface code to match with MACE.
     def denoiser(img_noisy):
         img_noisy = np.expand_dims(img_noisy, axis=1)
         testData_obj = denoiser_utils.DataLoader(img_noisy)
-        denoiser_model.test(testData_obj)
+        denoiser_model.denoise(testData_obj)
         img_denoised = np.stack(testData_obj.outData, axis=0)
         return np.squeeze(img_denoised)
 
-# ######### Perform MACE reconstruction #########
+# DnCNN denoiser in Keras. This denoiser model is trained on natural images. 
+elif denoiser_type == 'dncnn_keras':
+    print("Denoiser function: DnCNN trained on natural images.")
+
+    # Load denoiser model structure and weights
+    json_path = os.path.join(denoiser_path, 'model_dncnn_keras/model.json')  # model architecture file
+    weight_path = os.path.join(denoiser_path, 'model_dncnn_keras/model.hdf5')  # model weight file
+    with open(json_path, 'r') as json_file:
+        denoiser_model = model_from_json(json_file.read())  # load model architecture
+
+    denoiser_model.load_weights(weight_path)  # load model weights
+
+    # Define the denoiser using this model.
+    def denoiser(img_noisy):
+        img_noisy = img_noisy[..., np.newaxis]  # (Nz,N0,N1,...,Nm,1)
+        img_denoised = denoiser_model.predict(img_noisy)  # inference
+        return np.squeeze(img_denoised)
+else:
+    raise RuntimeError('Unkown denoiser_type. Should be either dncnn_ct or dncnn_keras.')
+
+
+# ###########################################################################
+# Perform MACE reconstruction
+# ###########################################################################
 print("Performing MACE reconstruction ...")
 recon_mace = mbircone.mace.mace3D(sino_noisy, angles, dist_source_detector, magnification,
                                   denoiser=denoiser, denoiser_args=(),
@@ -126,7 +167,10 @@ recon_mace = mbircone.mace.mace3D(sino_noisy, angles, dist_source_detector, magn
 recon_shape = recon_mace.shape
 print("Reconstruction shape = ", recon_shape)
 
-# ######### Post-process Reconstruction results #########
+
+# ###########################################################################
+# Post-process reconstruction results
+# ###########################################################################
 print("Post processing MACE reconstruction results ...")
 # Save recon results as a numpy array
 os.makedirs(output_dir, exist_ok=True)
@@ -149,7 +193,7 @@ for display_slice in display_slices:
                           filename=os.path.join(output_dir, f'recon_mace_slice{display_slice}.png'), vmin=0, vmax=0.5)
 
 # Plot 3D phantom and recon image volumes as gif images.
-demo_utils.plot_gif(phantom, output_dir, 'phantom_resized', vmin=0, vmax=0.5)
+demo_utils.plot_gif(phantom, output_dir, 'phantom', vmin=0, vmax=0.5)
 demo_utils.plot_gif(recon_mace, output_dir, 'recon_mace', vmin=0, vmax=0.5)
 
 input("press Enter")
