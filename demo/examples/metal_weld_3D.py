@@ -15,7 +15,7 @@ num_views = 100
 downsample_factor = [8, 8]
 crop_factor = [(0.25, 0.05), (0.75, 0.95)]
 
-NSI_system_params = mbircone.preprocess.read_NSI_params(
+NSI_system_params = mbircone.preprocess.NSI_read_params(
     "/depot/bouman/users/li3120/datasets/metal_weld_data/2102414-2019-001-076_29.58um_0.5BH.nsipro")
 
 sino, angles = mbircone.preprocess.obtain_sino(path_radiographs,
@@ -35,11 +35,11 @@ print(angles)
 
 pp = pprint.PrettyPrinter(indent=4)
 
-NSI_system_params = mbircone.preprocess.adjust_NSI_sysparam(NSI_system_params,
+NSI_system_params = mbircone.preprocess.NSI_adjust_sysparam(NSI_system_params,
                                                             downsample_factor=downsample_factor,
                                                             crop_factor=crop_factor)
 
-geo_params = mbircone.preprocess.transfer_NSI_to_MBIRCONE(NSI_system_params)
+geo_params = mbircone.preprocess.NSI_to_MBIRCONE_params(NSI_system_params)
 print("NSI system paramemters:")
 pp.pprint(NSI_system_params)
 print("MBIRCONE Geometric paramemters:")
