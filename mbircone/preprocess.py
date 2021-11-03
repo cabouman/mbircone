@@ -6,7 +6,7 @@ import warnings
 import math
 
 
-def read_scan_img(img_path):
+def _read_scan_img(img_path):
     """Read and return single image from a ConeBeam Scan.
 
     Args:
@@ -25,7 +25,7 @@ def read_scan_img(img_path):
     return img.astype(np.float32)
 
 
-def read_scan_dir(scan_dir, view_ids=[]):
+def _read_scan_dir(scan_dir, view_ids=[]):
     """Read and return a stack of sinograms from a directory.
 
     Args:
@@ -40,13 +40,13 @@ def read_scan_dir(scan_dir, view_ids=[]):
 
     img_path_list = sorted(glob(os.path.join(scan_dir, '*')))
     img_path_list = [img_path_list[i] for i in view_ids]
-    img_list = [read_scan_img(img_path) for img_path in img_path_list]
+    img_list = [_read_scan_img(img_path) for img_path in img_path_list]
 
     # return shape = num_views x num_slices x num_channels
     return np.stack(img_list, axis=0)
 
 
-def downsample_scans(obj_scan, blank_scan, dark_scan, downsample_factor=[1, 1]):
+def _downsample_scans(obj_scan, blank_scan, dark_scan, downsample_factor=[1, 1]):
     """Down-sample given scans with given factor.
 
     Args:
@@ -81,7 +81,7 @@ def downsample_scans(obj_scan, blank_scan, dark_scan, downsample_factor=[1, 1]):
     return obj_scan, blank_scan, dark_scan
 
 
-def crop_scans(obj_scan, blank_scan, dark_scan, crop_factor=[(0, 0), (1, 1)]):
+def _crop_scans(obj_scan, blank_scan, dark_scan, crop_factor=[(0, 0), (1, 1)]):
     """Crop given scans with given factor.
 
     Args:
@@ -122,7 +122,7 @@ def crop_scans(obj_scan, blank_scan, dark_scan, crop_factor=[(0, 0), (1, 1)]):
     return obj_scan, blank_scan, dark_scan
 
 
-def compute_sino(obj_scan, blank_scan, dark_scan):
+def _compute_sino_from_scans(obj_scan, blank_scan, dark_scan):
     """Compute sinogram data base on given object scan, blank scan, and dark scan.
 
     Args:
@@ -150,7 +150,7 @@ def compute_sino(obj_scan, blank_scan, dark_scan):
     return sino
 
 
-def compute_views_index_list(view_range, num_views):
+def _compute_views_index_list(view_range, num_views):
     """Return a list of sampled indexes of views to use for reconstruction.
 
     Args:
@@ -167,7 +167,7 @@ def compute_views_index_list(view_range, num_views):
     return index_sampled
 
 
-def select_contiguous_subset(indexList, num_time_points=1, time_point=0):
+def _select_contiguous_subset(indexList, num_time_points=1, time_point=0):
     """Return a contiguous subset of index list given a time point. Mainly use for 4D datasets with multiple time points.
 
     Args:
@@ -193,7 +193,7 @@ def select_contiguous_subset(indexList, num_time_points=1, time_point=0):
     return indexList_new
 
 
-def compute_angles_list(view_index_list, num_acquired_scans, total_angles, rotation_direction="positive"):
+def _compute_angles_list(view_index_list, num_acquired_scans, total_angles, rotation_direction="positive"):
     """Return angles list from indexes list.
 
     Args:
@@ -217,7 +217,7 @@ def compute_angles_list(view_index_list, num_acquired_scans, total_angles, rotat
     return angles_list
 
 
-def read_NSI_string(filepath, tags_sections):
+def _NSI_read_str_from_config(filepath, tags_sections):
     """Return strings about dataset information read from NSI configuration file.
 
     Args:
@@ -256,13 +256,13 @@ def read_NSI_string(filepath, tags_sections):
     return params
 
 
-def read_NSI_params(filepath):
-    """ Read NSI system parameters
+def NSI_read_params(config_file_path):
+    """ Read NSI system parameters from a NSI configuration file.
 
     Args:
-        filepath (string): Path to NSI configuration file. The filename extension is '.nsipro'.
+        config_file_path (string): Path to NSI configuration file. The filename extension is '.nsipro'.
     Returns:
-        dict of string-int: NSI system parameters.
+        Dictionary: NSI system parameters.
     """
     tag_section_list = [['source', 'Result'],
                         ['reference', 'Result'],
@@ -271,7 +271,7 @@ def read_NSI_params(filepath):
                         ['height pixels', 'Detector'],
                         ['number', 'Object Radiograph'],
                         ['Rotation range', 'CT Project Configuration']]
-    params = read_NSI_string(filepath, tag_section_list)
+    params = _NSI_read_str_from_config(config_file_path, tag_section_list)
     NSI_system_params = dict()
 
     NSI_system_params['u_s'] = np.double(params[0].split(' ')[-1])
@@ -297,7 +297,7 @@ def read_NSI_params(filepath):
     return NSI_system_params
 
 
-def adjust_NSI_sysparam(NSI_system_params, downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)]):
+def NSI_adjust_sysparam(NSI_system_params, downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)]):
     """Return adjusted NSI system parameters given downsampling factor and cropping factor.
 
     Args:
@@ -306,7 +306,7 @@ def adjust_NSI_sysparam(NSI_system_params, downsample_factor=[1, 1], crop_factor
         crop_factor ([(int, int),(int, int)] or [int, int, int, int]): [Default=[(0, 0), (1, 1)]]
             Two points to define the bounding box. Sequence of [(r0, c0), (r1, c1)] or [r0, c0, r1, c1], where 1>=r1 >= r0>=0 and 1>=c1 >= c0>=0.
     Returns:
-        dict of string-int: Adjusted NSI system parameters.
+        Dictionary: Adjusted NSI system parameters.
     """
     if isinstance(crop_factor[0], (list, tuple)):
         (r0, c0), (r1, c1) = crop_factor
@@ -335,13 +335,13 @@ def adjust_NSI_sysparam(NSI_system_params, downsample_factor=[1, 1], crop_factor
     return NSI_system_params
 
 
-def transfer_NSI_to_MBIRCONE(NSI_system_params):
+def NSI_to_MBIRCONE_params(NSI_system_params):
     """Return MBIRCONE format geometric parameters from adjusted NSI system parameters.
 
     Args:
         NSI_system_params (dict of string-int): Adjusted NSI system parameters.
     Returns:
-        dict of string-int: MBIRCONE format geometric parameters
+        Dictionary: MBIRCONE format geometric parameters
 
     """
     geo_params = dict()
@@ -364,7 +364,7 @@ def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
                view_range=None, total_angles=360, num_acquired_scans=2000,
                rotation_direction="positive", downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
                num_time_points=1, time_point=0):
-    """Return preprocessed sinogram and angles list use for reconstruction.
+    """Return preprocessed sinogram and angles list for reconstruction.
 
     Args:
         path_radiographs (string): Path to a ConeBeam Scan directory.
@@ -392,19 +392,19 @@ def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
     if view_range is None:
         view_range = [0, num_acquired_scans - 1]
 
-    view_ids = compute_views_index_list(view_range, num_views)
-    view_ids = select_contiguous_subset(view_ids, num_time_points, time_point)
-    angles = compute_angles_list(view_ids, num_acquired_scans, total_angles, rotation_direction)
-    obj_scan = read_scan_dir(path_radiographs, view_ids)
+    view_ids = _compute_views_index_list(view_range, num_views)
+    view_ids = _select_contiguous_subset(view_ids, num_time_points, time_point)
+    angles = _compute_angles_list(view_ids, num_acquired_scans, total_angles, rotation_direction)
+    obj_scan = _read_scan_dir(path_radiographs, view_ids)
 
     # Should deal with situation when input is None.
     if path_blank is not None:
-        blank_scan = np.expand_dims(read_scan_img(path_blank), axis=0)
+        blank_scan = np.expand_dims(_read_scan_img(path_blank), axis=0)
     else:
         blank_scan = 0 * obj_scan[0] + 1
         blank_scan = blank_scan.reshape([1, obj_scan.shape[1], obj_scan.shape[2]])
     if path_dark is not None:
-        dark_scan = np.expand_dims(read_scan_img(path_dark), axis=0)
+        dark_scan = np.expand_dims(_read_scan_img(path_dark), axis=0)
     else:
         dark_scan = 0 * obj_scan[0]
         dark_scan = dark_scan.reshape([1, obj_scan.shape[1], obj_scan.shape[2]])
@@ -414,11 +414,11 @@ def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
     dark_scan = np.flip(dark_scan, axis=1)
 
     # downsampling in pixels
-    obj_scan, blank_scan, dark_scan = downsample_scans(obj_scan, blank_scan, dark_scan,
-                                                       downsample_factor=downsample_factor)
+    obj_scan, blank_scan, dark_scan = _downsample_scans(obj_scan, blank_scan, dark_scan,
+                                                        downsample_factor=downsample_factor)
     # cropping in pixels
-    obj_scan, blank_scan, dark_scan = crop_scans(obj_scan, blank_scan, dark_scan,
-                                                 crop_factor=crop_factor)
+    obj_scan, blank_scan, dark_scan = _crop_scans(obj_scan, blank_scan, dark_scan,
+                                                  crop_factor=crop_factor)
 
-    sino = compute_sino(obj_scan, blank_scan, dark_scan)
+    sino = _compute_sino_from_scans(obj_scan, blank_scan, dark_scan)
     return sino.astype(np.float32), angles.astype(np.float64)

@@ -1,7 +1,7 @@
 mbircone.mace
 ---------------
 .. automodule:: mbircone.mace
-   :members: 
+   :members: mace3D 
    :undoc-members:
    :show-inheritance:
 
