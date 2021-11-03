@@ -42,6 +42,9 @@ if __name__ == '__main__':
     vmax = 1.1
     filename = 'output/3D_shepp_logan/results_%d.png'
 
+    # Parallel computer verbose
+    par_verbose = 0
+
     # Obtain Dask Cluster object(LocalCluster, SLURMCluster, SGECluster) by mbircone.parallel_utils.get_cluster_ticket
     # More information and clusters with other job queue systems can be found in below webpage.
     # API of dask_jobqueue https://jobqueue.dask.org/en/latest/api.html
@@ -113,7 +116,7 @@ if __name__ == '__main__':
     phantom = mbircone.cone3D.pad_roi2ror(phantom, boundary_size)
     print('Padded phantom shape = ', np.shape(phantom))
 
-    # scatter_gather parallel compute ndimage.rotate
+    # scatter_gather parallel computes ndimage.rotate
     # Generate 4D simulated data by rotating the 3D shepp logan phantom by increasing degree per time point.
     # Create the rotation angles and argument lists, and distribute to workers.
     phantom_rot_para = np.linspace(0, 180, num_parallel, endpoint=False)  # Phantom rotation angles.
@@ -128,10 +131,11 @@ if __name__ == '__main__':
                                                           fixed_args=fixed_args,
                                                           cluster=cluster,
                                                           min_nb_start_worker=maximum_possible_nb_worker,
-                                                          verbose=1)
+                                                          verbose=par_verbose)
+    print("Generate 4D simulated data by rotating the 3D shepp logan phantom by increasing degree per time point.")
 
-    # scatter_gather parallel compute mbircone.cone3D.project
-    # Generate sinogram list according to given phantom list per time point.
+    # scatter_gather parallel computes mbircone.cone3D.project
+    # Generate sinogram data by projecting each phantom in phantom list.
     # Create the projection angles and argument lists, and distribute to workers.
     proj_angles = np.linspace(0, 2 * np.pi, num_views, endpoint=False)  # Same for all time points.
     # After setting the geometric parameter, the shape of the input phantom should be equal to the calculated
@@ -151,10 +155,11 @@ if __name__ == '__main__':
                                                        fixed_args=fixed_args,
                                                        cluster=cluster,
                                                        min_nb_start_worker=maximum_possible_nb_worker,
-                                                       verbose=1)
+                                                       verbose=par_verbose)
+    print("Generate sinogram data by projecting each phantom in all timepoints.")
 
-    # scatter_gather parallel compute mbircone.cone3D.recon
-    # Generate 3D reconstruction list according to given sinogram list per time point.
+    # scatter_gather parallel computes mbircone.cone3D.recon
+    # Reconstruct 3D phantom in all timepoints using mbircone.cone3D.recon.
     # Create the projection angles and argument lists, and distribute to workers.
     angles_list = [np.copy(proj_angles) for i in range(num_parallel)]  # Same for all time points.
     variable_args_list = [{'sino': sino, 'angles': angles} for sino, angles in zip(sino_list, angles_list)]
@@ -174,7 +179,8 @@ if __name__ == '__main__':
                                                         fixed_args=fixed_args,
                                                         cluster=cluster,
                                                         min_nb_start_worker=maximum_possible_nb_worker,
-                                                        verbose=1)
+                                                        verbose=par_verbose)
+    print("Reconstruction 3D phantom in all timepoints")
 
     print(np.array(recon_list).shape)
 

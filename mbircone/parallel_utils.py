@@ -188,13 +188,15 @@ def scatter_gather(func, variable_args_list=[], fixed_args={}, cluster=None, min
     # Start submit jobs until the client has enough workers.
     while True:
         nb_workers = len(client.scheduler_info()["workers"])
-        print('Got {} workers'.format(nb_workers))
+        if verbose:
+            print('Got {} workers'.format(nb_workers))
         if nb_workers >= min_nb_start_worker:
+            print('Got {} workers, start parallel computation.'.format(nb_workers))
             break
         time.sleep(1)
-
-    print('client:', client)
-    pp.pprint(client.scheduler_info()["workers"])
+    if verbose:
+        print('client:', client)
+        pp.pprint(client.scheduler_info()["workers"])
 
     completed_list = []
     return_list = []
