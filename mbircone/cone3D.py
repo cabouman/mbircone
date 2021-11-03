@@ -43,7 +43,7 @@ def _gen_sysmatrix_fname_tmp(lib_path=__lib_path, sysmatrix_name='object'):
 
 
 def _sino_indicator(sino):
-    """Computes a binary function that indicates the region of sinogram support.
+    """Compute a binary function that indicates the region of sinogram support.
 
     Args:
         sino (ndarray):
@@ -57,7 +57,7 @@ def _sino_indicator(sino):
 
 
 def _distance_line_to_point(A, B, P):
-    """Computes the distance from point P to the line passing through points A and B
+    """Compute the distance from point P to the line passing through points A and B
     
     Args:
         A (float, 2-tuple): (x,y) coordinate of point A
@@ -88,7 +88,7 @@ def hash_params(angles, sinoparams, imgparams):
 
 
 def calc_weights(sino, weight_type):
-    """Computes the weights used in MBIR reconstruction.
+    """Compute the weights used in MBIR reconstruction.
 
     Args:
         sino (ndarray): 3D numpy array of sinogram data with shape (num_views,num_det_rows,num_det_channels)
@@ -123,7 +123,7 @@ def calc_weights(sino, weight_type):
 
 
 def auto_sigma_y(sino, weights, snr_db=30.0, delta_pixel_image=1.0, delta_pixel_detector=1.0):
-    """Computes the automatic value of ``sigma_y`` for use in MBIR reconstruction.
+    """Compute the automatic value of ``sigma_y`` for use in MBIR reconstruction.
 
     Args:
         sino (ndarray):
@@ -159,7 +159,7 @@ def auto_sigma_y(sino, weights, snr_db=30.0, delta_pixel_image=1.0, delta_pixel_
 
 
 def auto_sigma_prior(sino, delta_pixel_detector=1.0, sharpness=0.0):
-    """Computes the automatic value of prior model regularization for use in MBIR reconstruction.
+    """Compute the automatic value of prior model regularization for use in MBIR reconstruction.
     
     Args:
         sino (ndarray):
@@ -186,7 +186,7 @@ def auto_sigma_prior(sino, delta_pixel_detector=1.0, sharpness=0.0):
     return sigma_prior
 
 def auto_sigma_x(sino, delta_pixel_detector=1.0, sharpness=0.0):
-    """Computes the automatic value of ``sigma_x`` for use in MBIR reconstruction.
+    """Compute the automatic value of ``sigma_x`` for use in MBIR reconstruction.
 
     Args:
         sino (ndarray):
@@ -204,7 +204,7 @@ def auto_sigma_x(sino, delta_pixel_detector=1.0, sharpness=0.0):
 
 
 def auto_sigma_p(sino, delta_pixel_detector = 1.0, sharpness = 0.0 ):
-    """Computes the automatic value of ``sigma_p`` for use in proximal map estimation.
+    """Compute the automatic value of ``sigma_p`` for use in proximal map estimation.
 
     Args:
         sino (ndarray): 3D numpy array of sinogram data with shape (num_views,num_slices,num_channels)
@@ -222,7 +222,7 @@ def compute_sino_params(dist_source_detector, magnification,
                         num_views, num_det_rows, num_det_channels,
                         channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
                         delta_pixel_detector=1.0):
-    """ Computes sinogram parameters specify coordinates and bounds relating to the sinogram
+    """ Compute sinogram parameters specify coordinates and bounds relating to the sinogram
         For detailed specifications of sinoparams, see cone3D.interface_cy_c
     
     Args:
@@ -272,7 +272,7 @@ def compute_sino_params(dist_source_detector, magnification,
 
 
 def compute_img_params(sinoparams, delta_pixel_image=None, ror_radius=None):
-    """ Computes image parameters that specify coordinates and bounds relating to the image. 
+    """ Compute image parameters that specify coordinates and bounds relating to the image. 
         For detailed specifications of imgparams, see cone3D.interface_cy_c
     
     Args:
@@ -387,7 +387,7 @@ def compute_img_size(num_views, num_det_rows, num_det_channels,
                      magnification,
                      channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
                      delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None):
-    """Compute size of reconstruction image, given geometric parameter.
+    """Compute size of the reconstructed image given the geometric parameters.
 
     Args:
         num_views (int): Number of views in sinogram data
@@ -411,8 +411,8 @@ def compute_img_size(num_views, num_det_rows, num_det_channels,
     Returns:
         Information about the image size.
 
-        - **ROR (list)**: Range of reconstruction specifies the actual image size. A list of 3 integer, [num_img_slices, num_img_rows, num_img_cols].
-        - **boundary_size (list)**: Number of invalid pixels on each side of a 3D image. A list of 3 integer, [img_slices_boundary_size, img_rows_boundary_size, img_cols_boundary_size].
+        - **ROR (list)**: Region of reconstruction that specifies the size of the reconstructed image. A list of 3 integer, [num_img_slices, num_img_rows, num_img_cols]. However, the valid region of interest (ROI) is a subset of ROR.
+        - **boundary_size (list)**: Number of invalid pixels on each side of a 3D image. A list of 3 integer, [img_slices_boundary_size, img_rows_boundary_size, img_cols_boundary_size]. The function `cone3D.extract_roi_from_ror` can be used to extract ROI from the full ROR.
 
 
     """
@@ -437,7 +437,7 @@ def compute_img_size(num_views, num_det_rows, num_det_channels,
 
 
 def pad_roi2ror(image, boundary_size):
-    """Given a 3D phantom image and the boundary size, pad the phantom image to an ROR image with 0.
+    """Given a 3D ROI and the boundary size, pad the ROI with 0s to form an ROR.
 
     Args:
         image (ndarray): 3D numpy array with a shape of (num_img_slices, num_img_rows, num_img_cols)
@@ -453,7 +453,7 @@ def pad_roi2ror(image, boundary_size):
 
 
 def extract_roi_from_ror(image, boundary_size):
-    """Given a 3D phantom image and the boundary size, extract the ROI of the image.
+    """Given a 3D ROR and the boundary size, extract the ROI by removing the boundary.
 
     Args:
         image (ndarray): 3D numpy array with a shape of (num_img_slices, num_img_rows, num_img_cols)
@@ -479,7 +479,7 @@ def recon(sino, angles, dist_source_detector, magnification,
           positivity=True, p=1.2, q=2.0, T=1.0, num_neighbors=6,
           sharpness=0.0, sigma_x=None, sigma_p=None, max_iterations=20, stop_threshold=0.02,
           num_threads=None, NHICD=False, verbose=1, lib_path=__lib_path):
-    """Computes 3D cone beam MBIR reconstruction
+    """Compute 3D cone beam MBIR reconstruction
     
     Args:
         sino (ndarray): 3D sinogram array with shape (num_views, num_det_rows, num_det_channels)
@@ -687,7 +687,7 @@ def project(image, angles,
             channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
             delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
             num_threads=None, verbose=1, lib_path=__lib_path):
-    """Computes 3D cone beam forward-projection.
+    """Compute 3D cone beam forward-projection.
     
     Args:
         image (ndarray):
