@@ -57,7 +57,7 @@ def get_cluster_ticket(job_queue_sys,
         A two-element tuple including:
 
         - **cluster**: A dask cluster object from the given configuration parameters.
-        - **min_nb_worker** (int): Minimum number of workers that a dask client needs to start jobs deployment.
+        - **maximum_possible_nb_worker** (int): Minimum number of workers that a dask client needs to start jobs deployment.
     """
 
     if job_queue_sys not in ['SGE', 'SLURM', 'LocalHost']:
@@ -94,7 +94,7 @@ def get_cluster_ticket(job_queue_sys,
                              local_directory=local_directory,
                              log_directory=log_directory)
         cluster.scale(jobs=num_nodes)
-        min_nb_worker = num_worker_per_node * num_nodes
+        maximum_possible_nb_worker = num_worker_per_node * num_nodes
         print(cluster.job_script())
 
     if job_queue_sys == 'SLURM':
@@ -116,7 +116,7 @@ def get_cluster_ticket(job_queue_sys,
                                local_directory=local_directory,
                                log_directory=log_directory)
         cluster.scale(jobs=num_nodes)
-        min_nb_worker = num_worker_per_node * num_nodes
+        maximum_possible_nb_worker = num_worker_per_node * num_nodes
         print(cluster.job_script())
 
     if job_queue_sys == 'LocalHost':
@@ -124,34 +124,42 @@ def get_cluster_ticket(job_queue_sys,
         cluster = LocalCluster(n_workers=num_worker_per_node,
                                processes=True,
                                threads_per_worker=1)
-        min_nb_worker = num_worker_per_node
+        maximum_possible_nb_worker = num_worker_per_node
 
-    return cluster, min_nb_worker
+    return cluster, maximum_possible_nb_worker
 
 
-def scatter_gather(func, variable_args_list=[], fixed_args={}, cluster=None, min_nb_worker=1, verbose=1):
+def scatter_gather(func, variable_args_list=[], fixed_args={}, cluster=None, min_nb_start_worker=1, verbose=1):
     """Distribute a function with various groups of inputs to multiple processors. Return a list of value or tuple
     according to given variable_args_list.
 
     Args:
         func (callable): Any function we want to parallel compute.
 
-        variable_args_list (list[dictionary]): [Default=[]] Each dictionary contains arguments changing during the parallel computation process.
-        fixed_args(dictionary):  [Default={}}] A dictionary includes fixed arguments that should be inputed to the given function during the parallel computation process.
+        variable_args_list (list[dictionary]): [Default=[]] Each dictionary contains arguments changing during the
+        parallel computation process.
+
+        fixed_args(dictionary):  [Default={}] A dictionary includes fixed arguments that should be inputed to the
+        given function during the parallel computation process.
+
         cluster (Object): [Default=None] Cluster object created by dask_jobqueue.
             More information is on `dask_jobqueue <https://jobqueue.dask.org/en/latest/api.html>`_
-        min_nb_worker (int): [Default=1] Minimum number of workers. The parallelization will wait until the number of workers >= min_nb_worker.
-        verbose (int): [Default=0] Possible values are {0,1}, where 0 is quiet, 1 prints dask parallel progress information
 
-    Returns:
-         A list of return output of the parallel function, corresponding to the inps_list.
-         Notice: For those functions with multiple output, each returned output will be a tuple, containing multiple output.
+        min_nb_start_worker (int): [Default=1] Minimum number of workers to start parallel computation. The parallelization
+        will wait until the number of workers >= min_nb_worker.
+
+        verbose (int): [Default=0] Possible values are {0,1}, where 0 is quiet, 1 prints dask parallel progress
+        information
+
+    Returns: A list of return output of the parallel function, corresponding to the inps_list. Notice: For those
+    functions with multiple output, each returned output will be a tuple, containing multiple output.
 
     """
 
     if not variable_args_list:
         print("Input an empty variable_args_list to scatter_gather. Return an empty list.")
-        print("variable_args_list is a dictionary includes fixed arguments that should be inputed to the given function during the parallel computation process.")
+        print("variable_args_list is a dictionary includes fixed arguments that should be inputed to the given "
+              "function during the parallel computation process.")
         return []
 
     if cluster == None:
@@ -181,7 +189,7 @@ def scatter_gather(func, variable_args_list=[], fixed_args={}, cluster=None, min
     while True:
         nb_workers = len(client.scheduler_info()["workers"])
         print('Got {} workers'.format(nb_workers))
-        if nb_workers >= min_nb_worker:
+        if nb_workers >= min_nb_start_worker:
             break
         time.sleep(1)
 
