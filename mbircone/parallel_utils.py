@@ -57,7 +57,7 @@ def get_cluster_ticket(job_queue_sys,
         A two-element tuple including:
 
         - **cluster**: A dask cluster object from the given configuration parameters.
-        - **min_nb_worker** (int): Minumum number of workers that a dask client needs to start jobs deployment.
+        - **min_nb_worker** (int): Minimum number of workers that a dask client needs to start jobs deployment.
     """
 
     if job_queue_sys not in ['SGE', 'SLURM', 'LocalHost']:
@@ -65,13 +65,13 @@ def get_cluster_ticket(job_queue_sys,
         print('Run the code without dask parallel.')
         return None, 0
 
-    if infiniband_flag == None:
+    if infiniband_flag is None:
         infiniband_flag = ""
 
-    if par_env == None:
+    if par_env is None:
         par_env = "openmpi"
 
-    if queue_sys_opt == None:
+    if queue_sys_opt is None:
         queue_sys_opt = []
 
     if job_queue_sys == 'SGE':
@@ -130,7 +130,8 @@ def get_cluster_ticket(job_queue_sys,
 
 
 def scatter_gather(func, variable_args_list=[], fixed_args={}, cluster=None, min_nb_worker=1, verbose=1):
-    """Distribute a function with various groups of inputs to multiple processors. Return a list of value or tuple according to given variable_args_list.
+    """Distribute a function with various groups of inputs to multiple processors. Return a list of value or tuple
+    according to given variable_args_list.
 
     Args:
         func (callable): Any function we want to parallel compute.
@@ -148,7 +149,7 @@ def scatter_gather(func, variable_args_list=[], fixed_args={}, cluster=None, min
 
     """
 
-    if variable_args_list == []:
+    if not variable_args_list:
         print("Input an empty variable_args_list to scatter_gather. Return an empty list.")
         print("variable_args_list is a dictionary includes fixed arguments that should be inputed to the given function during the parallel computation process.")
         return []

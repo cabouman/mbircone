@@ -14,7 +14,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
 
-    num_parallel = 8
+    num_parallel = 2
 
     # Set sinogram shape
     num_det_rows = 200
@@ -109,10 +109,9 @@ if __name__ == '__main__':
     phantom = mbircone.cone3D.pad_roi2ror(phantom, boundary_size)
     print('Padded phantom shape = ', np.shape(phantom))
 
-    # Generate simulated data using forward projector on the 3D shepp logan phantom.
-    angles = np.linspace(0, 2 * np.pi, num_views, endpoint=False)
-    phantom_rot_para = np.linspace(0, 180, num_parallel, endpoint=False)
-    #phantom_list = [ndimage.rotate(phantom, phantom_rot_ang, order=0, mode='constant', axes=(1, 2), reshape=False) for phantom_rot_ang in phantom_rot_para]
+    # Generate 4D simulated data by rotating the 3D shepp logan phantom by increasing degree per timepoint.
+    # Create the rotation angles and argument lists, and distribute to workers.
+    phantom_rot_para = np.linspace(0, 180, num_parallel, endpoint=False)  # Phantom rotation angles.
     variable_args_list = [{'angle': phantom_rot_ang} for phantom_rot_ang in phantom_rot_para]
     fixed_args = {'input': phantom,
                 'order': 0,
@@ -128,12 +127,13 @@ if __name__ == '__main__':
 
     # After setting the geometric parameter, the shape of the input phantom should be equal to the calculated geometric parameter.
     # Input a phantom with wrong shape will generate a bunch of issue in C.
-    sino_list = [mbircone.cone3D.project(phantom_rot, angles,
-                                   num_det_rows=num_det_rows, num_det_channels=num_det_channels,
-                                   dist_source_detector=dist_source_detector, magnification=magnification,
-                                   delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image,
-                                   channel_offset=channel_offset, row_offset=row_offset) for phantom_rot in phantom_list]
-    angles_list = [np.copy(angles) for i in range(num_parallel)]
+    proj_angles = np.linspace(0, 2 * np.pi, num_views, endpoint=False)  # Same for all timepoints.
+    sino_list = [mbircone.cone3D.project(phantom_rot, proj_angles,
+                                         num_det_rows=num_det_rows, num_det_channels=num_det_channels,
+                                         dist_source_detector=dist_source_detector, magnification=magnification,
+                                         delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image,
+                                         channel_offset=channel_offset, row_offset=row_offset) for phantom_rot in phantom_list]
+    angles_list = [np.copy(proj_angles) for i in range(num_parallel)]
 
 
 
