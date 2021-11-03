@@ -364,7 +364,7 @@ def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
                view_range=None, total_angles=360, num_acquired_scans=2000,
                rotation_direction="positive", downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
                num_time_points=1, time_point=0):
-    """Return preprocessed sinogram and angles list use for reconstruction.
+    """Return preprocessed sinogram and angles list for reconstruction.
 
     Args:
         path_radiographs (string): Path to a ConeBeam Scan directory.
