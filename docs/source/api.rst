@@ -16,3 +16,4 @@ API reference
    cone3D
    preprocess
    mace
+   parallel_utils

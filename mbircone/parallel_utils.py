@@ -27,17 +27,20 @@ def get_cluster_ticket(job_queue_sys,
         num_threads_per_worker (int, optional):[Default=1] Number of threads needed for a worker.
 
         maximum_memory_per_node (str, optional):[Default=None] Maximum memory requested in a node.
-            Job queue systems always impose a memory limit on each node. By default, it is deliberately relatively small — 100 MB per node.
+            Job queue systems always impose a memory limit on each node.
+            By default, it is deliberately relatively small — 100 MB per node.
             If your job uses more than that, you’ll get an error that your job Exceeded job memory limit.
             To set a larger limit, pass a string with the form as 100MB or 16GB.
             Also, you should check your cluster documentation to avoid exist the allowable memory.
 
         maximum_allowable_walltime (str, optional):[Default=None] Maxixmum allowable walltime.
-            Job queue systems always impose a walltime limit on each submitted job in a node. By default, it is deliberately relatively small — only serval hours.
+            Job queue systems always impose a walltime limit on each submitted job in a node.
+            By default, it is deliberately relatively small — only serval hours.
             If your job needs more time to finish, you'll pass a string with the form as D-HH:MM:SS.
             Also, you should check your cluster documentation to avoid exist the allowable walltime.
 
-        infiniband_flag (str, optional): [Default=""] An optional string flag follows the submission command to request nodes with InfiniBand.
+        infiniband_flag (str, optional): [Default=""] An optional string flag follows the submission command to
+        request nodes with InfiniBand.
             Nodes with InfiniBand are requried by dask_jobqueue class.
             If all available nodes have InfiniBand, then you can ignore this flag.
             Otherwise, you should check your cluster documentation to find the specific flag and pass it to this function.
@@ -50,14 +53,14 @@ def get_cluster_ticket(job_queue_sys,
 
         death_timeout (float, optional):[Default=60] Seconds to wait for a scheduler before closing workers.
         local_directory (str, optional):[Default='./'] Dask worker local directory for file spilling.
-            Recommend to set it to a location of fast local storage like /scratch or $TMPDIR
+            Recommend to set it to a location of fast local storage like /scratch or $TMPDIR.
         log_directory (str, optional):[Default='./'] Directory to use for job scheduler logs.
 
     Returns:
         A two-element tuple including:
 
-        - **cluster**: A dask cluster object from the given configuration parameters.
-        - **maximum_possible_nb_worker** (int): Minimum number of workers that a dask client needs to start jobs deployment.
+        - **cluster**: A dask cluster object from the given configuration parameters. -
+        - **maximum_possible_nb_worker** (int): Maximum possible number of workers that we can request to start jobs deployment.
     """
 
     if job_queue_sys not in ['SGE', 'SLURM', 'LocalHost']:
@@ -90,7 +93,6 @@ def get_cluster_ticket(job_queue_sys,
                              death_timeout=death_timeout,
                              cores=num_worker_per_node,
                              job_extra=queue_sys_opt,
-                             # env_extra=['module load anaconda', 'source /home/%s/Documents/envs/mbircone/bin/activate'],
                              local_directory=local_directory,
                              log_directory=log_directory)
         cluster.scale(jobs=num_nodes)
@@ -136,23 +138,41 @@ def scatter_gather(func, variable_args_list=[], fixed_args={}, cluster=None, min
     Args:
         func (callable): Any function we want to parallel compute.
 
-        variable_args_list (list[dictionary]): [Default=[]] Each dictionary contains arguments changing during the
-        parallel computation process.
+        variable_args_list (list[dictionary]): [Default=[]] Each dictionary contains arguments changing during the parallel computation process.
 
-        fixed_args(dictionary):  [Default={}] A dictionary includes fixed arguments that should be inputed to the
-        given function during the parallel computation process.
+        fixed_args(dictionary):  [Default={}] A dictionary includes fixed arguments that should be inputed to the given function during the parallel computation process.
 
         cluster (Object): [Default=None] Cluster object created by dask_jobqueue.
             More information is on `dask_jobqueue <https://jobqueue.dask.org/en/latest/api.html>`_
 
-        min_nb_start_worker (int): [Default=1] Minimum number of workers to start parallel computation. The parallelization
-        will wait until the number of workers >= min_nb_worker.
+        min_nb_start_worker (int): [Default=1] Minimum number of workers to start parallel computation.
+            The parallelization will wait until the number of workers >= min_nb_worker.
 
-        verbose (int): [Default=0] Possible values are {0,1}, where 0 is quiet, 1 prints dask parallel progress
-        information
+        verbose (int): [Default=0] Possible values are {0,1}, where 0 is quiet, 1 prints dask parallel progress information.
 
-    Returns: A list of return output of the parallel function, corresponding to the inps_list. Notice: For those
-    functions with multiple output, each returned output will be a tuple, containing multiple output.
+    Returns:
+        A list of return output of the parallel function, corresponding to the inps_list.
+        Notice: For those functions with multiple output, each returned output will be a tuple, containing multiple output.
+
+    Examples:
+        Here is an example to further illustrate how to use the function.
+
+        >>> import numpy as np
+        >>> from mbircone.parallel_utils import get_cluster_ticket, scatter_gatther
+        >>> from psutil import cpu_count
+
+        >>> num_cpus = cpu_count(logical=False)
+        >>> cluster, max_possible_num_worker =
+        ... get_cluster_ticket('LocalHost', number_worker_per_node=num_cpus)
+
+        >>> def linear_func(x, a, b):
+        ...     return a*x+b
+
+        >>> variable_args_list = [{'x':i} for i in range(6)]
+        >>> fixed_args = {'a':2, 'b':3}
+        >>> scatter_gather(linear_func, variable_args_list, fixed_args,
+        ... min_nb_start_worker=max_possible_num_worker)
+        [3, 5, 7, 9, 11, 13]
 
     """
 
@@ -173,8 +193,8 @@ def scatter_gather(func, variable_args_list=[], fixed_args={}, cluster=None, min
         """
         # Define function that returns dictionary containing reconstruction, index, host name, PID, and time.
         """
-        x = func(**variable_args, **fixed_args)
-        return {'output': x,
+        output = func(**variable_args, **fixed_args)
+        return {'output': output,
                 'index': t,
                 'host': socket.gethostname(),
                 'pid': os.getpid(),

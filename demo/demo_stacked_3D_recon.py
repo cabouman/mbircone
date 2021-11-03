@@ -55,11 +55,10 @@ if __name__ == '__main__':
             num_worker_per_node = int(np.sqrt(num_cpus))
         else:
             num_worker_per_node = num_cpus
-        cluster, min_nb_worker = mbircone.parallel_utils.get_cluster_ticket(
+        cluster, maximum_possible_nb_worker = mbircone.parallel_utils.get_cluster_ticket(
             'LocalHost',
             num_worker_per_node=num_worker_per_node)
         num_threads = num_cpus // num_worker_per_node
-        maximum_possible_nb_worker = num_worker_per_node
 
     else:
         # Load cluster setup parameter.
@@ -116,6 +115,10 @@ if __name__ == '__main__':
     phantom = mbircone.cone3D.pad_roi2ror(phantom, boundary_size)
     print('Padded phantom shape = ', np.shape(phantom))
 
+
+    # Set minimum number of workers to start to maximum possible number of worker.
+    min_nb_start_worker = maximum_possible_nb_worker
+
     # scatter_gather parallel computes ndimage.rotate
     # Generate 4D simulated data by rotating the 3D shepp logan phantom by increasing degree per time point.
     # Create the rotation angles and argument lists, and distribute to workers.
@@ -130,7 +133,7 @@ if __name__ == '__main__':
                                                           variable_args_list=variable_args_list,
                                                           fixed_args=fixed_args,
                                                           cluster=cluster,
-                                                          min_nb_start_worker=maximum_possible_nb_worker,
+                                                          min_nb_start_worker=min_nb_start_worker,
                                                           verbose=par_verbose)
     print("Generate 4D simulated data by rotating the 3D shepp logan phantom by increasing degree per time point. \n")
 
@@ -154,7 +157,7 @@ if __name__ == '__main__':
                                                        variable_args_list=variable_args_list,
                                                        fixed_args=fixed_args,
                                                        cluster=cluster,
-                                                       min_nb_start_worker=maximum_possible_nb_worker,
+                                                       min_nb_start_worker=min_nb_start_worker,
                                                        verbose=par_verbose)
     print("Generate sinogram data by projecting each phantom in all timepoints. \n")
 
@@ -178,7 +181,7 @@ if __name__ == '__main__':
                                                         variable_args_list=variable_args_list,
                                                         fixed_args=fixed_args,
                                                         cluster=cluster,
-                                                        min_nb_start_worker=maximum_possible_nb_worker,
+                                                        min_nb_start_worker=min_nb_start_worker,
                                                         verbose=par_verbose)
     print("Reconstruct 3D phantom in all timepoints. \n")
     print("Reconstructed 4D image shape = ", np.array(recon_list).shape)
