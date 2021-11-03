@@ -238,8 +238,7 @@ def scatter_gather(func, variable_args_list=[], fixed_args={}, cluster=None, min
         if verbose:
             print(submission_list)
     elapsed_time += time.time()
-    if verbose:
-        print("Parallel Elapsed time: %f s" % elapsed_time)
+    print("Parallel Elapsed time: %f s" % elapsed_time)
     # Reorder the gathered reconstruction, corresponding to input sinogram list.
     sort_index = np.argsort(np.array(completed_list))
     return_list = [return_list[i] for i in sort_index]

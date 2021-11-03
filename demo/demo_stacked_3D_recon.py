@@ -132,7 +132,7 @@ if __name__ == '__main__':
                                                           cluster=cluster,
                                                           min_nb_start_worker=maximum_possible_nb_worker,
                                                           verbose=par_verbose)
-    print("Generate 4D simulated data by rotating the 3D shepp logan phantom by increasing degree per time point.")
+    print("Generate 4D simulated data by rotating the 3D shepp logan phantom by increasing degree per time point. \n")
 
     # scatter_gather parallel computes mbircone.cone3D.project
     # Generate sinogram data by projecting each phantom in phantom list.
@@ -156,7 +156,7 @@ if __name__ == '__main__':
                                                        cluster=cluster,
                                                        min_nb_start_worker=maximum_possible_nb_worker,
                                                        verbose=par_verbose)
-    print("Generate sinogram data by projecting each phantom in all timepoints.")
+    print("Generate sinogram data by projecting each phantom in all timepoints. \n")
 
     # scatter_gather parallel computes mbircone.cone3D.recon
     # Reconstruct 3D phantom in all timepoints using mbircone.cone3D.recon.
@@ -180,9 +180,8 @@ if __name__ == '__main__':
                                                         cluster=cluster,
                                                         min_nb_start_worker=maximum_possible_nb_worker,
                                                         verbose=par_verbose)
-    print("Reconstruction 3D phantom in all timepoints")
-
-    print(np.array(recon_list).shape)
+    print("Reconstruct 3D phantom in all timepoints. \n")
+    print("Reconstructed 4D image shape = ", np.array(recon_list).shape)
 
     # create output folder and save reconstruction list
     os.makedirs('output/3D_shepp_logan/', exist_ok=True)
