@@ -158,12 +158,12 @@ def scatter_gather(func, variable_args_list=[], fixed_args={}, cluster=None, min
         Here is an example to further illustrate how to use the function.
 
         >>> import numpy as np
-        >>> from mbircone.parallel_utils import get_cluster_ticket, scatter_gatther
+        >>> from mbircone.parallel_utils import get_cluster_ticket, scatter_gather
         >>> from psutil import cpu_count
 
         >>> num_cpus = cpu_count(logical=False)
         >>> cluster, max_possible_num_worker =
-        ... get_cluster_ticket('LocalHost', number_worker_per_node=num_cpus)
+        ... get_cluster_ticket('LocalHost', num_worker_per_node=num_cpus)
 
         >>> def linear_func(x, a, b):
         ...     return a*x+b
@@ -171,7 +171,7 @@ def scatter_gather(func, variable_args_list=[], fixed_args={}, cluster=None, min
         >>> variable_args_list = [{'x':i} for i in range(6)]
         >>> fixed_args = {'a':2, 'b':3}
         >>> scatter_gather(linear_func, variable_args_list, fixed_args,
-        ... min_nb_start_worker=max_possible_num_worker)
+        ... cluster=cluster, min_nb_start_worker=max_possible_num_worker)
         [3, 5, 7, 9, 11, 13]
 
     """
