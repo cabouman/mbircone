@@ -160,12 +160,12 @@ def mace3D(sino, angles, dist_source_detector, magnification,
             start = time.time()
             print("Computing qGGMRF reconstruction. This will be used as MACE initialization point.") 
         init_image = cone3D.recon(sino, angles, dist_source_detector, magnification,
-              channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
-              delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius,
-              sigma_y=sigma_y, weights=weights,
-              positivity=positivity, p=p, q=q, T=T, num_neighbors=num_neighbors,
-              sigma_x=sigma_x, stop_threshold=stop_threshold,
-              num_threads=num_threads, NHICD=NHICD, verbose=qGGMRF_verbose, lib_path=lib_path)
+                                  channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
+                                  delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius,
+                                  sigma_y=sigma_y, weights=weights,
+                                  positivity=positivity, p=p, q=q, T=T, num_neighbors=num_neighbors,
+                                  sigma_x=sigma_x, stop_threshold=stop_threshold,
+                                  num_threads=num_threads, NHICD=NHICD, verbose=qGGMRF_verbose, lib_path=lib_path)
         if verbose:
             end = time.time()
             elapsed_t = end-start
@@ -179,9 +179,18 @@ def mace3D(sino, angles, dist_source_detector, magnification,
                 print("image dynamic range = ",image_range)
     # Throw an exception if image_range is None and init_image is not None.
     assert not (image_range is None), \
-        'Image_range needs to be provided if an init_image is given to MACE algorithm.'
+        'image_range needs to be provided if an init_image is given to MACE algorithm.'
         
-    [Nz,Nx,Ny] = np.shape(init_image)
+    if np.isscalar(init_image):
+        (num_views, num_det_rows, num_det_channels) = np.shape(sino)
+        [Nz,Nx,Ny], _ = cone3D.compute_img_size(num_views, num_det_rows, num_det_channels, 
+                                                    dist_source_detector, magnification, 
+                                                    channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset, 
+                                                    delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
+        init_image = np.zeros((Nz, Nx, Ny)) + init_image 
+    else:
+        [Nz,Nx,Ny] = np.shape(init_image)
+    
     image_dim = np.ndim(init_image)
     # number of agents = image dimensionality + 1.
     W = [np.copy(init_image) for _ in range(image_dim+1)]
@@ -209,13 +218,13 @@ def mace3D(sino, angles, dist_source_detector, magnification,
             start = time.time()
         # forward model prox map agent
         X[0] = cone3D.recon(sino, angles, dist_source_detector, magnification,
-          channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
-          delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius,
-          init_image=X[0], prox_image=W[0],
-          sigma_y=sigma_y, weights=weights,
-          positivity=positivity,
-          sigma_p=sigma_p, max_iterations=max_iterations, stop_threshold=stop_threshold,
-          num_threads=num_threads, NHICD=NHICD, verbose=qGGMRF_verbose, lib_path=lib_path)
+                            channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
+                            delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius,
+                            init_image=X[0], prox_image=W[0],
+                            sigma_y=sigma_y, weights=weights,
+                            positivity=positivity,
+                            sigma_p=sigma_p, max_iterations=max_iterations, stop_threshold=stop_threshold,
+                            num_threads=num_threads, NHICD=NHICD, verbose=qGGMRF_verbose, lib_path=lib_path)
         if verbose:
             print("     Done forward model proximal map estimation.")
         # prior model denoiser agents
