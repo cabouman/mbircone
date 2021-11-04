@@ -1,0 +1,13 @@
+job_queue_sys: LocalHost
+cluster_params:
+  num_worker_per_node: 2
+  num_nodes: 1
+  num_threads_per_worker: 2
+  maximum_allowable_walltime:
+  maximum_memory_per_node:
+  death_timeout:
+  local_directory:
+  log_directory:
+  infiniband_flag:
+  par_env:
+  queue_sys_opt:

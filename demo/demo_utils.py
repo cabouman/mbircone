@@ -37,6 +37,8 @@ def nrmse(image, reference_image):
 
 def plt_cmp_3dobj(phantom, recon, display_slice=None, display_x=None, display_y=None, vmin=None, vmax=None,
                   filename=None):
+    plt.ion()
+
     Nz, Nx, Ny = recon.shape
     if display_slice is None:
         display_slice = Nz // 2
