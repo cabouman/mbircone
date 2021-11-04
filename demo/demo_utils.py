@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import imageio
 import urllib.request
 import tarfile
+import yaml
 from PIL import Image
 
 def font_setting():
@@ -161,25 +162,31 @@ def image_resize(image, output_shape):
     return image_resized
 
 
-def download_and_extract(download_url, extract_path='./demo_data/'):
-    """ Given a download url, download and the files from ``download_url`` as a tarball, and extract the tarball file to ``extract_path``. It is assumed that the file from download_url is a tarball file. In case where ``extract_path`` already exists, user will be queried whether it is desired to download and overwrite the existing files.
+def download_and_extract(download_url, save_dir):
+    """ Given a download url, download the file from ``download_url`` , and save the file as ``save_dir``. 
+        If the file already exists in ``save_dir``, user will be queried whether it is desired to download and overwrite the existing files.
+        If the downloaded file is a tarball, then it will be extracted to ``save_dir``. 
+    
     Args:
         download_url: An url to download the data. This url needs to be public.
-        extract_path: Local path to extract the downloaded tarball file. 
+        save_dir (string): Path to parent directory where downloaded file will be saved . 
+    Return:
+        string: path to downloaded file. This will be ``save_dir``+ downloaded_file_name 
+            In case whereno download is performed, the function will return path to the existing local file.
+            In case where a tarball file is downloaded and extracted, the function will return the path to the parent directory where the file is extracted to, which is the save as ``save_dir``. 
     """
-    is_download = True
-    if os.path.exists(extract_path):
-        is_download = query_yes_no(f"{extract_path} folder already exists. Do you still want to download and overwrite the files?")
+    
+    is_download = True 
+    local_file_name = download_url.split('/')[-1]
+    save_path = os.path.join(save_dir, local_file_name)
+    if os.path.exists(save_path):
+        is_download = query_yes_no(f"{save_path} already exists. Do you still want to download and overwrite the file?")
     if is_download:
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
         # download the data from url.
-        print("Downloading and extracting data ...")
-        # Download phantom and cnn denoiser params files.
-        # A tarball file will be downloaded from the given url and extracted to demo_data/ folder.
-        # the tarball file contains the following files:
-        # an image volume phantom file phantom_3D.npy. You can replace this file with your own phantom data.
-        # dncnn parameter files stored in demo_data/dncnn_params/ directory
+        print("Downloading file ...")
         try:
-            urllib.request.urlretrieve(download_url, 'temp.tar.gz')
+            urllib.request.urlretrieve(download_url, save_path)
         except urllib.error.HTTPError as e:
             if e.code == 401:
                 raise RuntimeError(f'HTTP status code {e.code}: URL authentication failed! Currently we do not support downloading data from a url that requires authentication.')
@@ -191,25 +198,33 @@ def download_and_extract(download_url, extract_path='./demo_data/'):
                 raise RuntimeError(f'HTTP status code {e.code}: {e.reason}. For more details please refer to https://en.wikipedia.org/wiki/List_of_HTTP_status_codes')
         except urllib.error.URLError as e:
             raise RuntimeError('URLError raised! Please check your internet connection.')
-        # Extract tarball file
-        tar_file = tarfile.open('temp.tar.gz')
-        tar_file.extractall(extract_path)
-        tar_file.close()
-        os.remove('temp.tar.gz')
-        input("Data download and extraction finished. Press Enter to continue.")
+        print(f"Download successful! File saved to {save_path}")
     else:
         print("Skipped data download and extraction step.")
-    return 
+    # Extract the downloaded file if it is tarball
+    if save_path.endswith(('.tar','.tar.gz')):
+        if is_download:
+            tar_file = tarfile.open(save_path)
+            print("Extracting tarball file to {save_dir} ...")
+            # Extract to save_dir.
+            tar_file.extractall(save_dir)
+            tar_file.close
+            print(f"Extraction successful! File extracted to {save_dir}")
+        save_path = save_dir
+    # Parse extracted dir and extract data if necessary
+    return save_path
 
 
 def query_yes_no(question):
     """Ask a yes/no question via input() and return the answer.
         Code modified from reference: `https://stackoverflow.com/questions/3041986/apt-command-line-interface-like-yes-no-input/3041990`
+    
     Args:
         question (string): Question that is presented to the user.
     Returns:
         Boolean value: True for "yes" or "Enter", or False for "no".
     """
+    
     valid = {"yes": True, "y": True, "ye": True, "no": False, "n": False}
     prompt = " [y/n, default=n] "
     while True:
@@ -222,3 +237,17 @@ def query_yes_no(question):
         else:
             sys.stdout.write("Please respond with 'yes' or 'no' " "(or 'y' or 'n').\n")
     return
+
+
+def load_yaml(yml_path):
+    """Load parameter from yaml configuration file.
+    
+    Args:
+        yml_path (string): Path to yaml configuration file
+    Returns:
+        A dictionary with parameters for cluster.
+    """
+    
+    with open(yml_path, 'r') as stream:
+        data_loaded = yaml.safe_load(stream)
+    return data_loaded
