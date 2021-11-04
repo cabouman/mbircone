@@ -294,7 +294,7 @@ def mace4D(sino, angles, dist_source_detector, magnification,
         - **delta_pixel_detector** (*float, optional*): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
         - **delta_pixel_image** (*float, optional*): [Default=None] Scalar value of image pixel spacing in :math:`ALU`. If None, automatically set to delta_pixel_detector/magnification
         - **ror_radius** (*float, optional*): [Default=None] Scalar value of radius of reconstruction in :math:`ALU`. If None, automatically set with compute_img_params. Pixels outside the radius ror_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
-        - **sigma_y** (*ndarray, optional*): [Default=None] Either a scalar value or a 1D array with shape (num_time_points,) that specifies thenoise standard deviation parameter. If None, automatically set with auto_sigma_y. If a scalar is provided, then the same ``sigma_y`` will be used for all time points.
+        - **sigma_y** (*float, optional*): [Default=None] Scalar value of noise standard deviation parameter. If None, automatically set with auto_sigma_y.
         - **snr_db** (*float, optional*): [Default=30.0] Scalar value that controls assumed signal-to-noise ratio of the data in dB. Ignored if sigma_y is not None.
         - **weights** (*ndarray, optional*): [Default=None] 4D weights array with same shape as sino.
         - **weight_type** (*string, optional*): [Default='unweighted'] Type of noise model used for data. If the ``weights`` array is not supplied, then the function ``cone3D.calc_weights`` is used to set weights using specified ``weight_type`` parameter.
@@ -310,12 +310,12 @@ def mace4D(sino, angles, dist_source_detector, magnification,
         - **num_neighbors** (*int, optional*): [Default=6] Possible values are {26,18,6}. Number of neightbors in the qggmrf neighborhood. Higher number of neighbors result in a better regularization but a slower reconstruction.
         - **sharpness** (*float, optional*): [Default=0.0] Scalar value that controls level of sharpness in the reconstruction. ``sharpness=0.0`` is neutral; ``sharpness>0`` increases sharpness; ``sharpness<0`` reduces sharpness. Ignored in qGGMRF reconstruction if ``sigma_x`` is not None, or in proximal map estimation if ``sigma_p`` is not None.
         - **sigma_x** (*ndarray, optional*): [Default=None] Either a scalar value :math:`>0` or a 1D array with shape (num_time_points,) that specifies the qGGMRF scale parameter. If None, automatically set with auto_sigma_x. If a scalar is provided, then the same ``sigma_x`` will be used for all time points. Regularization should be controled with the ``sharpness`` parameter, but ``sigma_x`` can be set directly by expert users.
-        - **sigma_p** (*ndarray, optional*): [Default=None] Either a scalar value :math:`>0` or a 1D array with shape (num_time_points,) that specifies the proximal map parameter. If None, automatically set with auto_sigma_p. If a scalar is provided, then the same ``sigma_p`` will be used for all time points. Regularization should be controled with the ``sharpness`` parameter, but ``sigma_p`` can be set directly by expert users.
+        - **sigma_p** (*float, optional*): [Default=None] Scalar value :math:`>0` that specifies the proximal map parameter. If None, automatically set with auto_sigma_p. Regularization should be controled with the ``sharpness`` parameter, but ``sigma_p`` can be set directly by expert users.
         - **max_iterations** (*int, optional*): [Default=3] Integer valued specifying the maximum number of iterations for proximal map estimation.
         - **stop_threshold** (*float, optional*): [Default=0.02] Scalar valued stopping threshold in percent. If stop_threshold=0.0, then run max iterations.
         - **num_threads** (*int, optional*): [Default=None] Number of compute threads requested when executed. If None, num_threads is set to the number of cores in the system
         - **NHICD** (*bool, optional*): [Default=False] If true, uses Non-homogeneous ICD updates
-        - **verbose** (*int, optional*): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints MACE reconstruction progress information, and 2 prints the MACE reconstruction as well as qGGMRF/proximal-map reconstruction progress information.
+        - **verbose** (*int, optional*): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints MACE reconstruction progress information, and 2 prints the MACE reconstruction as well as qGGMRF/proximal-map reconstruction and dask multinode computation information.
         - **lib_path** (*str, optional*): [Default=~/.cache/mbircone] Path to directory containing library of forward projection matrices.
     
     Returns:
@@ -339,14 +339,10 @@ def mace4D(sino, angles, dist_source_detector, magnification,
         delta_pixel_image = delta_pixel_detector/magnification
     # Calculate automatic value of sigma_y
     if sigma_y is None:
-        sigma_y = [cone3D.auto_sigma_y(sino[t], weights[t], snr_db=snr_db, delta_pixel_image=delta_pixel_image, delta_pixel_detector=delta_pixel_detector) for t in range(Nt)]
-    elif np.isscalar(sigma_y):
-        sigma_y = [sigma_y for _ in range(Nt)]
+        sigma_y = cone3D.auto_sigma_y(sino, weights, snr_db=snr_db, delta_pixel_image=delta_pixel_image, delta_pixel_detector=delta_pixel_detector)
     # Calculate automatic value of sigma_p
     if sigma_p is None:
-        sigma_p = [cone3D.auto_sigma_p(sino[t], delta_pixel_detector=delta_pixel_detector, sharpness=sharpness) for t in range(Nt)]
-    elif np.isscalar(sigma_p):
-        sigma_p = [sigma_p for _ in range(Nt)]
+        sigma_p = cone3D.auto_sigma_p(sino, delta_pixel_detector=delta_pixel_detector, sharpness=sharpness)
     # Calculate automatic value of sigma_x
     if sigma_x is None:
         sigma_x = [cone3D.auto_sigma_x(sino[t], delta_pixel_detector=delta_pixel_detector, sharpness=sharpness) for t in range(Nt)]
@@ -357,14 +353,15 @@ def mace4D(sino, angles, dist_source_detector, magnification,
     fixed_args = {'dist_source_detector':dist_source_detector, 'magnification':magnification,
                   'channel_offset':channel_offset, 'row_offset':row_offset, 'rotation_offset':rotation_offset,
                   'delta_pixel_detector':delta_pixel_detector, 'delta_pixel_image':delta_pixel_image, 'ror_radius':ror_radius,
+                  'sigma_y':sigma_y, 'sigma_p':sigma_p,
                   'positivity':positivity, 'p':p, 'q':q, 'T':T, 'num_neighbors':num_neighbors,
                   'max_iterations':40, 'stop_threshold':stop_threshold,
                   'num_threads':num_threads, 'NHICD':NHICD, 'verbose':qGGMRF_verbose, 'lib_path':lib_path
     }
     # List of variable args dictionaries used for multi-node parallelization
     variable_args_list = [{'sino': sino[t], 'angles':angles[t], 
-                           'sigma_y':sigma_y[t], 'weights':weights[t],
-                           'sigma_x':sigma_x[t], 'sigma_p':sigma_p[t]} for t in range(Nt)]
+                           'weights':weights[t], 'sigma_x':sigma_x[t]} 
+                          for t in range(Nt)]
 
     if init_image is None:
         if verbose:
@@ -375,7 +372,8 @@ def mace4D(sino, angles, dist_source_detector, magnification,
                                                             variable_args_list=variable_args_list,
                                                             fixed_args=fixed_args,
                                                             cluster=cluster,
-                                                            min_nb_start_worker=min_nb_start_worker))
+                                                            min_nb_start_worker=min_nb_start_worker,
+                                                            verbose=qGGMRF_verbose))
         if verbose:
             end = time.time()
             elapsed_t = end-start
@@ -438,22 +436,22 @@ def mace4D(sino, angles, dist_source_detector, magnification,
                                                       fixed_args=fixed_args,
                                                       cluster=cluster,
                                                       min_nb_start_worker=min_nb_start_worker,
-                                                      verbose=0))
+                                                      verbose=qGGMRF_verbose))
         if verbose:
-            print(" Done forward model proximal map estimation.")
+            print("Done forward model proximal map estimation.")
         # prior model denoiser agents
         # denoising in XY plane (along Z-axis)
         X[1] = denoiser_wrapper(W[1], denoiser, denoiser_args, image_range, permute_vector=(1,0,2,3), positivity=positivity) # shape should be after permutation (Nz,Nt,Nx,Ny)
         if verbose:
-            print("     Done denoising in XY-plane.")
+            print("Done denoising in XY-plane.")
         # denoising in YZ plane (along X-axis)
         X[2] = denoiser_wrapper(W[2], denoiser, denoiser_args, image_range, permute_vector=(2,0,1,3), positivity=positivity) # shape should be after permutation (Nx,Nt,Nz,Ny)
         if verbose:
-            print("     Done denoising in YZ-plane.")
+            print("Done denoising in YZ-plane.")
         # denoising in XZ plane (along Y-axis)
         X[3] = denoiser_wrapper(W[3], denoiser, denoiser_args, image_range, permute_vector=(3,0,1,2), positivity=positivity) # shape should be after permutation (Ny,Nt,Nz,Nx) 
         if verbose:
-            print("     Done denoising in XZ-plane.")
+            print("Done denoising in XZ-plane.")
         Z = sum([beta[k]*(2*X[k]-W[k]) for k in range(image_dim)])
         for k in range(image_dim):
             W[k] += 2*rho*(Z-X[k])

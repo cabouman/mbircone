@@ -206,6 +206,19 @@ else:
 # ###########################################################################
 # Perform MACE reconstruction
 # ###########################################################################
+print("Performing qGGMRF reconstruction with multinode...")
+# Fixed args dictionary used for multi-node parallelization
+fixed_args = {'angles':angles,'dist_source_detector':dist_source_detector, 'magnification':magnification,
+              'delta_pixel_detector':delta_pixel_detector,
+              'max_iterations':40, 'weight_type':'transmission'}
+# List of variable args dictionaries used for multi-node parallelization
+variable_args_list = [{'sino': sino[t]} for t in range(Nt)]
+recon_qGGMRF = np.array(mbircone.parallel_utils.scatter_gather(mbircone.cone3D.recon,
+                                                               variable_args_list=variable_args_list,
+                                                               fixed_args=fixed_args,
+                                                               cluster=cluster,
+                                                               min_nb_start_worker=maximum_possible_nb_worker))
+
 print("Performing MACE reconstruction ...")
 recon_mace = mbircone.mace.mace4D(sino_noisy, angles, dist_source_detector, magnification,
                                   denoiser=denoiser, denoiser_args=(),
@@ -226,11 +239,14 @@ os.makedirs(output_dir, exist_ok=True)
 np.save(os.path.join(output_dir, "recon_mace.npy"), recon_mace)
 
 # Plot axial slices of phantom and recon
-display_slices = [2, 4, 6]
-for t in range(5):
+display_slices = [4, 7, 10, 13]
+for t in range(2,6):
     for display_slice in display_slices:
         demo_utils.plot_image(phantom[t,display_slice,:,:], title=f'phantom, axial slice {display_slice}, time point {t}',
                               filename=os.path.join(output_dir, f'phantom_slice{display_slice}_time{t}.png'), vmin=0, vmax=0.5)
+        demo_utils.plot_image(recon_qGGMRF[t,display_slice,:,:], title=f'qGGMRF reconstruction, axial slice {display_slice}, time point {t}',
+                              filename=os.path.join(output_dir, f'recon_qGGMRF_slice{display_slice}_time{t}.png'), vmin=0, vmax=0.5)
+       
         demo_utils.plot_image(recon_mace[t,display_slice,:,:], title=f'MACE reconstruction, axial slice {display_slice}, time point {t}',
                               filename=os.path.join(output_dir, f'recon_mace_slice{display_slice}_time{t}.png'), vmin=0, vmax=0.5)
 
