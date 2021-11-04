@@ -4,6 +4,7 @@ import math
 import urllib.request
 import tarfile
 from keras.models import model_from_json
+import argparse
 import getpass
 from psutil import cpu_count
 import mbircone
@@ -51,7 +52,7 @@ denoiser_name = denoiser_type
 # destination path to download and extract the phantom and NN weight files.
 target_dir = './demo_data/'   
 # path to store output recon images
-output_dir = './output/mace4D_fast/'  
+output_dir = './output/mace4D/'  
 
 # path to config file for dask cluster setting
 cluster_configs_path = '../configs/cluster/brown.yaml'
@@ -60,8 +61,8 @@ cluster_configs_path = '../configs/cluster/brown.yaml'
 dist_source_detector = 839.0472     # Distance between the X-ray source and the detector in units of ALU
 magnification = 5.572128439964856   # magnification = (source to detector distance)/(source to center-of-rotation distance)
 delta_pixel_detector = 0.25         # Scalar value of detector pixel spacing in units of ALU
-num_det_rows = 14                   # number of detector rows
-num_det_channels = 120              # number of detector channels
+num_det_rows = 28                   # number of detector rows
+num_det_channels = 240              # number of detector channels
 
 # Simulated sinogram parameters
 num_views = 75               # number of projection views
@@ -138,19 +139,9 @@ print(cluster)
 print("Generating downsampled 3D phantom volume ...")
 
 # load original phantom
-phantom_orig = np.load(phantom_path)
-print("shape of original phantom = ", phantom_orig.shape)
-
-# downsample the original phantom along slice axis
-(Nt, Nz, Nx, Ny) = phantom_orig.shape
-Nx_ds = Nx // 2 + 1
-Ny_ds = Ny // 2 + 1
-Nz_ds = Nz // 2
-phantom = np.array([demo_utils.image_resize(phantom_orig[t], (Nx_ds, Ny_ds)) for t in range(Nt)])
-
-# Take first half of the slices to form the downsampled phantom.
-phantom = phantom[:,:Nz_ds,:,:]
-print("shape of downsampled phantom = ", phantom.shape)
+phantom = np.load(phantom_path)
+(Nt, Nz, Nx, Ny) = phantom.shape
+print("shape of phantom = ", phantom.shape)
 
 
 # ###########################################################################
@@ -219,7 +210,7 @@ print("Performing MACE reconstruction ...")
 recon_mace = mbircone.mace.mace4D(sino_noisy, angles, dist_source_detector, magnification,
                                   denoiser=denoiser, denoiser_args=(),
                                   max_admm_itr=max_admm_itr, prior_weight=prior_weight,
-                                  cluster=cluster, min_nb_start_worker=maximum_possible_nb_worker//2,
+                                  cluster=cluster, min_nb_start_worker=maximum_possible_nb_worker,
                                   delta_pixel_detector=delta_pixel_detector,
                                   weight_type='transmission')
 recon_shape = recon_mace.shape
@@ -244,8 +235,7 @@ for t in range(5):
                               filename=os.path.join(output_dir, f'recon_mace_slice{display_slice}_time{t}.png'), vmin=0, vmax=0.5)
 
     # Plot 3D phantom and recon image volumes as gif images.
-    demo_utils.plot_gif(phantom_orig[t], output_dir, f'phantom_original_{t}', vmin=0, vmax=0.5)
-    demo_utils.plot_gif(phantom[t], output_dir, f'phantom_resized_{t}', vmin=0, vmax=0.5)
+    demo_utils.plot_gif(phantom[t], output_dir, f'phantom_{t}', vmin=0, vmax=0.5)
     demo_utils.plot_gif(recon_mace[t], output_dir, f'recon_mace_{t}', vmin=0, vmax=0.5)
 
 input("press Enter")
