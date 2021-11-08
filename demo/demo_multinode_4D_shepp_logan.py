@@ -66,13 +66,13 @@ if __name__ == '__main__':
         # Set openmp number of threads
         num_threads = configs['cluster_params']['num_threads_per_worker']
 
-        if configs['job_queue_sys'] == 'LocalHost':
+        if configs['job_queue_type'] == 'LocalHost':
             cluster, maximum_possible_nb_worker = mbircone.parallel_utils.get_cluster_ticket(
-                configs['job_queue_sys'],
+                configs['job_queue_type'],
                 num_worker_per_node=configs['cluster_params']['num_worker_per_node'])
         else:
             cluster, maximum_possible_nb_worker = mbircone.parallel_utils.get_cluster_ticket(
-                job_queue_sys=configs['job_queue_sys'],
+                job_queue_type=configs['job_queue_type'],
                 num_worker_per_node=configs['cluster_params']['num_worker_per_node'],
                 num_nodes=configs['cluster_params']['num_nodes'],
                 num_threads_per_worker=configs['cluster_params']['num_threads_per_worker'],

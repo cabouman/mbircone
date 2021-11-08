@@ -1,4 +1,4 @@
-job_queue_sys: LocalHost
+job_queue_type: LocalHost
 cluster_params:
   num_worker_per_node: 2
   num_nodes: 1

@@ -5,7 +5,7 @@ import time
 import pprint as pp
 import socket
 
-def get_cluster_ticket(job_queue_sys,
+def get_cluster_ticket(job_queue_type,
                        num_nodes=1,
                        num_worker_per_node=1, num_threads_per_worker=1,
                        maximum_memory_per_node=None, maximum_allowable_walltime=None,
@@ -14,8 +14,8 @@ def get_cluster_ticket(job_queue_sys,
     """Return a dask cluster class object from the given parameters.
 
     Args:
-        job_queue_sys (string): Job queue system, used for submitting job.
-            job_queue_sys should be one of ['SGE', 'SLURM', 'LocalHost'].
+        job_queue_type (string): Job queue system, used for submitting job.
+            job_queue_type should be one of ['SGE', 'SLURM', 'LocalHost'].
             'SGE': Return a class object, generated from dask_joequeue.SGECluster.
             'SLURM': Return a class object, generated from dask_joequeue.SLURMCluster.
             'LocalHost': Return a class object, generated from dask.distributed.LocalCluster.
@@ -63,8 +63,8 @@ def get_cluster_ticket(job_queue_sys,
         - **maximum_possible_nb_worker** (int): Maximum possible number of workers that we can request to start jobs deployment.
     """
 
-    if job_queue_sys not in ['SGE', 'SLURM', 'LocalHost']:
-        print('The parameter job_queue_sys should be one of [\'SGE\', \'SLURM\', \'LocalHost\']')
+    if job_queue_type not in ['SGE', 'SLURM', 'LocalHost']:
+        print('The parameter job_queue_type should be one of [\'SGE\', \'SLURM\', \'LocalHost\']')
         print('Run the code without dask parallel.')
         return None, 0
 
@@ -77,7 +77,7 @@ def get_cluster_ticket(job_queue_sys,
     if queue_sys_opt is None:
         queue_sys_opt = []
 
-    if job_queue_sys == 'SGE':
+    if job_queue_type == 'SGE':
         from dask_jobqueue import SGECluster
 
         # Append infiniband_flag and openmpi paralell environment to queue_sys_opt.
@@ -99,7 +99,7 @@ def get_cluster_ticket(job_queue_sys,
         maximum_possible_nb_worker = num_worker_per_node * num_nodes
         print(cluster.job_script())
 
-    if job_queue_sys == 'SLURM':
+    if job_queue_type == 'SLURM':
         from dask_jobqueue import SLURMCluster
 
         # Append infiniband_flag and openmpi paralell environment to queue_sys_opt.
@@ -121,7 +121,7 @@ def get_cluster_ticket(job_queue_sys,
         maximum_possible_nb_worker = num_worker_per_node * num_nodes
         print(cluster.job_script())
 
-    if job_queue_sys == 'LocalHost':
+    if job_queue_type == 'LocalHost':
         from dask.distributed import LocalCluster
         cluster = LocalCluster(n_workers=num_worker_per_node,
                                processes=True,
