@@ -47,7 +47,7 @@ def _sino_indicator(sino):
 
     Args:
         sino (ndarray):
-            3D numpy array of sinogram data with shape (num_views,num_det_rows,num_det_channels)
+            numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels) or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
 
     Returns:
         int8: A binary value: =1 within sinogram support; =0 outside sinogram support.
@@ -91,7 +91,7 @@ def calc_weights(sino, weight_type):
     """Compute the weights used in MBIR reconstruction.
 
     Args:
-        sino (ndarray): 3D numpy array of sinogram data with shape (num_views,num_det_rows,num_det_channels)
+        sino (ndarray): numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels) or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
         weight_type (string):[Default=0] Type of noise model used for data.
 
             If weight_type="unweighted"        => weights = numpy.ones_like(sino)
@@ -126,10 +126,9 @@ def auto_sigma_y(sino, weights, snr_db=30.0, delta_pixel_image=1.0, delta_pixel_
     """Compute the automatic value of ``sigma_y`` for use in MBIR reconstruction.
 
     Args:
-        sino (ndarray):
-            3D numpy array of sinogram data with shape (num_views,num_det_rows,num_det_channels)
+        sino (ndarray): numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels) or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
         weights (ndarray):
-            3D numpy array of weights with same shape as sino.
+            numpy array of weights with same shape as sino.
             The parameters weights should be the same values as used in mbircone reconstruction.
         snr_db (float, optional):
             [Default=30.0] Scalar value that controls assumed signal-to-noise ratio of the data in dB.
@@ -162,8 +161,7 @@ def auto_sigma_prior(sino, delta_pixel_detector=1.0, sharpness=0.0):
     """Compute the automatic value of prior model regularization for use in MBIR reconstruction.
     
     Args:
-        sino (ndarray):
-            3D numpy array of sinogram data with shape (num_views,num_det_rows,num_det_channels)
+        sino (ndarray): numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels) or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
         delta_pixel_detector (float, optional):
             [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
         sharpness (float, optional):
@@ -173,7 +171,7 @@ def auto_sigma_prior(sino, delta_pixel_detector=1.0, sharpness=0.0):
         float: Automatic value of regularization parameter.
     """
     
-    (num_views, num_det_rows, num_det_channels) = sino.shape
+    num_det_channels = sino.shape[-1]
 
     # Compute indicator function for sinogram support
     sino_indicator = _sino_indicator(sino)
@@ -189,8 +187,7 @@ def auto_sigma_x(sino, delta_pixel_detector=1.0, sharpness=0.0):
     """Compute the automatic value of ``sigma_x`` for use in MBIR reconstruction.
 
     Args:
-        sino (ndarray):
-            3D numpy array of sinogram data with shape (num_views,num_det_rows,num_det_channels)
+        sino (ndarray): numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels) or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
         delta_pixel_detector (float, optional):
             [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
         sharpness (float, optional):
@@ -207,7 +204,7 @@ def auto_sigma_p(sino, delta_pixel_detector = 1.0, sharpness = 0.0 ):
     """Compute the automatic value of ``sigma_p`` for use in proximal map estimation.
 
     Args:
-        sino (ndarray): 3D numpy array of sinogram data with shape (num_views,num_slices,num_channels)
+        sino (ndarray): numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels) or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
         delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
         sharpness (float, optional): [Default=0.0] Scalar value that controls level of sharpness.
             ``sharpness=0.0`` is neutral; ``sharpness>0`` increases sharpness; ``sharpness<0`` reduces sharpness
