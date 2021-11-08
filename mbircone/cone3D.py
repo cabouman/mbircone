@@ -103,7 +103,7 @@ def calc_weights(sino, weight_type):
             If weight_type="emission"         => weights = 1/(sino + 0.1)
 
     Returns:
-        ndarray: 3D numpy array of weights with same shape as sino.
+        ndarray: numpy array of weights with same shape as sino.
 
     Raises:
         Exception: Description
@@ -139,7 +139,7 @@ def auto_sigma_y(sino, weights, snr_db=30.0, delta_pixel_image=1.0, delta_pixel_
 
 
     Returns:
-        ndarray: Automatic values of regularization parameter.
+        float: Automatic values of regularization parameter.
     """
 
     # Compute indicator function for sinogram support
