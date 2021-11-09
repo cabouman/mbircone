@@ -28,26 +28,26 @@ def get_cluster_ticket(job_queue_system_type,
             2. If job_queue_system_type == 'SLURM', deploy Dask on multi-nodes using job-queuing system Slurm Wordload Manager.
             3. If job_queue_system_type == 'LocalHost', deploy Dask on your local machine.
 
-        num_nodes (int, optional):[Default=1] Desire number of nodes for parallel computation.
+        num_nodes (int, optional): [Default=1] Desire number of nodes for parallel computation.
 
-        num_worker_per_node (int, optional):[Default=1] Desire number of workers to be used in a node.
+        num_worker_per_node (int, optional): [Default=1] Desire number of workers to be used in a node.
             One worker can handle one parallel job at the same time.
         num_threads_per_worker (int, optional):[Default=1] Desire number of threads to be used in a worker.
             num_threads_per_worker and num_worker_per_node will be used to compute number of cpus you will use in a node.
             num_threads_per_worker * num_worker_per_node should be less than the maximum number of cpus in a single node of the HPC cluster.
 
-        maximum_memory_per_node (str, optional):[Default=None] Desire maximum memory to be used in a node.
+        maximum_memory_per_node (str, optional): [Default=None] Desire maximum memory to be used in a node.
             Job queue systems always impose a memory limit on each node.
             By default, it is deliberately relatively small — 100 MB per node.
             If your job uses more than that, you’ll get an error that your job Exceeded job memory limit.
             To set a larger limit, pass a string with the form as 100MB or 16GB.
-            Also, you should check your cluster documentation to avoid exist the allowable memory.
+            Also, you should check your cluster documentation to avoid exceeding the allowable memory of a node.
 
-        maximum_allowable_walltime (str, optional):[Default=None] Maxixmum allowable walltime.
+        maximum_allowable_walltime (str, optional): [Default=None] Maximum allowable walltime.
             Job queue systems always impose a walltime limit on each submitted job in a node.
             By default, it is deliberately relatively small — only serval hours.
             If your job needs more time to finish, you'll pass a string with the form as D-HH:MM:SS.
-            Also, you should check your cluster documentation to avoid exist the allowable walltime.
+            Also, you should check your cluster documentation to avoid exceeding the allowable walltime of your submitted job.
 
         infiniband_flag (str, optional): [Default=""] An optional string flag follows the submission command to
         request nodes with InfiniBand.
@@ -59,16 +59,16 @@ def get_cluster_ticket(job_queue_system_type,
             This is a specific option for SGE cluster.
             If you are using SGE cluster, you can check cluster documentation or run 'qconf -spl' to find those options.
 
-        queue_sys_opt (list[str], optional)[Default=[]]: List of other job submitting options.
+        queue_sys_opt (list[str], optional): [Default=[]] List of other job submitting options.
             Different job-queuing systems may have different features like job scheduling and queuing.
             Users can customize those features by adding related flags to queue_sys_opt.
             The related flags may vary in different HPC cluster, you should check your cluster documentation or ask maintainers of your own cluster.
             All options in queue_sys_opt will be added as flags to the submission command.
 
-        death_timeout (float, optional):[Default=60] Seconds to wait for a scheduler before closing workers.
-        local_directory (str, optional):[Default='./'] Desire local directory for file spilling in parallel computation.
+        death_timeout (float, optional): [Default=60] Seconds to wait for a scheduler before closing workers.
+        local_directory (str, optional): [Default='./'] Desire local directory for file spilling in parallel computation.
             Recommend to set it to a location of fast local storage like /scratch or $TMPDIR.
-        log_directory (str, optional):[Default='./'] Desire directory to store Dask's job scheduler logs.
+        log_directory (str, optional): [Default='./'] Desire directory to store Dask's job scheduler logs.
 
     Returns:
         A two-element tuple including:
@@ -160,7 +160,7 @@ def scatter_gather(func, variable_args_list=[], constant_args={}, cluster=None, 
         variable_args_list (list[dictionary]): [Default=[]] A list of dictionary.
         Each dictionary contains arguments that will change during the parallel computation process.
 
-        constant_args(dictionary):  [Default={}] A dictionary contains arguments that will be constant during the parallel computation process.
+        constant_args(dictionary): [Default={}] A dictionary contains arguments that will be constant during the parallel computation process.
 
         cluster (Object): [Default=None] A cluster ticket to the dask deployment on the job-queuing system.
             Users can obtain this ticket by running :py:func:`~multinode.get_cluster_ticket`.
