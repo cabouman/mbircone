@@ -248,7 +248,7 @@ def mace3D(sino, angles, dist_source_detector, magnification,
         if verbose:
             end = time.time()
             elapsed_t = end-start
-            print(f"Done MACE iteration. Elapsed time: {elapsed_t:.2f} sec.")
+            print(f"Done MACE iteration {itr}/{max_admm_itr}. Elapsed time: {elapsed_t:.2f} sec.")
     #################### end ADMM iterations
     print("Done MACE reconstruction.")
     return recon
@@ -459,7 +459,7 @@ def mace4D(sino, angles, dist_source_detector, magnification,
         if verbose:
             end = time.time()
             elapsed_t = end-start
-            print(f"Done MACE iteration. Elapsed time: {elapsed_t:.2f} sec.")
+            print(f"Done MACE iteration {itr}/{max_admm_itr}. Elapsed time: {elapsed_t:.2f} sec.")
     #################### end ADMM iterations
     print("Done MACE reconstruction.")
     return recon
