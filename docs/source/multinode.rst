@@ -1,6 +1,6 @@
-mbircone.parallel_utils
+mbircone.multinode
 -----------------------
-.. automodule:: mbircone.parallel_utils
+.. automodule:: mbircone.multinode
    :members:
    :undoc-members:
    :show-inheritance:

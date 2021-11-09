@@ -5,28 +5,38 @@ import time
 import pprint as pp
 import socket
 
-def get_cluster_ticket(job_queue_type,
+
+def get_cluster_ticket(job_queue_system_type,
                        num_nodes=1,
                        num_worker_per_node=1, num_threads_per_worker=1,
                        maximum_memory_per_node=None, maximum_allowable_walltime=None,
                        infiniband_flag="", par_env="", queue_sys_opt=[],
                        death_timeout=60, local_directory='./', log_directory='./'):
-    """Return a dask cluster class object from the given parameters.
+    """A utils function to help users easily use Dask-Jobqueue to deploy Dask on job-queuing systems like Slurm and SGE
+    to use multiple nodes(computers) or directly use Dask on your local computer for parallel computation.
+
+    - Dask is a flexible library for parallel computing in Python. More information is in `Dask documentation <https://docs.dask.org/en/latest/>`_.
+    - Dask-Jobqueue is a Dask module to deploy Dask on some common job-queuing systems. More information is in `Dask-Jobqueue documentation <https://jobqueue.dask.org/en/latest/#>`_.
 
     Args:
-        job_queue_type (string): Job queue system, used for submitting job.
-            job_queue_type should be one of ['SGE', 'SLURM', 'LocalHost'].
-            'SGE': Return a class object, generated from dask_joequeue.SGECluster.
-            'SLURM': Return a class object, generated from dask_joequeue.SLURMCluster.
-            'LocalHost': Return a class object, generated from dask.distributed.LocalCluster.
+        job_queue_system_type (string): Type of job-queuing systems(batch-queuing systems).
+        Any high-performance computing(HPC) cluster needs a job-queuing system to share computational resources between users.
+        Users need to specify which job-queuing system is used in their HPC cluster, before deploying their programs on the HPC cluster.
+        This function currently supports 2 job-queuing systems for multi-nodes and a simulated job-queuing system for your local machine.
 
-        num_nodes (int, optional):[Default=1] Number of nodes requested in job system.
+            1. If job_queue_system_type == 'SGE', deploy Dask on multi-nodes using job-queuing system Sun Grid Engine.
+            2. If job_queue_system_type == 'SLURM', deploy Dask on multi-nodes using job-queuing system Slurm Wordload Manager.
+            3. If job_queue_system_type == 'LocalHost', deploy Dask on your local machine.
 
-        num_worker_per_node (int, optional):[Default=1] Number of workers per node.
-            One worker will handle one parallel job at the same time.
-        num_threads_per_worker (int, optional):[Default=1] Number of threads needed for a worker.
+        num_nodes (int, optional):[Default=1] Desire number of nodes for parallel computation.
 
-        maximum_memory_per_node (str, optional):[Default=None] Maximum memory requested in a node.
+        num_worker_per_node (int, optional):[Default=1] Desire number of workers to be used in a node.
+            One worker can handle one parallel job at the same time.
+        num_threads_per_worker (int, optional):[Default=1] Desire number of threads to be used in a worker.
+            num_threads_per_worker and num_worker_per_node will be used to compute number of cpus you will use in a node.
+            num_threads_per_worker * num_worker_per_node should be less than the maximum number of cpus in a single node of the HPC cluster.
+
+        maximum_memory_per_node (str, optional):[Default=None] Desire maximum memory to be used in a node.
             Job queue systems always impose a memory limit on each node.
             By default, it is deliberately relatively small — 100 MB per node.
             If your job uses more than that, you’ll get an error that your job Exceeded job memory limit.
@@ -47,27 +57,33 @@ def get_cluster_ticket(job_queue_type,
 
         par_env (str, optional): [Default=""] The openmp parallel environment in your job queue system.
             This is a specific option for SGE cluster.
-            If you are using SGE cluster, you should check cluster documentation or run 'qconf -spl' to find those options.
+            If you are using SGE cluster, you can check cluster documentation or run 'qconf -spl' to find those options.
 
         queue_sys_opt (list[str], optional)[Default=[]]: List of other job submitting options.
+            Different job-queuing systems may have different features like job scheduling and queuing.
+            Users can customize those features by adding related flags to queue_sys_opt.
+            The related flags may vary in different HPC cluster, you should check your cluster documentation or ask maintainers of your own cluster.
+            All options in queue_sys_opt will be added as flags to the submission command.
 
         death_timeout (float, optional):[Default=60] Seconds to wait for a scheduler before closing workers.
-        local_directory (str, optional):[Default='./'] Dask worker local directory for file spilling.
+        local_directory (str, optional):[Default='./'] Desire local directory for file spilling in parallel computation.
             Recommend to set it to a location of fast local storage like /scratch or $TMPDIR.
-        log_directory (str, optional):[Default='./'] Directory to use for job scheduler logs.
+        log_directory (str, optional):[Default='./'] Desire directory to store Dask's job scheduler logs.
 
     Returns:
         A two-element tuple including:
 
-        - **cluster**: A dask cluster object from the given configuration parameters. -
+        - **cluster**: A cluster ticket to the dask deployment on the job-queuing system.
         - **maximum_possible_nb_worker** (int): Maximum possible number of workers that we can request to start jobs deployment.
     """
 
-    if job_queue_type not in ['SGE', 'SLURM', 'LocalHost']:
-        print('The parameter job_queue_type should be one of [\'SGE\', \'SLURM\', \'LocalHost\']')
+    # This function currently only support 3 types of job-queuing system.
+    if job_queue_system_type not in ['SGE', 'SLURM', 'LocalHost']:
+        print('The parameter job_queue_system_type should be one of [\'SGE\', \'SLURM\', \'LocalHost\']')
         print('Run the code without dask parallel.')
         return None, 0
 
+    # Handle None input for some arguments. None input may happen when read those parameters from a configuration file.
     if infiniband_flag is None:
         infiniband_flag = ""
 
@@ -77,11 +93,12 @@ def get_cluster_ticket(job_queue_type,
     if queue_sys_opt is None:
         queue_sys_opt = []
 
-    if job_queue_type == 'SGE':
+    # Deploy Dask on multi-nodes using job-queuing system Sun Grid Engine.
+    if job_queue_system_type == 'SGE':
         from dask_jobqueue import SGECluster
 
         # Append infiniband_flag and openmpi paralell environment to queue_sys_opt.
-        # All flags in queue_sys_opt will add behind the submission command.
+        # All options in queue_sys_opt will be added behind the submission command.
 
         queue_sys_opt.append(infiniband_flag)
         queue_sys_opt.append('-pe %s %d' % (par_env, num_threads_per_worker * num_worker_per_node))
@@ -99,11 +116,12 @@ def get_cluster_ticket(job_queue_type,
         maximum_possible_nb_worker = num_worker_per_node * num_nodes
         print(cluster.job_script())
 
-    if job_queue_type == 'SLURM':
+    # Deploy Dask on multi-nodes using job-queuing system Slurm Wordload Manager.
+    if job_queue_system_type == 'SLURM':
         from dask_jobqueue import SLURMCluster
 
-        # Append infiniband_flag and openmpi paralell environment to queue_sys_opt.
-        # All flags in queue_sys_opt will add behind the submission command.
+        # Append infiniband_flag to queue_sys_opt.
+        # All options in queue_sys_opt will add behind the submission command.
         queue_sys_opt.append(infiniband_flag)
 
         cluster = SLURMCluster(processes=num_worker_per_node,
@@ -121,7 +139,8 @@ def get_cluster_ticket(job_queue_type,
         maximum_possible_nb_worker = num_worker_per_node * num_nodes
         print(cluster.job_script())
 
-    if job_queue_type == 'LocalHost':
+    # Deploy Dask on your local machine.
+    if job_queue_system_type == 'LocalHost':
         from dask.distributed import LocalCluster
         cluster = LocalCluster(n_workers=num_worker_per_node,
                                processes=True,
@@ -131,46 +150,53 @@ def get_cluster_ticket(job_queue_type,
     return cluster, maximum_possible_nb_worker
 
 
-def scatter_gather(func, variable_args_list=[], fixed_args={}, cluster=None, min_nb_start_worker=1, verbose=1):
-    """Distribute a function with various groups of inputs to multiple processors. Return a list of value or tuple
-    according to given variable_args_list.
+def scatter_gather(func, variable_args_list=[], constant_args={}, cluster=None, min_nb_start_worker=1, verbose=1):
+    """Distribute a function with various groups of inputs to dask .
+     Return a list of value or tuple(when then number of outputs of the given function is more than 1) with respect to the variable_args_list.
 
     Args:
-        func (callable): Any function we want to parallel compute.
+        func (callable): Any callable function.
 
-        variable_args_list (list[dictionary]): [Default=[]] Each dictionary contains arguments changing during the parallel computation process.
+        variable_args_list (list[dictionary]): [Default=[]] A list of dictionary.
+        Each dictionary contains arguments that will change during the parallel computation process.
 
-        fixed_args(dictionary):  [Default={}] A dictionary includes fixed arguments that should be inputed to the given function during the parallel computation process.
+        constant_args(dictionary):  [Default={}] A dictionary contains arguments that will be constant during the parallel computation process.
 
-        cluster (Object): [Default=None] Cluster object created by dask_jobqueue.
-            More information is on `dask_jobqueue <https://jobqueue.dask.org/en/latest/api.html>`_
+        cluster (Object): [Default=None] A cluster ticket to the dask deployment on the job-queuing system.
+            Users can obtain this ticket by running :py:func:`~multinode.get_cluster_ticket`.
+            If your HPC cluster does not use SGE and SLRUM job-queuing system,
+            you can use functions in `dask_jobqueue <https://jobqueue.dask.org/en/latest/api.html>`_
+            to deploy dask on a specific job-queuing system.
 
-        min_nb_start_worker (int): [Default=1] Minimum number of workers to start parallel computation.
+        min_nb_start_worker (int): [Default=1] Desire minimum number of workers to start parallel computation.
             The parallelization will wait until the number of workers >= min_nb_worker.
 
-        verbose (int): [Default=0] Possible values are {0,1}, where 0 is quiet, 1 prints dask parallel progress information.
+        verbose (int): [Default=0] Possible values are {0,1}, where 0 is quiet and 1 prints parallel computation process information.
 
     Returns:
-        A list of return output of the parallel function, corresponding to the inps_list.
-        Notice: For those functions with multiple output, each returned output will be a tuple, containing multiple output.
+        A list of return outputs of the parallel function, with respect to the variable_args_list.
+        Notice: For those functions with multiple outputs, each returned output will be a tuple, containing multiple outputs.
 
     Examples:
-        Here is an example to further illustrate how to use the function.
+        Here is an example to illustrate how to use the function on your local machine.
 
         >>> import numpy as np
-        >>> from mbircone.parallel_utils import get_cluster_ticket, scatter_gather
+        >>> from mbircone.multinode import get_cluster_ticket, scatter_gather
         >>> from psutil import cpu_count
 
+        >>> #Deploy Dask on your local multi-core machine for parallel computation.
         >>> num_cpus = cpu_count(logical=False)
         >>> cluster, max_possible_num_worker =
         ... get_cluster_ticket('LocalHost', num_worker_per_node=num_cpus)
 
-        >>> def linear_func(x, a, b):
-        ...     return a*x+b
+        >>> #Define a simple linear function.
+        >>> def linear_func(x_1, a, b):
+        ...     return a*x_1+b
 
-        >>> variable_args_list = [{'x':i} for i in range(6)]
-        >>> fixed_args = {'a':2, 'b':3}
-        >>> scatter_gather(linear_func, variable_args_list, fixed_args,
+        >>> #Parallel compute y=2*x+3 with respect to six different x_1.
+        >>> variable_args_list = [{'x_1':i} for i in range(6)]
+        >>> constant_args = {'a':2, 'b':3}
+        >>> scatter_gather(linear_func, variable_args_list, constant_args,
         ... cluster=cluster, min_nb_start_worker=max_possible_num_worker)
         [3, 5, 7, 9, 11, 13]
 
@@ -182,30 +208,30 @@ def scatter_gather(func, variable_args_list=[], fixed_args={}, cluster=None, min
               "function during the parallel computation process.")
         return []
 
-    if cluster == None:
-        return_list=[]
+    if cluster is None:
+        return_list = []
         for variable_args in variable_args_list:
-            x = func(**variable_args, **fixed_args)
+            x = func(**variable_args, **constant_args)
             return_list.append(x)
         return return_list
 
     def parallel_func(t, variable_args):
         """
-        # Define function that returns dictionary containing reconstruction, index, host name, PID, and time.
+        # Define function that returns dictionary containing output, index, host name, processor ID, and completion time.
         """
-        output = func(**variable_args, **fixed_args)
+        output = func(**variable_args, **constant_args)
         return {'output': output,
                 'index': t,
                 'host': socket.gethostname(),
                 'pid': os.getpid(),
                 'time': time.strftime("%H:%M:%S")}
 
-
+    # Pass the cluster ticket to a dask client. The dask client will use the dask deployment to do parallel computation.
     # reference: `https://distributed.dask.org/en/latest/api.html#distributed.Client`
-    client = Client(cluster)  # An interface that connect to and submit computation to cluster
+    client = Client(cluster)
     submission_list = list(range(len(variable_args_list)))
 
-    # Start submit jobs until the client has enough workers.
+    # Start submit jobs until the client gets enough workers.
     while True:
         nb_workers = len(client.scheduler_info()["workers"])
         if verbose:
@@ -221,17 +247,17 @@ def scatter_gather(func, variable_args_list=[], fixed_args={}, cluster=None, min
     completed_list = []
     return_list = []
 
-    # Job may get cancelled since communication to workers can fail.
-    # Use a while loop to ensure dask finishs and gathers all submitted jobs.
+    # Job may get cancelled since the communication between scheduler and workers can fail.
+    # Use a while loop to ensure dask finishes all submitted jobs and gathers them back.
     elapsed_time = -time.time()
     while submission_list:
-        # For large input, we should distribute the dataset to cluster memeory.
+        # For large input, we should distribute the dataset to cluster memory.
         # reference: `https://distributed.dask.org/en/latest/api.html#distributed.Client.scatter`
         future_inp = client.scatter([variable_args_list[tp] for tp in submission_list])
 
-        # client.map() map the function "par_recon" to a sequence of input arguments.
+        # client.map() map the function "parallel_func" to a sequence of input arguments.
         # reference: `https://distributed.dask.org/en/latest/api.html#distributed.Client.map`
-        # The class object as_completed() returns outputs in the order in which they complete
+        # The class object as_completed() returns outputs in the order of completion.
         # reference: `https://distributed.dask.org/en/latest/api.html#distributed.as_completed`
         for future in as_completed(
                 client.map(parallel_func, submission_list, future_inp, pure=False)):
