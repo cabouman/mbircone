@@ -115,7 +115,7 @@ def calc_weights(sino, weight_type):
     elif weight_type == 'transmission_root':
         weights = np.exp(-sino / 2)
     elif weight_type == 'emission':
-        weights = 1 / (sino + 0.1)
+        weights = 1 / (np.absolute(sino)  + 0.1)
     else:
         raise Exception("calc_weights: undefined weight_type {}".format(weight_type))
 
@@ -154,9 +154,10 @@ def auto_sigma_y(sino, weights, snr_db=30.0, delta_pixel_image=1.0, delta_pixel_
 
     # compute sigma_y and scale by relative pixel and detector pitch
     sigma_y = rel_noise_std * signal_rms * (delta_pixel_image / delta_pixel_detector) ** (0.5)
-
-    return sigma_y
-
+    if sigma_y > 0:
+        return sigma_y
+    else:
+        return 1.0
 
 def auto_sigma_prior(sino, delta_pixel_detector=1.0, sharpness=0.0):
     """Compute the automatic value of prior model regularization for use in MBIR reconstruction.
