@@ -15,7 +15,6 @@ if __name__ == '__main__':
     parser.add_argument('--configs_path', type=str, default=None, help="Configs path")
     args = parser.parse_args()
 
-    num_parallel = 2
 
     # sinogram parameters
     num_det_rows = 200
@@ -60,6 +59,9 @@ if __name__ == '__main__':
             num_worker_per_node=num_worker_per_node)
         num_threads = num_cpus // num_worker_per_node
 
+        # In this demo, distribute one job to each worker.
+        num_parallel = num_worker_per_node
+
     else:
         # Load cluster setup parameter.
         configs = load_yaml(args.configs_path)
@@ -70,6 +72,8 @@ if __name__ == '__main__':
             cluster, maximum_possible_nb_worker = mbircone.multinode.get_cluster_ticket(
                 configs['job_queue_system_type'],
                 num_worker_per_node=configs['cluster_params']['num_worker_per_node'])
+            # In this demo, distribute one job to each worker.
+            num_parallel = configs['cluster_params']['num_worker_per_node']
         else:
             cluster, maximum_possible_nb_worker = mbircone.multinode.get_cluster_ticket(
                 job_queue_system_type=configs['job_queue_system_type'],
@@ -84,7 +88,10 @@ if __name__ == '__main__':
                 queue_sys_opt=configs['cluster_params']['queue_sys_opt'],
                 local_directory=configs['cluster_params']['local_directory'].replace('$USER', getpass.getuser()),
                 log_directory=configs['cluster_params']['log_directory'].replace('$USER', getpass.getuser()))
+            # In this demo, distribute one job to each worker.
+            num_parallel = configs['cluster_params']['num_worker_per_node']*configs['cluster_params']['num_nodes']
     print(cluster)
+    print("Parallel compute 3D conebeam reconstruction on %d timepoints.\n"%num_parallel)
 
     # Generate a 3D shepp logan phantom.
     ROR, boundary_size = mbircone.cone3D.compute_img_size(num_views, num_det_rows, num_det_channels,
