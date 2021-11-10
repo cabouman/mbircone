@@ -34,7 +34,7 @@ def get_cluster_ticket(job_queue_system_type,
             One worker can handle one parallel job at the same time.
         num_threads_per_worker (int, optional):[Default=1] Desire number of threads to be used in a worker.
             num_threads_per_worker and num_worker_per_node will be used to compute number of cpus you will use in a node.
-            num_threads_per_worker * num_worker_per_node should be less than the maximum number of cpus in a single node of the HPC cluster.
+            num_threads_per_worker * num_worker_per_node should be less than the total number of cpus in a single node.
 
         maximum_memory_per_node (str, optional): [Default=None] Desire maximum memory to be used in a node.
             Job queue systems always impose a memory limit on each node.
@@ -50,31 +50,41 @@ def get_cluster_ticket(job_queue_system_type,
             Also, you should check your cluster documentation to avoid exceeding the allowable walltime of your submitted job.
 
         infiniband_flag (str, optional): [Default=""] An optional string flag follows the submission command to
-        request nodes with InfiniBand.
-            Nodes with InfiniBand are requried by dask_jobqueue class.
-            If all available nodes have InfiniBand, then you can ignore this flag.
-            Otherwise, you should check your cluster documentation to find the specific flag and pass it to this function.
+        request worker nodes using InfiniBand as network interface to communicate with the scheduler.
+            Nodes with InfiniBand are requried by dask_jobqueue class. By default, it will be set to "".
+            If all available nodes have InfiniBand, then you can ignore this option.
+            Otherwise, you should check how to request worker nodes with infiniBand in your cluster documentation
+            to find the specific option and pass it to this function.
 
-        par_env (str, optional): [Default=""] The openmp parallel environment in your job queue system.
-            This is a specific option for SGE cluster.
-            If you are using SGE cluster, you can check cluster documentation or run 'qconf -spl' to find those options.
+        par_env (str, optional): [Default="openmpi"] The openmp parallel environment in your job-queuing system.
+            This is a specific option for SGE cluster. By default, it will be set to "openmpi".
+            If you are using SGE cluster, you can check available parallel environment option in your cluster documentation
+            or run 'qconf -spl' in your terminal to find those options.
 
-        queue_sys_opt (list[str], optional): [Default=[]] List of other job submitting options.
+        queue_sys_opt (list[str], optional): [Default=[]] List of other job-queuing system's options, each option should a string.
             Different job-queuing systems may have different features like job scheduling and queuing.
-            Users can customize those features by adding related flags to queue_sys_opt.
-            The related flags may vary in different HPC cluster, you should check your cluster documentation or ask maintainers of your own cluster.
-            All options in queue_sys_opt will be added as flags to the submission command.
+            Users can customize those features by adding related options to queue_sys_opt.
+            The related options may vary in different HPC cluster, you should check those information in your cluster documentation
+            or ask maintainers of your institution's cluster.
+            Each option in queue_sys_opt will be prepended with the submission command.
+            For example,
+                - In SGE, an option will be prepended with the #$ prefix.
+                - In SLURM, an option will be prepended with the #SBATCH prefix.
+
 
         death_timeout (float, optional): [Default=60] Seconds to wait for a scheduler before closing workers.
+            By default, it will be set to 60 seconds.
         local_directory (str, optional): [Default='./'] Desire local directory for file spilling in parallel computation.
             Recommend to set it to a location of fast local storage like /scratch or $TMPDIR.
         log_directory (str, optional): [Default='./'] Desire directory to store Dask's job scheduler logs.
+            For each reserved node, there will be two different log files, error log and output log.
+            Users can check those log files to find the information printed from the parallel functions.
 
     Returns:
         A two-element tuple including:
 
-        - **cluster**: A cluster ticket to the dask deployment on the job-queuing system.
-        - **maximum_possible_nb_worker** (int): Maximum possible number of workers that we can request to start jobs deployment.
+        - **cluster**: A cluster ticket to the dask deployment on the job-queuing system. This is an important input to the scatter_gather function.
+        - **maximum_possible_nb_worker** (int): Maximum possible number of workers that we can request to start the jobs deployment.
     """
 
     # This function currently only support 3 types of job-queuing system.
@@ -87,7 +97,7 @@ def get_cluster_ticket(job_queue_system_type,
     if infiniband_flag is None:
         infiniband_flag = ""
 
-    if par_env is None:
+    if par_env is None or par_env is "":
         par_env = "openmpi"
 
     if queue_sys_opt is None:
@@ -99,8 +109,8 @@ def get_cluster_ticket(job_queue_system_type,
 
         # Append infiniband_flag and openmpi paralell environment to queue_sys_opt.
         # All options in queue_sys_opt will be added behind the submission command.
-
-        queue_sys_opt.append(infiniband_flag)
+        if infiniband_flag is not "":
+            queue_sys_opt.append(infiniband_flag)
         queue_sys_opt.append('-pe %s %d' % (par_env, num_threads_per_worker * num_worker_per_node))
 
         cluster = SGECluster(processes=num_worker_per_node,
@@ -165,8 +175,9 @@ def scatter_gather(func, variable_args_list=[], constant_args={}, cluster=None, 
         cluster (Object): [Default=None] A cluster ticket to the dask deployment on the job-queuing system.
             Users can obtain this ticket by running :py:func:`~multinode.get_cluster_ticket`.
             If your HPC cluster does not use SGE and SLRUM job-queuing system,
-            you can use functions in `dask_jobqueue <https://jobqueue.dask.org/en/latest/api.html>`_
+            you can also use functions in `dask_jobqueue <https://jobqueue.dask.org/en/latest/api.html>`_
             to deploy dask on a specific job-queuing system.
+            If users do not provide the cluster ticket, cluster will be set to None by default and call a for loop to finish those jobs.
 
         min_nb_start_worker (int): [Default=1] Desire minimum number of workers to start parallel computation.
             The parallelization will wait until the number of workers >= min_nb_worker.
