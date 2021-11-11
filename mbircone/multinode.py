@@ -163,13 +163,13 @@ def get_cluster_ticket(job_queue_system_type,
 
 def scatter_gather(func, variable_args_list=[], constant_args={}, cluster=None, min_nb_start_worker=1, verbose=1):
     """Distribute a function with various groups of inputs to dask .
-     Return a list of value or tuple(when then number of outputs of the given function is more than 1) with respect to the variable_args_list.
+     Return a list of value or tuple(when the number of outputs of the given function is more than 1) with respect to the variable_args_list.
 
     Args:
         func (callable): Any callable function.
 
         variable_args_list (list[dictionary]): [Default=[]] A list of dictionary.
-        Each dictionary contains arguments that will change during the parallel computation process.
+            Each dictionary contains arguments that will change during the parallel computation process.
 
         constant_args(dictionary): [Default={}] A dictionary contains arguments that will be constant during the parallel computation process.
 
