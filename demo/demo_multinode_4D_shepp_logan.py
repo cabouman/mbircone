@@ -54,9 +54,8 @@ if __name__ == '__main__':
             num_worker_per_node = int(np.sqrt(num_cpus))
         else:
             num_worker_per_node = num_cpus
-        cluster, maximum_possible_nb_worker = mbircone.multinode.get_cluster_ticket(
-            'LocalHost',
-            num_worker_per_node=num_worker_per_node)
+        cluster, maximum_possible_nb_worker = mbircone.multinode.get_cluster_ticket('LocalHost',
+                                                                                    num_worker_per_node=num_worker_per_node)
         num_threads = num_cpus // num_worker_per_node
 
         # In this demo, distribute one job to each worker.
@@ -70,22 +69,20 @@ if __name__ == '__main__':
 
         if configs['job_queue_system_type'] == 'LocalHost':
             cluster, maximum_possible_nb_worker = mbircone.multinode.get_cluster_ticket(
-                configs['job_queue_system_type'],
-                num_worker_per_node=configs['cluster_params']['num_worker_per_node'])
+                configs['job_queue_system_type'], num_worker_per_node=configs['cluster_params']['num_worker_per_node'])
             # In this demo, distribute one job to each worker.
             num_parallel = configs['cluster_params']['num_worker_per_node']
         else:
             cluster, maximum_possible_nb_worker = mbircone.multinode.get_cluster_ticket(
                 job_queue_system_type=configs['job_queue_system_type'],
-                num_worker_per_node=configs['cluster_params']['num_worker_per_node'],
                 num_nodes=configs['cluster_params']['num_nodes'],
+                num_worker_per_node=configs['cluster_params']['num_worker_per_node'],
                 num_threads_per_worker=configs['cluster_params']['num_threads_per_worker'],
-                maximum_allowable_walltime=configs['cluster_params']['maximum_allowable_walltime'],
                 maximum_memory_per_node=configs['cluster_params']['maximum_memory_per_node'],
+                maximum_allowable_walltime=configs['cluster_params']['maximum_allowable_walltime'],
+                infiniband_arg=configs['cluster_params']['infiniband_flag'],
+                par_env=configs['cluster_params']['par_env'], queue_sys_opt=configs['cluster_params']['queue_sys_opt'],
                 death_timeout=configs['cluster_params']['death_timeout'],
-                infiniband_flag=configs['cluster_params']['infiniband_flag'],
-                par_env=configs['cluster_params']['par_env'],
-                queue_sys_opt=configs['cluster_params']['queue_sys_opt'],
                 local_directory=configs['cluster_params']['local_directory'].replace('$USER', getpass.getuser()),
                 log_directory=configs['cluster_params']['log_directory'].replace('$USER', getpass.getuser()))
             # In this demo, distribute one job to each worker.
@@ -136,12 +133,9 @@ if __name__ == '__main__':
                   'mode': 'constant',
                   'axes': (1, 2),
                   'reshape': False}
-    phantom_list = mbircone.multinode.scatter_gather(ndimage.rotate,
-                                                     variable_args_list=variable_args_list,
-                                                     constant_args=constant_args,
-                                                     cluster=cluster,
-                                                     min_nb_start_worker=min_nb_start_worker,
-                                                     verbose=par_verbose)
+    phantom_list = mbircone.multinode.scatter_gather(ndimage.rotate, constant_args=constant_args,
+                                                     variable_args_list=variable_args_list, cluster_ticket=cluster,
+                                                     min_workers=min_nb_start_worker, verbose=par_verbose)
     print("Generate 4D simulated data by rotating the 3D shepp logan phantom by increasing degree per time point. \n")
 
     # scatter_gather parallel computes mbircone.cone3D.project
@@ -160,12 +154,9 @@ if __name__ == '__main__':
                   'delta_pixel_image': delta_pixel_image,
                   'channel_offset': channel_offset,
                   'row_offset': row_offset}
-    sino_list = mbircone.multinode.scatter_gather(mbircone.cone3D.project,
-                                                  variable_args_list=variable_args_list,
-                                                  constant_args=constant_args,
-                                                  cluster=cluster,
-                                                  min_nb_start_worker=min_nb_start_worker,
-                                                  verbose=par_verbose)
+    sino_list = mbircone.multinode.scatter_gather(mbircone.cone3D.project, constant_args=constant_args,
+                                                  variable_args_list=variable_args_list, cluster_ticket=cluster,
+                                                  min_workers=min_nb_start_worker, verbose=par_verbose)
     print("Generate sinogram data by projecting each phantom in all timepoints. \n")
 
     # scatter_gather parallel computes mbircone.cone3D.recon
@@ -184,12 +175,9 @@ if __name__ == '__main__':
                   'max_iterations': max_iterations,
                   'num_threads': num_threads,
                   'verbose': 0}
-    recon_list = mbircone.multinode.scatter_gather(mbircone.cone3D.recon,
-                                                   variable_args_list=variable_args_list,
-                                                   constant_args=constant_args,
-                                                   cluster=cluster,
-                                                   min_nb_start_worker=min_nb_start_worker,
-                                                   verbose=par_verbose)
+    recon_list = mbircone.multinode.scatter_gather(mbircone.cone3D.recon, constant_args=constant_args,
+                                                   variable_args_list=variable_args_list, cluster_ticket=cluster,
+                                                   min_workers=min_nb_start_worker, verbose=par_verbose)
     print("Reconstruct 3D phantom in all timepoints. \n")
     print("Reconstructed 4D image shape = ", np.array(recon_list).shape)
 
