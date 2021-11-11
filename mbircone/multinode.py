@@ -198,8 +198,7 @@ def scatter_gather(func, variable_args_list=[], constant_args={}, cluster=None, 
 
         >>> #Deploy Dask on your local multi-core machine for parallel computation.
         >>> num_cpus = cpu_count(logical=False)
-        >>> cluster, max_possible_num_worker =
-        ... get_cluster_ticket('LocalHost', num_worker_per_node=num_cpus)
+        >>> cluster, max_possible_num_worker = get_cluster_ticket('LocalHost', num_worker_per_node=num_cpus)
 
         >>> #Define a simple linear function.
         >>> def linear_func(x_1, a, b):
@@ -208,8 +207,7 @@ def scatter_gather(func, variable_args_list=[], constant_args={}, cluster=None, 
         >>> #Parallel compute y=2*x+3 with respect to six different x_1.
         >>> variable_args_list = [{'x_1':i} for i in range(6)]
         >>> constant_args = {'a':2, 'b':3}
-        >>> scatter_gather(linear_func, variable_args_list, constant_args,
-        ... cluster=cluster, min_nb_start_worker=max_possible_num_worker)
+        >>> scatter_gather(linear_func, variable_args_list, constant_args, cluster=cluster, min_nb_start_worker=max_possible_num_worker)
         [3, 5, 7, 9, 11, 13]
 
     """
