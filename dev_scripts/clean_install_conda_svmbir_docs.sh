@@ -5,7 +5,7 @@
 # Clean out old installation
 source clean_mbircone.sh
 
-# Destroy conda environement named svmbir and reinstall it
+# Destroy conda environement named mbircone and reinstall it
 source reinstall_conda_environment.sh
 
 # Install mbircone
