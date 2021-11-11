@@ -20,13 +20,13 @@ def get_cluster_ticket(job_queue_system_type,
 
     Args:
         job_queue_system_type (string): Type of job-queuing systems(batch-queuing systems).
-        Any high-performance computing(HPC) cluster needs a job-queuing system to share computational resources between users.
-        Users need to specify which job-queuing system is used in their HPC cluster, before deploying their programs on the HPC cluster.
-        This function currently supports 2 job-queuing systems for multi-nodes and a simulated job-queuing system for your local machine.
+            Any high-performance computing(HPC) cluster needs a job-queuing system to share computational resources between users.
+            Users need to specify which job-queuing system is used in their HPC cluster, before deploying their programs on the HPC cluster.
+            This function currently supports 2 job-queuing systems for multi-nodes and a simulated job-queuing system for your local machine.
 
-            1. If job_queue_system_type == 'SGE', deploy Dask on multi-nodes using job-queuing system Sun Grid Engine.
-            2. If job_queue_system_type == 'SLURM', deploy Dask on multi-nodes using job-queuing system Slurm Wordload Manager.
-            3. If job_queue_system_type == 'LocalHost', deploy Dask on your local machine.
+                1. If job_queue_system_type == 'SGE', deploy Dask on multi-nodes using job-queuing system Sun Grid Engine.
+                2. If job_queue_system_type == 'SLURM', deploy Dask on multi-nodes using job-queuing system Slurm Wordload Manager.
+                3. If job_queue_system_type == 'LocalHost', deploy Dask on your local machine.
 
         num_nodes (int, optional): [Default=1] Desire number of nodes for parallel computation.
 
@@ -67,10 +67,11 @@ def get_cluster_ticket(job_queue_system_type,
             The related options may vary in different HPC cluster, you should check those information in your cluster documentation
             or ask maintainers of your institution's cluster.
             Each option in queue_sys_opt will be prepended with the submission command.
+
             For example,
+
                 - In SGE, an option will be prepended with the #$ prefix.
                 - In SLURM, an option will be prepended with the #SBATCH prefix.
-
 
         death_timeout (float, optional): [Default=60] Seconds to wait for a scheduler before closing workers.
             By default, it will be set to 60 seconds.
@@ -97,7 +98,7 @@ def get_cluster_ticket(job_queue_system_type,
     if infiniband_flag is None:
         infiniband_flag = ""
 
-    if par_env is None or par_env is "":
+    if par_env is None or par_env == "":
         par_env = "openmpi"
 
     if queue_sys_opt is None:
@@ -109,7 +110,7 @@ def get_cluster_ticket(job_queue_system_type,
 
         # Append infiniband_flag and openmpi paralell environment to queue_sys_opt.
         # All options in queue_sys_opt will be added behind the submission command.
-        if infiniband_flag is not "":
+        if infiniband_flag != "":
             queue_sys_opt.append(infiniband_flag)
         queue_sys_opt.append('-pe %s %d' % (par_env, num_threads_per_worker * num_worker_per_node))
 
