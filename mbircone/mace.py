@@ -205,7 +205,7 @@ def mace3D(sino, angles, dist_source_detector, magnification,
             beta.append(w)
     else:
         beta = [1-prior_weight,prior_weight/(image_dim),prior_weight/(image_dim),prior_weight/(image_dim)]
-    assert(all(w>=0 for w in beta)), 'Incorrect value of prior_weight given. All elements in prior_weight should be non-negative, and sum should be no greater than 1.'   
+    assert(all(w>=0 for w in beta) and sum(beta)==1), 'Incorrect value of prior_weight given. All elements in prior_weight should be non-negative, and sum should be no greater than 1.'   
     # make denoiser_args an instance if necessary
     if not isinstance(denoiser_args, tuple):
         denoiser_args = (denoiser_args,) 
@@ -326,6 +326,21 @@ def mace4D(sino, angles, dist_source_detector, magnification,
         print("initializing MACE...")
     # verbosity level for qGGMRF recon
     qGGMRF_verbose = max(0,verbose-1)     
+    
+    # agent weight
+    if isinstance(prior_weight, (list, tuple, np.ndarray)):
+        assert (len(prior_weight)==3), 'Incorrect dimensionality of prior_weight array.'
+        beta = [1-sum(prior_weight)]
+        for w in prior_weight:
+            beta.append(w)
+    else:
+        beta = [1.-prior_weight,prior_weight/3.,prior_weight/3.,prior_weight/3.]
+    assert(all(w>=0 for w in beta) and (sum(beta)-1.)<1e-5), 'Incorrect value of prior_weight given. All elements in prior_weight should be non-negative, and sum should be no greater than 1.'   
+    
+    # make denoiser_args an instance if necessary
+    if not isinstance(denoiser_args, tuple):
+        denoiser_args = (denoiser_args,) 
+
     # get sino shape 
     (Nt, num_views, num_det_rows, num_det_channels) = np.shape(sino)
     # if angles is a 1D array, form the 2D angles array s.t. same set of angles are used at every time point.
@@ -400,23 +415,10 @@ def mace4D(sino, angles, dist_source_detector, magnification,
     else:
         [_,Nz,Nx,Ny] = np.shape(init_image)
     
-    image_dim = np.ndim(init_image)
     # number of agents = image dimensionality.
-    W = [np.copy(init_image) for _ in range(image_dim)]
-    X = [np.copy(init_image) for _ in range(image_dim)]
+    W = [np.copy(init_image) for _ in range(4)]
+    X = [np.copy(init_image) for _ in range(4)]
     
-    # agent weight
-    if isinstance(prior_weight, (list, tuple, np.ndarray)):
-        assert (len(prior_weight)==image_dim), 'Incorrect dimensionality of prior_weight array.'
-        beta = [1-sum(prior_weight)]
-        for w in prior_weight:
-            beta.append(w)
-    else:
-        beta = [1-prior_weight,prior_weight/(image_dim),prior_weight/(image_dim),prior_weight/(image_dim)]
-    assert(all(w>=0 for w in beta)), 'Incorrect value of prior_weight given. All elements in prior_weight should be non-negative, and sum should be no greater than 1.'   
-    # make denoiser_args an instance if necessary
-    if not isinstance(denoiser_args, tuple):
-        denoiser_args = (denoiser_args,) 
     
     #################### begin ADMM iterations
     if verbose:
@@ -452,10 +454,10 @@ def mace4D(sino, angles, dist_source_detector, magnification,
         X[3] = denoiser_wrapper(W[3], denoiser, denoiser_args, image_range, permute_vector=(3,0,1,2), positivity=positivity) # shape should be after permutation (Ny,Nt,Nz,Nx) 
         if verbose:
             print("Done denoising in XZ-plane.")
-        Z = sum([beta[k]*(2*X[k]-W[k]) for k in range(image_dim)])
-        for k in range(image_dim):
+        Z = sum([beta[k]*(2*X[k]-W[k]) for k in range(4)])
+        for k in range(4):
             W[k] += 2*rho*(Z-X[k])
-        recon = sum([beta[k]*X[k] for k in range(image_dim)])
+        recon = sum([beta[k]*X[k] for k in range(4)])
         if verbose:
             end = time.time()
             elapsed_t = end-start

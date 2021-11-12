@@ -238,10 +238,12 @@ np.save(os.path.join(output_dir, "recon_mace.npy"), recon_mace)
 display_slices = [2, 4, 6]
 for t in range(5):
     for display_slice in display_slices:
-        demo_utils.plot_image(phantom[t,display_slice,:,:], title=f'phantom, axial slice {display_slice}, time point {t}',
-                              filename=os.path.join(output_dir, f'phantom_slice{display_slice}_time{t}.png'), vmin=0, vmax=0.5)
-        demo_utils.plot_image(recon_mace[t,display_slice,:,:], title=f'MACE reconstruction, axial slice {display_slice}, time point {t}',
-                              filename=os.path.join(output_dir, f'recon_mace_slice{display_slice}_time{t}.png'), vmin=0, vmax=0.5)
+        demo_utils.plot_image(phantom[t,display_slice,:,:], 
+                              title=f"phantom, axial slice {display_slice}, time point {t}", 
+                              filename=os.path.join(output_dir, f"phantom_slice{display_slice}_time{t}.png"), 
+                              vmin=0, vmax=0.5)
+        demo_utils.plot_image(recon_mace[t,display_slice,:,:], title=f"MACE reconstruction, axial slice {display_slice}, time point {t}",
+                              filename=os.path.join(output_dir, f"recon_mace_slice{display_slice}_time{t}.png"), vmin=0, vmax=0.5)
 
     # Plot 3D phantom and recon image volumes as gif images.
     demo_utils.plot_gif(phantom_orig[t], output_dir, f'phantom_original_{t}', vmin=0, vmax=0.5)
