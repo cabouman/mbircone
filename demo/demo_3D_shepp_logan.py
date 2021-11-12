@@ -21,7 +21,7 @@ delta_pixel_detector = 0.9
 delta_pixel_image = 1
 channel_offset = 0
 row_offset = 0
-max_iterations = 100
+max_iterations = 20
 
 # Display parameters
 vmin = 1.0
@@ -75,15 +75,11 @@ print('sino shape = ', np.shape(sino), sino.dtype)
 plot_image(sino[display_view, :, :], title='sino', filename='output/3D_shepp_logan/sino-shepp-logan-3D-view(%.2f).png' % angles[0])
 # plot_gif(sino, 'output', 'sino-shepp-logan-3D')
 
-#weights = mbircone.cone3D.calc_weights(sino, weight_type='transmission')
-weights = np.zeros(np.shape(sino))
-
 recon = mbircone.cone3D.recon(sino, angles,
                               dist_source_detector=dist_source_detector, magnification=magnification,
                               delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image,
                               channel_offset=channel_offset, row_offset=row_offset,
-                              sharpness=sharpness, snr_db=snr_db, max_iterations=max_iterations,
-                              weights=weights)
+                              sharpness=sharpness, snr_db=snr_db, max_iterations=max_iterations)
 
 print('recon shape = ', np.shape(recon))
 np.save('output/3D_shepp_logan/recon.npy', recon)
