@@ -576,7 +576,12 @@ def recon(sino, angles, dist_source_detector, magnification,
         sysmatrix_fname_tmp = _gen_sysmatrix_fname_tmp(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
         ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, sysmatrix_fname_tmp, verbose=verbose)
         os.rename(sysmatrix_fname_tmp, sysmatrix_fname)
-
+    
+    # make sure that weights do not contain negative entries
+    # if weights is provided, and negative entry exists, then do not use the provided weights
+    if not ((weights is None) or (np.amin(weights) >= 0.0)):
+        warnings.warn("Parameter weights contains negative values; Setting weights = None.")
+        weights = None
     # Set automatic values for weights
     if weights is None:
         weights = calc_weights(sino, weight_type)
