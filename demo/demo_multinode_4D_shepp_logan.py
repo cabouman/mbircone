@@ -75,9 +75,8 @@ if __name__ == '__main__':
             maximum_memory_per_node=configs['cluster_params']['maximum_memory_per_node'],
             maximum_allowable_walltime=configs['cluster_params']['maximum_allowable_walltime'],
             system_specific_args=configs['cluster_params']['system_specific_args'],
-            death_timeout=configs['cluster_params']['death_timeout'],
-            local_directory=configs['cluster_params']['local_directory'].replace('$USER', getpass.getuser()),
-            log_directory=configs['cluster_params']['log_directory'].replace('$USER', getpass.getuser()))
+            local_directory=configs['cluster_params']['local_directory'],
+            log_directory=configs['cluster_params']['log_directory'])
 
         # Automatically set number of parallel jobs to distribute to a parallel cluster.
         if configs['cluster_params']['num_nodes'] is None:

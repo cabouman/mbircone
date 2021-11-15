@@ -4,6 +4,7 @@ from dask.distributed import Client, as_completed
 import time
 import pprint as pp
 import socket
+import getpass
 
 
 def get_cluster_ticket(job_queue_system_type,
@@ -53,6 +54,19 @@ def get_cluster_ticket(job_queue_system_type,
         print('The parameter job_queue_system_type should be one of [\'SGE\', \'SLURM\', \'LocalHost\']')
         print('Run the code without dask parallel.')
         return None, 0
+
+    # None type handling
+    if not isinstance(system_specific_args, str):
+        system_specific_args = ''
+
+    if not isinstance(local_directory, str):
+        local_directory = './'
+
+    if not isinstance(log_directory, str):
+        log_directory = './'
+
+    local_directory = local_directory.replace('$USER', getpass.getuser())
+    log_directory = log_directory.replace('$USER', getpass.getuser())
 
     # Deploy Dask on multi-nodes using job-queuing system Sun Grid Engine.
     if job_queue_system_type == 'SGE':
