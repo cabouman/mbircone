@@ -48,15 +48,16 @@ if __name__ == '__main__':
     # API of dask_jobqueue https://jobqueue.dask.org/en/latest/api.html
     # API of https://docs.dask.org/en/latest/setup/single-distributed.html#localcluster
     if args.configs_path is None:
-        num_cpus = cpu_count(logical=False)
-        if num_cpus >= 4:
-            num_worker_per_node = int(np.sqrt(num_cpus))
+        num_cores = cpu_count(logical=False)
+        if num_cores >= 4:
+            num_worker_per_node = int(np.sqrt(num_cores))
         else:
-            num_worker_per_node = num_cpus
+            num_worker_per_node = num_cores
         cluster, maximum_possible_nb_worker = mbircone.multinode.get_cluster_ticket('LocalHost',
-                                                                                    num_worker_per_node=num_worker_per_node)
-        num_threads = num_cpus // num_worker_per_node
-
+                                                                                    num_nodes=None,
+                                                                                    num_worker_per_node=num_worker_per_node,
+                                                                                    num_threads_per_worker=None)
+        num_threads = num_cores // num_worker_per_node
         # In this demo, distribute one job to each worker.
         num_parallel = num_worker_per_node
 
@@ -66,25 +67,26 @@ if __name__ == '__main__':
         # Set openmp number of threads
         num_threads = configs['cluster_params']['num_threads_per_worker']
 
-        if configs['job_queue_system_type'] == 'LocalHost':
-            cluster, maximum_possible_nb_worker = mbircone.multinode.get_cluster_ticket(
-                configs['job_queue_system_type'], num_worker_per_node=configs['cluster_params']['num_worker_per_node'])
-            # In this demo, distribute one job to each worker.
-            num_parallel = configs['cluster_params']['num_worker_per_node']
+        cluster, maximum_possible_nb_worker = mbircone.multinode.get_cluster_ticket(
+            job_queue_system_type=configs['job_queue_system_type'],
+            num_nodes=configs['cluster_params']['num_nodes'],
+            num_worker_per_node=configs['cluster_params']['num_worker_per_node'],
+            num_threads_per_worker=configs['cluster_params']['num_threads_per_worker'],
+            maximum_memory_per_node=configs['cluster_params']['maximum_memory_per_node'],
+            maximum_allowable_walltime=configs['cluster_params']['maximum_allowable_walltime'],
+            system_specific_args=configs['cluster_params']['system_specific_args'],
+            death_timeout=configs['cluster_params']['death_timeout'],
+            local_directory=configs['cluster_params']['local_directory'].replace('$USER', getpass.getuser()),
+            log_directory=configs['cluster_params']['log_directory'].replace('$USER', getpass.getuser()))
+
+        # Automatically set number of parallel jobs to distribute to a parallel cluster.
+        if configs['cluster_params']['num_nodes'] is None:
+            num_nodes = 1
         else:
-            cluster, maximum_possible_nb_worker = mbircone.multinode.get_cluster_ticket(
-                job_queue_system_type=configs['job_queue_system_type'],
-                num_nodes=configs['cluster_params']['num_nodes'],
-                num_worker_per_node=configs['cluster_params']['num_worker_per_node'],
-                num_threads_per_worker=configs['cluster_params']['num_threads_per_worker'],
-                maximum_memory_per_node=configs['cluster_params']['maximum_memory_per_node'],
-                maximum_allowable_walltime=configs['cluster_params']['maximum_allowable_walltime'],
-                system_specific_args=configs['cluster_params']['system_specific_args'],
-                death_timeout=configs['cluster_params']['death_timeout'],
-                local_directory=configs['cluster_params']['local_directory'].replace('$USER', getpass.getuser()),
-                log_directory=configs['cluster_params']['log_directory'].replace('$USER', getpass.getuser()))
-            # In this demo, distribute one job to each worker.
-            num_parallel = configs['cluster_params']['num_worker_per_node'] * configs['cluster_params']['num_nodes']
+            num_nodes = configs['cluster_params']['num_nodes']
+        # In this demo, distribute one job to each worker.
+        num_parallel = configs['cluster_params']['num_worker_per_node'] * num_nodes
+
     print(cluster)
     print("Parallel compute 3D conebeam reconstruction on %d timepoints.\n" % num_parallel)
 
