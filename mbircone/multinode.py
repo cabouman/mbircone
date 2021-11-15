@@ -13,17 +13,20 @@ def get_cluster_ticket(job_queue_system_type,
                        maximum_memory_per_node=None, maximum_allowable_walltime=None,
                        system_specific_args="",
                        local_directory='./', log_directory='./'):
-    """A utility to return a ticket needed for :py:func:`~multinode.scatter_gather` to access a parallel cluster.
-    On SLURM, you can use sinfo to get information about your cluster configuration.
+    """
+    A utility to return a ticket needed for :py:func:`~multinode.scatter_gather` to access a parallel cluster.
+
+    - On SLURM, you can use sinfo to get information about your cluster configuration.
+    - On SGE, you can use qhost to get information about your cluster configuration.
 
     Args:
         job_queue_system_type (string): One of 'SGE' (Sun Grid Engine), 'SLURM', 'LocalHost'
 
-        num_nodes (int, optional): Requested number of nodes for parallel computation.
+        num_nodes (int): Requested number of nodes for parallel computation.
 
-        num_worker_per_node (int, optional): Requested number of workers to be used in a node.
+        num_worker_per_node (int): Requested number of workers to be used in a node.
 
-        num_threads_per_worker (int, optional): Requested number of threads to be used in a worker.
+        num_threads_per_worker (int): Requested number of threads to be used in a worker.
 
         maximum_memory_per_node (str, optional): [Default=None] Requested maximum memory per node, e.g. '100MB' or '16GB'.
             If None, the scheduler will allocate a system-determined amount per node.
@@ -116,9 +119,10 @@ def get_cluster_ticket(job_queue_system_type,
 
 
 def scatter_gather(func, constant_args={}, variable_args_list=[], cluster_ticket=None, min_workers=1, verbose=1):
-    """Distribute a function call across multiple nodes, as specified by the `cluster` argument.  The given function,
-    func, is called with a set of keyword arguments, some that are the same for all calls, as specified in
-    constant_args, and some that vary with each call, as specified in variable_args_list.
+    """
+    Distribute a function call across multiple nodes, as specified by the `cluster_ticket` argument.
+    The given function, func, is called with a set of keyword arguments, some that are the same for all calls,
+    as specified in constant_args, and some that vary with each call, as specified in variable_args_list.
 
     Returns a list obtained by collecting the output from each call of func.  The length of the output list is the
     length of variable_args_list.
@@ -144,7 +148,7 @@ def scatter_gather(func, constant_args={}, variable_args_list=[], cluster_ticket
 
     Returns:
         A list obtained by collecting the output from each call of func.  The length of the output list is the
-            length of variable_args_list.  Each entry in the list will be the output of one call of func.
+        length of variable_args_list.  Each entry in the list will be the output of one call of func.
 
     Examples:
         In the example below, we define a function linear_func with arguments x_1, a, b.  We call this function
