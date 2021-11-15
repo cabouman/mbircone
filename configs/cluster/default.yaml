@@ -6,8 +6,6 @@ cluster_params:
   maximum_allowable_walltime:
   maximum_memory_per_node:
   death_timeout:
+  system_specific_args:
   local_directory:
   log_directory:
-  infiniband_flag:
-  par_env:
-  queue_sys_opt:

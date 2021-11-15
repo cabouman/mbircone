@@ -48,38 +48,24 @@ def get_cluster_ticket(job_queue_system_type,
         - **maximum_possible_nb_worker** (int): Maximum possible number of workers that we can request to start the jobs deployment.
     """
 
-    # This function currently only support 3 types of job-queuing system.
+    # This function currently only supports 3 types of job-queuing system.
     if job_queue_system_type not in ['SGE', 'SLURM', 'LocalHost']:
         print('The parameter job_queue_system_type should be one of [\'SGE\', \'SLURM\', \'LocalHost\']')
         print('Run the code without dask parallel.')
         return None, 0
 
-    # Handle None input for some arguments. None input may happen when read those parameters from a configuration file.
-    if infiniband_arg is None:
-        infiniband_arg = ""
-
-    if par_env is None or par_env == "":
-        par_env = "openmpi"
-
-    if queue_sys_opt is None:
-        queue_sys_opt = []
-
     # Deploy Dask on multi-nodes using job-queuing system Sun Grid Engine.
     if job_queue_system_type == 'SGE':
         from dask_jobqueue import SGECluster
-
-        # Append infiniband_flag and openmpi paralell environment to queue_sys_opt.
-        # All options in queue_sys_opt will be added behind the submission command.
-        if infiniband_arg != "":
-            queue_sys_opt.append(infiniband_arg)
-        queue_sys_opt.append('-pe %s %d' % (par_env, num_threads_per_worker * num_worker_per_node))
 
         cluster = SGECluster(processes=num_worker_per_node,
                              n_workers=num_worker_per_node,
                              walltime=maximum_allowable_walltime,
                              memory=maximum_memory_per_node,
                              cores=num_worker_per_node,
-                             job_extra=queue_sys_opt,
+                             # SGECluster does not support job_cpu, however, you can still request number of cores/node
+                             # by passing argument to the job scheduling system with system_specific_args.
+                             job_extra=[system_specific_args],
                              local_directory=local_directory,
                              log_directory=log_directory)
         cluster.scale(jobs=num_nodes)
@@ -90,17 +76,13 @@ def get_cluster_ticket(job_queue_system_type,
     if job_queue_system_type == 'SLURM':
         from dask_jobqueue import SLURMCluster
 
-        # Append infiniband_flag to queue_sys_opt.
-        # All options in queue_sys_opt will add behind the submission command.
-        queue_sys_opt.append(infiniband_arg)
-
         cluster = SLURMCluster(processes=num_worker_per_node,
                                n_workers=num_worker_per_node,
                                walltime=maximum_allowable_walltime,
                                memory=maximum_memory_per_node,
                                # env_extra=['module load anaconda', 'source activate mbircone'],
                                cores=num_worker_per_node,
-                               job_extra=queue_sys_opt,
+                               job_extra=[system_specific_args],
                                job_cpu=num_threads_per_worker * num_worker_per_node,
                                local_directory=local_directory,
                                log_directory=log_directory)
