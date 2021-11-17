@@ -293,7 +293,7 @@ double surrogateCoeffQGGMRF(double Delta, struct ReconParams *reconParams)
     sigmaX = reconParams->sigmaX;
     qmp = q - p;
     
-    if(Delta == 0.0)
+    if(fabs(Delta) < 1e-5)
     {
     	/**
     	 * 		rho''(0)           1
