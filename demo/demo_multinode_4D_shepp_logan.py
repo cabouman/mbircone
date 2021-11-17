@@ -152,6 +152,7 @@ if __name__ == '__main__':
     print('Generated phantom shape = ', np.shape(phantom))
     phantom = mbircone.cone3D.pad_roi2ror(phantom, boundary_size)
     print('Padded phantom shape = ', np.shape(phantom))
+    print()
 
     # ###########################################################################
     # Generate a 4D shepp logan phantom.
@@ -209,7 +210,7 @@ if __name__ == '__main__':
     # Perform multinode reconstruction
     # ###########################################################################
 
-    print("Reconstruct 3D phantom in all timepoints ...")
+    print("Reconstructing 3D phantom in all timepoints ...")
     # scatter_gather parallel computes mbircone.cone3D.recon
     # Reconstruct 3D phantom in all timepoints using mbircone.cone3D.recon.
     # Create the projection angles and argument lists, and distribute to workers.
