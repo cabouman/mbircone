@@ -122,15 +122,16 @@ def _crop_scans(obj_scan, blank_scan, dark_scan, crop_factor=[(0, 0), (1, 1)]):
     return obj_scan, blank_scan, dark_scan
 
 
-def _compute_sino_from_scans(obj_scan, blank_scan, dark_scan):
-    """Compute sinogram data base on given object scan, blank scan, and dark scan.
-
+def _compute_sino_and_weights_mask_from_scans(obj_scan, blank_scan, dark_scan):
+    """ Compute sinogram data and weights mask base on given object scan, blank scan, and dark scan. The weights mask is used to filter out negative values in the corrected object scan and blank scan. For real CT dataset weights mask should be used when calculating sinogram weights.
     Args:
-        obj_scan (float): A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
-        blank_scan (float) : A blank scan. 3D numpy array, (1, num_slices, num_channels).
-        dark_scan (float):  A dark scan. 3D numpy array, (1, num_slices, num_channels).
+        obj_scan (ndarray): A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
+        blank_scan (ndarray) : A blank scan. 3D numpy array, (1, num_slices, num_channels).
+        dark_scan (ndarray):  A dark scan. 3D numpy array, (1, num_slices, num_channels).
     Returns:
-        ndarray (float): Preprocessed sinograms. 3D numpy array, (num_views, num_slices, num_channels).
+        A tuple (sino, weights_mask) containing:
+        - **sino** (*ndarray*): Preprocessed sinogram with shape (num_views, num_slices, num_channels).
+        - **weights_mask** (*ndarray*): A binary mask for sinogram weights. 
 
     """
     blank_scan_mean = 0 * obj_scan + np.average(blank_scan, axis=0)
@@ -138,16 +139,13 @@ def _compute_sino_from_scans(obj_scan, blank_scan, dark_scan):
 
     obj_scan_corrected = (obj_scan - dark_scan_mean)
     blank_scan_corrected = (blank_scan_mean - dark_scan_mean)
-
-    good_pixels = (obj_scan_corrected > 0) & (blank_scan_corrected > 0)
-
-    normalized_scan = np.zeros(obj_scan_corrected.shape)
-    normalized_scan[good_pixels] = obj_scan_corrected[good_pixels] / blank_scan_corrected[good_pixels]
-
+    
     sino = np.zeros(obj_scan_corrected.shape)
-    sino[normalized_scan > 0] = -np.log(normalized_scan[normalized_scan > 0])
+    sino = -np.log(obj_scan_corrected / blank_scan_corrected)
 
-    return sino
+    weights_mask = (obj_scan_corrected > 0) & (blank_scan_corrected > 0)
+
+    return sino, weights_mask
 
 
 def _compute_views_index_list(view_range, num_views):
@@ -360,10 +358,23 @@ def NSI_to_MBIRCONE_params(NSI_system_params):
     return geo_params
 
 
+def background_calibration(sino, view_idx_list, background_box_info_list):
+    avg_offset = 0.
+    assert(len(view_idx_list)==len(background_box_info), 'View idx list and background box info list must have the same length!')
+    if not view_idx_list:
+        return 0.
+    for view_idx,box_info in zip(view_idx_list, background_box_info_list):
+        (i_start, j_start, box_height, box_width) = box_info
+        avg_offset += np.mean(sino[view_idx, i_start:i_start+height, j_start:j_start+width])        
+    avg_offset /= len(view_idx_list)
+    return avg_offset
+
+
 def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
                view_range=None, total_angles=360, num_acquired_scans=2000,
                rotation_direction="positive", downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
-               num_time_points=1, time_point=0):
+               num_time_points=1, time_point=0,
+               background_box_info_list = []):
     """Return preprocessed sinogram and angles list for reconstruction.
 
     Args:
@@ -385,7 +396,7 @@ def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
 
         - **sino** (*ndarray, float*): Preprocessed 3D sinogram.
 
-        - **angles** (*array, double*): 1D array of angles corresponding to preprocessed sinogram.
+        - **angles** (*ndarray, double*): 1D array of angles corresponding to preprocessed sinogram. It is assumed that the rotation of each view is equally spaced.
 
     """
 
@@ -396,6 +407,7 @@ def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
     view_ids = _select_contiguous_subset(view_ids, num_time_points, time_point)
     angles = _compute_angles_list(view_ids, num_acquired_scans, total_angles, rotation_direction)
     obj_scan = _read_scan_dir(path_radiographs, view_ids)
+
 
     # Should deal with situation when input is None.
     if path_blank is not None:
@@ -420,5 +432,6 @@ def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
     obj_scan, blank_scan, dark_scan = _crop_scans(obj_scan, blank_scan, dark_scan,
                                                   crop_factor=crop_factor)
 
-    sino = _compute_sino_from_scans(obj_scan, blank_scan, dark_scan)
-    return sino.astype(np.float32), angles.astype(np.float64)
+    sino, weights_mask = _compute_sino_and_weights_mask_from_scans(obj_scan, blank_scan, dark_scan)
+    sino = sino - background_calibration(sino, background_box_info_list)
+    return sino.astype(np.float32), angles.astype(np.float64), weights_mask.astype(np.float32)
