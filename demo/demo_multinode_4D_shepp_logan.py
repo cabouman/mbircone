@@ -180,7 +180,7 @@ if __name__ == '__main__':
     # Generate sinogram
     # ###########################################################################
 
-    print("Generating sinogram data by projecting each phantom in all timepoints ... \n")
+    print("Generating sinogram data by projecting each phantom in all timepoints ...")
     # scatter_gather parallel computes mbircone.cone3D.project
     # Generate sinogram data by projecting each phantom in phantom list.
     # Create the projection angles and argument lists, and distribute to workers.
