@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image
 import warnings
 import math
-
+from mbircone import cone3D
 
 def _read_scan_img(img_path):
     """Read and return single image from a ConeBeam Scan.
@@ -126,21 +126,19 @@ def _compute_sino_and_weights_mask_from_scans(obj_scan, blank_scan, dark_scan):
     """ Compute sinogram data and weights mask base on given object scan, blank scan, and dark scan. The weights mask is used to filter out negative values in the corrected object scan and blank scan. For real CT dataset weights mask should be used when calculating sinogram weights.
     Args:
         obj_scan (ndarray): A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
-        blank_scan (ndarray) : A blank scan. 3D numpy array, (1, num_slices, num_channels).
-        dark_scan (ndarray):  A dark scan. 3D numpy array, (1, num_slices, num_channels).
+        blank_scan (ndarray) : A blank scan. 3D numpy array, (num_scans, num_slices, num_channels).
+        dark_scan (ndarray):  A dark scan. 3D numpy array, (num_scans, num_slices, num_channels).
     Returns:
         A tuple (sino, weights_mask) containing:
         - **sino** (*ndarray*): Preprocessed sinogram with shape (num_views, num_slices, num_channels).
         - **weights_mask** (*ndarray*): A binary mask for sinogram weights. 
 
     """
-    blank_scan_mean = 0 * obj_scan + np.average(blank_scan, axis=0)
-    dark_scan_mean = 0 * obj_scan + np.average(dark_scan, axis=0)
+    blank_scan_mean = 0 * obj_scan + np.mean(blank_scan, axis=0, keepdims=True)
+    dark_scan_mean = 0 * obj_scan + np.mean(dark_scan, axis=0, keepdims=True)
 
     obj_scan_corrected = (obj_scan - dark_scan_mean)
     blank_scan_corrected = (blank_scan_mean - dark_scan_mean)
-    
-    sino = np.zeros(obj_scan_corrected.shape)
     sino = -np.log(obj_scan_corrected / blank_scan_corrected)
 
     weights_mask = (obj_scan_corrected > 0) & (blank_scan_corrected > 0)
@@ -358,15 +356,15 @@ def NSI_to_MBIRCONE_params(NSI_system_params):
     return geo_params
 
 
-def background_calibration(sino, view_idx_list, background_box_info_list):
+def background_calibration(sino, background_box_info_list):
     avg_offset = 0.
-    assert(len(view_idx_list)==len(background_box_info), 'View idx list and background box info list must have the same length!')
-    if not view_idx_list:
+    if not background_box_info_list:
         return 0.
-    for view_idx,box_info in zip(view_idx_list, background_box_info_list):
-        (i_start, j_start, box_height, box_width) = box_info
+    for box_info in background_box_info_list:
+        view_idx = box_info[0]
+        (i_start, j_start, box_height, box_width) = box_info[1]
         avg_offset += np.mean(sino[view_idx, i_start:i_start+height, j_start:j_start+width])        
-    avg_offset /= len(view_idx_list)
+    avg_offset /= len(background_box_info_list)
     return avg_offset
 
 
@@ -374,7 +372,7 @@ def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
                view_range=None, total_angles=360, num_acquired_scans=2000,
                rotation_direction="positive", downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
                num_time_points=1, time_point=0,
-               background_box_info_list = []):
+               background_box_info_list=[]):
     """Return preprocessed sinogram and angles list for reconstruction.
 
     Args:
@@ -431,7 +429,9 @@ def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
     # cropping in pixels
     obj_scan, blank_scan, dark_scan = _crop_scans(obj_scan, blank_scan, dark_scan,
                                                   crop_factor=crop_factor)
-
+    print("obj_scan shape = ",np.shape(obj_scan))
+    print("blank_scan shape = ",np.shape(blank_scan))
+    print("dark_scan shape = ",np.shape(dark_scan))
     sino, weights_mask = _compute_sino_and_weights_mask_from_scans(obj_scan, blank_scan, dark_scan)
     sino = sino - background_calibration(sino, background_box_info_list)
-    return sino.astype(np.float32), angles.astype(np.float64), weights_mask.astype(np.float32)
+    return obj_scan, blank_scan, dark_scan, sino.astype(np.float32), angles.astype(np.float64), weights_mask.astype(np.float32)
