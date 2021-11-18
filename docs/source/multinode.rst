@@ -1,7 +1,7 @@
 mbircone.multinode
------------------------
+------------------
 .. automodule:: mbircone.multinode
-   :members:
+   :members: get_cluster_ticket, scatter_gather
    :undoc-members:
    :show-inheritance:
 

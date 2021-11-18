@@ -4,6 +4,7 @@ from dask.distributed import Client, as_completed
 import time
 import pprint as pp
 import socket
+import getpass
 
 
 def get_cluster_ticket(job_queue_system_type,
@@ -16,7 +17,8 @@ def get_cluster_ticket(job_queue_system_type,
     The defaults are set to use one python thread per node under the assumption that the python thread calls C code
     that creates a number of threads equal to the number of physical cores in the node.
 
-    On SLURM, you can use sinfo to get information about your cluster configuration.
+    - On SLURM, you can use sinfo to get information about your cluster configuration.
+    - On SGE, you can use qhost to get information about your cluster configuration.
 
     Args:
         job_queue_system_type (string): One of 'SGE' (Sun Grid Engine), 'SLURM', 'LocalHost'
@@ -49,38 +51,37 @@ def get_cluster_ticket(job_queue_system_type,
         - **maximum_possible_nb_worker** (int): Maximum possible number of workers that we can request to start the jobs deployment.
     """
 
-    # This function currently only support 3 types of job-queuing system.
+    # This function currently only supports 3 types of job-queuing system.
     if job_queue_system_type not in ['SGE', 'SLURM', 'LocalHost']:
         print('The parameter job_queue_system_type should be one of [\'SGE\', \'SLURM\', \'LocalHost\']')
         print('Run the code without dask parallel.')
         return None, 0
 
-    # Handle None input for some arguments. None input may happen when read those parameters from a configuration file.
-    if infiniband_arg is None:
-        infiniband_arg = ""
+    # None type handling
+    if not isinstance(system_specific_args, str):
+        system_specific_args = ''
 
-    if par_env is None or par_env == "":
-        par_env = "openmpi"
+    if not isinstance(local_directory, str):
+        local_directory = './'
 
-    if queue_sys_opt is None:
-        queue_sys_opt = []
+    if not isinstance(log_directory, str):
+        log_directory = './'
+
+    local_directory = local_directory.replace('$USER', getpass.getuser())
+    log_directory = log_directory.replace('$USER', getpass.getuser())
 
     # Deploy Dask on multi-nodes using job-queuing system Sun Grid Engine.
     if job_queue_system_type == 'SGE':
         from dask_jobqueue import SGECluster
-
-        # Append infiniband_flag and openmpi paralell environment to queue_sys_opt.
-        # All options in queue_sys_opt will be added behind the submission command.
-        if infiniband_arg != "":
-            queue_sys_opt.append(infiniband_arg)
-        queue_sys_opt.append('-pe %s %d' % (par_env, num_threads_per_worker * num_worker_per_node))
 
         cluster = SGECluster(processes=num_worker_per_node,
                              n_workers=num_worker_per_node,
                              walltime=maximum_allowable_walltime,
                              memory=maximum_memory_per_node,
                              cores=num_worker_per_node,
-                             job_extra=queue_sys_opt,
+                             # SGECluster does not support job_cpu, however, you can still request number of cores/node
+                             # by passing argument to the job scheduling system with system_specific_args.
+                             job_extra=[system_specific_args],
                              local_directory=local_directory,
                              log_directory=log_directory)
         cluster.scale(jobs=num_nodes)
@@ -91,17 +92,13 @@ def get_cluster_ticket(job_queue_system_type,
     if job_queue_system_type == 'SLURM':
         from dask_jobqueue import SLURMCluster
 
-        # Append infiniband_flag to queue_sys_opt.
-        # All options in queue_sys_opt will add behind the submission command.
-        queue_sys_opt.append(infiniband_arg)
-
         cluster = SLURMCluster(processes=num_worker_per_node,
                                n_workers=num_worker_per_node,
                                walltime=maximum_allowable_walltime,
                                memory=maximum_memory_per_node,
                                # env_extra=['module load anaconda', 'source activate mbircone'],
                                cores=num_worker_per_node,
-                               job_extra=queue_sys_opt,
+                               job_extra=[system_specific_args],
                                job_cpu=num_threads_per_worker * num_worker_per_node,
                                local_directory=local_directory,
                                log_directory=log_directory)
@@ -123,7 +120,8 @@ def get_cluster_ticket(job_queue_system_type,
 
 
 def scatter_gather(cluster_ticket, func, constant_args={}, variable_args_list=[], min_nodes=None, verbose=1):
-    """Distribute a function call across multiple nodes, as specified by the `cluster` argument.  The given function,
+    """
+    Distribute a function call across multiple nodes, as specified by the `cluster` argument.  The given function,
     func, is called with a set of keyword arguments, some that are the same for all calls, as specified in
     constant_args, and some that vary with each call, as specified in variable_args_list.
 
@@ -152,8 +150,10 @@ def scatter_gather(cluster_ticket, func, constant_args={}, variable_args_list=[]
 
     Returns:
         A list obtained by collecting the output from each call of func.  The length of the output list is the
-            length of variable_args_list.  Each entry in the list will be the output of one call of func.
-
+        length of variable_args_list.  Each entry in the list will be the output of one call of func.
+"""
+    Check the example below to match the new interface.
+    """
     Examples:
         In the example below, we define a function linear_func with arguments x_1, a, b.  We call this function
         6 times, with a=2 and b=3 for each call and x_1 set to each of 0, 1, 2, 3, 4, 5 in separate calls to linear_func.

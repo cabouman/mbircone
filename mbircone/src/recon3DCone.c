@@ -251,7 +251,10 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
          */
         weightedNormSquared_e = computeSinogramWeightedNormSquared(sino, sino->e);
         weightedNormSquared_y = computeSinogramWeightedNormSquared(sino, sino->vox);
-        reconAux.relativeWeightedForwardError = sqrt(weightedNormSquared_e / weightedNormSquared_y);
+        if (weightedNormSquared_y>0.0) 
+            reconAux.relativeWeightedForwardError = sqrt(weightedNormSquared_e / weightedNormSquared_y);
+        else
+            reconAux.relativeWeightedForwardError = sqrt(weightedNormSquared_e);
 
         normSquared_e = computeNormSquaredFloatArray(&sino->e[0][0][0], N_beta*N_dv*N_dw);
         normSquared_y = computeNormSquaredFloatArray(&sino->vox[0][0][0], N_beta*N_dv*N_dw);
