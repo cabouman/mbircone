@@ -141,7 +141,7 @@ def _compute_sino_and_weights_mask_from_scans(obj_scan, blank_scan, dark_scan):
     blank_scan_corrected = (blank_scan_mean - dark_scan_mean)
     sino = -np.log(obj_scan_corrected / blank_scan_corrected)
 
-    weights_mask = (obj_scan_corrected > 0) & (blank_scan_corrected > 0)
+    weights_mask = (obj_scan_corrected > 0) & (blank_scan_corrected > 0) & (obj_scan_corrected<=blank_scan_corrected)
 
     return sino, weights_mask
 
@@ -356,15 +356,15 @@ def NSI_to_MBIRCONE_params(NSI_system_params):
     return geo_params
 
 
-def background_calibration(sino, background_box_info_list):
+def background_calibration(sino, background_view_list, background_box_info_list):
     avg_offset = 0.
-    if not background_box_info_list:
+    if not background_view_list:
         return 0.
-    for box_info in background_box_info_list:
-        view_idx = box_info[0]
-        (i_start, j_start, box_height, box_width) = box_info[1]
-        avg_offset += np.mean(sino[view_idx, i_start:i_start+height, j_start:j_start+width])        
-    avg_offset /= len(background_box_info_list)
+    for view_idx, box_info in zip(background_view_list, background_box_info_list):
+        print(f"box used in view {view_idx} for calbiration: (x,y,width,height)=", box_info)
+        (x, y, box_width, box_height) = box_info
+        avg_offset += np.mean(sino[view_idx, y:y+box_height, x:x+box_width])        
+    avg_offset /= len(background_view_list)
     return avg_offset
 
 
@@ -372,7 +372,7 @@ def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
                view_range=None, total_angles=360, num_acquired_scans=2000,
                rotation_direction="positive", downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
                num_time_points=1, time_point=0,
-               background_box_info_list=[]):
+               background_view_list=[], background_box_info_list=[]):
     """Return preprocessed sinogram and angles list for reconstruction.
 
     Args:
@@ -389,13 +389,17 @@ def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
             Two points to define the bounding box. Sequence of [(r0, c0), (r1, c1)] or [r0, c0, r1, c1], where 1>=r1 >= r0>=0 and 1>=c1 >= c0>=0.
         num_time_points (int): [Default=1] Total number of time points.
         time_point (int): [Default=0] Index of the time point we want to use for 3D reconstruction.
+        background_view_list ([int]): A list of view indices indicating the views corresponding to the boxes specified in `background_box_info_list`. It should have the same length as `background_box_info_list`.
+        background_box_info_list ([(x,y,width,height)]): A list of tuples indicating the information of the rectangular areas used for background offset calculation. It should have the same length as `background_view_list`.
+        
     Returns:
-        2-element tuple containing
+        3-element tuple containing
 
         - **sino** (*ndarray, float*): Preprocessed 3D sinogram.
 
         - **angles** (*ndarray, double*): 1D array of angles corresponding to preprocessed sinogram. It is assumed that the rotation of each view is equally spaced.
 
+        - **weights_mask** (*ndarray, double*): 3D binary array with the same shape as `sino`. `weights_mask` indicates where the weights should be set to 0.
     """
 
     if view_range is None:
@@ -405,7 +409,8 @@ def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
     view_ids = _select_contiguous_subset(view_ids, num_time_points, time_point)
     angles = _compute_angles_list(view_ids, num_acquired_scans, total_angles, rotation_direction)
     obj_scan = _read_scan_dir(path_radiographs, view_ids)
-
+    print("raw obj scan max value = ", np.max(obj_scan))
+    print("raw obj scan min value = ", np.min(obj_scan))
 
     # Should deal with situation when input is None.
     if path_blank is not None:
@@ -422,6 +427,9 @@ def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
     obj_scan = np.flip(obj_scan, axis=1)
     blank_scan = np.flip(blank_scan, axis=1)
     dark_scan = np.flip(dark_scan, axis=1)
+    
+    print("raw blank scan max value = ", np.max(blank_scan))
+    print("raw blank scan min value = ", np.min(blank_scan))
 
     # downsampling in pixels
     obj_scan, blank_scan, dark_scan = _downsample_scans(obj_scan, blank_scan, dark_scan,
@@ -433,5 +441,7 @@ def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
     print("blank_scan shape = ",np.shape(blank_scan))
     print("dark_scan shape = ",np.shape(dark_scan))
     sino, weights_mask = _compute_sino_and_weights_mask_from_scans(obj_scan, blank_scan, dark_scan)
-    sino = sino - background_calibration(sino, background_box_info_list)
-    return obj_scan, blank_scan, dark_scan, sino.astype(np.float32), angles.astype(np.float64), weights_mask.astype(np.float32)
+    background_offset = background_calibration(sino, background_view_list, background_box_info_list)
+    print("background offset = ", background_offset)
+    sino = sino - background_offset
+    return sino.astype(np.float32), angles.astype(np.float64), weights_mask.astype(np.float32)
