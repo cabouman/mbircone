@@ -7,22 +7,23 @@ import socket
 
 
 def get_cluster_ticket(job_queue_system_type,
-                       num_nodes,
-                       num_worker_per_node, num_threads_per_worker,
+                       num_physical_cores_per_node,
+                       num_nodes=1,
                        maximum_memory_per_node=None, maximum_allowable_walltime=None,
                        system_specific_args="",
                        local_directory='./', log_directory='./'):
     """A utility to return a ticket needed for :py:func:`~multinode.scatter_gather` to access a parallel cluster.
+    The defaults are set to use one python thread per node under the assumption that the python thread calls C code
+    that creates a number of threads equal to the number of physical cores in the node.
+
     On SLURM, you can use sinfo to get information about your cluster configuration.
 
     Args:
         job_queue_system_type (string): One of 'SGE' (Sun Grid Engine), 'SLURM', 'LocalHost'
 
-        num_nodes (int, optional): Requested number of nodes for parallel computation.
+        num_physical_cores_per_node (int): Number of physical cores per node = (number of cpus) x (cores per cpu).
 
-        num_worker_per_node (int, optional): Requested number of workers to be used in a node.
-
-        num_threads_per_worker (int, optional): Requested number of threads to be used in a worker.
+        num_nodes (int): [Default=1] Requested number of nodes for parallel computation.
 
         maximum_memory_per_node (str, optional): [Default=None] Requested maximum memory per node, e.g. '100MB' or '16GB'.
             If None, the scheduler will allocate a system-determined amount per node.
@@ -116,10 +117,12 @@ def get_cluster_ticket(job_queue_system_type,
                                threads_per_worker=1)
         maximum_possible_nb_worker = num_worker_per_node
 
-    return cluster, maximum_possible_nb_worker
+    make cluster_ticket a dictionary including the num_nodes and the original ticket
+
+    return cluster_ticket, maximum_possible_nb_worker
 
 
-def scatter_gather(func, constant_args={}, variable_args_list=[], cluster_ticket=None, min_workers=1, verbose=1):
+def scatter_gather(cluster_ticket, func, constant_args={}, variable_args_list=[], min_nodes=None, verbose=1):
     """Distribute a function call across multiple nodes, as specified by the `cluster` argument.  The given function,
     func, is called with a set of keyword arguments, some that are the same for all calls, as specified in
     constant_args, and some that vary with each call, as specified in variable_args_list.
@@ -128,6 +131,10 @@ def scatter_gather(func, constant_args={}, variable_args_list=[], cluster_ticket
     length of variable_args_list.
 
     Args:
+        cluster_ticket (Object): A ticket used to access a specific cluster, that can be obtained from
+            :py:func:`~multinode.get_cluster_ticket`.  If cluster_ticket=None, the process will run in serial.
+            See `dask_jobqueue <https://jobqueue.dask.org/en/latest/api.html>`_ for more information.
+
         func (callable): A callable function with keyword arguments matching the entries in constant_args and
             variable_args_list.
 
@@ -136,12 +143,9 @@ def scatter_gather(func, constant_args={}, variable_args_list=[], cluster_ticket
         variable_args_list (list[dictionary]): [Default=[]] A list of dictionaries of keyword arguments.  Each
             dictionary contains arguments for one call of func.
 
-        cluster_ticket (Object): [Default=None] A ticket used to access a specific cluster, that can be obtained from
-            :py:func:`~multinode.get_cluster_ticket`.  If cluster_ticket=None, the process will run in serial.
-            See `dask_jobqueue <https://jobqueue.dask.org/en/latest/api.html>`_ for more information.
-
-        min_workers (int): [Default=1] Requested minimum number of workers to start parallel computation.
-            The job will not start until the number of workers >= min_workers.
+        min_nodes (int): [Default=None] Requested minimum number of workers to start parallel computation.
+            The job will not start until the number of nodes >= min_nodes, and once it starts, no further nodes will
+            be used.  The default is num_nodes from the cluster_ticket.
 
         verbose (int): [Default=0] Possible values are {0,1}, where 0 is quiet and 1 prints parallel computation
             process information.
@@ -169,7 +173,7 @@ def scatter_gather(func, constant_args={}, variable_args_list=[], cluster_ticket
         >>> # Parallel compute y=2*x+3 with respect to six different x_1.
         >>> variable_args_list = [{'x_1':i} for i in range(6)]
         >>> constant_args = {'a':2, 'b':3}
-        >>> scatter_gather(linear_func,variable_args_list,constant_args,cluster_ticket=cluster_ticket,min_workers=max_possible_num_worker)
+        >>> scatter_gather(linear_func,variable_args_list,constant_args,min_nodes=max_possible_num_worker)
         [3, 5, 7, 9, 11, 13]
 
     """
@@ -203,14 +207,16 @@ def scatter_gather(func, constant_args={}, variable_args_list=[], cluster_ticket
     client = Client(cluster_ticket)
     submission_list = list(range(len(variable_args_list)))
 
+    determine min_nodes from argument list or cluster_ticket
+
     # Start submit jobs until the client gets enough workers.
     while True:
         nb_workers = len(client.scheduler_info()["workers"])
         if verbose:
             print('Got {} workers'.format(nb_workers))
-        if nb_workers >= min_workers:
+        if nb_workers >= min_nodes:
             print('Got {} workers, start parallel computation.'.format(nb_workers))
-            break
+            break  does the scheduler keep getting nodes after this that go unused?
         time.sleep(1)
     if verbose:
         print('client:', client)
