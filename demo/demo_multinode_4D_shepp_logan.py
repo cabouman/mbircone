@@ -23,7 +23,6 @@ if __name__ == '__main__':
     \n\t * generating sinogram data by projecting each phantom in all timepoints. \
     \n\t * performing 3D reconstruction in all timepoints.')
 
-
     # ###########################################################################
     # Load the parameters from configuration file to obtain a cluster ticket.
     # ###########################################################################
@@ -67,6 +66,9 @@ if __name__ == '__main__':
     # Parallel computer verbose
     par_verbose = 0
 
+    # Number of parallel functions
+    num_parallel = 8
+
     # ###########################################################################
     # Obtain a cluster ticket.
     # ###########################################################################
@@ -81,14 +83,12 @@ if __name__ == '__main__':
             num_worker_per_node = int(np.sqrt(num_cores))
         else:
             num_worker_per_node = num_cores
-        cluster_ticket, maximum_possible_nb_worker = mbircone.multinode.get_cluster_ticket(
+        cluster_ticket = mbircone.multinode.get_cluster_ticket(
             'LocalHost',
+            num_physical_cores_per_node=None,
             num_nodes=None,
-            num_worker_per_node=num_worker_per_node,
-            num_threads_per_worker=None)
+        )
         num_threads = num_cores // num_worker_per_node
-        # In this demo, distribute one job to each worker.
-        num_parallel = num_worker_per_node
 
     else:
         # Load cluster setup parameter.
@@ -96,11 +96,10 @@ if __name__ == '__main__':
         # Set openmp number of threads
         num_threads = configs['cluster_params']['num_threads_per_worker']
 
-        cluster_ticket, maximum_possible_nb_worker = mbircone.multinode.get_cluster_ticket(
+        cluster_ticket= mbircone.multinode.get_cluster_ticket(
             job_queue_system_type=configs['job_queue_system_type'],
             num_nodes=configs['cluster_params']['num_nodes'],
-            num_worker_per_node=configs['cluster_params']['num_worker_per_node'],
-            num_threads_per_worker=configs['cluster_params']['num_threads_per_worker'],
+            num_physical_cores_per_node=configs['cluster_params']['num_physical_cores_per_node'],
             maximum_memory_per_node=configs['cluster_params']['maximum_memory_per_node'],
             maximum_allowable_walltime=configs['cluster_params']['maximum_allowable_walltime'],
             system_specific_args=configs['cluster_params']['system_specific_args'],
@@ -112,11 +111,7 @@ if __name__ == '__main__':
             num_nodes = 1
         else:
             num_nodes = configs['cluster_params']['num_nodes']
-        # In this demo, distribute one job to each worker.
-        num_parallel = configs['cluster_params']['num_worker_per_node'] * num_nodes
 
-    # Set minimum number of workers to start to maximum possible number of worker.
-    min_nb_start_worker = maximum_possible_nb_worker
 
     print(cluster_ticket)
     print("Parallel compute 3D conebeam reconstruction on %d timepoints.\n" % num_parallel)
@@ -159,22 +154,15 @@ if __name__ == '__main__':
     # ###########################################################################
 
     print("Generating 4D simulated data by rotating the 3D shepp logan phantom by increasing degree per time point ...")
-    # scatter_gather parallel computes ndimage.rotate
     # Generate 4D simulated data by rotating the 3D shepp logan phantom by increasing degree per time point.
     # Create the rotation angles and argument lists, and distribute to workers.
     phantom_rot_para = np.linspace(0, 180, num_parallel, endpoint=False)  # Phantom rotation angles.
-    variable_args_list = [{'angle': phantom_rot_ang} for phantom_rot_ang in phantom_rot_para]
-    constant_args = {'input': phantom,
-                     'order': 0,
-                     'mode': 'constant',
-                     'axes': (1, 2),
-                     'reshape': False}
-    phantom_list = mbircone.multinode.scatter_gather(ndimage.rotate,
-                                                     constant_args=constant_args,
-                                                     variable_args_list=variable_args_list,
-                                                     cluster_ticket=cluster_ticket,
-                                                     min_workers=min_nb_start_worker,
-                                                     verbose=par_verbose)
+    phantom_list = [ndimage.rotate(input=phantom,
+                                   angle=phantom_rot_ang,
+                                   order=0,
+                                   mode='constant',
+                                   axes=(1, 2),
+                                   reshape=False) for phantom_rot_ang in phantom_rot_para]
     print()
 
     # ###########################################################################
@@ -198,11 +186,11 @@ if __name__ == '__main__':
                      'delta_pixel_image': delta_pixel_image,
                      'channel_offset': channel_offset,
                      'row_offset': row_offset}
-    sino_list = mbircone.multinode.scatter_gather(mbircone.cone3D.project,
+    sino_list = mbircone.multinode.scatter_gather(cluster_ticket,
+                                                  mbircone.cone3D.project,
                                                   constant_args=constant_args,
                                                   variable_args_list=variable_args_list,
-                                                  cluster_ticket=cluster_ticket,
-                                                  min_workers=min_nb_start_worker,
+
                                                   verbose=par_verbose)
     print()
 
@@ -227,11 +215,10 @@ if __name__ == '__main__':
                      'max_iterations': max_iterations,
                      'num_threads': num_threads,
                      'verbose': 0}
-    recon_list = mbircone.multinode.scatter_gather(mbircone.cone3D.recon,
+    recon_list = mbircone.multinode.scatter_gather(cluster_ticket,
+                                                   mbircone.cone3D.recon,
                                                    constant_args=constant_args,
                                                    variable_args_list=variable_args_list,
-                                                   cluster_ticket=cluster_ticket,
-                                                   min_workers=min_nb_start_worker,
                                                    verbose=par_verbose)
 
     print("Reconstructed 4D image shape = ", np.array(recon_list).shape)

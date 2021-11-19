@@ -74,49 +74,46 @@ def get_cluster_ticket(job_queue_system_type,
     if job_queue_system_type == 'SGE':
         from dask_jobqueue import SGECluster
 
-        cluster = SGECluster(processes=num_worker_per_node,
-                             n_workers=num_worker_per_node,
+        cluster = SGECluster(processes=1,
+                             n_workers=1,
                              walltime=maximum_allowable_walltime,
                              memory=maximum_memory_per_node,
-                             cores=num_worker_per_node,
+                             cores=1,
                              # SGECluster does not support job_cpu, however, you can still request number of cores/node
                              # by passing argument to the job scheduling system with system_specific_args.
                              job_extra=[system_specific_args],
                              local_directory=local_directory,
                              log_directory=log_directory)
         cluster.scale(jobs=num_nodes)
-        maximum_possible_nb_worker = num_worker_per_node * num_nodes
         print(cluster.job_script())
 
     # Deploy Dask on multi-nodes using job-queuing system Slurm Wordload Manager.
     if job_queue_system_type == 'SLURM':
         from dask_jobqueue import SLURMCluster
 
-        cluster = SLURMCluster(processes=num_worker_per_node,
-                               n_workers=num_worker_per_node,
+        cluster = SLURMCluster(processes=1,
+                               n_workers=1,
                                walltime=maximum_allowable_walltime,
                                memory=maximum_memory_per_node,
                                # env_extra=['module load anaconda', 'source activate mbircone'],
-                               cores=num_worker_per_node,
+                               cores=1,
                                job_extra=[system_specific_args],
-                               job_cpu=num_threads_per_worker * num_worker_per_node,
+                               job_cpu=num_physical_cores_per_node,
                                local_directory=local_directory,
                                log_directory=log_directory)
         cluster.scale(jobs=num_nodes)
-        maximum_possible_nb_worker = num_worker_per_node * num_nodes
         print(cluster.job_script())
 
     # Deploy Dask on your local machine.
     if job_queue_system_type == 'LocalHost':
         from dask.distributed import LocalCluster
-        cluster = LocalCluster(n_workers=num_worker_per_node,
+        cluster = LocalCluster(n_workers=1,
                                processes=True,
                                threads_per_worker=1)
-        maximum_possible_nb_worker = num_worker_per_node
 
-    make cluster_ticket a dictionary including the num_nodes and the original ticket
-
-    return cluster_ticket, maximum_possible_nb_worker
+    # make cluster_ticket a dictionary including the num_nodes and the original ticket
+    cluster_ticket = {'cluster': cluster, 'num_nodes': num_nodes}
+    return cluster_ticket
 
 
 def scatter_gather(cluster_ticket, func, constant_args={}, variable_args_list=[], min_nodes=None, verbose=1):
@@ -152,7 +149,7 @@ def scatter_gather(cluster_ticket, func, constant_args={}, variable_args_list=[]
         A list obtained by collecting the output from each call of func.  The length of the output list is the
         length of variable_args_list.  Each entry in the list will be the output of one call of func.
 """
-    Check the example below to match the new interface.
+    # Check the example below to match the new interface.
     """
     Examples:
         In the example below, we define a function linear_func with arguments x_1, a, b.  We call this function
@@ -191,6 +188,9 @@ def scatter_gather(cluster_ticket, func, constant_args={}, variable_args_list=[]
             return_list.append(x)
         return return_list
 
+    cluster = cluster_ticket['cluster']
+    num_nodes = cluster_ticket['num_nodes']
+
     def parallel_func(t, variable_args):
         """
         # Define function that returns dictionary containing output, index, host name, processor ID, and completion time.
@@ -204,10 +204,14 @@ def scatter_gather(cluster_ticket, func, constant_args={}, variable_args_list=[]
 
     # Pass the cluster ticket to a dask client. The dask client will use the dask deployment to do parallel computation.
     # reference: `https://distributed.dask.org/en/latest/api.html#distributed.Client`
-    client = Client(cluster_ticket)
+    client = Client(cluster)
     submission_list = list(range(len(variable_args_list)))
 
-    determine min_nodes from argument list or cluster_ticket
+    # determine min_nodes from argument list or cluster_ticket
+    if min_nodes is None:
+        min_nodes = num_nodes
+    else:
+        min_nodes = np.min(min_nodes, num_nodes)
 
     # Start submit jobs until the client gets enough workers.
     while True:
@@ -216,7 +220,7 @@ def scatter_gather(cluster_ticket, func, constant_args={}, variable_args_list=[]
             print('Got {} workers'.format(nb_workers))
         if nb_workers >= min_nodes:
             print('Got {} workers, start parallel computation.'.format(nb_workers))
-            break  does the scheduler keep getting nodes after this that go unused?
+            break  # does the scheduler keep getting nodes after this that go unused?
         time.sleep(1)
     if verbose:
         print('client:', client)
