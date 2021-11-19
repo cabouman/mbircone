@@ -217,9 +217,9 @@ def scatter_gather(cluster_ticket, func, constant_args={}, variable_args_list=[]
     while True:
         nb_workers = len(client.scheduler_info()["workers"])
         if verbose:
-            print('Got {} workers'.format(nb_workers))
+            print('Got {} nodes'.format(nb_workers))
         if nb_workers >= min_nodes:
-            print('Got {} workers, start parallel computation.'.format(nb_workers))
+            print('Got {} nodes, start parallel computation.'.format(nb_workers))
             break  # does the scheduler keep getting nodes after this that go unused?
         time.sleep(1)
     if verbose:

@@ -93,13 +93,10 @@ if __name__ == '__main__':
     else:
         # Load cluster setup parameter.
         configs = load_yaml(args.configs_path)
-        # Set openmp number of threads
-        num_threads = configs['cluster_params']['num_threads_per_worker']
-
         cluster_ticket= mbircone.multinode.get_cluster_ticket(
             job_queue_system_type=configs['job_queue_system_type'],
-            num_nodes=configs['cluster_params']['num_nodes'],
             num_physical_cores_per_node=configs['cluster_params']['num_physical_cores_per_node'],
+            num_nodes=configs['cluster_params']['num_nodes'],
             maximum_memory_per_node=configs['cluster_params']['maximum_memory_per_node'],
             maximum_allowable_walltime=configs['cluster_params']['maximum_allowable_walltime'],
             system_specific_args=configs['cluster_params']['system_specific_args'],
@@ -213,7 +210,6 @@ if __name__ == '__main__':
                      'sharpness': sharpness,
                      'snr_db': snr_db,
                      'max_iterations': max_iterations,
-                     'num_threads': num_threads,
                      'verbose': 0}
     recon_list = mbircone.multinode.scatter_gather(cluster_ticket,
                                                    mbircone.cone3D.recon,
