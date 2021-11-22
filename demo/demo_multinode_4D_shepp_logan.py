@@ -33,7 +33,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Get configs path')
     parser.add_argument('--configs_path', type=str, default=None, help="Configs path")
     args = parser.parse_args()
-    save_config_dir = '../configs/multinode'
+    save_config_dir = './configs/multinode/'
 
     # ###########################################################################
     # Set the parameters to do the recon
