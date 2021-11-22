@@ -334,12 +334,23 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
 
     # Ask for the number of physical cores per node.
     while config['cluster_params']['num_physical_cores_per_node'] is None:
-        question = 'Please enter the number of physical cores you want in a node.'
+        question = 'Please enter the number of physical cores in a node.'
         sys.stdout.write(question)
 
         choice = input()
         if choice.isnumeric() and int(choice) >= 1:
             config['cluster_params']['num_physical_cores_per_node'] = choice
+        else:
+            sys.stdout.write("Please Enter a positive number.\n")
+
+    # Ask for the number of nodes.
+    while config['cluster_params']['num_nodes'] is None:
+        question = 'Please enter the number of nodes for parallel computation.'
+        sys.stdout.write(question)
+
+        choice = input()
+        if choice.isnumeric() and int(choice) >= 1:
+            config['cluster_params']['num_nodes'] = choice
         else:
             sys.stdout.write("Please Enter a positive number.\n")
 
@@ -363,13 +374,6 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
     choice = input()
     config['cluster_params']['maximum_memory_per_node'] = choice
 
-    # Ask for the maximum memory per node.
-    question = 'Please enter the maximum memory per node.'
-    prompt = 'E.g. \'100MB\' or \'16GB\'. If None, the scheduler will allocate a system-determined amount per node.'
-    sys.stdout.write(question)
-    sys.stdout.write(prompt)
-    choice = input()
-    config['cluster_params']['maximum_memory_per_node'] = choice
 
     # Ask for any additional arguments to pass to the job scheduling system.
     question = 'Please enter any additional arguments to pass to the job scheduling system.'
