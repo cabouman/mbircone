@@ -409,6 +409,6 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
     config['cluster_params']['local_directory'] = choice
 
     # Save arguments to yaml file for next time to use.
-    os.mkdir(save_config_dir, exist_ok=True)
+    os.makedirs(save_config_dir, exist_ok=True)
     save_dict_yaml(config, save_config_dir+save_config_name+'.yaml')
     return config
