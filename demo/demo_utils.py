@@ -334,7 +334,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
 
     # Ask for the number of physical cores per node.
     while config['cluster_params']['num_physical_cores_per_node'] is None:
-        question = 'Please enter the number of physical cores in a node.\n'
+        question = '\nPlease enter the number of physical cores in a node.\n'
         sys.stdout.write(question)
 
         choice = input()
