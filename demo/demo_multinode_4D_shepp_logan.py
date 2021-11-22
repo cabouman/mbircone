@@ -4,7 +4,7 @@ import mbircone
 import argparse
 import getpass
 from psutil import cpu_count
-from demo_utils import load_yaml, plt_cmp_3dobj
+from demo_utils import load_yaml, plt_cmp_3dobj, create_cluster_ticket_configs
 from scipy import ndimage
 
 if __name__ == '__main__':
@@ -33,6 +33,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Get configs path')
     parser.add_argument('--configs_path', type=str, default=None, help="Configs path")
     args = parser.parse_args()
+    save_config_dir = '../configs/multinode'
 
     # ###########################################################################
     # Set the parameters to do the recon
@@ -78,36 +79,30 @@ if __name__ == '__main__':
     # API of dask_jobqueue https://jobqueue.dask.org/en/latest/api.html
     # API of https://docs.dask.org/en/latest/setup/single-distributed.html#localcluster
     if args.configs_path is None:
-        num_cores = cpu_count(logical=False)
-        if num_cores >= 4:
-            num_worker_per_node = int(np.sqrt(num_cores))
-        else:
-            num_worker_per_node = num_cores
-        cluster_ticket = mbircone.multinode.get_cluster_ticket(
-            'LocalHost',
-            num_physical_cores_per_node=None,
-            num_nodes=None,
-        )
-        num_threads = num_cores // num_worker_per_node
+        # create output folder
+        os.makedirs(save_config_dir, exist_ok=True)
+        # Create a configuration dictionary for a cluster ticket, by collecting required information from terminal.
+        configs = create_cluster_ticket_configs(save_config_dir=save_config_dir)
 
     else:
         # Load cluster setup parameter.
         configs = load_yaml(args.configs_path)
-        cluster_ticket= mbircone.multinode.get_cluster_ticket(
-            job_queue_system_type=configs['job_queue_system_type'],
-            num_physical_cores_per_node=configs['cluster_params']['num_physical_cores_per_node'],
-            num_nodes=configs['cluster_params']['num_nodes'],
-            maximum_memory_per_node=configs['cluster_params']['maximum_memory_per_node'],
-            maximum_allowable_walltime=configs['cluster_params']['maximum_allowable_walltime'],
-            system_specific_args=configs['cluster_params']['system_specific_args'],
-            local_directory=configs['cluster_params']['local_directory'],
-            log_directory=configs['cluster_params']['log_directory'])
 
-        # Automatically set number of parallel jobs to distribute to a parallel cluster.
-        if configs['cluster_params']['num_nodes'] is None:
-            num_nodes = 1
-        else:
-            num_nodes = configs['cluster_params']['num_nodes']
+    cluster_ticket= mbircone.multinode.get_cluster_ticket(
+        job_queue_system_type=configs['job_queue_system_type'],
+        num_physical_cores_per_node=configs['cluster_params']['num_physical_cores_per_node'],
+        num_nodes=configs['cluster_params']['num_nodes'],
+        maximum_memory_per_node=configs['cluster_params']['maximum_memory_per_node'],
+        maximum_allowable_walltime=configs['cluster_params']['maximum_allowable_walltime'],
+        system_specific_args=configs['cluster_params']['system_specific_args'],
+        local_directory=configs['cluster_params']['local_directory'],
+        log_directory=configs['cluster_params']['log_directory'])
+
+    # Automatically set number of parallel jobs to distribute to a parallel cluster.
+    if configs['cluster_params']['num_nodes'] is None:
+        num_nodes = 1
+    else:
+        num_nodes = configs['cluster_params']['num_nodes']
 
 
     print(cluster_ticket)

@@ -1,4 +1,4 @@
-import os,sys
+import os, sys
 import numpy as np
 import matplotlib.pyplot as plt
 import imageio
@@ -6,6 +6,27 @@ import urllib.request
 import tarfile
 import yaml
 from PIL import Image
+from datetime import datetime
+from datatest import validate
+
+
+def strftime_format(format):
+    """Check if string satisfy the require format.
+        Code modified from reference: `https://datatest.readthedocs.io/en/stable/how-to/date-time-str.html`
+    Args:
+        format: A format code.
+
+    Returns:
+
+    """
+    def func(value):
+        try:
+            datetime.strptime(value, format)
+        except ValueError:
+            return False
+        return True
+    func.__doc__ = f'should use date format {format}'
+    return func
 
 def font_setting():
     SMALL_SIZE = 8
@@ -109,7 +130,6 @@ def plot_gif(x, save_dir, name, vmin=None, vmax=None):
     imageio.mimsave(save_dir + "/%s.gif" % name, images, fps=5)
 
 
-
 def plot_image(img, title=None, filename=None, vmin=None, vmax=None):
     """
     Function to display and save a 2D array as an image.
@@ -155,10 +175,10 @@ def image_resize(image, output_shape):
         ndarray: 3D numpy array containing interpolated image with shape (num_slices, num_rows, num_cols).
     """
 
-    image_resized = np.empty((image.shape[0],output_shape[0],output_shape[1]), dtype=image.dtype)
+    image_resized = np.empty((image.shape[0], output_shape[0], output_shape[1]), dtype=image.dtype)
     for i in range(image.shape[0]):
         PIL_image = Image.fromarray(image[i])
-        PIL_image_resized = PIL_image.resize((output_shape[1],output_shape[0]), resample=Image.BILINEAR)
+        PIL_image_resized = PIL_image.resize((output_shape[1], output_shape[0]), resample=Image.BILINEAR)
         image_resized[i] = np.array(PIL_image_resized)
 
     return image_resized
@@ -177,8 +197,8 @@ def download_and_extract(download_url, save_dir):
             In case whereno download is performed, the function will return path to the existing local file.
             In case where a tarball file is downloaded and extracted, the function will return the path to the parent directory where the file is extracted to, which is the save as ``save_dir``. 
     """
-    
-    is_download = True 
+
+    is_download = True
     local_file_name = download_url.split('/')[-1]
     save_path = os.path.join(save_dir, local_file_name)
     if os.path.exists(save_path):
@@ -191,20 +211,24 @@ def download_and_extract(download_url, save_dir):
             urllib.request.urlretrieve(download_url, save_path)
         except urllib.error.HTTPError as e:
             if e.code == 401:
-                raise RuntimeError(f'HTTP status code {e.code}: URL authentication failed! Currently we do not support downloading data from a url that requires authentication.')
+                raise RuntimeError(
+                    f'HTTP status code {e.code}: URL authentication failed! Currently we do not support downloading data from a url that requires authentication.')
             elif e.code == 403:
-                raise RuntimeError(f'HTTP status code {e.code}: URL forbidden! Please make sure the provided URL is public.')
+                raise RuntimeError(
+                    f'HTTP status code {e.code}: URL forbidden! Please make sure the provided URL is public.')
             elif e.code == 404:
-                raise RuntimeError(f'HTTP status code {e.code}: URL not Found! Please check and make sure the download URL provided is correct.')
+                raise RuntimeError(
+                    f'HTTP status code {e.code}: URL not Found! Please check and make sure the download URL provided is correct.')
             else:
-                raise RuntimeError(f'HTTP status code {e.code}: {e.reason}. For more details please refer to https://en.wikipedia.org/wiki/List_of_HTTP_status_codes')
+                raise RuntimeError(
+                    f'HTTP status code {e.code}: {e.reason}. For more details please refer to https://en.wikipedia.org/wiki/List_of_HTTP_status_codes')
         except urllib.error.URLError as e:
             raise RuntimeError('URLError raised! Please check your internet connection.')
         print(f"Download successful! File saved to {save_path}")
     else:
         print("Skipped data download and extraction step.")
     # Extract the downloaded file if it is tarball
-    if save_path.endswith(('.tar','.tar.gz')):
+    if save_path.endswith(('.tar', '.tar.gz')):
         if is_download:
             tar_file = tarfile.open(save_path)
             print("Extracting tarball file to {save_dir} ...")
@@ -226,7 +250,7 @@ def query_yes_no(question):
     Returns:
         Boolean value: True for "yes" or "Enter", or False for "no".
     """
-    
+
     valid = {"yes": True, "y": True, "ye": True, "no": False, "n": False}
     prompt = " [y/n, default=n] "
     while True:
@@ -249,8 +273,132 @@ def load_yaml(yml_path):
     Returns:
         A dictionary with parameters for cluster.
     """
-    
+
     with open(yml_path, 'r') as stream:
         data_loaded = yaml.safe_load(stream)
     return data_loaded
 
+
+def save_dict_yaml(dictionary, save_yml_path):
+    """Save python dictionary to yaml configuration file.
+
+    Args:
+        dictionary: A python dictionary.
+        save_yml_path (string): Save yaml configuration file to this path
+    Returns:
+        A dictionary with parameters for cluster.
+    """
+
+    with open(save_yml_path, 'w') as outfile:
+        yaml.dump(dictionary, outfile)
+    return
+
+
+def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
+    """Ask several questions to get arguments for a ticket to access to cluster and
+        save those arguments to a yaml file for next time to use.
+
+    Args:
+        save_config_dir: (string): Path to parent directory where the configuration file will be saved .
+        save_config_name: (string): [Default = 'default'] Configuration filename.
+    Returns:
+        A dictionary contains all arguments for get_cluster_ticket().
+
+    """
+
+    # Initialize configuration file.
+    config = dict()
+    config['job_queue_system_type'] = None
+    config['cluster_params'] = dict()
+    config['cluster_params']['num_physical_cores_per_node'] = None
+    config['cluster_params']['num_nodes'] = None
+    config['cluster_params']['maximum_allowable_walltime'] = None
+    config['cluster_params']['maximum_memory_per_node'] = None
+    config['cluster_params']['system_specific_args'] = None
+    config['cluster_params']['local_directory'] = None
+    config['cluster_params']['log_directory'] = None
+
+    # Ask for the job queuing system is used in user's cluster.
+    while config['job_queue_system_type'] is None:
+        valid = ['SGE', 'SLURM']
+        question = 'Please the type of job queuing system in your cluster.'
+        prompt = 'One of \'SGE\' (Sun Grid Engine) and \'SLURM\'. '
+        sys.stdout.write(question)
+        sys.stdout.write(prompt)
+
+        choice = input().upper()
+        if choice in valid:
+            config['job_queue_system_type'] = choice
+        else:
+            sys.stdout.write("Please Enter one of \'SGE\' (Sun Grid Engine) and \'SLURM\'.\n")
+
+    # Ask for the number of physical cores per node.
+    while config['cluster_params']['num_physical_cores_per_node'] is None:
+        question = 'Please enter the number of physical cores you want in a node.'
+        sys.stdout.write(question)
+
+        choice = input()
+        if choice.isnumeric() and int(choice) >= 1:
+            config['cluster_params']['num_physical_cores_per_node'] = choice
+        else:
+            sys.stdout.write("Please Enter a positive number.\n")
+
+    # Ask for the maximum allowable walltime.
+    question = 'Please enter the maximum allowable walltime.'
+    prompt = 'This should be a string in the form D-HH:MM:SS.  E.g., \'0-01:00:00\' for one hour.'
+    sys.stdout.write(question)
+    sys.stdout.write(prompt)
+
+    choice = input()
+    if validate(choice, strftime_format('%d-%H:%M:%S')):
+        config['cluster_params']['maximum_allowable_walltime'] = choice
+    else:
+        sys.stdout.write("Since the entered string did not match the format, the scheduler will allocate system-determined maximum. \n")
+
+    # Ask for the maximum memory per node.
+    question = 'Please enter the maximum memory per node.'
+    prompt = 'E.g. \'100MB\' or \'16GB\'. If None, the scheduler will allocate a system-determined amount per node.'
+    sys.stdout.write(question)
+    sys.stdout.write(prompt)
+    choice = input()
+    config['cluster_params']['maximum_memory_per_node'] = choice
+
+    # Ask for the maximum memory per node.
+    question = 'Please enter the maximum memory per node.'
+    prompt = 'E.g. \'100MB\' or \'16GB\'. If None, the scheduler will allocate a system-determined amount per node.'
+    sys.stdout.write(question)
+    sys.stdout.write(prompt)
+    choice = input()
+    config['cluster_params']['maximum_memory_per_node'] = choice
+
+    # Ask for any additional arguments to pass to the job scheduling system.
+    question = 'Please enter any additional arguments to pass to the job scheduling system.'
+    prompt = 'Consult your local documentation or system administrator.'
+    sys.stdout.write(question)
+    sys.stdout.write(prompt)
+    choice = input()
+    config['cluster_params']['system_specific_args'] = choice
+
+    # Ask for a desired local directory for file spilling in parallel computation.
+    question = 'Please enter a desired local directory for file spilling in parallel computation.'
+    prompt = 'Recommend to set it to a location of fast local storage like /scratch or $TMPDIR.'
+    sys.stdout.write(question)
+    sys.stdout.write(prompt)
+    choice = input()
+    os.makedirs(choice, exist_ok=True)
+    config['cluster_params']['local_directory'] = choice
+
+    # Ask for a desired  directory to store Dask\'s job scheduler logs.
+    question = 'Please enter a desired directory to store Dask\'s job scheduler logs.'
+    prompt = 'For each reserved node, there will be two different log files, error log and output log.' \
+             'Users can check those log files to find the information printed from the parallel functions.'
+    sys.stdout.write(question)
+    sys.stdout.write(prompt)
+    choice = input()
+    os.makedirs(choice, exist_ok=True)
+    config['cluster_params']['local_directory'] = choice
+
+    # Save arguments to yaml file for next time to use.
+    os.mkdir(save_config_dir, exist_ok=True)
+    save_dict_yaml(config, save_config_dir+save_config_name+'.yaml')
+    return config
