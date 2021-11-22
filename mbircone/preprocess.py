@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image
 import warnings
 import math
-
+from scipy.ndimage import convolve
 
 def _read_scan_img(img_path):
     """Read and return single image from a ConeBeam Scan.
@@ -359,6 +359,50 @@ def NSI_to_MBIRCONE_params(NSI_system_params):
     geo_params["row_offset"] = - (NSI_system_params['w_d0'] - dist_dw_to_detector_corner_from_detector_center)
     return geo_params
 
+
+def gauss2D(window_size=(15,15),sigma=0.5):
+    m,n = [(ss-1.)/2. for ss in window_size]
+    y,x = np.ogrid[-m:m+1,-n:n+1]
+    h = np.exp( -(x*x + y*y) / (2.*sigma*sigma) )
+    h[ h < np.finfo(h.dtype).eps*h.max() ] = 0
+    w_0 = np.hamming(window_size[0])
+    w_1 = np.hamming(window_size[1])
+    w = w_0*w_1
+    h = np.multiply(h,w)
+    sumh = h.sum()
+    if sumh != 0:
+        h /= sumh
+    return h
+
+
+def _image_indicator(image):
+    indicator = np.int8(image > 0.05 * np.mean(np.fabs(image)))  # for excluding empty space from average
+    return indicator 
+
+
+def image_mask(image, window_size=(15,15), sigma=0.5):
+    ''' Automatic image segmentation:
+        1. Blur the input image with a 2D Gaussian filter (with hamming window).
+        2. Compute a binary mask that indicates the region of image support.
+        3. Find connected region.
+    '''
+    # blur the input image with a 2D Gaussian window
+    h = gauss2D(window_size=window_size, sigma=sigma)
+    image_blurred = convolve(image, h, mode='wrap')
+    image_indicator = _image_indicator(image_blurred)
+    return image_indicator*image, image_indicator 
+    
+
+def blind_fixture_correction(sino, angles, dist_source_detector, magnification,
+                             channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
+                             delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
+                             sigma_y=None, snr_db=30.0, weights=None, weight_type='unweighted',
+                             positivity=True, p=1.2, q=2.0, T=1.0, num_neighbors=6,
+                             sharpness=0.0, sigma_x=None, sigma_p=None, max_iterations=20, stop_threshold=0.02,
+                             num_threads=None, NHICD=False, verbose=1, lib_path=__lib_path):
+    """ Corrects sinogram error that is caused by fixtures placed out of the field of view of the scanner.        
+    """
+         
 
 def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
                view_range=None, total_angles=360, num_acquired_scans=2000,
