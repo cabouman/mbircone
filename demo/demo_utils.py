@@ -7,7 +7,7 @@ import tarfile
 import yaml
 from PIL import Image
 from datetime import datetime
-from datatest import validate
+from datatest import validate, ValidationError
 
 
 def strftime_format(format):
@@ -321,8 +321,8 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
     # Ask for the job queuing system is used in user's cluster.
     while config['job_queue_system_type'] is None:
         valid = ['SGE', 'SLURM']
-        question = 'Please the type of job queuing system in your cluster.'
-        prompt = 'One of \'SGE\' (Sun Grid Engine) and \'SLURM\'. '
+        question = 'Please the type of job queuing system in your cluster.\n'
+        prompt = 'One of \'SGE\' (Sun Grid Engine) and \'SLURM\'. \n'
         sys.stdout.write(question)
         sys.stdout.write(prompt)
 
@@ -334,7 +334,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
 
     # Ask for the number of physical cores per node.
     while config['cluster_params']['num_physical_cores_per_node'] is None:
-        question = 'Please enter the number of physical cores in a node.'
+        question = 'Please enter the number of physical cores in a node.\n'
         sys.stdout.write(question)
 
         choice = input()
@@ -345,7 +345,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
 
     # Ask for the number of nodes.
     while config['cluster_params']['num_nodes'] is None:
-        question = 'Please enter the number of nodes for parallel computation.'
+        question = 'Please enter the number of nodes for parallel computation.\n'
         sys.stdout.write(question)
 
         choice = input()
@@ -356,19 +356,25 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
 
     # Ask for the maximum allowable walltime.
     question = 'Please enter the maximum allowable walltime.'
-    prompt = 'This should be a string in the form D-HH:MM:SS.  E.g., \'0-01:00:00\' for one hour.'
+    prompt = 'This should be a string in the form D-HH:MM:SS.  E.g., \'0-01:00:00\' for one hour.\n'
     sys.stdout.write(question)
     sys.stdout.write(prompt)
 
     choice = input()
-    if validate(choice, strftime_format('%d-%H:%M:%S')):
+    try :
+        validate(choice, strftime_format('%d-%H:%M:%S'))
+        walltime_valid = True
+    except ValidationError:
+        walltime_valid = False
+
+    if walltime_valid:
         config['cluster_params']['maximum_allowable_walltime'] = choice
     else:
         sys.stdout.write("Since the entered string did not match the format, the scheduler will allocate system-determined maximum. \n")
 
     # Ask for the maximum memory per node.
-    question = 'Please enter the maximum memory per node.'
-    prompt = 'E.g. \'100MB\' or \'16GB\'. If None, the scheduler will allocate a system-determined amount per node.'
+    question = 'Please enter the maximum memory per node.\n'
+    prompt = 'E.g. \'100MB\' or \'16GB\'. If None, the scheduler will allocate a system-determined amount per node.\n'
     sys.stdout.write(question)
     sys.stdout.write(prompt)
     choice = input()
@@ -376,16 +382,16 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
 
 
     # Ask for any additional arguments to pass to the job scheduling system.
-    question = 'Please enter any additional arguments to pass to the job scheduling system.'
-    prompt = 'Consult your local documentation or system administrator.'
+    question = 'Please enter any additional arguments to pass to the job scheduling system.\n'
+    prompt = 'Consult your local documentation or system administrator.\n'
     sys.stdout.write(question)
     sys.stdout.write(prompt)
     choice = input()
     config['cluster_params']['system_specific_args'] = choice
 
     # Ask for a desired local directory for file spilling in parallel computation.
-    question = 'Please enter a desired local directory for file spilling in parallel computation.'
-    prompt = 'Recommend to set it to a location of fast local storage like /scratch or $TMPDIR.'
+    question = 'Please enter a desired local directory for file spilling in parallel computation.\n'
+    prompt = 'Recommend to set it to a location of fast local storage like /scratch or $TMPDIR.\n'
     sys.stdout.write(question)
     sys.stdout.write(prompt)
     choice = input()
@@ -393,9 +399,9 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
     config['cluster_params']['local_directory'] = choice
 
     # Ask for a desired  directory to store Dask\'s job scheduler logs.
-    question = 'Please enter a desired directory to store Dask\'s job scheduler logs.'
-    prompt = 'For each reserved node, there will be two different log files, error log and output log.' \
-             'Users can check those log files to find the information printed from the parallel functions.'
+    question = 'Please enter a desired directory to store Dask\'s job scheduler logs.\n'
+    prompt = 'For each reserved node, there will be two different log files, error log and output log.\n' \
+             'Users can check those log files to find the information printed from the parallel functions.\n'
     sys.stdout.write(question)
     sys.stdout.write(prompt)
     choice = input()
