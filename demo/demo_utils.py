@@ -339,7 +339,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
 
         choice = input()
         if choice.isnumeric() and int(choice) >= 1:
-            config['cluster_params']['num_physical_cores_per_node'] = choice
+            config['cluster_params']['num_physical_cores_per_node'] = int(choice)
         else:
             sys.stdout.write("Please Enter a positive number.\n")
 
@@ -350,7 +350,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
 
         choice = input()
         if choice.isnumeric() and int(choice) >= 1:
-            config['cluster_params']['num_nodes'] = choice
+            config['cluster_params']['num_nodes'] = int(choice)
         else:
             sys.stdout.write("Please Enter a positive number.\n")
 
