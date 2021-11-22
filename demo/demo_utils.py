@@ -321,7 +321,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
     # Ask for the job queuing system is used in user's cluster.
     while config['job_queue_system_type'] is None:
         valid = ['SGE', 'SLURM']
-        question = 'Please the type of job queuing system in your cluster.\n'
+        question = '\nPlease enter the type of job queuing system in your cluster.\n'
         prompt = 'One of \'SGE\' (Sun Grid Engine) and \'SLURM\'. \n'
         sys.stdout.write(question)
         sys.stdout.write(prompt)
@@ -345,7 +345,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
 
     # Ask for the number of nodes.
     while config['cluster_params']['num_nodes'] is None:
-        question = 'Please enter the number of nodes for parallel computation.\n'
+        question = '\nPlease enter the number of nodes for parallel computation.\n'
         sys.stdout.write(question)
 
         choice = input()
@@ -355,7 +355,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
             sys.stdout.write("Please Enter a positive number.\n")
 
     # Ask for the maximum allowable walltime.
-    question = 'Please enter the maximum allowable walltime.'
+    question = '\nPlease enter the maximum allowable walltime.'
     prompt = 'This should be a string in the form D-HH:MM:SS.  E.g., \'0-01:00:00\' for one hour.\n'
     sys.stdout.write(question)
     sys.stdout.write(prompt)
@@ -373,16 +373,17 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
         sys.stdout.write("Since the entered string did not match the format, the scheduler will allocate system-determined maximum. \n")
 
     # Ask for the maximum memory per node.
-    question = 'Please enter the maximum memory per node.\n'
+    question = '\nPlease enter the maximum memory per node.\n'
     prompt = 'E.g. \'100MB\' or \'16GB\'. If None, the scheduler will allocate a system-determined amount per node.\n'
     sys.stdout.write(question)
     sys.stdout.write(prompt)
     choice = input()
-    config['cluster_params']['maximum_memory_per_node'] = choice
+    if choice != "":
+        config['cluster_params']['maximum_memory_per_node'] = choice
 
 
     # Ask for any additional arguments to pass to the job scheduling system.
-    question = 'Please enter any additional arguments to pass to the job scheduling system.\n'
+    question = '\nPlease enter any additional arguments to pass to the job scheduling system.\n'
     prompt = 'Consult your local documentation or system administrator.\n'
     sys.stdout.write(question)
     sys.stdout.write(prompt)
@@ -390,7 +391,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
     config['cluster_params']['system_specific_args'] = choice
 
     # Ask for a desired local directory for file spilling in parallel computation.
-    question = 'Please enter a desired local directory for file spilling in parallel computation.\n'
+    question = '\nPlease enter a desired local directory for file spilling in parallel computation.\n'
     prompt = 'Recommend to set it to a location of fast local storage like /scratch or $TMPDIR.\n'
     sys.stdout.write(question)
     sys.stdout.write(prompt)
@@ -399,7 +400,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
     config['cluster_params']['local_directory'] = choice
 
     # Ask for a desired  directory to store Dask\'s job scheduler logs.
-    question = 'Please enter a desired directory to store Dask\'s job scheduler logs.\n'
+    question = '\nPlease enter a desired directory to store Dask\'s job scheduler logs.\n'
     prompt = 'For each reserved node, there will be two different log files, error log and output log.\n' \
              'Users can check those log files to find the information printed from the parallel functions.\n'
     sys.stdout.write(question)
