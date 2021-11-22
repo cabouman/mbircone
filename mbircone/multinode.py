@@ -83,7 +83,8 @@ def get_cluster_ticket(job_queue_system_type,
                              # by passing argument to the job scheduling system with system_specific_args.
                              job_extra=[system_specific_args],
                              local_directory=local_directory,
-                             log_directory=log_directory)
+                             log_directory=log_directory,
+                             death_timeout=600)
         cluster.scale(jobs=num_nodes)
         print(cluster.job_script())
 
@@ -100,7 +101,8 @@ def get_cluster_ticket(job_queue_system_type,
                                job_extra=[system_specific_args],
                                job_cpu=num_physical_cores_per_node,
                                local_directory=local_directory,
-                               log_directory=log_directory)
+                               log_directory=log_directory,
+                               death_timeout=600)
         cluster.scale(jobs=num_nodes)
         print(cluster.job_script())
 

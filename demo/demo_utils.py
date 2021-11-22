@@ -407,7 +407,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
     sys.stdout.write(prompt)
     choice = input()
     os.makedirs(choice, exist_ok=True)
-    config['cluster_params']['local_directory'] = choice
+    config['cluster_params']['log_directory'] = choice
 
     # Save arguments to yaml file for next time to use.
     os.makedirs(save_config_dir, exist_ok=True)
