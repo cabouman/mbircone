@@ -5,6 +5,9 @@ from PIL import Image
 import warnings
 import math
 from scipy.ndimage import convolve
+from mbircone import cone3D
+
+__lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
 
 def _read_scan_img(img_path):
     """Read and return single image from a ConeBeam Scan.
@@ -122,32 +125,28 @@ def _crop_scans(obj_scan, blank_scan, dark_scan, crop_factor=[(0, 0), (1, 1)]):
     return obj_scan, blank_scan, dark_scan
 
 
-def _compute_sino_from_scans(obj_scan, blank_scan, dark_scan):
-    """Compute sinogram data base on given object scan, blank scan, and dark scan.
-
+def _compute_sino_and_weights_mask_from_scans(obj_scan, blank_scan, dark_scan):
+    """ Compute sinogram data and weights mask base on given object scan, blank scan, and dark scan. The weights mask is used to filter out negative values in the corrected object scan and blank scan. For real CT dataset weights mask should be used when calculating sinogram weights.
     Args:
-        obj_scan (float): A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
-        blank_scan (float) : A blank scan. 3D numpy array, (1, num_slices, num_channels).
-        dark_scan (float):  A dark scan. 3D numpy array, (1, num_slices, num_channels).
+        obj_scan (ndarray): A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
+        blank_scan (ndarray) : A blank scan. 3D numpy array, (num_scans, num_slices, num_channels).
+        dark_scan (ndarray):  A dark scan. 3D numpy array, (num_scans, num_slices, num_channels).
     Returns:
-        ndarray (float): Preprocessed sinograms. 3D numpy array, (num_views, num_slices, num_channels).
+        A tuple (sino, weights_mask) containing:
+        - **sino** (*ndarray*): Preprocessed sinogram with shape (num_views, num_slices, num_channels).
+        - **weights_mask** (*ndarray*): A binary mask for sinogram weights. 
 
     """
-    blank_scan_mean = 0 * obj_scan + np.average(blank_scan, axis=0)
-    dark_scan_mean = 0 * obj_scan + np.average(dark_scan, axis=0)
+    blank_scan_mean = 0 * obj_scan + np.mean(blank_scan, axis=0, keepdims=True)
+    dark_scan_mean = 0 * obj_scan + np.mean(dark_scan, axis=0, keepdims=True)
 
     obj_scan_corrected = (obj_scan - dark_scan_mean)
     blank_scan_corrected = (blank_scan_mean - dark_scan_mean)
+    sino = -np.log(obj_scan_corrected / blank_scan_corrected)
 
-    good_pixels = (obj_scan_corrected > 0) & (blank_scan_corrected > 0)
+    weights_mask = (obj_scan_corrected > 0) & (blank_scan_corrected > 0)
 
-    normalized_scan = np.zeros(obj_scan_corrected.shape)
-    normalized_scan[good_pixels] = obj_scan_corrected[good_pixels] / blank_scan_corrected[good_pixels]
-
-    sino = np.zeros(obj_scan_corrected.shape)
-    sino[normalized_scan > 0] = -np.log(normalized_scan[normalized_scan > 0])
-
-    return sino
+    return sino, weights_mask
 
 
 def _compute_views_index_list(view_range, num_views):
@@ -360,10 +359,11 @@ def NSI_to_MBIRCONE_params(NSI_system_params):
     return geo_params
 
 
-def gauss2D(window_size=(15,15),sigma=0.5):
+def gauss2D(window_size=(15,15)):
     m,n = [(ss-1.)/2. for ss in window_size]
     y,x = np.ogrid[-m:m+1,-n:n+1]
-    h = np.exp( -(x*x + y*y) / (2.*sigma*sigma) )
+    sigma_h = 1.
+    h = np.exp( -(x*x + y*y) / (2.*sigma_h*sigma_h) )
     h[ h < np.finfo(h.dtype).eps*h.max() ] = 0
     w_0 = np.hamming(window_size[0])
     w_1 = np.hamming(window_size[1])
@@ -375,39 +375,98 @@ def gauss2D(window_size=(15,15),sigma=0.5):
     return h
 
 
-def _image_indicator(image):
-    indicator = np.int8(image > 0.05 * np.mean(np.fabs(image)))  # for excluding empty space from average
+def _image_indicator(image, background_ratio):
+    indicator = np.int8( image > np.percentile(image, background_ratio*100) )  # for excluding empty space from average
     return indicator 
 
 
-def image_mask(image, window_size=(15,15), sigma=0.5):
+def image_mask(image, blur_filter, background_ratio, boundary_ratio):
     ''' Automatic image segmentation:
         1. Blur the input image with a 2D Gaussian filter (with hamming window).
         2. Compute a binary mask that indicates the region of image support.
-        3. Find connected region.
+        3. Set region between ROI and ROR to be 0.
+
+    Args:
+        blur_filter (ndarray): blurring filter used to smooth the input image.
+        background_ratio (float): Should be a number in [0,1]. This is the estimated ratio of background pixels. For example, background_ratio=0.5 means that 50% of pixels will be recognized as background.
+        boundary_ratio (float): Should be a number in [0,1]. This is the estimated ratio of (ROR_radius-ROI_radius)/ROR_radius. The region between ROR and ROI will be recognized as background.           
+    Returns:
+        ndarray: Masked image with same shape of input image. 
     '''
     # blur the input image with a 2D Gaussian window
-    h = gauss2D(window_size=window_size, sigma=sigma)
-    image_blurred = convolve(image, h, mode='wrap')
-    image_indicator = _image_indicator(image_blurred)
-    return image_indicator*image, image_indicator 
+    (num_slices, num_rows_cols, _)  = np.shape(image)
+    image_blurred = np.array([convolve(image[i], blur_filter, mode='wrap') for i in range(num_slices)])
+    image_indicator = _image_indicator(image_blurred, background_ratio)
+    boundary_len = num_rows_cols*boundary_ratio//2
+    R = (num_rows_cols-1)*(1-boundary_ratio)//2
+    center_pt = (num_rows_cols-1)//2
+    boundary_mask = np.zeros((num_rows_cols, num_rows_cols))
+    for i in range(num_rows_cols):
+        for j in range(num_rows_cols):
+            boundary_mask[i,j] = (np.sum((i-center_pt)*(i-center_pt) + (j-center_pt)*(j-center_pt)) < R*R)
+    image_indicator = image_indicator * np.array([np.int8(boundary_mask) for _ in range(num_slices)])
+    return image_indicator*image 
     
 
+def _background_calibration(sino, background_view_list, background_box_info_list):
+    avg_offset = 0.
+    if not background_view_list:
+        return 0.
+    for view_idx, box_info in zip(background_view_list, background_box_info_list):
+        print(f"box used in view {view_idx} for calbiration: (x,y,width,height)=", box_info)
+        (x, y, box_width, box_height) = box_info
+        avg_offset += np.mean(sino[view_idx, y:y+box_height, x:x+box_width]) 
+    avg_offset /= len(background_view_list)
+    return avg_offset
+
+
 def blind_fixture_correction(sino, angles, dist_source_detector, magnification,
-                             channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
-                             delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
-                             sigma_y=None, snr_db=30.0, weights=None, weight_type='unweighted',
-                             positivity=True, p=1.2, q=2.0, T=1.0, num_neighbors=6,
-                             sharpness=0.0, sigma_x=None, sigma_p=None, max_iterations=20, stop_threshold=0.02,
-                             num_threads=None, NHICD=False, verbose=1, lib_path=__lib_path):
-    """ Corrects sinogram error that is caused by fixtures placed out of the field of view of the scanner.        
-    """
-         
+                            background_ratio=0.7, boundary_ratio=0.2,
+                            channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
+                            delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
+                            init_image=0.0,
+                            sigma_y=None, snr_db=30.0, weights=None, weight_type='unweighted',
+                            positivity=True, p=1.2, q=2.0, T=1.0, num_neighbors=6,
+                            sharpness=0.0, sigma_x=None, max_iterations=20, stop_threshold=0.02,
+                            num_threads=None, NHICD=False, verbose=1, lib_path=__lib_path):
+    # blurring filter used for both image segmentation and projection error filtering 
+    blur_filter = gauss2D(window_size=(15,15)) 
+    # initial recon
+    print("Performing inital qGGMRF reconstruction with uncorrected sinogram ......")
+    x = cone3D.recon(sino, angles, dist_source_detector, magnification, 
+                              channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
+                              delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius,
+                              init_image=init_image,
+                              sigma_y=sigma_y, snr_db=snr_db, weights=weights, weight_type=weight_type,
+                              positivity=positivity, p=p, q=q, T=T, num_neighbors=num_neighbors,
+                              sharpness=sharpness, sigma_x=sigma_x, max_iterations=max_iterations, stop_threshold=stop_threshold,
+                              num_threads=num_threads, NHICD=NHICD, verbose=verbose, lib_path=lib_path)
+    
+    # Image segmentation
+    print("Performing image segmentation ......")
+    x_m = image_mask(x, blur_filter=blur_filter, background_ratio=background_ratio, boundary_ratio=boundary_ratio)
+    (num_views, num_det_rows, num_det_channels) = np.shape(sino)
+    print("Calculating sinogram error ......")
+    Ax = cone3D.project(x_m, angles,
+                          num_det_rows, num_det_channels,
+                          dist_source_detector, magnification,
+                          channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
+                          delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius,
+                          num_threads=num_threads, verbose=verbose, lib_path=lib_path)
+    # sinogram error
+    e = sino-Ax
+    p = np.array([convolve(e[i], blur_filter, mode='wrap') for i in range(num_views)])
+    print("Linear fitting ......")
+    c = np.sum(e*p) / np.sum(p*p)
+    print("linear fitting constant = ", c)
+    sino_corrected = sino - c*p
+    return sino_corrected
 
 def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
                view_range=None, total_angles=360, num_acquired_scans=2000,
                rotation_direction="positive", downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
-               num_time_points=1, time_point=0):
+               num_time_points=1, time_point=0,
+               background_view_list=[], background_box_info_list=[]):
     """Return preprocessed sinogram and angles list for reconstruction.
 
     Args:
@@ -424,12 +483,15 @@ def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
             Two points to define the bounding box. Sequence of [(r0, c0), (r1, c1)] or [r0, c0, r1, c1], where 1>=r1 >= r0>=0 and 1>=c1 >= c0>=0.
         num_time_points (int): [Default=1] Total number of time points.
         time_point (int): [Default=0] Index of the time point we want to use for 3D reconstruction.
+        background_view_list ([int]): A list of view indices indicating the views corresponding to the boxes specified in `background_box_info_list`. It should have the same length as `background_box_info_list`.
+        background_box_info_list ([(x,y,width,height)]): A list of tuples indicating the information of the rectangular areas used for background offset calculation. It should have the same length as `background_view_list`.
+        
     Returns:
-        2-element tuple containing
+        3-element tuple containing
 
         - **sino** (*ndarray, float*): Preprocessed 3D sinogram.
 
-        - **angles** (*array, double*): 1D array of angles corresponding to preprocessed sinogram.
+        - **angles** (*ndarray, double*): 1D array of angles corresponding to preprocessed sinogram. It is assumed that the rotation of each view is equally spaced.
 
     """
 
@@ -440,6 +502,8 @@ def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
     view_ids = _select_contiguous_subset(view_ids, num_time_points, time_point)
     angles = _compute_angles_list(view_ids, num_acquired_scans, total_angles, rotation_direction)
     obj_scan = _read_scan_dir(path_radiographs, view_ids)
+    print("raw obj scan max value = ", np.max(obj_scan))
+    print("raw obj scan min value = ", np.min(obj_scan))
 
     # Should deal with situation when input is None.
     if path_blank is not None:
@@ -456,6 +520,9 @@ def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
     obj_scan = np.flip(obj_scan, axis=1)
     blank_scan = np.flip(blank_scan, axis=1)
     dark_scan = np.flip(dark_scan, axis=1)
+    
+    print("raw blank scan max value = ", np.max(blank_scan))
+    print("raw blank scan min value = ", np.min(blank_scan))
 
     # downsampling in pixels
     obj_scan, blank_scan, dark_scan = _downsample_scans(obj_scan, blank_scan, dark_scan,
@@ -463,6 +530,13 @@ def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
     # cropping in pixels
     obj_scan, blank_scan, dark_scan = _crop_scans(obj_scan, blank_scan, dark_scan,
                                                   crop_factor=crop_factor)
-
-    sino = _compute_sino_from_scans(obj_scan, blank_scan, dark_scan)
+    print("obj_scan shape = ",np.shape(obj_scan))
+    print("blank_scan shape = ",np.shape(blank_scan))
+    print("dark_scan shape = ",np.shape(dark_scan))
+    sino, weights_mask = _compute_sino_and_weights_mask_from_scans(obj_scan, blank_scan, dark_scan)
+    sino[weights_mask==0] = 0.
+    # background offset calibration
+    background_offset = _background_calibration(sino, background_view_list, background_box_info_list)
+    print("background offset = ", background_offset)
+    sino = sino - background_offset
     return sino.astype(np.float32), angles.astype(np.float64)
