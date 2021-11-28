@@ -420,48 +420,6 @@ def _background_calibration(sino, background_view_list, background_box_info_list
     return avg_offset
 
 
-def blind_fixture_correction(sino, angles, dist_source_detector, magnification,
-                            background_ratio=0.7, boundary_ratio=0.2,
-                            channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
-                            delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
-                            init_image=0.0,
-                            sigma_y=None, snr_db=30.0, weights=None, weight_type='unweighted',
-                            positivity=True, p=1.2, q=2.0, T=1.0, num_neighbors=6,
-                            sharpness=0.0, sigma_x=None, max_iterations=20, stop_threshold=0.02,
-                            num_threads=None, NHICD=False, verbose=1, lib_path=__lib_path):
-    # blurring filter used for both image segmentation and projection error filtering 
-    blur_filter = gauss2D(window_size=(15,15)) 
-    # initial recon
-    print("Performing inital qGGMRF reconstruction with uncorrected sinogram ......")
-    x = cone3D.recon(sino, angles, dist_source_detector, magnification, 
-                              channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
-                              delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius,
-                              init_image=init_image,
-                              sigma_y=sigma_y, snr_db=snr_db, weights=weights, weight_type=weight_type,
-                              positivity=positivity, p=p, q=q, T=T, num_neighbors=num_neighbors,
-                              sharpness=sharpness, sigma_x=sigma_x, max_iterations=max_iterations, stop_threshold=stop_threshold,
-                              num_threads=num_threads, NHICD=NHICD, verbose=verbose, lib_path=lib_path)
-    
-    # Image segmentation
-    print("Performing image segmentation ......")
-    x_m = image_mask(x, blur_filter=blur_filter, background_ratio=background_ratio, boundary_ratio=boundary_ratio)
-    (num_views, num_det_rows, num_det_channels) = np.shape(sino)
-    print("Calculating sinogram error ......")
-    Ax = cone3D.project(x_m, angles,
-                          num_det_rows, num_det_channels,
-                          dist_source_detector, magnification,
-                          channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
-                          delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius,
-                          num_threads=num_threads, verbose=verbose, lib_path=lib_path)
-    # sinogram error
-    e = sino-Ax
-    p = np.array([convolve(e[i], blur_filter, mode='wrap') for i in range(num_views)])
-    print("Linear fitting ......")
-    c = np.sum(e*p) / np.sum(p*p)
-    print("linear fitting constant = ", c)
-    sino_corrected = sino - c*p
-    return sino_corrected
-
 def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
                view_range=None, total_angles=360, num_acquired_scans=2000,
                rotation_direction="positive", downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
