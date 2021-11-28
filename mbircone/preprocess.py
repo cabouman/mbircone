@@ -420,39 +420,10 @@ def _background_calibration(sino, background_view_list, background_box_info_list
     return avg_offset
 
 
-def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
+def NSI_read_scans(path_radiographs, num_views, path_blank=None, path_dark=None,
                view_range=None, total_angles=360, num_acquired_scans=2000,
-               rotation_direction="positive", downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
-               num_time_points=1, time_point=0,
-               background_view_list=[], background_box_info_list=[]):
-    """Return preprocessed sinogram and angles list for reconstruction.
-
-    Args:
-        path_radiographs (string): Path to a ConeBeam Scan directory.
-        num_views (int): Number of views to use for reconstruction.
-        path_blank (string): [Default=None] Path to blank scan.
-        path_dark (string): [Default=None] Path to dark scan.
-        view_range (list[int, int]): [Default=None] Two indexes of views to specify the range of views to use for reconstruction.
-        total_angles (int): [Default=360] Total rotation angle for the whole dataset.
-        num_acquired_scans (int): [Default=2000] Total number of acquired scans in the directory.
-        rotation_direction (string): [Default='positive'] Rotation direction. Should be 'positive' or 'negative'.
-        downsample_factor ([int, int]): [Default=[1,1]] Two numbers to define down-sample factor.
-        crop_factor ([(int, int),(int, int)] or [int, int, int, int]): [Default=[(0, 0), (1, 1)]]
-            Two points to define the bounding box. Sequence of [(r0, c0), (r1, c1)] or [r0, c0, r1, c1], where 1>=r1 >= r0>=0 and 1>=c1 >= c0>=0.
-        num_time_points (int): [Default=1] Total number of time points.
-        time_point (int): [Default=0] Index of the time point we want to use for 3D reconstruction.
-        background_view_list ([int]): A list of view indices indicating the views corresponding to the boxes specified in `background_box_info_list`. It should have the same length as `background_box_info_list`.
-        background_box_info_list ([(x,y,width,height)]): A list of tuples indicating the information of the rectangular areas used for background offset calculation. It should have the same length as `background_view_list`.
-        
-    Returns:
-        3-element tuple containing
-
-        - **sino** (*ndarray, float*): Preprocessed 3D sinogram.
-
-        - **angles** (*ndarray, double*): 1D array of angles corresponding to preprocessed sinogram. It is assumed that the rotation of each view is equally spaced.
-
-    """
-
+               rotation_direction="positive",
+               num_time_points=1, time_point=0):
     if view_range is None:
         view_range = [0, num_acquired_scans - 1]
 
@@ -478,23 +449,47 @@ def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
     obj_scan = np.flip(obj_scan, axis=1)
     blank_scan = np.flip(blank_scan, axis=1)
     dark_scan = np.flip(dark_scan, axis=1)
-    
-    print("raw blank scan max value = ", np.max(blank_scan))
-    print("raw blank scan min value = ", np.min(blank_scan))
+    return obj_scan, blank_scan, dark_scan
 
+
+def compute_sino_from_scans(downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
+                            background_view_list=[], background_box_info_list=[]):
+    """Return preprocessed sinogram and angles list for reconstruction.
+
+    Args:
+        path_radiographs (string): Path to a ConeBeam Scan directory.
+        num_views (int): Number of views to use for reconstruction.
+        path_blank (string): [Default=None] Path to blank scan.
+        path_dark (string): [Default=None] Path to dark scan.
+        view_range (list[int, int]): [Default=None] Two indexes of views to specify the range of views to use for reconstruction.
+        total_angles (int): [Default=360] Total rotation angle for the whole dataset.
+        num_acquired_scans (int): [Default=2000] Total number of acquired scans in the directory.
+        rotation_direction (string): [Default='positive'] Rotation direction. Should be 'positive' or 'negative'.
+        downsample_factor ([int, int]): [Default=[1,1]] Two numbers to define down-sample factor.
+        crop_factor ([(int, int),(int, int)] or [int, int, int, int]): [Default=[(0, 0), (1, 1)]]
+            Two points to define the bounding box. Sequence of [(r0, c0), (r1, c1)] or [r0, c0, r1, c1], where 1>=r1 >= r0>=0 and 1>=c1 >= c0>=0.
+        num_time_points (int): [Default=1] Total number of time points.
+        time_point (int): [Default=0] Index of the time point we want to use for 3D reconstruction.
+        background_view_list ([int]): A list of view indices indicating the views corresponding to the boxes specified in `background_box_info_list`. It should have the same length as `background_box_info_list`.
+        background_box_info_list ([(x,y,width,height)]): A list of tuples indicating the information of the rectangular areas used for background offset calculation. It should have the same length as `background_view_list`.
+        
+    Returns:
+        3-element tuple containing
+
+        - **sino** (*ndarray, float*): Preprocessed 3D sinogram.
+
+    """
+    
     # downsampling in pixels
     obj_scan, blank_scan, dark_scan = _downsample_scans(obj_scan, blank_scan, dark_scan,
                                                         downsample_factor=downsample_factor)
     # cropping in pixels
     obj_scan, blank_scan, dark_scan = _crop_scans(obj_scan, blank_scan, dark_scan,
                                                   crop_factor=crop_factor)
-    print("obj_scan shape = ",np.shape(obj_scan))
-    print("blank_scan shape = ",np.shape(blank_scan))
-    print("dark_scan shape = ",np.shape(dark_scan))
     sino, weights_mask = _compute_sino_and_weights_mask_from_scans(obj_scan, blank_scan, dark_scan)
     sino[weights_mask==0] = 0.
     # background offset calibration
     background_offset = _background_calibration(sino, background_view_list, background_box_info_list)
     print("background offset = ", background_offset)
     sino = sino - background_offset
-    return sino.astype(np.float32), angles.astype(np.float64)
+    return sino.astype(np.float32)
