@@ -420,7 +420,7 @@ def _background_calibration(sino, background_view_list, background_box_info_list
     return avg_offset
 
 
-def NSI_read_scans(path_radiographs, num_views, path_blank=None, path_dark=None,
+def NSI_process_raw_scans(path_radiographs, num_views, path_blank=None, path_dark=None,
                    view_range=None, total_angles=360, num_acquired_scans=2000,
                    rotation_direction="positive",
                    num_time_points=1, time_point=0):
@@ -436,7 +436,17 @@ def NSI_read_scans(path_radiographs, num_views, path_blank=None, path_dark=None,
         num_acquired_scans (int): [Default=2000] Total number of acquired scans in the directory.
         rotation_direction (string): [Default='positive'] Rotation direction. Should be 'positive' or 'negative'.
     Returns: 
+        4-element tuple containing:
+        
+        - **obj_scan** (*ndarray, float*): 3D object scan with shape (num_views, num_det_rows, num_det_channels)
+        
+        - **blank_scan** (*ndarray, float*): 2D blank scan with shape (num_det_rows, num_det_channels)
+        
+        - **dark_scan** (*ndarray, float*): 2D dark scan with shape (num_det_rows, num_det_channels)
+        
+        - **angles** (*ndarray, double*): 1D array of angles corresponding to preprocessed sinogram. It is assumed that the rotation of each view is equally spaced.
     """
+    
     if view_range is None:
         view_range = [0, num_acquired_scans - 1]
 
@@ -477,6 +487,12 @@ def compute_sino_from_scans(obj_scan, blank_scan, dark_scan,
             Two points to define the bounding box. Sequence of [(r0, c0), (r1, c1)] or [r0, c0, r1, c1], where 1>=r1 >= r0>=0 and 1>=c1 >= c0>=0.
         num_time_points (int): [Default=1] Total number of time points.
         time_point (int): [Default=0] Index of the time point we want to use for 3D reconstruction.
+        weight_type (string, optional): [Default='unweighted'] Type of noise model used for data.
+            The function ``cone3D.calc_weights`` is used to set weights using specified ``weight_type`` parameter.
+                - Option "unweighted" corresponds to unweighted reconstruction;
+                - Option "transmission" is the correct weighting for transmission CT with constant dosage;
+                - Option "transmission_root" is commonly used with transmission CT data to improve image homogeneity;
+                - Option "emission" is appropriate for emission CT data.
         background_view_list ([int]): A list of view indices indicating the views corresponding to the boxes specified in `background_box_info_list`. It should have the same length as `background_box_info_list`.
         background_box_info_list ([(x,y,width,height)]): A list of tuples indicating the information of the rectangular areas used for background offset calculation. It should have the same length as `background_view_list`.
         
@@ -484,8 +500,8 @@ def compute_sino_from_scans(obj_scan, blank_scan, dark_scan,
         2-element tuple containing
 
         - **sino** (*ndarray, float*): Preprocessed 3D sinogram.
-
-        - **weights** (*ndarray, float*): 
+        
+        - **weights** (*ndarray, float*): 3D weights array with the same shape as sino. 
     """
     
     # downsampling in pixels
@@ -496,9 +512,11 @@ def compute_sino_from_scans(obj_scan, blank_scan, dark_scan,
                                                   crop_factor=crop_factor)
     sino, weight_mask = _compute_sino_and_weight_mask_from_scans(obj_scan, blank_scan, dark_scan)
     
-    # set illegal sinogram entries and the corresponding weights entries to be 0
+    # set invalid sinogram entries to 0
     sino[weight_mask==0] = 0.
+    # compute sinogram weights
     weights = cone3D.calc_weights(sino, weight_type=weight_type)
+    # set the weights corresponding to invalid sinogram entries to 0.
     weights[weights_mask==0] = 0.
     # background offset calibration
     background_offset = _background_calibration(sino, background_view_list, background_box_info_list)
