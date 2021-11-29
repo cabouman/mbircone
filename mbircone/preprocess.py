@@ -9,6 +9,7 @@ from mbircone import cone3D
 
 __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
 
+
 def _read_scan_img(img_path):
     """Read and return single image from a ConeBeam Scan.
 
@@ -76,7 +77,8 @@ def _downsample_scans(obj_scan, blank_scan, dark_scan, downsample_factor=[1, 1])
 
     obj_scan = obj_scan.reshape(obj_scan.shape[0], obj_scan.shape[1] // downsample_factor[0], downsample_factor[0],
                                 obj_scan.shape[2] // downsample_factor[1], downsample_factor[1]).sum((2, 4))
-    blank_scan = blank_scan.reshape(blank_scan.shape[0], blank_scan.shape[1] // downsample_factor[0], downsample_factor[0],
+    blank_scan = blank_scan.reshape(blank_scan.shape[0], blank_scan.shape[1] // downsample_factor[0],
+                                    downsample_factor[0],
                                     blank_scan.shape[2] // downsample_factor[1], downsample_factor[1]).sum((2, 4))
     dark_scan = dark_scan.reshape(dark_scan.shape[0], dark_scan.shape[1] // downsample_factor[0], downsample_factor[0],
                                   dark_scan.shape[2] // downsample_factor[1], downsample_factor[1]).sum((2, 4))
@@ -160,7 +162,7 @@ def _compute_views_index_list(view_range, num_views):
         list[int], a list of sampled indexes of views to use for reconstruction.
 
     """
-    index_original = range(view_range[0], view_range[1] + 1)
+    index_original = range(view_range[0], view_range[1])
     assert num_views <= len(index_original), 'num_views cannot exceed range of view index'
     index_sampled = [view_range[0] + int(np.floor(i * len(index_original) / num_views)) for i in range(num_views)]
     return index_sampled
@@ -359,16 +361,16 @@ def NSI_to_MBIRCONE_params(NSI_system_params):
     return geo_params
 
 
-def gauss2D(window_size=(15,15)):
-    m,n = [(ss-1.)/2. for ss in window_size]
-    y,x = np.ogrid[-m:m+1,-n:n+1]
+def gauss2D(window_size=(15, 15)):
+    m, n = [(ss - 1.) / 2. for ss in window_size]
+    y, x = np.ogrid[-m:m + 1, -n:n + 1]
     sigma_h = 1.
-    h = np.exp( -(x*x + y*y) / (2.*sigma_h*sigma_h) )
-    h[ h < np.finfo(h.dtype).eps*h.max() ] = 0
+    h = np.exp(-(x * x + y * y) / (2. * sigma_h * sigma_h))
+    h[h < np.finfo(h.dtype).eps * h.max()] = 0
     w_0 = np.hamming(window_size[0])
     w_1 = np.hamming(window_size[1])
-    w = w_0*w_1
-    h = np.multiply(h,w)
+    w = w_0 * w_1
+    h = np.multiply(h, w)
     sumh = h.sum()
     if sumh != 0:
         h /= sumh
@@ -376,8 +378,8 @@ def gauss2D(window_size=(15,15)):
 
 
 def _image_indicator(image, background_ratio):
-    indicator = np.int8( image > np.percentile(image, background_ratio*100) )  # for excluding empty space from average
-    return indicator 
+    indicator = np.int8(image > np.percentile(image, background_ratio * 100))  # for excluding empty space from average
+    return indicator
 
 
 def image_mask(image, blur_filter, background_ratio, boundary_ratio):
@@ -394,19 +396,20 @@ def image_mask(image, blur_filter, background_ratio, boundary_ratio):
         ndarray: Masked image with same shape of input image. 
     '''
     # blur the input image with a 2D Gaussian window
-    (num_slices, num_rows_cols, _)  = np.shape(image)
+    (num_slices, num_rows_cols, _) = np.shape(image)
     image_blurred = np.array([convolve(image[i], blur_filter, mode='wrap') for i in range(num_slices)])
     image_indicator = _image_indicator(image_blurred, background_ratio)
-    boundary_len = num_rows_cols*boundary_ratio//2
-    R = (num_rows_cols-1)*(1-boundary_ratio)//2
-    center_pt = (num_rows_cols-1)//2
+    boundary_len = num_rows_cols * boundary_ratio // 2
+    R = (num_rows_cols - 1) * (1 - boundary_ratio) // 2
+    center_pt = (num_rows_cols - 1) // 2
     boundary_mask = np.zeros((num_rows_cols, num_rows_cols))
     for i in range(num_rows_cols):
         for j in range(num_rows_cols):
-            boundary_mask[i,j] = (np.sum((i-center_pt)*(i-center_pt) + (j-center_pt)*(j-center_pt)) < R*R)
+            boundary_mask[i, j] = (
+                        np.sum((i - center_pt) * (i - center_pt) + (j - center_pt) * (j - center_pt)) < R * R)
     image_indicator = image_indicator * np.array([np.int8(boundary_mask) for _ in range(num_slices)])
-    return image_indicator*image 
-    
+    return image_indicator * image
+
 
 def _background_calibration(sino, background_view_list, background_box_info_list):
     avg_offset = 0.
@@ -415,26 +418,31 @@ def _background_calibration(sino, background_view_list, background_box_info_list
     for view_idx, box_info in zip(background_view_list, background_box_info_list):
         print(f"box used in view {view_idx} for calbiration: (x,y,width,height)=", box_info)
         (x, y, box_width, box_height) = box_info
-        avg_offset += np.mean(sino[view_idx, y:y+box_height, x:x+box_width]) 
+        avg_offset += np.mean(sino[view_idx, y:y + box_height, x:x + box_width])
     avg_offset /= len(background_view_list)
     return avg_offset
 
 
-def NSI_process_raw_scans(path_radiographs, num_views, path_blank=None, path_dark=None,
-                   view_range=None, total_angles=360, num_acquired_scans=2000,
-                   rotation_direction="positive",
-                   num_time_points=1, time_point=0):
-    """Given path to a ConeBeam Scan directory, read a subset of the scans that corresponds to the specified view angle range, number of views, and time point.
+def NSI_process_raw_scans(path_radiographs, NSI_system_params,
+                          num_scans=None, path_blank=None, path_dark=None,
+                          rotation_direction="positive",
+                          num_time_points=1, time_point=0):
+    """Read a subset of the scans in a ConeBeam Scan directory and calculate corresponding angles for each scans.
     
     Args:
+
         path_radiographs (string): Path to a ConeBeam Scan directory.
-        num_views (int): Number of views to use for reconstruction.
-        path_blank (string): [Default=None] Path to blank scan.
-        path_dark (string): [Default=None] Path to dark scan.
-        view_range (list[int, int]): [Default=None] Two indexes of views to specify the range of views to use for reconstruction.
-        total_angles (int): [Default=360] Total rotation angle for the whole dataset.
-        num_acquired_scans (int): [Default=2000] Total number of acquired scans in the directory.
-        rotation_direction (string): [Default='positive'] Rotation direction. Should be 'positive' or 'negative'.
+        NSI_system_params (dict): A dictionary contains parameters from an NSI configuration file by NSI_read_params().
+        num_scans (int): [Default=None] Number of scans sampled from the entire directory.
+            By default, num_scans will be the total number of scans in the directory.
+        path_blank (string): [Default=None] Path to blank scan, e.g. '../gain0.tif'
+        path_dark (string): [Default=None] Path to dark scan, e.g. '../offset.tif'
+        rotation_direction (string): [Default='positive'] Rotation direction for angles calculation.
+            Should be 'positive' or 'negative'.
+        num_time_points (int): [Default=None] Split sampled scans into number of time points.
+            By default, a time point contains sampled scans in a 360-degree rotation.
+        time_point (int): [Default=0] Index of the time point (< num_time_points) to read the specific scans for a 3D reconstruction.
+            By default, time_point=0, return the sampled scans in the first time point.
     Returns: 
         4-element tuple containing:
         
@@ -446,11 +454,11 @@ def NSI_process_raw_scans(path_radiographs, num_views, path_blank=None, path_dar
         
         - **angles** (*ndarray, double*): 1D array of angles corresponding to preprocessed sinogram. It is assumed that the rotation of each view is equally spaced.
     """
-    
-    if view_range is None:
-        view_range = [0, num_acquired_scans - 1]
 
-    view_ids = _compute_views_index_list(view_range, num_views)
+    num_acquired_scans = NSI_system_params["num_acquired_scans"]
+    total_angles = NSI_system_params["total_angles"]
+
+    view_ids = _compute_views_index_list([0, num_acquired_scans], num_scans)
     view_ids = _select_contiguous_subset(view_ids, num_time_points, time_point)
     angles = _compute_angles_list(view_ids, num_acquired_scans, total_angles, rotation_direction)
     obj_scan = _read_scan_dir(path_radiographs, view_ids)
@@ -485,8 +493,6 @@ def compute_sino_from_scans(obj_scan, blank_scan, dark_scan,
         downsample_factor ([int, int]): [Default=[1,1]] Two numbers to define down-sample factor.
         crop_factor ([(int, int),(int, int)] or [int, int, int, int]): [Default=[(0, 0), (1, 1)]]
             Two points to define the bounding box. Sequence of [(r0, c0), (r1, c1)] or [r0, c0, r1, c1], where 1>=r1 >= r0>=0 and 1>=c1 >= c0>=0.
-        num_time_points (int): [Default=1] Total number of time points.
-        time_point (int): [Default=0] Index of the time point we want to use for 3D reconstruction.
         weight_type (string, optional): [Default='unweighted'] Type of noise model used for data.
             The function ``cone3D.calc_weights`` is used to set weights using specified ``weight_type`` parameter.
                 - Option "unweighted" corresponds to unweighted reconstruction;
@@ -503,7 +509,7 @@ def compute_sino_from_scans(obj_scan, blank_scan, dark_scan,
         
         - **weights** (*ndarray, float*): 3D weights array with the same shape as sino. 
     """
-    
+
     # downsampling in pixels
     obj_scan, blank_scan, dark_scan = _downsample_scans(obj_scan, blank_scan, dark_scan,
                                                         downsample_factor=downsample_factor)
@@ -511,13 +517,13 @@ def compute_sino_from_scans(obj_scan, blank_scan, dark_scan,
     obj_scan, blank_scan, dark_scan = _crop_scans(obj_scan, blank_scan, dark_scan,
                                                   crop_factor=crop_factor)
     sino, weight_mask = _compute_sino_and_weight_mask_from_scans(obj_scan, blank_scan, dark_scan)
-    
+
     # set invalid sinogram entries to 0
-    sino[weight_mask==0] = 0.
+    sino[weight_mask == 0] = 0.
     # compute sinogram weights
     weights = cone3D.calc_weights(sino, weight_type=weight_type)
     # set the weights corresponding to invalid sinogram entries to 0.
-    weights[weights_mask==0] = 0.
+    weights[weight_mask == 0] = 0.
     # background offset calibration
     background_offset = _background_calibration(sino, background_view_list, background_box_info_list)
     print("background offset = ", background_offset)
