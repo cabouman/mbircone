@@ -499,7 +499,7 @@ def NSI_process_raw_scans(path_radiographs, NSI_system_params,
 
 def compute_sino_from_scans(obj_scan, blank_scan=None, dark_scan=None,
                             downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
-                            weight_type='None',
+                            weight_type='unweighted',
                             background_view_list=[], background_box_info_list=[]):
     """Given a set of object scan, blank scan, and dark scan, compute the sinogram used for reconstruction. This function will downsample and crop the scans, compute sinogram and weights from the scans, and finally perform background offset calibration to the sinogram.
 
