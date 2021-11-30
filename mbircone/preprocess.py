@@ -21,9 +21,10 @@ def _read_scan_img(img_path):
 
     img = np.asarray(Image.open(img_path))
 
+    if np.issubdtype(img.dtype, np.integer):
         # make float and normalize integer types
         maxval = np.iinfo(img.dtype).max
-        img = img.astype(np.float32) / maxval
+        img = img.astype(np.float32) / maxval    
     
     return img.astype(np.float32)
 
@@ -470,15 +471,12 @@ def blind_fixture_correction(sino, angles, dist_source_detector, magnification,
     return sino_corrected
 
 
-def NSI_obtain_raw_scans():
-
-
-def compute_sino_from_scans(path_radiographs, num_views, path_blank=None, path_dark=None,
-                            view_range=None, total_angles=360, num_acquired_scans=2000,
-                            rotation_direction="positive", downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
-                            num_time_points=1, time_point=0,
-                            weights_type='unweighted',
-                            background_view_list=[], background_box_info_list=[]):
+def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
+                view_range=None, total_angles=360, num_acquired_scans=2000,
+                rotation_direction="positive", downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
+                num_time_points=1, time_point=0,
+                weight_type='unweighted',
+                background_view_list=[], background_box_info_list=[]):
     """ Computes preprocessed sinogram and view angles used for reconstruction. This function will read image volumes of object scan, black scan, and dark scan (if provided) from input radiograph path, perform downsampling and cropping to the scans, compute the sinogram and weights from the scans, and finally perform background offset calibration to the sinogram.
 
     Args:
