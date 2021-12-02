@@ -68,7 +68,7 @@ if __name__ == '__main__':
     par_verbose = 0
 
     # Number of parallel functions
-    num_parallel = 8
+    num_parallel = 4
 
     # ###########################################################################
     # Obtain a cluster ticket.
@@ -205,7 +205,7 @@ if __name__ == '__main__':
                      'sharpness': sharpness,
                      'snr_db': snr_db,
                      'max_iterations': max_iterations,
-                     'verbose': 0}
+                     'verbose': 1}
     recon_list = mbircone.multinode.scatter_gather(cluster_ticket,
                                                    mbircone.cone3D.recon,
                                                    constant_args=constant_args,
