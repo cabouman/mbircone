@@ -410,7 +410,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
     sys.stdout.write(question)
     sys.stdout.write(prompt)
     choice = input()
-    if choice is None or choice == "":
+    if choice == "":
         choice = './'
     os.makedirs(choice, exist_ok=True)
     config['cluster_params']['local_directory'] = choice
@@ -422,7 +422,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
     sys.stdout.write(question)
     sys.stdout.write(prompt)
     choice = input()
-    if choice is None or choice == "":
+    if choice == "":
         choice = './'
     os.makedirs(choice, exist_ok=True)
     config['cluster_params']['log_directory'] = choice
