@@ -159,8 +159,8 @@ def scatter_gather(cluster_ticket, func, constant_args={}, variable_args_list=[]
         >>> from psutil import cpu_count
 
         >>> # Set up the local multi-core machine for parallel computation.
-        >>> num_cpus = cpu_count(logical=False)
-        >>> cluster_ticket, max_possible_num_worker = get_cluster_ticket('LocalHost',num_worker_per_node=num_cpus)
+        >>> num_physical_cores = cpu_count(logical=False)
+        >>> cluster_ticket = get_cluster_ticket('LocalHost',num_physical_cores_per_node=num_physical_cores)
 
         >>> # Define a simple linear function.
         >>> def linear_func(x_1, a, b):
@@ -169,7 +169,7 @@ def scatter_gather(cluster_ticket, func, constant_args={}, variable_args_list=[]
         >>> # Parallel compute y=2*x+3 with respect to six different x_1.
         >>> variable_args_list = [{'x_1':i} for i in range(6)]
         >>> constant_args = {'a':2, 'b':3}
-        >>> scatter_gather(linear_func,variable_args_list,constant_args,min_nodes=max_possible_num_worker)
+        >>> scatter_gather(cluster_ticket, linear_func, constant_args, variable_args_list)
         [3, 5, 7, 9, 11, 13]
 
     """

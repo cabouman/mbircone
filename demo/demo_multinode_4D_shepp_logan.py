@@ -30,8 +30,9 @@ if __name__ == '__main__':
     # Ask for a configuration file to obtain a cluster ticket to access a parallel cluster.
     # If the configuration file is not provided, it will automatically set up a LocalCluster based on the number of
     # cores in the local computer and return a ticket needed for :py:func:`~multinode.scatter_gather`.
-    parser = argparse.ArgumentParser(description='Get configs path')
-    parser.add_argument('--configs_path', type=str, default=None, help="Configs path")
+    parser = argparse.ArgumentParser(description='A demo help users use mbircone.multinode module on High Performance Computer.')
+    parser.add_argument('--configs_path', type=str, default=None, help="Path to a configuration file.")
+    parser.add_argument('--no_multinode', default=False, action='store_true', help="Run this demo in a single node machine.")
     args = parser.parse_args()
     save_config_dir = './configs/multinode/'
 
@@ -65,7 +66,7 @@ if __name__ == '__main__':
     filename = 'output/3D_shepp_logan/results_%d.png'
 
     # Parallel computer verbose
-    par_verbose = 0
+    par_verbose = 1
 
     # Number of parallel functions
     num_parallel = 4
@@ -78,31 +79,30 @@ if __name__ == '__main__':
     # More information of obtaining this ticket can be found in below webpage.
     # API of dask_jobqueue https://jobqueue.dask.org/en/latest/api.html
     # API of https://docs.dask.org/en/latest/setup/single-distributed.html#localcluster
-    if args.configs_path is None:
-        # create output folder
-        os.makedirs(save_config_dir, exist_ok=True)
-        # Create a configuration dictionary for a cluster ticket, by collecting required information from terminal.
-        configs = create_cluster_ticket_configs(save_config_dir=save_config_dir)
 
+    if args.no_multinode:
+        num_physical_cores = cpu_count(logical=False)
+        cluster_ticket = mbircone.multinode.get_cluster_ticket('LocalHost', num_physical_cores_per_node=num_physical_cores)
     else:
-        # Load cluster setup parameter.
-        configs = load_yaml(args.configs_path)
+        if args.configs_path is None:
+            # create output folder
+            os.makedirs(save_config_dir, exist_ok=True)
+            # Create a configuration dictionary for a cluster ticket, by collecting required information from terminal.
+            configs = create_cluster_ticket_configs(save_config_dir=save_config_dir)
 
-    cluster_ticket= mbircone.multinode.get_cluster_ticket(
-        job_queue_system_type=configs['job_queue_system_type'],
-        num_physical_cores_per_node=configs['cluster_params']['num_physical_cores_per_node'],
-        num_nodes=configs['cluster_params']['num_nodes'],
-        maximum_memory_per_node=configs['cluster_params']['maximum_memory_per_node'],
-        maximum_allowable_walltime=configs['cluster_params']['maximum_allowable_walltime'],
-        system_specific_args=configs['cluster_params']['system_specific_args'],
-        local_directory=configs['cluster_params']['local_directory'],
-        log_directory=configs['cluster_params']['log_directory'])
+        else:
+            # Load cluster setup parameter.
+            configs = load_yaml(args.configs_path)
 
-    # Automatically set number of parallel jobs to distribute to a parallel cluster.
-    if configs['cluster_params']['num_nodes'] is None:
-        num_nodes = 1
-    else:
-        num_nodes = configs['cluster_params']['num_nodes']
+        cluster_ticket = mbircone.multinode.get_cluster_ticket(
+            job_queue_system_type=configs['job_queue_system_type'],
+            num_physical_cores_per_node=configs['cluster_params']['num_physical_cores_per_node'],
+            num_nodes=configs['cluster_params']['num_nodes'],
+            maximum_memory_per_node=configs['cluster_params']['maximum_memory_per_node'],
+            maximum_allowable_walltime=configs['cluster_params']['maximum_allowable_walltime'],
+            system_specific_args=configs['cluster_params']['system_specific_args'],
+            local_directory=configs['cluster_params']['local_directory'],
+            log_directory=configs['cluster_params']['log_directory'])
 
 
     print(cluster_ticket)
@@ -205,7 +205,7 @@ if __name__ == '__main__':
                      'sharpness': sharpness,
                      'snr_db': snr_db,
                      'max_iterations': max_iterations,
-                     'verbose': 1}
+                     'verbose': 0}
     recon_list = mbircone.multinode.scatter_gather(cluster_ticket,
                                                    mbircone.cone3D.recon,
                                                    constant_args=constant_args,
