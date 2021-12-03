@@ -332,28 +332,39 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
         else:
             sys.stdout.write("Please Enter one of \'SGE\' (Sun Grid Engine) and \'SLURM\'.\n")
 
-    # Ask for the number of physical cores per node.
+    # Ask for the number of physical cores per node for 3 times.
+    ask_times = 3
     while config['cluster_params']['num_physical_cores_per_node'] is None:
         question = '\nPlease enter the number of physical cores in a node. [Default = 16]\n'
         sys.stdout.write(question)
+
+        if ask_times == 0:
+            sys.stdout.write("Set num_physical_cores_per_node to default value 16.\n")
+            config['cluster_params']['num_physical_cores_per_node'] = 16
 
         choice = input()
         if choice.isnumeric() and int(choice) >= 1:
             config['cluster_params']['num_physical_cores_per_node'] = int(choice)
         else:
             sys.stdout.write("Please Enter a positive number.\n")
+        ask_times -= 1
 
-    # Ask for the number of nodes.
+    # Ask for the number of nodes for 3 times.
+    ask_times = 3
     while config['cluster_params']['num_nodes'] is None:
         question = '\nPlease enter the number of nodes for parallel computation. [Default = 1]\n'
         sys.stdout.write(question)
+
+        if ask_times == 0:
+            sys.stdout.write("Set num_physical_cores_per_node to default value 1.\n")
+            config['cluster_params']['num_physical_cores_per_node'] = 1
 
         choice = input()
         if choice.isnumeric() and int(choice) >= 1:
             config['cluster_params']['num_nodes'] = int(choice)
         else:
             sys.stdout.write("Please Enter a positive number.\n")
-
+        ask_times -= 1
     # Ask for the maximum allowable walltime.
     question = '\nPlease enter the maximum allowable walltime.'
     prompt = 'This should be a string in the form D-HH:MM:SS.  E.g., \'0-01:00:00\' for one hour.\n'
@@ -396,6 +407,8 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
     sys.stdout.write(question)
     sys.stdout.write(prompt)
     choice = input()
+    if choice is None or choice == "":
+        choice = './'
     os.makedirs(choice, exist_ok=True)
     config['cluster_params']['local_directory'] = choice
 
@@ -406,6 +419,8 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
     sys.stdout.write(question)
     sys.stdout.write(prompt)
     choice = input()
+    if choice is None or choice == "":
+        choice = './'
     os.makedirs(choice, exist_ok=True)
     config['cluster_params']['log_directory'] = choice
 
