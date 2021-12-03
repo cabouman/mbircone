@@ -230,7 +230,7 @@ def scatter_gather(cluster_ticket, func, constant_args={}, variable_args_list=[]
             print('Got %d nodes, start parallel computation.' % nb_workers)
             break
 
-        # Check the number of nodes we can access per second
+        # Check the number of nodes we reserved per second
         time.sleep(wait_times)
         loop_time += wait_times
 
