@@ -66,7 +66,7 @@ if __name__ == '__main__':
     filename = 'output/3D_shepp_logan/results_%d.png'
 
     # Parallel computer verbose
-    par_verbose = 1
+    par_verbose = 0
 
     # Number of parallel functions
     num_parallel = 4
