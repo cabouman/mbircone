@@ -334,7 +334,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
 
     # Ask for the number of physical cores per node.
     while config['cluster_params']['num_physical_cores_per_node'] is None:
-        question = '\nPlease enter the number of physical cores in a node.\n'
+        question = '\nPlease enter the number of physical cores in a node. [Default = 16]\n'
         sys.stdout.write(question)
 
         choice = input()
@@ -345,7 +345,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
 
     # Ask for the number of nodes.
     while config['cluster_params']['num_nodes'] is None:
-        question = '\nPlease enter the number of nodes for parallel computation.\n'
+        question = '\nPlease enter the number of nodes for parallel computation. [Default = 1]\n'
         sys.stdout.write(question)
 
         choice = input()
@@ -361,7 +361,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
     sys.stdout.write(prompt)
 
     choice = input()
-    try :
+    try:
         validate(choice, strftime_format('%d-%H:%M:%S'))
         walltime_valid = True
     except ValidationError:
@@ -370,10 +370,10 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
     if walltime_valid:
         config['cluster_params']['maximum_allowable_walltime'] = choice
     else:
-        sys.stdout.write("Since the entered string did not match the format, the scheduler will allocate system-determined maximum. \n")
+        sys.stdout.write("Since the entered string did not match the format, the scheduler will allocate system-determined maximum allowable walltime.\n")
 
     # Ask for the maximum memory per node.
-    question = '\nPlease enter the maximum memory per node.\n'
+    question = '\nPlease enter the maximum memory per node. [Default = 16GB]\n'
     prompt = 'E.g. \'100MB\' or \'16GB\'. If None, the scheduler will allocate a system-determined amount per node.\n'
     sys.stdout.write(question)
     sys.stdout.write(prompt)
@@ -383,7 +383,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
 
 
     # Ask for any additional arguments to pass to the job scheduling system.
-    question = '\nPlease enter any additional arguments to pass to the job scheduling system.\n'
+    question = '\nPlease enter any additional arguments to pass to the job scheduling system. [Default = ""]\n'
     prompt = 'Consult your local documentation or system administrator.\n'
     sys.stdout.write(question)
     sys.stdout.write(prompt)
@@ -391,7 +391,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
     config['cluster_params']['system_specific_args'] = choice
 
     # Ask for a desired local directory for file spilling in parallel computation.
-    question = '\nPlease enter a desired local directory for file spilling in parallel computation.\n'
+    question = '\nPlease enter a desired local directory for file spilling in parallel computation. [Default = "./"]\n'
     prompt = 'Recommend to set it to a location of fast local storage like /scratch or $TMPDIR.\n'
     sys.stdout.write(question)
     sys.stdout.write(prompt)
@@ -400,7 +400,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
     config['cluster_params']['local_directory'] = choice
 
     # Ask for a desired  directory to store Dask\'s job scheduler logs.
-    question = '\nPlease enter a desired directory to store Dask\'s job scheduler logs.\n'
+    question = '\nPlease enter a desired directory to store Dask\'s job scheduler logs. [Default = "./"]\n'
     prompt = 'For each reserved node, there will be two different log files, error log and output log.\n' \
              'Users can check those log files to find the information printed from the parallel functions.\n'
     sys.stdout.write(question)

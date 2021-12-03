@@ -10,7 +10,7 @@ import getpass
 def get_cluster_ticket(job_queue_system_type,
                        num_physical_cores_per_node,
                        num_nodes=1,
-                       maximum_memory_per_node=None, maximum_allowable_walltime=None,
+                       maximum_memory_per_node='16GB', maximum_allowable_walltime=None,
                        system_specific_args="",
                        local_directory='./', log_directory='./'):
     """A utility to return a ticket needed for :py:func:`~multinode.scatter_gather` to access a parallel cluster.
@@ -27,8 +27,7 @@ def get_cluster_ticket(job_queue_system_type,
 
         num_nodes (int): [Default=1] Requested number of nodes for parallel computation.
 
-        maximum_memory_per_node (str, optional): [Default=None] Requested maximum memory per node, e.g. '100MB' or '16GB'.
-            If None, the scheduler will allocate a system-determined amount per node.
+        maximum_memory_per_node (str, optional): [Default='16GB'] Requested maximum memory per node, e.g. '100MB' or '16GB'.
 
         maximum_allowable_walltime (str, optional): [Default=None] Maximum allowable walltime as a string in the
             form D-HH:MM:SS.  E.g., '0-01:00:00' for one hour. If None, the scheduler will allocate a
