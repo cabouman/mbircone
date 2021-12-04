@@ -469,6 +469,7 @@ def image_mask(image, roi_ratio, smart_contour, gauss_sigma, alpha, beta, w_line
 
 
 def blind_fixture_correction(sino, angles, dist_source_detector, magnification,
+                             recon_init=None,
                              roi_ratio=0.8, smart_contour=True, gauss_sigma=2., 
                              alpha=0.07, beta=10., w_line=0, w_edge=1, gamma=0.01, 
                              channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
@@ -481,19 +482,20 @@ def blind_fixture_correction(sino, angles, dist_source_detector, magnification,
     """ Corrects the sinogram data for fixtures placed out of the field of view of the scanner.
     """
     # initial recon
-    print("Performing inital qGGMRF reconstruction with uncorrected sinogram ......")
-    x = cone3D.recon(sino, angles, dist_source_detector, magnification, 
-                     channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
-                     delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius,
-                     init_image=init_image,
-                     sigma_y=sigma_y, snr_db=snr_db, weights=weights, weight_type=weight_type,
-                     positivity=positivity, p=p, q=q, T=T, num_neighbors=num_neighbors,
-                     sharpness=sharpness, sigma_x=sigma_x, max_iterations=max_iterations, stop_threshold=stop_threshold,
-                     num_threads=num_threads, NHICD=NHICD, verbose=verbose, lib_path=lib_path)
+    if recon_init is None:
+        print("Performing inital qGGMRF reconstruction with uncorrected sinogram ......")
+        recon_init = cone3D.recon(sino, angles, dist_source_detector, magnification, 
+                         channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
+                         delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius,
+                         init_image=init_image,
+                         sigma_y=sigma_y, snr_db=snr_db, weights=weights, weight_type=weight_type,
+                         positivity=positivity, p=p, q=q, T=T, num_neighbors=num_neighbors,
+                         sharpness=sharpness, sigma_x=sigma_x, max_iterations=max_iterations, stop_threshold=stop_threshold,
+                         num_threads=num_threads, NHICD=NHICD, verbose=verbose, lib_path=lib_path)
     # Image segmentation
     print("Performing image segmentation ......")
-    mask, snake = image_mask(x, roi_ratio=roi_ratio, smart_contour=smart_contour, gauss_sigma=gauss_sigma, alpha=alpha, beta=beta, w_line=w_line, w_edge=w_edge, gamma=gamma)
-    x_m = x*mask
+    mask, snake = image_mask(recon_init, roi_ratio=roi_ratio, smart_contour=smart_contour, gauss_sigma=gauss_sigma, alpha=alpha, beta=beta, w_line=w_line, w_edge=w_edge, gamma=gamma)
+    x_m = recon_init*mask
     (num_views, num_det_rows, num_det_channels) = np.shape(sino)
     print("Calculating sinogram error ......")
     Ax_m = cone3D.project(x_m, angles,
