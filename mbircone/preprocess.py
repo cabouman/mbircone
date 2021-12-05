@@ -362,22 +362,6 @@ def NSI_to_MBIRCONE_params(NSI_system_params):
     return geo_params
 
 
-def _gauss2D(window_size=(15, 15)):
-    m, n = [(ss - 1.) / 2. for ss in window_size]
-    y, x = np.ogrid[-m:m + 1, -n:n + 1]
-    sigma_h = 1.
-    h = np.exp(-(x * x + y * y) / (2. * sigma_h * sigma_h))
-    h[h < np.finfo(h.dtype).eps * h.max()] = 0
-    w_0 = np.hamming(window_size[0])
-    w_1 = np.hamming(window_size[1])
-    w = w_0 * w_1
-    h = np.multiply(h, w)
-    sumh = h.sum()
-    if sumh != 0:
-        h /= sumh
-    return h
-
-
 def _image_indicator(image, background_ratio):
     indicator = np.int8(image > np.percentile(image, background_ratio * 100))  # for excluding empty space from average
     return indicator
@@ -459,9 +443,11 @@ def image_mask(image, roi_ratio, smart_contour, gauss_sigma, alpha, beta, w_line
     center_pt = num_rows_cols // 2
     roi_limit_points = _circle_points([center_pt, center_pt], roi_radius)
     if smart_contour:
+        print("Use active contour detection algorithm!")
         snake = np.array([active_contour(image[i], roi_limit_points, alpha=alpha, w_line=w_line, w_edge=w_edge, beta=beta, gamma=gamma) for i in range(num_slices)])
         mask = np.array([generate_2D_mask_from_snake(snake[i], num_rows_cols) for i in range(num_slices)])
     else:
+        print("Use default contour of ROI circle.")
         snake = np.array([np.copy(roi_limit_points) for _ in range(num_slices)])
         mask_2D = generate_2D_mask_from_snake(roi_limit_points, num_rows_cols)
         mask = np.array([np.copy(mask_2D) for _ in range(num_slices)])
