@@ -1,6 +1,8 @@
 matplotlib
-dask
-dask_jobqueue
 imageio
+scipy
 tensorflow~=2.6.0
 keras~=2.6.0
+PyYAML
+datatest
+
