@@ -106,7 +106,7 @@ if __name__ == '__main__':
 
 
     print(cluster_ticket)
-    print("Parallel compute 3D conebeam reconstruction on %d timepoints.\n" % num_parallel)
+    print("Parallel computing 3D conebeam reconstruction at %d timepoints.\n" % num_parallel)
 
     # ###########################################################################
     # Generate a 3D shepp logan phantom.
@@ -120,13 +120,13 @@ if __name__ == '__main__':
                                                           delta_pixel_image=delta_pixel_image)
     Nz, Nx, Ny = ROR
     img_slices_boundary_size, img_rows_boundary_size, img_cols_boundary_size = boundary_size
-    print('ROR of the recon is:', (Nz, Nx, Ny))
+    print('Region of reconstruction (ROR) shape is:', (Nz, Nx, Ny))
 
     # Set phantom parameters to generate a phantom inside ROI according to ROR and boundary_size.
     # All valid pixels should be inside ROI.
     num_rows_cols = Nx - 2 * img_rows_boundary_size  # Assumes a square image
     num_slices_phantom = Nz - 2 * img_slices_boundary_size
-    print('ROI and shape of phantom is:', num_slices_phantom, num_rows_cols, num_rows_cols)
+    print('Region of interest (ROI) shape is:', num_slices_phantom, num_rows_cols, num_rows_cols)
 
     # Set display indexes
     display_slice = img_slices_boundary_size + int(0.4 * num_slices_phantom)
@@ -136,16 +136,16 @@ if __name__ == '__main__':
 
     # Generate a 3D phantom
     phantom = mbircone.phantom.gen_shepp_logan_3d(num_rows_cols, num_rows_cols, num_slices_phantom)
-    print('Generated phantom shape = ', np.shape(phantom))
+    print('Generated 3D phantom shape before padding = ', np.shape(phantom))
     phantom = mbircone.cone3D.pad_roi2ror(phantom, boundary_size)
-    print('Padded phantom shape = ', np.shape(phantom))
+    print('Padded 3D phantom shape = ', np.shape(phantom))
     print()
 
     # ###########################################################################
     # Generate a 4D shepp logan phantom.
     # ###########################################################################
 
-    print("Generating 4D simulated data by rotating the 3D shepp logan phantom by increasing degree per time point ...")
+    print("Generating 4D simulated data by rotating the 3D shepp logan phantom with positive angular steps with each time point ...")
     # Generate 4D simulated data by rotating the 3D shepp logan phantom by increasing degree per time point.
     # Create the rotation angles and argument lists, and distribute to workers.
     phantom_rot_para = np.linspace(0, 180, num_parallel, endpoint=False)  # Phantom rotation angles.
@@ -161,7 +161,7 @@ if __name__ == '__main__':
     # Generate sinogram
     # ###########################################################################
 
-    print("Generating sinogram data by projecting each phantom in all timepoints ...")
+    print("****Multinode computation with Dask****: Generating sinogram data by projecting each phantom at each timepoint ...")
     # scatter_gather parallel computes mbircone.cone3D.project
     # Generate sinogram data by projecting each phantom in phantom list.
     # Create the projection angles and argument lists, and distribute to workers.
@@ -190,7 +190,7 @@ if __name__ == '__main__':
     # Perform multinode reconstruction
     # ###########################################################################
 
-    print("Reconstructing 3D phantom in all timepoints ...")
+    print("****Multinode computation with Dask****: Reconstructing 3D phantom at all timepoints ...")
     # scatter_gather parallel computes mbircone.cone3D.recon
     # Reconstruct 3D phantom in all timepoints using mbircone.cone3D.recon.
     # Create the projection angles and argument lists, and distribute to workers.
