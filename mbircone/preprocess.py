@@ -444,6 +444,9 @@ def image_mask(image, roi_ratio, smart_contour, gauss_sigma, alpha, beta, w_line
     roi_limit_points = _circle_points([center_pt, center_pt], roi_radius)
     if smart_contour:
         print("Use active contour detection algorithm!")
+        if alpha is None:
+            alpha = 0.000365*num_rows_cols
+            print(f"alpha automatically calculated. alpha={alpha:.4f}")
         snake = np.array([active_contour(image[i], roi_limit_points, alpha=alpha, w_line=w_line, w_edge=w_edge, beta=beta, gamma=gamma) for i in range(num_slices)])
         mask = np.array([generate_2D_mask_from_snake(snake[i], num_rows_cols) for i in range(num_slices)])
     else:
@@ -457,7 +460,7 @@ def image_mask(image, roi_ratio, smart_contour, gauss_sigma, alpha, beta, w_line
 def blind_fixture_correction(sino, angles, dist_source_detector, magnification,
                              recon_init=None,
                              roi_ratio=0.8, smart_contour=True, gauss_sigma=2., 
-                             alpha=0.07, beta=10., w_line=0, w_edge=1, gamma=0.01, 
+                             alpha=None, beta=10., w_line=-0.5, w_edge=1.5, gamma=0.01, 
                              channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
                              delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
                              init_image=0.0,
