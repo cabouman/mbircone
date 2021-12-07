@@ -47,7 +47,7 @@ def _sino_indicator(sino):
 
     Args:
         sino (ndarray):
-            3D numpy array of sinogram data with shape (num_views,num_det_rows,num_det_channels)
+            numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels) or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
 
     Returns:
         int8: A binary value: =1 within sinogram support; =0 outside sinogram support.
@@ -91,7 +91,7 @@ def calc_weights(sino, weight_type):
     """Compute the weights used in MBIR reconstruction.
 
     Args:
-        sino (ndarray): 3D numpy array of sinogram data with shape (num_views,num_det_rows,num_det_channels)
+        sino (ndarray): numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels) or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
         weight_type (string):[Default=0] Type of noise model used for data.
 
             If weight_type="unweighted"        => weights = numpy.ones_like(sino)
@@ -103,7 +103,7 @@ def calc_weights(sino, weight_type):
             If weight_type="emission"         => weights = 1/(sino + 0.1)
 
     Returns:
-        ndarray: 3D numpy array of weights with same shape as sino.
+        ndarray: numpy array of weights with same shape as sino.
 
     Raises:
         Exception: Description
@@ -115,7 +115,7 @@ def calc_weights(sino, weight_type):
     elif weight_type == 'transmission_root':
         weights = np.exp(-sino / 2)
     elif weight_type == 'emission':
-        weights = 1 / (sino + 0.1)
+        weights = 1 / (np.absolute(sino) + 0.1)
     else:
         raise Exception("calc_weights: undefined weight_type {}".format(weight_type))
 
@@ -139,7 +139,7 @@ def auto_sigma_y(sino, weights, snr_db=30.0, delta_pixel_image=1.0, delta_pixel_
 
 
     Returns:
-        ndarray: Automatic values of regularization parameter.
+        float: Automatic values of regularization parameter.
     """
 
     # Compute indicator function for sinogram support
@@ -154,7 +154,10 @@ def auto_sigma_y(sino, weights, snr_db=30.0, delta_pixel_image=1.0, delta_pixel_
     # compute sigma_y and scale by relative pixel and detector pitch
     sigma_y = rel_noise_std * signal_rms * (delta_pixel_image / delta_pixel_detector) ** (0.5)
 
-    return sigma_y
+    if sigma_y > 0:
+        return sigma_y
+    else:
+        return 1.0
 
 
 def auto_sigma_prior(sino, delta_pixel_detector=1.0, sharpness=0.0):
@@ -573,7 +576,12 @@ def recon(sino, angles, dist_source_detector, magnification,
         sysmatrix_fname_tmp = _gen_sysmatrix_fname_tmp(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
         ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, sysmatrix_fname_tmp, verbose=verbose)
         os.rename(sysmatrix_fname_tmp, sysmatrix_fname)
-
+    
+    # make sure that weights do not contain negative entries
+    # if weights is provided, and negative entry exists, then do not use the provided weights
+    if not ((weights is None) or (np.amin(weights) >= 0.0)):
+        warnings.warn("Parameter weights contains negative values; Setting weights = None.")
+        weights = None
     # Set automatic values for weights
     if weights is None:
         weights = calc_weights(sino, weight_type)

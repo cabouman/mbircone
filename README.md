@@ -1,7 +1,11 @@
 # MBIR Cone
 
+Warnning: Prerelease version - This code is under development
 Python Package for Cone Beam reconstruction.
 Based on the OpenMBIR-ConeBeam c package.
+
+Full documentation is available at: https://mbircone.readthedocs.io
+
 
 
 ## Distribution Statement

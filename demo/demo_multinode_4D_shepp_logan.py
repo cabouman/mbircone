@@ -4,18 +4,41 @@ import mbircone
 import argparse
 import getpass
 from psutil import cpu_count
-from demo_utils import load_yaml, plt_cmp_3dobj
+from demo_utils import load_yaml, plt_cmp_3dobj, create_cluster_ticket_configs
 from scipy import ndimage
 
 if __name__ == '__main__':
-    # Ask for configuration file for dask cluster.
-    # If the configuration file is not provided, it will automatically set up a LocalCluster based on the number of
-    # CPUS in the local computer.
-    parser = argparse.ArgumentParser(description='Get configs path')
-    parser.add_argument('--configs_path', type=str, default=None, help="Configs path")
-    args = parser.parse_args()
+    """
+    This script is a demonstration of how to use scatter_gather() to deploy parallel jobs.  Demo functionality includes
+     * obatin cluster ticket with get_cluster_ticket().
+     Use scatter_gather to:
+     * generating 4D simulated data by rotating the 3D shepp logan phantom by increasing degree per time point.
+     * generating sinogram data by projecting each phantom in all timepoints.
+     * performing 3D reconstruction in all timepoints.
+    """
+    print('This script is a demonstration of how to use scatter_gather() to deploy parallel jobs.  Demo functionality includes \
+    \n\t * obatin cluster ticket with get_cluster_ticket(). \
+    \n\t * Use scatter_gather to:\
+    \n\t * generating 4D simulated data by rotating the 3D shepp logan phantom by increasing degree per time point. \
+    \n\t * generating sinogram data by projecting each phantom in all timepoints. \
+    \n\t * performing 3D reconstruction in all timepoints.')
 
-    num_parallel = 2
+    # ###########################################################################
+    # Load the parameters from configuration file to obtain a cluster ticket.
+    # ###########################################################################
+
+    # Ask for a configuration file to obtain a cluster ticket to access a parallel cluster.
+    # If the configuration file is not provided, it will automatically set up a LocalCluster based on the number of
+    # cores in the local computer and return a ticket needed for :py:func:`~multinode.scatter_gather`.
+    parser = argparse.ArgumentParser(description='A demo help users use mbircone.multinode module on High Performance Computer.')
+    parser.add_argument('--configs_path', type=str, default=None, help="Path to a configuration file.")
+    parser.add_argument('--no_multinode', default=False, action='store_true', help="Run this demo in a single node machine.")
+    args = parser.parse_args()
+    save_config_dir = './configs/multinode/'
+
+    # ###########################################################################
+    # Set the parameters to do the recon
+    # ###########################################################################
 
     # sinogram parameters
     num_det_rows = 200
@@ -45,48 +68,50 @@ if __name__ == '__main__':
     # Parallel computer verbose
     par_verbose = 0
 
-    # Obtain Dask Cluster object(LocalCluster, SLURMCluster, SGECluster) by mbircone.parallel_utils.get_cluster_ticket
-    # More information and clusters with other job queue systems can be found in below webpage.
+    # Number of parallel functions
+    num_parallel = 4
+
+    # ###########################################################################
+    # Obtain a cluster ticket.
+    # ###########################################################################
+
+    # Obtain a ticket(LocalCluster, SLURMCluster, SGECluster) needed for :py:func:`~multinode.scatter_gather` to access a parallel cluster.
+    # More information of obtaining this ticket can be found in below webpage.
     # API of dask_jobqueue https://jobqueue.dask.org/en/latest/api.html
     # API of https://docs.dask.org/en/latest/setup/single-distributed.html#localcluster
-    if args.configs_path is None:
-        num_cpus = cpu_count(logical=False)
-        if num_cpus >= 4:
-            num_worker_per_node = int(np.sqrt(num_cpus))
-        else:
-            num_worker_per_node = num_cpus
-        cluster, maximum_possible_nb_worker = mbircone.parallel_utils.get_cluster_ticket(
-            'LocalHost',
-            num_worker_per_node=num_worker_per_node)
-        num_threads = num_cpus // num_worker_per_node
 
+    if args.no_multinode:
+        num_physical_cores = cpu_count(logical=False)
+        cluster_ticket = mbircone.multinode.get_cluster_ticket('LocalHost', num_physical_cores_per_node=num_physical_cores)
     else:
-        # Load cluster setup parameter.
-        configs = load_yaml(args.configs_path)
-        # Set openmp number of threads
-        num_threads = configs['cluster_params']['num_threads_per_worker']
+        if args.configs_path is None:
+            # create output folder
+            os.makedirs(save_config_dir, exist_ok=True)
+            # Create a configuration dictionary for a cluster ticket, by collecting required information from terminal.
+            configs = create_cluster_ticket_configs(save_config_dir=save_config_dir)
 
-        if configs['job_queue_sys'] == 'LocalHost':
-            cluster, maximum_possible_nb_worker = mbircone.parallel_utils.get_cluster_ticket(
-                configs['job_queue_sys'],
-                num_worker_per_node=configs['cluster_params']['num_worker_per_node'])
         else:
-            cluster, maximum_possible_nb_worker = mbircone.parallel_utils.get_cluster_ticket(
-                job_queue_sys=configs['job_queue_sys'],
-                num_worker_per_node=configs['cluster_params']['num_worker_per_node'],
-                num_nodes=configs['cluster_params']['num_nodes'],
-                num_threads_per_worker=configs['cluster_params']['num_threads_per_worker'],
-                maximum_allowable_walltime=configs['cluster_params']['maximum_allowable_walltime'],
-                maximum_memory_per_node=configs['cluster_params']['maximum_memory_per_node'],
-                death_timeout=configs['cluster_params']['death_timeout'],
-                infiniband_flag=configs['cluster_params']['infiniband_flag'],
-                par_env=configs['cluster_params']['par_env'],
-                queue_sys_opt=configs['cluster_params']['queue_sys_opt'],
-                local_directory=configs['cluster_params']['local_directory'].replace('$USER', getpass.getuser()),
-                log_directory=configs['cluster_params']['log_directory'].replace('$USER', getpass.getuser()))
-    print(cluster)
+            # Load cluster setup parameter.
+            configs = load_yaml(args.configs_path)
 
+        cluster_ticket = mbircone.multinode.get_cluster_ticket(
+            job_queue_system_type=configs['job_queue_system_type'],
+            num_physical_cores_per_node=configs['cluster_params']['num_physical_cores_per_node'],
+            num_nodes=configs['cluster_params']['num_nodes'],
+            maximum_memory_per_node=configs['cluster_params']['maximum_memory_per_node'],
+            maximum_allowable_walltime=configs['cluster_params']['maximum_allowable_walltime'],
+            system_specific_args=configs['cluster_params']['system_specific_args'],
+            local_directory=configs['cluster_params']['local_directory'],
+            log_directory=configs['cluster_params']['log_directory'])
+
+
+    print(cluster_ticket)
+    print("Parallel computing 3D conebeam reconstruction at %d timepoints.\n" % num_parallel)
+
+    # ###########################################################################
     # Generate a 3D shepp logan phantom.
+    # ###########################################################################
+
     ROR, boundary_size = mbircone.cone3D.compute_img_size(num_views, num_det_rows, num_det_channels,
                                                           dist_source_detector,
                                                           magnification,
@@ -95,13 +120,13 @@ if __name__ == '__main__':
                                                           delta_pixel_image=delta_pixel_image)
     Nz, Nx, Ny = ROR
     img_slices_boundary_size, img_rows_boundary_size, img_cols_boundary_size = boundary_size
-    print('ROR of the recon is:', (Nz, Nx, Ny))
+    print('Region of reconstruction (ROR) shape is:', (Nz, Nx, Ny))
 
     # Set phantom parameters to generate a phantom inside ROI according to ROR and boundary_size.
     # All valid pixels should be inside ROI.
     num_rows_cols = Nx - 2 * img_rows_boundary_size  # Assumes a square image
     num_slices_phantom = Nz - 2 * img_slices_boundary_size
-    print('ROI and shape of phantom is:', num_slices_phantom, num_rows_cols, num_rows_cols)
+    print('Region of interest (ROI) shape is:', num_slices_phantom, num_rows_cols, num_rows_cols)
 
     # Set display indexes
     display_slice = img_slices_boundary_size + int(0.4 * num_slices_phantom)
@@ -109,34 +134,34 @@ if __name__ == '__main__':
     display_y = num_rows_cols // 2
     display_view = 0
 
-    # Generate a phantom
+    # Generate a 3D phantom
     phantom = mbircone.phantom.gen_shepp_logan_3d(num_rows_cols, num_rows_cols, num_slices_phantom)
-    print('Generated phantom shape = ', np.shape(phantom))
+    print('Generated 3D phantom shape before padding = ', np.shape(phantom))
     phantom = mbircone.cone3D.pad_roi2ror(phantom, boundary_size)
-    print('Padded phantom shape = ', np.shape(phantom))
+    print('Padded 3D phantom shape = ', np.shape(phantom))
+    print()
 
+    # ###########################################################################
+    # Generate a 4D shepp logan phantom.
+    # ###########################################################################
 
-    # Set minimum number of workers to start to maximum possible number of worker.
-    min_nb_start_worker = maximum_possible_nb_worker
-
-    # scatter_gather parallel computes ndimage.rotate
+    print("Generating 4D simulated data by rotating the 3D shepp logan phantom with positive angular steps with each time point ...")
     # Generate 4D simulated data by rotating the 3D shepp logan phantom by increasing degree per time point.
     # Create the rotation angles and argument lists, and distribute to workers.
     phantom_rot_para = np.linspace(0, 180, num_parallel, endpoint=False)  # Phantom rotation angles.
-    variable_args_list = [{'angle': phantom_rot_ang} for phantom_rot_ang in phantom_rot_para]
-    fixed_args = {'input': phantom,
-                  'order': 0,
-                  'mode': 'constant',
-                  'axes': (1, 2),
-                  'reshape': False}
-    phantom_list = mbircone.parallel_utils.scatter_gather(ndimage.rotate,
-                                                          variable_args_list=variable_args_list,
-                                                          fixed_args=fixed_args,
-                                                          cluster=cluster,
-                                                          min_nb_start_worker=min_nb_start_worker,
-                                                          verbose=par_verbose)
-    print("Generate 4D simulated data by rotating the 3D shepp logan phantom by increasing degree per time point. \n")
+    phantom_list = [ndimage.rotate(input=phantom,
+                                   angle=phantom_rot_ang,
+                                   order=0,
+                                   mode='constant',
+                                   axes=(1, 2),
+                                   reshape=False) for phantom_rot_ang in phantom_rot_para]
+    print()
 
+    # ###########################################################################
+    # Generate sinogram
+    # ###########################################################################
+
+    print("****Multinode computation with Dask****: Generating sinogram data by projecting each phantom at each timepoint ...")
     # scatter_gather parallel computes mbircone.cone3D.project
     # Generate sinogram data by projecting each phantom in phantom list.
     # Create the projection angles and argument lists, and distribute to workers.
@@ -144,46 +169,49 @@ if __name__ == '__main__':
     # After setting the geometric parameter, the shape of the input phantom should be equal to the calculated
     # geometric parameter. Input a phantom with wrong shape will generate a bunch of issue in C.
     variable_args_list = [{'image': phantom_rot} for phantom_rot in phantom_list]
-    fixed_args = {'angles': proj_angles,
-                  'num_det_rows': num_det_rows,
-                  'num_det_channels': num_det_channels,
-                  'dist_source_detector': dist_source_detector,
-                  'magnification': magnification,
-                  'delta_pixel_detector': delta_pixel_detector,
-                  'delta_pixel_image': delta_pixel_image,
-                  'channel_offset': channel_offset,
-                  'row_offset': row_offset}
-    sino_list = mbircone.parallel_utils.scatter_gather(mbircone.cone3D.project,
-                                                       variable_args_list=variable_args_list,
-                                                       fixed_args=fixed_args,
-                                                       cluster=cluster,
-                                                       min_nb_start_worker=min_nb_start_worker,
-                                                       verbose=par_verbose)
-    print("Generate sinogram data by projecting each phantom in all timepoints. \n")
+    constant_args = {'angles': proj_angles,
+                     'num_det_rows': num_det_rows,
+                     'num_det_channels': num_det_channels,
+                     'dist_source_detector': dist_source_detector,
+                     'magnification': magnification,
+                     'delta_pixel_detector': delta_pixel_detector,
+                     'delta_pixel_image': delta_pixel_image,
+                     'channel_offset': channel_offset,
+                     'row_offset': row_offset}
+    sino_list = mbircone.multinode.scatter_gather(cluster_ticket,
+                                                  mbircone.cone3D.project,
+                                                  constant_args=constant_args,
+                                                  variable_args_list=variable_args_list,
 
+                                                  verbose=par_verbose)
+    print()
+
+    # ###########################################################################
+    # Perform multinode reconstruction
+    # ###########################################################################
+
+    print("****Multinode computation with Dask****: Reconstructing 3D phantom at all timepoints ...")
     # scatter_gather parallel computes mbircone.cone3D.recon
     # Reconstruct 3D phantom in all timepoints using mbircone.cone3D.recon.
     # Create the projection angles and argument lists, and distribute to workers.
     angles_list = [np.copy(proj_angles) for i in range(num_parallel)]  # Same for all time points.
     variable_args_list = [{'sino': sino, 'angles': angles} for sino, angles in zip(sino_list, angles_list)]
-    fixed_args = {'dist_source_detector': dist_source_detector,
-                  'magnification': magnification,
-                  'delta_pixel_detector': delta_pixel_detector,
-                  'delta_pixel_image': delta_pixel_image,
-                  'channel_offset': channel_offset,
-                  'row_offset': row_offset,
-                  'sharpness': sharpness,
-                  'snr_db': snr_db,
-                  'max_iterations': max_iterations,
-                  'num_threads': num_threads,
-                  'verbose': 0}
-    recon_list = mbircone.parallel_utils.scatter_gather(mbircone.cone3D.recon,
-                                                        variable_args_list=variable_args_list,
-                                                        fixed_args=fixed_args,
-                                                        cluster=cluster,
-                                                        min_nb_start_worker=min_nb_start_worker,
-                                                        verbose=par_verbose)
-    print("Reconstruct 3D phantom in all timepoints. \n")
+    constant_args = {'dist_source_detector': dist_source_detector,
+                     'magnification': magnification,
+                     'delta_pixel_detector': delta_pixel_detector,
+                     'delta_pixel_image': delta_pixel_image,
+                     'channel_offset': channel_offset,
+                     'row_offset': row_offset,
+                     'sharpness': sharpness,
+                     'snr_db': snr_db,
+                     'max_iterations': max_iterations,
+                     'verbose': 0}
+    recon_list = mbircone.multinode.scatter_gather(cluster_ticket,
+                                                   mbircone.cone3D.recon,
+                                                   constant_args=constant_args,
+                                                   variable_args_list=variable_args_list,
+                                                   verbose=par_verbose)
+
     print("Reconstructed 4D image shape = ", np.array(recon_list).shape)
 
     # create output folder and save reconstruction list
