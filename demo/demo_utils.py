@@ -6,27 +6,6 @@ import urllib.request
 import tarfile
 import yaml
 from PIL import Image
-from datetime import datetime
-from datatest import validate, ValidationError
-
-
-def strftime_format(format):
-    """Check if string satisfy the require format.
-        Code modified from reference: `https://datatest.readthedocs.io/en/stable/how-to/date-time-str.html`
-    Args:
-        format: A format code.
-
-    Returns:
-
-    """
-    def func(value):
-        try:
-            datetime.strptime(value, format)
-        except ValueError:
-            return False
-        return True
-    func.__doc__ = f'should use date format {format}'
-    return func
 
 def font_setting():
     SMALL_SIZE = 8
@@ -275,7 +254,7 @@ def load_yaml(yml_path):
     """
 
     with open(yml_path, 'r') as stream:
-        data_loaded = yaml.safe_load(stream)
+        data_loaded = yaml.load(stream,Loader=yaml.BaseLoader)
     return data_loaded
 
 
@@ -373,16 +352,10 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
     sys.stdout.write(prompt)
 
     choice = input()
-    try:
-        validate(choice, strftime_format('%d-%H:%M:%S'))
-        walltime_valid = True
-    except ValidationError:
-        walltime_valid = False
-
-    if walltime_valid:
+    if choice != "":
         config['cluster_params']['maximum_allowable_walltime'] = choice
     else:
-        sys.stdout.write("Since the entered string did not match the format, the scheduler will allocate system-determined maximum allowable walltime.\n")
+        config['cluster_params']['maximum_allowable_walltime'] = None
 
     # Ask for the maximum memory per node.
     question = '\nPlease enter the maximum memory per node. [Default = 16GB]\n'
