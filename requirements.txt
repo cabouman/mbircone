@@ -2,5 +2,5 @@ numpy~=1.19.5
 Cython~=0.29.24
 psutil~=5.8.0
 Pillow~=8.4.0
-dask
-dask_jobqueue
+dask~=2021.11.2
+dask-jobqueue~=0.7.3
