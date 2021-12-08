@@ -93,11 +93,12 @@ if __name__ == '__main__':
         else:
             # Load cluster setup parameter.
             configs = load_yaml(args.configs_path)
+            print(configs)
 
         cluster_ticket = mbircone.multinode.get_cluster_ticket(
             job_queue_system_type=configs['job_queue_system_type'],
-            num_physical_cores_per_node=configs['cluster_params']['num_physical_cores_per_node'],
-            num_nodes=configs['cluster_params']['num_nodes'],
+            num_physical_cores_per_node=int(configs['cluster_params']['num_physical_cores_per_node']),
+            num_nodes=int(configs['cluster_params']['num_nodes']),
             maximum_memory_per_node=configs['cluster_params']['maximum_memory_per_node'],
             maximum_allowable_walltime=configs['cluster_params']['maximum_allowable_walltime'],
             system_specific_args=configs['cluster_params']['system_specific_args'],

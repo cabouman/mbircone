@@ -275,7 +275,7 @@ def load_yaml(yml_path):
     """
 
     with open(yml_path, 'r') as stream:
-        data_loaded = yaml.safe_load(stream)
+        data_loaded = yaml.load(stream,Loader=yaml.BaseLoader)
     return data_loaded
 
 
