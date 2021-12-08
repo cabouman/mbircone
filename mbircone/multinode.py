@@ -224,8 +224,7 @@ def scatter_gather(cluster_ticket, func, constant_args={}, variable_args_list=[]
 
         # Print a warning message when the waiting time is too long per 120 seconds.
         if loop_time % 120 == 0 and loop_time >= 120:
-            print('Already waiting nodes for %d seconds. You can cancel the job by Ctrl+C' % (loop_time * wait_times))
-
+            print('Already waited for %d seconds. To minimize the wait time, you may cancel the current job by pressing Ctrl+C, and submit a new job with less number of requested nodes or less memory per node.' % (loop_time * wait_times)).
         if nb_workers >= min_nodes:
             print('Got %d nodes, start parallel computation.' % nb_workers)
             break

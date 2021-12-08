@@ -220,7 +220,7 @@ def download_and_extract(download_url, save_dir):
     return save_path
 
 
-def query_yes_no(question):
+def query_yes_no(question, default="n"):
     """Ask a yes/no question via input() and return the answer.
         Code modified from reference: `https://stackoverflow.com/questions/3041986/apt-command-line-interface-like-yes-no-input/3041990`
     
@@ -231,12 +231,12 @@ def query_yes_no(question):
     """
 
     valid = {"yes": True, "y": True, "ye": True, "no": False, "n": False}
-    prompt = " [y/n, default=n] "
+    prompt = f" [y/n, default={default}] "
     while True:
         sys.stdout.write(question + prompt)
         choice = input().lower()
         if choice == "":
-            return False
+            return valid[default]
         elif choice in valid:
             return valid[choice]
         else:
@@ -301,7 +301,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
     while config['job_queue_system_type'] is None:
         valid = ['SGE', 'SLURM']
         question = '\nPlease enter the type of job queuing system in your cluster.\n'
-        prompt = 'One of \'SGE\' (Sun Grid Engine) and \'SLURM\'. \n'
+        prompt = 'One of \'SGE\' (Sun Grid Engine) or \'SLURM\'. \n'
         sys.stdout.write(question)
         sys.stdout.write(prompt)
 
@@ -309,7 +309,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
         if choice in valid:
             config['job_queue_system_type'] = choice
         else:
-            sys.stdout.write("Please Enter one of \'SGE\' (Sun Grid Engine) and \'SLURM\'.\n")
+            sys.stdout.write("Please Enter one of \'SGE\' (Sun Grid Engine) or \'SLURM\'. \n")
 
     # Ask for the number of physical cores per node for 3 times.
     ask_times = 3
@@ -402,5 +402,5 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
 
     # Save arguments to yaml file for next time to use.
     os.makedirs(save_config_dir, exist_ok=True)
-    save_dict_yaml(config, save_config_dir+save_config_name+'.yaml')
+    save_dict_yaml(config, os.path.join(save_config_dir, save_config_name+'.yaml'))
     return config

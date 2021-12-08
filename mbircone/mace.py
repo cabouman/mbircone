@@ -2,7 +2,8 @@ import numpy as np
 import os,sys
 import time
 import mbircone.cone3D as cone3D
-import mbircone.parallel_utils as parallel_utils
+import mbircone.multinode as multinode
+from psutil import cpu_count
 
 __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
 
@@ -258,7 +259,7 @@ def mace4D(sino, angles, dist_source_detector, magnification,
             denoiser, denoiser_args=(),
             max_admm_itr=10, rho=0.5, prior_weight=0.5,
             init_image=None, image_range=None,
-            cluster=None, min_nb_start_worker=1,
+            cluster_ticket=None, min_nodes=None,
             channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
             delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
             sigma_y=None, snr_db=30.0, weights=None, weight_type='unweighted',
@@ -285,8 +286,8 @@ def mace4D(sino, angles, dist_source_detector, magnification,
         - **init_image** (*ndarray, optional*): [Default=None] Initial value of MACE reconstruction image, specified by either a scalar value, a 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols), or a 4D numpy array with shape (num_time_points, num_img_slices,num_img_rows,num_img_cols). If None, the inital value of MACE will be automatically determined by a stack of 3D qGGMRF reconstructions at different time points.
         - **image_range** (*tuple*): [Default=None] dynamic range of reconstruction image. If None, the lower bound will be 0, and the upper bound will be determined by 95% pixel value of the qGGMRF reconstruction. If an init_image is provided, then image_range must be also provided.
     Arguments specific to multi-node computation:
-        - **cluster** (*Object*): [Default=None] Cluster object created by dask_jobqueue. More information is on `dask_jobqueue <https://jobqueue.dask.org/en/latest/api.html>`. ``cluster`` object can be obtained by function ``parallel_utils.get_cluster_ticket``.
-        - **min_nb_start_worker** (*int*): [Default=1] Minimum number of workers to start parallel computation. The parallelization will wait until the number of workers >= min_nb_worker.
+        - **cluster_ticket** (*Object*): A ticket used to access a specific cluster, that can be obtained from :py:func:`~multinode.get_cluster_ticket`. If cluster_ticket=None, the process will run in serial. See `dask_jobqueue <https://jobqueue.dask.org/en/latest/api.html>`_ for more information.
+        - **min_nodes** (*int*): [Default=None] Requested minimum number of workers to start parallel computation. The job will not start until the number of nodes >= min_nodes, and once it starts, no further nodes will be used.  The default is num_nodes from the cluster_ticket.
     Optional arguments inherited from ``cone3D.recon`` (with changing default value of ``max_iterations``): 
         - **channel_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
         - **row_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
@@ -365,7 +366,7 @@ def mace4D(sino, angles, dist_source_detector, magnification,
         sigma_x = [sigma_x for _ in range(Nt)]
     
     # Fixed args dictionary used for multi-node parallelization
-    fixed_args = {'dist_source_detector':dist_source_detector, 'magnification':magnification,
+    constant_args = {'dist_source_detector':dist_source_detector, 'magnification':magnification,
                   'channel_offset':channel_offset, 'row_offset':row_offset, 'rotation_offset':rotation_offset,
                   'delta_pixel_detector':delta_pixel_detector, 'delta_pixel_image':delta_pixel_image, 'ror_radius':ror_radius,
                   'sigma_y':sigma_y, 'sigma_p':sigma_p,
@@ -377,17 +378,19 @@ def mace4D(sino, angles, dist_source_detector, magnification,
     variable_args_list = [{'sino': sino[t], 'angles':angles[t], 
                            'weights':weights[t], 'sigma_x':sigma_x[t]} 
                           for t in range(Nt)]
-
+    # set cluster_ticket to local host if None
+    if cluster_ticket is None:
+        num_physical_cores = cpu_count(logical=False)
+        cluster_ticket = multinode.get_cluster_ticket('LocalHost', num_physical_cores_per_node=num_physical_cores)
     if init_image is None:
         if verbose:
             start = time.time()
             print("Computing qGGMRF reconstruction at all time points. This will be used as MACE initialization point.") 
     
-        init_image = np.array(parallel_utils.scatter_gather(cone3D.recon, 
+        init_image = np.array(multinode.scatter_gather(cluster_ticket, cone3D.recon, 
                                                             variable_args_list=variable_args_list,
-                                                            fixed_args=fixed_args,
-                                                            cluster=cluster,
-                                                            min_nb_start_worker=min_nb_start_worker,
+                                                            constant_args=constant_args,
+                                                            min_nodes=min_nodes,
                                                             verbose=qGGMRF_verbose))
         if verbose:
             end = time.time()
@@ -427,17 +430,16 @@ def mace4D(sino, angles, dist_source_detector, magnification,
         if verbose:
             print(f"Begin MACE iteration {itr}/{max_admm_itr}:")
             start = time.time()
-        # Modify fixed_args and variable args respectively for proximal map estimation.
-        fixed_args['max_iterations'] = max_iterations
+        # Modify constant_args and variable args respectively for proximal map estimation.
+        constant_args['max_iterations'] = max_iterations
         for t in range(Nt):
             variable_args_list[t]['init_image'] = X[0][t]
             variable_args_list[t]['prox_image'] = W[0][t]
         # forward model prox map agent
-        X[0] = np.array(parallel_utils.scatter_gather(cone3D.recon,
+        X[0] = np.array(multinode.scatter_gather(cluster_ticket, cone3D.recon,
                                                       variable_args_list=variable_args_list,
-                                                      fixed_args=fixed_args,
-                                                      cluster=cluster,
-                                                      min_nb_start_worker=min_nb_start_worker,
+                                                      constant_args=constant_args,
+                                                      min_nodes=min_nodes,
                                                       verbose=qGGMRF_verbose))
         if verbose:
             print("Done forward model proximal map estimation.")
