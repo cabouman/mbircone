@@ -145,9 +145,9 @@ if __name__=='__main__':
 
 
     # ###########################################################################
-    # Generate downsampled phantom 
+    # Load phantom 
     # ###########################################################################
-    print("Generating downsampled 3D phantom volume ...")
+    print("Loading 3D phantom volume ...")
 
     # load original phantom
     phantom_3D = np.load(phantom_path)
@@ -156,7 +156,7 @@ if __name__=='__main__':
     # ###########################################################################
     # Generate a 4D phantom.
     # ########################################################################### 
-    print("Generating 4D simulated data by rotating the 3D shepp logan phantom with positive angular steps with each time point ...")
+    print("Generating 4D simulated data by rotating the 3D phantom with positive angular steps with each time point ...")
     
     # Create the rotation angles and argument lists, and distribute to workers.
     phantom_rot_para = np.linspace(0, 180, num_time_points, endpoint=False)  # Phantom rotation angles.
