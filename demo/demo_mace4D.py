@@ -67,7 +67,7 @@ if __name__=='__main__':
     num_det_channels = 240              # number of detector channels
 
     # Simulated 4D phantom and sinogram parameters
-    num_time_points = 4 # number of time points. This is also number of jobs that can be parallellized with multinode computation.
+    num_time_points = 8 # number of time points. This is also number of jobs that can be parallellized with multinode computation.
     num_views = 75               # number of projection views
     sino_noise_sigma = 0.01      # transmission noise level
 
