@@ -98,7 +98,8 @@ def _crop_scans(obj_scan, blank_scan, dark_scan, crop_factor=[(0, 0), (1, 1)]):
         dark_scan (float): A dark scan. 3D numpy array, (1, num_slices, num_channels).
         crop_factor ([(int, int),(int, int)] or [int, int, int, int]):
             [Default=[(0, 0), (1, 1)]] Two points to define the bounding box. Sequence of [(r0, c0), (r1, c1)] or
-            [r0, c0, r1, c1], where 1>=r1 >= r0>=0 and 1>=c1 >= c0>=0.
+            [r0, c0, r1, c1], where 0<=r0 <= r1<=1 and 0<=c0 <= c1<=1.
+
     Returns:
         Cropped scans
         - **obj_scan** (*ndarray, float*): A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
@@ -503,43 +504,42 @@ def blind_fixture_correction(sino, angles, dist_source_detector, magnification,
     return sino_corrected, snake
 
 
-def background_offset_calibration(sino, background_view_list, background_box_info_list):
+def background_offset_calibration(sino, background_box_info_list):
     """Performs background offset calibration to the sinogram. 
     
     Args:
         sino (ndarray): 3D sinogram data with shape (num_views, num_det_rows, num_det_channels)
-        background_view_list ([int]): [Default=[]] A list of view indices used for background offset calibration. `background_view_list` indicates the views corresponding to the rectangular areas specified in `background_box_info_list`. It should have the same length as `background_box_info_list`.
-        background_box_info_list ([(x,y,width,height)]): [default=[]] A list of tuples indicating the information of the rectangular areas used for background offset calculation.  It should have the same length as `background_view_list`.
-            For each tuple in `background_box_info_list` it should have the format `(x,y,width,height)`, where `(x,y) represents the anchor point of the rectangle, and `width`and `height` represents the width and height of the Rectangle.    
+        background_box_info_list ([(left,top,width,height,view_ind)]): [default=[]] A list of tuples specifying the rectangular areas used for background offset calculation.  
+            Each tuple in the list has entries of the form `(left, top, width, height, view_ind)`.  Here `(left, top)` specifies the left top corner of the rectangle in pixels (using the convention that the left top of the entire image is (0,0)), `width` and `height` are also in pixels, and `view_ind` is the index of the view associated with this rectangle.    
     Returns:
         float: The background offset calculated from `sino`.
     """
-    if not background_view_list:
-        return 0.
     avg_offset = 0.
-    for view_idx, box_info in zip(background_view_list, background_box_info_list):
-        print(f"box used in view {view_idx} for calbiration: (x,y,width,height)=", box_info)
-        (x, y, box_width, box_height) = box_info
-        avg_offset += np.mean(sino[view_idx, y:y + box_height, x:x + box_width])
-    avg_offset /= len(background_view_list)
+    if not background_box_info_list:
+        return 0.
+    for box_info in background_box_info_list:
+        print(f"box used for background offset calbiration: (x,y,width,height,view_ind)=", box_info)
+        (x, y, box_width, box_height, view_ind) = box_info
+        avg_offset += np.mean(sino[view_ind, y:y + box_height, x:x + box_width])
+    avg_offset /= len(background_box_info_list)
     return avg_offset
 
 
-def NSI_process_raw_scans(path_radiographs, NSI_system_params,
-                          path_blank=None, path_dark=None,
+def NSI_process_raw_scans(radiographs_directory, NSI_system_params,
+                          blank_scan_path=None, dark_scan_path=None,
                           num_time_points=None, time_point=0,
                           num_sampled_scans=None,                      
                           rotation_direction="positive"):
     """Reads a subset of scan images corresponding to the given time point from an NSI ConeBeam scan directory, and calculates view angles corresponding to the object scans.
     
     Args:
-        path_radiographs (string): Path to an NSI ConeBeam scan directory.
+        radiographs_directory (string): Path to an NSI ConeBeam scan directory.
         NSI_system_params (dict): A dictionary containing NSI parameters. This can be obtained from an NSI configuration file using function `preprocess.NSI_read_params()`.
         num_sampled_scans (int): [Default=None] Number of object scans sampled from all object scans. It should be smaller than the total number of object scans from directory. 
             By default, num_sampled_scans will be the total number of scans in the directory.
             The subset of the scans will be picked by a grid subsampling strategy. For example, by setting num_sampled_scans to be half of total number of object scans in the directory, the algorithm will pick every other object scan. 
-        path_blank (string): [Default=None] Path to a blank scan image, e.g. 'path_to_scan/gain0.tif'
-        path_dark (string): [Default=None] Path to a dark scan image, e.g. 'path_to_scan/offset.tif'
+        blank_scan_path (string): [Default=None] Path to a blank scan image, e.g. 'path_to_scan/gain0.tif'
+        dark_scan_path (string): [Default=None] Path to a dark scan image, e.g. 'path_to_scan/offset.tif'
         rotation_direction (string): [Default='positive'] Rotation direction for angles calculation.
             Should be one of 'positive' or 'negative'.
         num_time_points (int): [Default=None] Total number of time points for all object scans.
@@ -569,15 +569,15 @@ def NSI_process_raw_scans(path_radiographs, NSI_system_params,
     view_ids = _select_contiguous_subset(scan_ids, num_time_points, time_point)
      
     angles = _compute_angles_list(view_ids, num_acquired_scans, total_angles, rotation_direction)
-    obj_scan = _read_scan_dir(path_radiographs, view_ids)
+    obj_scan = _read_scan_dir(radiographs_directory, view_ids)
 
     # Should deal with situation when input is None.
-    if path_blank is not None:
-        blank_scan = np.expand_dims(_read_scan_img(path_blank), axis=0)
+    if blank_scan_path is not None:
+        blank_scan = np.expand_dims(_read_scan_img(blank_scan_path), axis=0)
     else:
         blank_scan = np.expand_dims(0 * obj_scan[0] + 1, axis=0)
-    if path_dark is not None:
-        dark_scan = np.expand_dims(_read_scan_img(path_dark), axis=0)
+    if dark_scan_path is not None:
+        dark_scan = np.expand_dims(_read_scan_img(dark_scan_path), axis=0)
     else:
         dark_scan = np.expand_dims(0 * obj_scan[0], axis=0)
 
@@ -590,32 +590,29 @@ def NSI_process_raw_scans(path_radiographs, NSI_system_params,
 def compute_sino_from_scans(obj_scan, blank_scan=None, dark_scan=None,
                             downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
                             weight_type='unweighted',
-                            background_view_list=[], background_box_info_list=[]):
-    """Given a set of object scan, blank scan, and dark scan, compute the sinogram used for reconstruction. This function will downsample and crop the scans, compute sinogram and weights from the scans, and finally perform background offset calibration to the sinogram.
-
+                            background_box_info_list=[]):
+    """Given a set of object scan, blank scan, and dark scan, compute the sinogram used for reconstruction. This function will (optionally) downsample and crop the scans, compute sinogram and weights from the scans, and finally perform background offset calibration to the sinogram. It is assumed that the object scans, blank scan and dark scan all have compatible sizes. 
+    
     Args:
         obj_scan (ndarray, float): 3D object scan with shape (num_views, num_det_rows, num_det_channels).
         blank_scan (ndarray, float): [Default=None] 3D blank scan with shape (num_blank_scans, num_det_rows, num_det_channels).
         dark_scan (ndarray, float): [Default=None] 3D dark scan with shape (num_dark_scans, num_det_rows, num_det_channels)
         downsample_factor ([int, int]): [Default=[1,1]] Two numbers to define down-sample factor.
-        crop_factor ([(float, float),(float, float)] or [float, float, float, float]): [Default=[(0., 0.), (1., 1.)]]
-            Two fractional points to define the bounding box. Sequence of [(r0, c0), (r1, c1)] or [r0, c0, r1, c1], where 1>=r1 >= r0>=0 and 1>=c1 >= c0>=0.
+        crop_factor ([(float, float),(float, float)] or [float, float, float, float]): [Default=[(0., 0.), (1., 1.)]].
+            Two fractional points to define the bounding box. Sequence of [(r0, c0), (r1, c1)] or [r0, c0, r1, c1], where 0<=r0 <= r1<=1 and 0<=c0 <= c1<=1.
+            In case where the scan size is not divisible by downsample_factor, the scans will be first truncated to a size that is divisible by downsample_factor, and then downsampled.
         weight_type (string, optional): [Default='unweighted'] Type of noise model used for data.
             The function ``cone3D.calc_weights`` is used to set weights using specified ``weight_type`` parameter.
                 - Option "unweighted" corresponds to unweighted reconstruction;
                 - Option "transmission" is the correct weighting for transmission CT with constant dosage;
                 - Option "transmission_root" is commonly used with transmission CT data to improve image homogeneity;
                 - Option "emission" is appropriate for emission CT data.
-        background_view_list ([int]): [Default=[]] A list of view indices used for background offset calibration. `background_view_list` indicates the views corresponding to the rectangular areas specified in `background_box_info_list`. It should have the same length as `background_box_info_list`.
-        background_box_info_list ([(x,y,width,height)]): [default=[]] A list of tuples indicating the information of the rectangular areas used for background offset calculation.  It should have the same length as `background_view_list`.
-            For each tuple in `background_box_info_list` it should have the format `(x,y,width,height)`, where `(x,y) represents the anchor point of the rectangle, and `width`and `height` represents the width and height of the Rectangle. 
+        background_box_info_list ([(left,top,width,height,view_ind)]): [default=[]] A list of tuples specifying the rectangular areas used for background offset calculation.  
+            Each tuple in the list has entries of the form `(left, top, width, height, view_ind)`.  Here `(left, top)` specifies the left top corner of the rectangle in pixels (using the convention that the left top of the entire image is (0,0)), `width` and `height` are also in pixels, and `view_ind` is the index of the view associated with this rectangle.   
     Returns:
         2-element tuple containing:
-        
         - **sino** (*ndarray, float*): Preprocessed 3D sinogram.
-        
         - **weights** (*ndarray, float*): 3D weights array with the same shape as sino. 
-    
     """
 
     # set default blank and dark scans if None.
@@ -638,7 +635,7 @@ def compute_sino_from_scans(obj_scan, blank_scan=None, dark_scan=None,
     # set the weights corresponding to invalid sinogram entries to 0.
     weights[weight_mask == 0] = 0.
     # background offset calibration
-    background_offset = background_offset_calibration(sino, background_view_list, background_box_info_list)
+    background_offset = background_offset_calibration(sino, background_box_info_list)
     print("background offset = ", background_offset)
     sino = sino - background_offset
     return sino.astype(np.float32), weights.astype(np.float32)
