@@ -4,15 +4,23 @@ import numpy as np
 from PIL import Image
 import warnings
 import math
+from scipy.ndimage import convolve
+from mbircone import cone3D
+from skimage.segmentation import active_contour
+from skimage.filters import gaussian
+from shapely.geometry import Point
+from shapely.geometry.polygon import Polygon
+
+__lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
 
 
 def _read_scan_img(img_path):
-    """Read and return single image from a ConeBeam Scan.
+    """Reads a single scan image from an image path.
 
     Args:
-        img_path (string): Path to a ConeBeam Scan.
+        img_path (string): Path to a ConeBeam scan image.
     Returns:
-        ndarray (float): 2D numpy array. A single sinogram.
+        ndarray (float): 2D numpy array. A single scan image.
     """
 
     img = np.asarray(Image.open(img_path))
@@ -20,19 +28,19 @@ def _read_scan_img(img_path):
     if np.issubdtype(img.dtype, np.integer):
         # make float and normalize integer types
         maxval = np.iinfo(img.dtype).max
-        img = img.astype(np.float32) / maxval
-
+        img = img.astype(np.float32) / maxval    
+    
     return img.astype(np.float32)
 
 
 def _read_scan_dir(scan_dir, view_ids=[]):
-    """Read and return a stack of sinograms from a directory.
+    """Reads a stack of scan images from a directory.
 
     Args:
         scan_dir (string): Path to a ConeBeam Scan directory.
-        view_ids (list[int]): List of view indexes to specify which scans to read.
+        view_ids (list[int]): List of view indices to specify which scans to read.
     Returns:
-        ndarray (float): 3D numpy array, (num_views, num_slices, num_channels). A stack of sinograms.
+        ndarray (float): 3D numpy array, (num_views, num_slices, num_channels). A stack of scan images.
     """
 
     if view_ids == []:
@@ -47,19 +55,18 @@ def _read_scan_dir(scan_dir, view_ids=[]):
 
 
 def _downsample_scans(obj_scan, blank_scan, dark_scan, downsample_factor=[1, 1]):
-    """Down-sample given scans with given factor.
+    """Performs Down-sampling to the scan images in the detector plane.
 
     Args:
         obj_scan (float): A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
-        blank_scan (float): A blank scan. 3D numpy array, (1, num_slices, num_channels).
-        dark_scan (float): A dark scan. 3D numpy array, (1, num_slices, num_channels).
+        blank_scan (float): A blank scan. 2D numpy array, (num_slices, num_channels).
+        dark_scan (float): A dark scan. 3D numpy array, (num_slices, num_channels).
         downsample_factor ([int, int]): Default=[1,1]] Two numbers to define down-sample factor.
     Returns:
         Downsampled scans
-
         - **obj_scan** (*ndarray, float*): A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
-        - **blank_scan** (*ndarray, float*): A blank scan. 3D numpy array, (1, num_slices, num_channels).
-        - **dark_scan** (*ndarray, float*): A dark scan. 3D numpy array, (1, num_slices, num_channels).
+        - **blank_scan** (*ndarray, float*): A blank scan. 3D numpy array, (num_slices, num_channels).
+        - **dark_scan** (*ndarray, float*): A dark scan. 3D numpy array, (num_slices, num_channels).
     """
 
     assert len(downsample_factor) == 2, 'factor({}) needs to be of len 2'.format(downsample_factor)
@@ -73,7 +80,8 @@ def _downsample_scans(obj_scan, blank_scan, dark_scan, downsample_factor=[1, 1])
 
     obj_scan = obj_scan.reshape(obj_scan.shape[0], obj_scan.shape[1] // downsample_factor[0], downsample_factor[0],
                                 obj_scan.shape[2] // downsample_factor[1], downsample_factor[1]).sum((2, 4))
-    blank_scan = blank_scan.reshape(blank_scan.shape[0], blank_scan.shape[1] // downsample_factor[0], downsample_factor[0],
+    blank_scan = blank_scan.reshape(blank_scan.shape[0], blank_scan.shape[1] // downsample_factor[0],
+                                    downsample_factor[0],
                                     blank_scan.shape[2] // downsample_factor[1], downsample_factor[1]).sum((2, 4))
     dark_scan = dark_scan.reshape(dark_scan.shape[0], dark_scan.shape[1] // downsample_factor[0], downsample_factor[0],
                                   dark_scan.shape[2] // downsample_factor[1], downsample_factor[1]).sum((2, 4))
@@ -82,7 +90,7 @@ def _downsample_scans(obj_scan, blank_scan, dark_scan, downsample_factor=[1, 1])
 
 
 def _crop_scans(obj_scan, blank_scan, dark_scan, crop_factor=[(0, 0), (1, 1)]):
-    """Crop given scans with given factor.
+    """Crops given scans with given factor.
 
     Args:
         obj_scan (float): A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
@@ -90,15 +98,13 @@ def _crop_scans(obj_scan, blank_scan, dark_scan, crop_factor=[(0, 0), (1, 1)]):
         dark_scan (float): A dark scan. 3D numpy array, (1, num_slices, num_channels).
         crop_factor ([(int, int),(int, int)] or [int, int, int, int]):
             [Default=[(0, 0), (1, 1)]] Two points to define the bounding box. Sequence of [(r0, c0), (r1, c1)] or
-            [r0, c0, r1, c1], where 1>=r1 >= r0>=0 and 1>=c1 >= c0>=0.
+            [r0, c0, r1, c1], where 0<=r0 <= r1<=1 and 0<=c0 <= c1<=1.
 
     Returns:
         Cropped scans
-
         - **obj_scan** (*ndarray, float*): A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
         - **blank_scan** (*ndarray, float*): A blank scan. 3D numpy array, (1, num_slices, num_channels).
         - **dark_scan** (*ndarray, float*): A dark scan. 3D numpy array, (1, num_slices, num_channels).
-
     """
     if isinstance(crop_factor[0], (list, tuple)):
         (r0, c0), (r1, c1) = crop_factor
@@ -122,56 +128,53 @@ def _crop_scans(obj_scan, blank_scan, dark_scan, crop_factor=[(0, 0), (1, 1)]):
     return obj_scan, blank_scan, dark_scan
 
 
-def _compute_sino_from_scans(obj_scan, blank_scan, dark_scan):
-    """Compute sinogram data base on given object scan, blank scan, and dark scan.
-
+def _compute_sino_and_weight_mask_from_scans(obj_scan, blank_scan, dark_scan):
+    """Computes sinogram data and weights mask base on given object scan, blank scan, and dark scan. The weights mask is used to filter out negative values in the corrected object scan and blank scan. For real CT dataset weights mask should be used when calculating sinogram weights.
+    
     Args:
-        obj_scan (float): A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
-        blank_scan (float) : A blank scan. 3D numpy array, (1, num_slices, num_channels).
-        dark_scan (float):  A dark scan. 3D numpy array, (1, num_slices, num_channels).
+        obj_scan (ndarray): A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
+        blank_scan (ndarray) : A blank scan. 3D numpy array, (num_sampled_scans, num_slices, num_channels).
+        dark_scan (ndarray):  A dark scan. 3D numpy array, (num_sampled_scans, num_slices, num_channels).
     Returns:
-        ndarray (float): Preprocessed sinograms. 3D numpy array, (num_views, num_slices, num_channels).
+        A tuple (sino, weight_mask) containing:
+        - **sino** (*ndarray*): Preprocessed sinogram with shape (num_views, num_slices, num_channels).
+        - **weight_mask** (*ndarray*): A binary mask for sinogram weights. 
 
     """
-    blank_scan_mean = 0 * obj_scan + np.average(blank_scan, axis=0)
-    dark_scan_mean = 0 * obj_scan + np.average(dark_scan, axis=0)
+    blank_scan_mean = 0 * obj_scan + np.mean(blank_scan, axis=0, keepdims=True)
+    dark_scan_mean = 0 * obj_scan + np.mean(dark_scan, axis=0, keepdims=True)
 
     obj_scan_corrected = (obj_scan - dark_scan_mean)
     blank_scan_corrected = (blank_scan_mean - dark_scan_mean)
+    sino = -np.log(obj_scan_corrected / blank_scan_corrected)
 
-    good_pixels = (obj_scan_corrected > 0) & (blank_scan_corrected > 0)
+    weight_mask = (obj_scan_corrected > 0) & (blank_scan_corrected > 0)
 
-    normalized_scan = np.zeros(obj_scan_corrected.shape)
-    normalized_scan[good_pixels] = obj_scan_corrected[good_pixels] / blank_scan_corrected[good_pixels]
-
-    sino = np.zeros(obj_scan_corrected.shape)
-    sino[normalized_scan > 0] = -np.log(normalized_scan[normalized_scan > 0])
-
-    return sino
+    return sino, weight_mask
 
 
-def _compute_views_index_list(view_range, num_views):
-    """Return a list of sampled indexes of views to use for reconstruction.
+def _compute_views_index_list(scan_range, num_sampled_scans):
+    """Returns a list of sampled indices of views to use for reconstruction.
 
     Args:
-        view_range ([int, int]): Two indexes of views to specify the range of views to use for reconstruction.
-        num_views (int): Number of views to use for reconstruction.
+        scan_range ([int, int]): Start and end index corresponding to the sampled scans.
+        num_sampled_scans (int): Number of scans to be picked out of total number of scans.
 
     Returns:
-        list[int], a list of sampled indexes of views to use for reconstruction.
+        list[int], a list of sampled view indices.
 
     """
-    index_original = range(view_range[0], view_range[1] + 1)
-    assert num_views <= len(index_original), 'num_views cannot exceed range of view index'
-    index_sampled = [view_range[0] + int(np.floor(i * len(index_original) / num_views)) for i in range(num_views)]
+    index_original = range(scan_range[0], scan_range[1])
+    assert num_sampled_scans <= len(index_original), 'num_sampled_scans cannot exceed range of view index'
+    index_sampled = [scan_range[0] + int(np.floor(i * len(index_original) / num_sampled_scans)) for i in range(num_sampled_scans)]
     return index_sampled
 
 
 def _select_contiguous_subset(indexList, num_time_points=1, time_point=0):
-    """Return a contiguous subset of index list given a time point. Mainly use for 4D datasets with multiple time points.
+    """Returns a contiguous subset of index list corresponding to a given time point. This is mainly used for 4D datasets with multiple time points.
 
     Args:
-        indexList (list[int]): A list of indexes.
+        indexList (list[int]): A list of view indices.
         num_time_points (int): [Default=1] Total number of time points.
         time_point (int): [Default=0] Index of the time point we want to use for 3D reconstruction.
 
@@ -194,7 +197,7 @@ def _select_contiguous_subset(indexList, num_time_points=1, time_point=0):
 
 
 def _compute_angles_list(view_index_list, num_acquired_scans, total_angles, rotation_direction="positive"):
-    """Return angles list from indexes list.
+    """Returns angles list from index list.
 
     Args:
         view_index_list (list[int]): Final index list after subsampling and time point selection.
@@ -218,7 +221,7 @@ def _compute_angles_list(view_index_list, num_acquired_scans, total_angles, rota
 
 
 def _NSI_read_str_from_config(filepath, tags_sections):
-    """Return strings about dataset information read from NSI configuration file.
+    """Returns strings about dataset information read from NSI configuration file.
 
     Args:
         filepath (string): Path to NSI configuration file. The filename extension is '.nsipro'.
@@ -257,7 +260,7 @@ def _NSI_read_str_from_config(filepath, tags_sections):
 
 
 def NSI_read_params(config_file_path):
-    """ Read NSI system parameters from a NSI configuration file.
+    """Reads NSI system parameters from a NSI configuration file.
 
     Args:
         config_file_path (string): Path to NSI configuration file. The filename extension is '.nsipro'.
@@ -298,7 +301,7 @@ def NSI_read_params(config_file_path):
 
 
 def NSI_adjust_sysparam(NSI_system_params, downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)]):
-    """Return adjusted NSI system parameters given downsampling factor and cropping factor.
+    """Returns adjusted NSI system parameters given downsampling factor and cropping factor.
 
     Args:
         NSI_system_params (dict of string-int): NSI system parameters.
@@ -336,7 +339,7 @@ def NSI_adjust_sysparam(NSI_system_params, downsample_factor=[1, 1], crop_factor
 
 
 def NSI_to_MBIRCONE_params(NSI_system_params):
-    """Return MBIRCONE format geometric parameters from adjusted NSI system parameters.
+    """Returns MBIRCONE format geometric parameters from adjusted NSI system parameters.
 
     Args:
         NSI_system_params (dict of string-int): Adjusted NSI system parameters.
@@ -360,65 +363,340 @@ def NSI_to_MBIRCONE_params(NSI_system_params):
     return geo_params
 
 
-def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
-               view_range=None, total_angles=360, num_acquired_scans=2000,
-               rotation_direction="positive", downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
-               num_time_points=1, time_point=0):
-    """Return preprocessed sinogram and angles list for reconstruction.
+def _image_indicator(image, background_ratio):
+    indicator = np.int8(image > np.percentile(image, background_ratio * 100))  # for excluding empty space from average
+    return indicator
+
+
+def _circle_points(center, radius):
+    """Generates points which define a circle on an image.Centre refers to the centre of the circle
+    Args:
+        center ([int,int]): center coordinate of the circle.
+        radius (float): radius of the circle 
+    """   
+    resolution = round(2*np.pi*radius)
+    radians = np.linspace(0, 2*np.pi, resolution)
+    c = center[1] + radius*np.cos(radians)#polar co-ordinates
+    r = center[0] + radius*np.sin(radians)
+    
+    return np.array([c, r]).T
+
+
+def _image_mask_old(image, background_ratio, boundary_ratio, blur_filter=None):
+    ''' Automatic image segmentation:
+        1. Blur the input image with a 2D Gaussian filter (with hamming window).
+        2. Compute a binary mask that indicates the region of image support.
+        3. Set region between ROI and ROR to be 0.
+    Args:
+        blur_filter (ndarray): blurring filter used to smooth the input image.
+        background_ratio (float): Should be a number in [0,1]. This is the estimated ratio of background pixels. For example, background_ratio=0.5 means that 50% of pixels will be recognized as background.
+        boundary_ratio (float): Should be a number in [0,1]. This is the estimated ratio of (ROR_radius-ROI_radius)/ROR_radius. The region between ROR and ROI will be recognized as background.           
+    Returns:
+        ndarray: Masked image with same shape of input image. 
+    '''
+    # blur the input image with a 2D Gaussian window
+    (num_slices, num_rows_cols, _)  = np.shape(image)
+    if not (blur_filter is None):
+        image = np.array([convolve(image[i], blur_filter, mode='wrap') for i in range(num_slices)])
+    image_indicator = _image_indicator(image, background_ratio)
+    boundary_len = num_rows_cols*boundary_ratio//2
+    R = (num_rows_cols-1)*(1-boundary_ratio)//2
+    center_pt = (num_rows_cols-1)//2
+    boundary_mask = np.zeros((num_rows_cols, num_rows_cols))
+    for i in range(num_rows_cols):
+        for j in range(num_rows_cols):
+            boundary_mask[i,j] = (np.sum((i-center_pt)*(i-center_pt) + (j-center_pt)*(j-center_pt)) < R*R)
+    image_indicator = image_indicator * np.array([np.int8(boundary_mask) for _ in range(num_slices)])
+    return image_indicator*image
+
+
+def generate_2D_mask_from_snake(snake, num_rows_cols):
+    mask = np.zeros((num_rows_cols, num_rows_cols))
+    i_min = round(np.min(snake[:,0]))
+    i_max = round(np.max(snake[:,0]))
+    j_min = round(np.min(snake[:,1]))
+    j_max = round(np.max(snake[:,1]))
+    snake_polypoints = [(snake[i,0],snake[i,1]) for i in range(snake.shape[0])]
+    snake_polygon = Polygon(snake_polypoints)
+    for i in range(i_min, i_max):
+        for j in range(j_min, j_max):
+            mask[i,j] = snake_polygon.contains(Point(i,j))
+    return mask
+
+
+def image_mask(image, roi_ratio, use_active_contour, gauss_sigma, alpha, beta, w_line, w_edge, gamma):
+    ''' Automatic image segmentation:
+        1. Blur the input image with a 2D Gaussian filter (with hamming window).
+        2. Compute a binary mask that indicates the region of image support.
+        3. Set region between ROI and ROR to be 0.
 
     Args:
-        path_radiographs (string): Path to a ConeBeam Scan directory.
-        num_views (int): Number of views to use for reconstruction.
-        path_blank (string): [Default=None] Path to blank scan.
-        path_dark (string): [Default=None] Path to dark scan.
-        view_range (list[int, int]): [Default=None] Two indexes of views to specify the range of views to use for reconstruction.
-        total_angles (int): [Default=360] Total rotation angle for the whole dataset.
-        num_acquired_scans (int): [Default=2000] Total number of acquired scans in the directory.
-        rotation_direction (string): [Default='positive'] Rotation direction. Should be 'positive' or 'negative'.
-        downsample_factor ([int, int]): [Default=[1,1]] Two numbers to define down-sample factor.
-        crop_factor ([(int, int),(int, int)] or [int, int, int, int]): [Default=[(0, 0), (1, 1)]]
-            Two points to define the bounding box. Sequence of [(r0, c0), (r1, c1)] or [r0, c0, r1, c1], where 1>=r1 >= r0>=0 and 1>=c1 >= c0>=0.
-        num_time_points (int): [Default=1] Total number of time points.
-        time_point (int): [Default=0] Index of the time point we want to use for 3D reconstruction.
+        roi_ratio (float): Should be a number in [0,1]. This is the ratio of ROI_radius/ROR_radius. The region between ROR and ROI will be marked as background.           
+        blur_filter (ndarray): [default=None] blurring filter used to smooth the input image. 
+            If None, then the blurring step will be skipped.
     Returns:
-        2-element tuple containing
+        ndarray: Masked image with same shape of input image. 
+    '''
+    # blur the input image with a 2D Gaussian window
+    (num_slices, num_rows_cols, _) = image.shape
+    image = np.array([gaussian(image[i], gauss_sigma, preserve_range=True) for i in range(num_slices)])
+    roi_radius = num_rows_cols * roi_ratio / 2
+    center_pt = num_rows_cols // 2
+    roi_limit_points = _circle_points([center_pt, center_pt], roi_radius)
+    if use_active_contour:
+        print("Use active contour detection algorithm!")
+        if alpha is None:
+            alpha = 0.000365*num_rows_cols
+            print(f"alpha automatically calculated. alpha={alpha:.4f}")
+        snake = np.array([active_contour(image[i], roi_limit_points, alpha=alpha, w_line=w_line, w_edge=w_edge, beta=beta, gamma=gamma) for i in range(num_slices)])
+        mask = np.array([generate_2D_mask_from_snake(snake[i], num_rows_cols) for i in range(num_slices)])
+    else:
+        print("Use default contour of ROI circle.")
+        snake = np.array([np.copy(roi_limit_points) for _ in range(num_slices)])
+        mask_2D = generate_2D_mask_from_snake(roi_limit_points, num_rows_cols)
+        mask = np.array([np.copy(mask_2D) for _ in range(num_slices)])
+    return mask, snake
 
-        - **sino** (*ndarray, float*): Preprocessed 3D sinogram.
 
-        - **angles** (*array, double*): 1D array of angles corresponding to preprocessed sinogram.
+def blind_fixture_correction(sino, angles, dist_source_detector, magnification,
+                             recon_init=None, 
+                             gauss_sigma=2., roi_ratio=0.8, use_active_contour=True, 
+                             alpha=None, beta=10., w_line=-0.5, w_edge=1.5, gamma=0.01, 
+                             channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
+                             delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
+                             init_image=0.0,
+                             sigma_y=None, snr_db=30.0, weights=None, weight_type='unweighted',
+                             positivity=True, p=1.2, q=2.0, T=1.0, num_neighbors=6,
+                             sharpness=0.0, sigma_x=None, max_iterations=20, stop_threshold=0.02,
+                             num_threads=None, NHICD=False, verbose=1, lib_path=__lib_path):
+    """ Corrects the sinogram data for fixtures placed out of the field of view of the scanner.
+    
+    Required arguments:
+        - **sino** (*ndarray*): 3D sinogram array with shape (num_views, num_det_rows, num_det_channels)
+        - **angles** (*ndarray*): 1D view angles array in radians.
+        - **dist_source_detector** (*float*): Distance between the X-ray source and the detector in units of ALU
+        - **magnification** (*float*): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
+    Optional arguments specific to blind fixture correction:
+        - **recon_init** (*ndarray, optional*): [Default=None] Reconstruction from input sinogram. It is assumed that ``recon_init`` is the reconstruction corresponding to the input ``sino`` (This is important in order for the algorithm to work as expected). If None, a qGGMRF reconstruction based on ``sino`` will be used as ``recon_init``. 
+        - **gauss_sigma** (*float, optional*): [Default=2.] standard deviation of Gaussian filter used in both image masking and sinogram error blurring.
+        - **roi_ratio** (*float, optional*): [Default=0.8] Should be a number in [0,1]. This is the ratio of ROI_radius/ROR_radius. The region between ROR and ROI will be marked as background. Note that the ROI circle is also used as the initial contour in active contour detection algorithm. 
+        - **use_active_contour** (*boolean, optional*): [Default=True] parameter that specifies whether to use active contour detection algorithm. If False, the contour used for image masking will simply be the ROI circle determined from ``roi_ratio``.
+    Optional arguments inherited from :py:func:`skimage.segmentation.active_contour` (with different default values). See `scikit-image API <https://scikit-image.org/docs/dev/api/skimage.segmentation.html#skimage.segmentation.active_contour>`_ for more information.:
+        - **alpha** (*float, optional*): [Default=None] Hyper-parameter for active contour detection. Snake length shape parameter. Higher values makes snake contract faster. If None, the value of alpha will be automatically calculated from the size of ``recon_init``.
+        - **beta** (*float, optional*): [Default=10.] Hyper-parameter for active contour detection. Snake smoothness shape parameter. Higher values makes snake smoother.
+        - **w_line** (*float, optional*): [Default=-0.5] Hyper-parameter for active contour detection. Controls attraction to brightness. Use negative values to attract toward dark regions.
+        - **w_edge** (*float, optional*): [Default=1.5] Hyper-parameter for active contour detection. Controls attraction to edges. Use negative values to repel snake from edges.
+        - **gamma** (*float, optional*): [Default=0.01] Hyper-parameter for active contour detection. Explicit time stepping parameter.
+    Optional arguments inherited from :py:func:`cone3D.recon` and :py:func:`cone3D.project`:
+        - **channel_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
+        - **row_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
+        - **rotation_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space. This is normally set to zero.
 
+        - **delta_pixel_detector** (*float, optional*): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
+        - **delta_pixel_image** (*float*): [Default=None] Scalar value of image pixel spacing in :math:`ALU`. If None, automatically set to delta_pixel_detector/magnification
+        - **ror_radius** (*float*): [Default=None] Scalar value of radius of reconstruction in :math:`ALU`. If None, automatically set with compute_img_params. Pixels outside the radius ror_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
+
+        - **init_image** (*ndarray, optional*): [Default=0.0] Initial value of reconstruction image, specified by either a scalar value or a 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols)
+        prox_image (ndarray, optional): [Default=None] 3D proximal map input image. 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols)
+
+        - **sigma_y** (*float, optional*): [Default=None] Scalar value of noise standard deviation parameter. If None, automatically set with auto_sigma_y.
+        - **snr_db** (*float, optional*): [Default=30.0] Scalar value that controls assumed signal-to-noise ratio of the data in dB. Ignored if sigma_y is not None.
+        - **weights** (*ndarray, optional*): [Default=None] 3D weights array with same shape as sino.
+        - **weight_type** (*string, optional*): [Default='unweighted'] Type of noise model used for data. If the ``weights`` array is not supplied, then the function ``cone3D.calc_weights`` is used to set weights using specified ``weight_type`` parameter.
+
+                - Option "unweighted" corresponds to unweighted reconstruction;
+                - Option "transmission" is the correct weighting for transmission CT with constant dosage;
+                - Option "transmission_root" is commonly used with transmission CT data to improve image homogeneity;
+                - Option "emission" is appropriate for emission CT data.
+
+        - **positivity** (*bool, optional*): [Default=True] Boolean value that determines if positivity constraint is enforced. The positivity parameter defaults to True; however, it should be changed to False when used in applications that can generate negative image values.
+        - **p** (*float, optional*): [Default=1.2] Scalar value in range :math:`[1,2]` that specifies the qGGMRF shape parameter.
+        - **q** (*float, optional*): [Default=2.0] Scalar value in range :math:`[p,1]` that specifies the qGGMRF shape parameter.
+        - **T** (*float, optional*): [Default=1.0] Scalar value :math:`>0` that specifies the qGGMRF threshold parameter.
+        - **num_neighbors** (*int, optional*): [Default=6] Possible values are {26,18,6}. Number of neightbors in the qggmrf neighborhood. Higher number of neighbors result in a better regularization but a slower reconstruction.
+        - **sharpness** (*float, optional*): [Default=0.0] Scalar value that controls level of sharpness in the reconstruction. ``sharpness=0.0`` is neutral; ``sharpness>0`` increases sharpness; ``sharpness<0`` reduces sharpness. Ignored if ``sigma_x`` is not None in qGGMRF mode, or if ``sigma_p`` is not None in proximal map mode.
+        - **sigma_x** (*float, optional*): [Default=None] Scalar value :math:`>0` that specifies the qGGMRF scale parameter. Ignored if prox_image is not None. If None and prox_image is also None, automatically set with auto_sigma_x. Regularization should be controled with the ``sharpness`` parameter, but ``sigma_x`` can be set directly by expert users.
+        - **sigma_p** (*float, optional*): [Default=None] Scalar value :math:`>0` that specifies the proximal map parameter. Ignored if prox_image is None. If None and proximal image is not None, automatically set with auto_sigma_p. Regularization should be controled with the ``sharpness`` parameter, but ``sigma_p`` can be set directly by expert users.
+        - **max_iterations** (*int, optional*): [Default=20] Integer valued specifying the maximum number of iterations.
+        - **stop_threshold** (*float, optional*): [Default=0.02] Scalar valued stopping threshold in percent. If stop_threshold=0.0, then run max iterations.
+        - **num_threads** (*int, optional*): [Default=None] Number of compute threads requested when executed. If None, num_threads is set to the number of cores in the system
+        - **NHICD** (*bool, optional*): [Default=False] If true, uses Non-homogeneous ICD updates
+        - **verbose** (*int, optional*): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal reconstruction progress information, and 2 prints the full information.
+        - **lib_path** (*str, optional*): [Default=~/.cache/mbircone] Path to directory containing library of forward projection matrices.
+    Returns:
+        2-element tuple containing:
+        
+        - **sino_corected** (*ndarray, float*): corrected 3D sinogram with shape (num_views, num_det_rows, num_det_channels)
+        
+        - **snake** (*ndarray, float*): 3D array containing the coordinates of contour generated from active contour detection algorithm.
+    
+   
+    """
+    # initial recon
+    if recon_init is None:
+        print("Performing inital qGGMRF reconstruction with uncorrected sinogram ......")
+        recon_init = cone3D.recon(sino, angles, dist_source_detector, magnification, 
+                         channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
+                         delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius,
+                         init_image=init_image,
+                         sigma_y=sigma_y, snr_db=snr_db, weights=weights, weight_type=weight_type,
+                         positivity=positivity, p=p, q=q, T=T, num_neighbors=num_neighbors,
+                         sharpness=sharpness, sigma_x=sigma_x, max_iterations=max_iterations, stop_threshold=stop_threshold,
+                         num_threads=num_threads, NHICD=NHICD, verbose=verbose, lib_path=lib_path)
+    # Image segmentation
+    print("Performing image segmentation ......")
+    mask, snake = image_mask(recon_init, roi_ratio=roi_ratio, use_active_contour=use_active_contour, gauss_sigma=gauss_sigma, alpha=alpha, beta=beta, w_line=w_line, w_edge=w_edge, gamma=gamma)
+    x_m = recon_init*mask
+    (num_views, num_det_rows, num_det_channels) = np.shape(sino)
+    print("Calculating sinogram error ......")
+    Ax_m = cone3D.project(x_m, angles,
+                          num_det_rows, num_det_channels,
+                          dist_source_detector, magnification,
+                          channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
+                          delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius,
+                          num_threads=num_threads, verbose=verbose, lib_path=lib_path)
+    # sinogram error
+    e = sino-Ax_m
+    p = np.array([gaussian(e[i], gauss_sigma, preserve_range=True) for i in range(num_views)])
+    print("Linear fitting ......")
+    c = np.sum(e*p) / np.sum(p*p)
+    print("linear fitting constant = ", c)
+    sino_corrected = sino - c*p
+    return sino_corrected, snake
+
+
+def background_offset_calibration(sino, background_box_info_list):
+    """Performs background offset calibration to the sinogram. 
+    
+    Args:
+        sino (ndarray): 3D sinogram data with shape (num_views, num_det_rows, num_det_channels)
+        background_box_info_list ([(left,top,width,height,view_ind)]): [default=[]] A list of tuples specifying the rectangular areas used for background offset calculation.  
+            Each tuple in the list has entries of the form `(left, top, width, height, view_ind)`.  Here `(left, top)` specifies the left top corner of the rectangle in pixels (using the convention that the left top of the entire image is (0,0)), `width` and `height` are also in pixels, and `view_ind` is the index of the view associated with this rectangle.    
+    Returns:
+        float: The background offset calculated from `sino`.
+    """
+    avg_offset = 0.
+    if not background_box_info_list:
+        return 0.
+    for box_info in background_box_info_list:
+        print(f"box used for background offset calbiration: (x,y,width,height,view_ind)=", box_info)
+        (x, y, box_width, box_height, view_ind) = box_info
+        avg_offset += np.mean(sino[view_ind, y:y + box_height, x:x + box_width])
+    avg_offset /= len(background_box_info_list)
+    return avg_offset
+
+
+def NSI_process_raw_scans(radiographs_directory, NSI_system_params,
+                          blank_scan_path=None, dark_scan_path=None,
+                          num_time_points=None, time_point=0,
+                          num_sampled_scans=None,                      
+                          rotation_direction="positive"):
+    """Reads a subset of scan images corresponding to the given time point from an NSI ConeBeam scan directory, and calculates view angles corresponding to the object scans.
+    
+    Args:
+        radiographs_directory (string): Path to an NSI ConeBeam scan directory.
+        NSI_system_params (dict): A dictionary containing NSI parameters. This can be obtained from an NSI configuration file using function `preprocess.NSI_read_params()`.
+        num_sampled_scans (int): [Default=None] Number of object scans sampled from all object scans. It should be smaller than the total number of object scans from directory. 
+            By default, num_sampled_scans will be the total number of scans in the directory.
+            The subset of the scans will be picked by a grid subsampling strategy. For example, by setting num_sampled_scans to be half of total number of object scans in the directory, the algorithm will pick every other object scan. 
+        blank_scan_path (string): [Default=None] Path to a blank scan image, e.g. 'path_to_scan/gain0.tif'
+        dark_scan_path (string): [Default=None] Path to a dark scan image, e.g. 'path_to_scan/offset.tif'
+        rotation_direction (string): [Default='positive'] Rotation direction for angles calculation.
+            Should be one of 'positive' or 'negative'.
+        num_time_points (int): [Default=None] Total number of time points for all object scans.
+            `num_time_points` will be used to partition the sampled object scans into subsets corresponding to different time points.
+            By default, the scans will be partitioned such that a time point contains sampled scans in a 360-degree rotation.
+        time_point (int): [Default=0] Index of the time point of the 3D object scan we would like to retrieve. 
+            `time_point` shoud be in range of [0, num_time_points-1], where 0 corresponds to the first time point.    
+    Returns: 
+        4-element tuple containing:
+        
+        - **obj_scan** (*ndarray, float*): 3D object scan with shape (num_views, num_det_rows, num_det_channels)
+        
+        - **blank_scan** (*ndarray, float*): 3D blank scan with shape (1, num_det_rows, num_det_channels)
+        
+        - **dark_scan** (*ndarray, float*): 3D dark scan with shape (1, num_det_rows, num_det_channels)
+        
+        - **angles** (*ndarray, double*): 1D array of view angles in radians. 'angles[k]' is the angle for view :math:`k` of object scan. It is assumed that the rotation of each view is equally spaced in range :math:`[0,2\pi)`.
     """
 
-    if view_range is None:
-        view_range = [0, num_acquired_scans - 1]
-
-    view_ids = _compute_views_index_list(view_range, num_views)
-    view_ids = _select_contiguous_subset(view_ids, num_time_points, time_point)
+    num_acquired_scans = NSI_system_params["num_acquired_scans"]
+    total_angles = NSI_system_params["total_angles"]
+    if num_sampled_scans is None:
+        num_sampled_scans = num_acquired_scans
+    if num_time_points is None:
+        num_time_points = total_angles//360 
+    scan_ids = _compute_views_index_list([0, num_acquired_scans], num_sampled_scans)
+    view_ids = _select_contiguous_subset(scan_ids, num_time_points, time_point)
+     
     angles = _compute_angles_list(view_ids, num_acquired_scans, total_angles, rotation_direction)
-    obj_scan = _read_scan_dir(path_radiographs, view_ids)
+    obj_scan = _read_scan_dir(radiographs_directory, view_ids)
 
     # Should deal with situation when input is None.
-    if path_blank is not None:
-        blank_scan = np.expand_dims(_read_scan_img(path_blank), axis=0)
+    if blank_scan_path is not None:
+        blank_scan = np.expand_dims(_read_scan_img(blank_scan_path), axis=0)
     else:
-        blank_scan = 0 * obj_scan[0] + 1
-        blank_scan = blank_scan.reshape([1, obj_scan.shape[1], obj_scan.shape[2]])
-    if path_dark is not None:
-        dark_scan = np.expand_dims(_read_scan_img(path_dark), axis=0)
+        blank_scan = np.expand_dims(0 * obj_scan[0] + 1, axis=0)
+    if dark_scan_path is not None:
+        dark_scan = np.expand_dims(_read_scan_img(dark_scan_path), axis=0)
     else:
-        dark_scan = 0 * obj_scan[0]
-        dark_scan = dark_scan.reshape([1, obj_scan.shape[1], obj_scan.shape[2]])
+        dark_scan = np.expand_dims(0 * obj_scan[0], axis=0)
 
     obj_scan = np.flip(obj_scan, axis=1)
     blank_scan = np.flip(blank_scan, axis=1)
     dark_scan = np.flip(dark_scan, axis=1)
+    return obj_scan, blank_scan, dark_scan, angles
 
+
+def compute_sino_from_scans(obj_scan, blank_scan=None, dark_scan=None,
+                            downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
+                            weight_type='unweighted',
+                            background_box_info_list=[]):
+    """Given a set of object scan, blank scan, and dark scan, compute the sinogram used for reconstruction. This function will (optionally) downsample and crop the scans, compute sinogram and weights from the scans, and finally perform background offset calibration to the sinogram. It is assumed that the object scans, blank scan and dark scan all have compatible sizes. 
+    
+    Args:
+        obj_scan (ndarray, float): 3D object scan with shape (num_views, num_det_rows, num_det_channels).
+        blank_scan (ndarray, float): [Default=None] 3D blank scan with shape (num_blank_scans, num_det_rows, num_det_channels).
+        dark_scan (ndarray, float): [Default=None] 3D dark scan with shape (num_dark_scans, num_det_rows, num_det_channels)
+        downsample_factor ([int, int]): [Default=[1,1]] Two numbers to define down-sample factor.
+        crop_factor ([(float, float),(float, float)] or [float, float, float, float]): [Default=[(0., 0.), (1., 1.)]].
+            Two fractional points to define the bounding box. Sequence of [(r0, c0), (r1, c1)] or [r0, c0, r1, c1], where 0<=r0 <= r1<=1 and 0<=c0 <= c1<=1.
+            In case where the scan size is not divisible by downsample_factor, the scans will be first truncated to a size that is divisible by downsample_factor, and then downsampled.
+        weight_type (string, optional): [Default='unweighted'] Type of noise model used for data.
+            The function ``cone3D.calc_weights`` is used to set weights using specified ``weight_type`` parameter.
+                - Option "unweighted" corresponds to unweighted reconstruction;
+                - Option "transmission" is the correct weighting for transmission CT with constant dosage;
+                - Option "transmission_root" is commonly used with transmission CT data to improve image homogeneity;
+                - Option "emission" is appropriate for emission CT data.
+        background_box_info_list ([(left,top,width,height,view_ind)]): [default=[]] A list of tuples specifying the rectangular areas used for background offset calculation.  
+            Each tuple in the list has entries of the form `(left, top, width, height, view_ind)`.  Here `(left, top)` specifies the left top corner of the rectangle in pixels (using the convention that the left top of the entire image is (0,0)), `width` and `height` are also in pixels, and `view_ind` is the index of the view associated with this rectangle.   
+    Returns:
+        2-element tuple containing:
+        - **sino** (*ndarray, float*): Preprocessed 3D sinogram.
+        - **weights** (*ndarray, float*): 3D weights array with the same shape as sino. 
+    """
+
+    # set default blank and dark scans if None.
+    if blank_scan is None:
+        blank_scan = np.expand_dims(0 * obj_scan[0] + 1, axis=0) 
+    if dark_scan is None:
+        dark_scan = np.expand_dims(0 * obj_scan[0], axis=0)
     # downsampling in pixels
     obj_scan, blank_scan, dark_scan = _downsample_scans(obj_scan, blank_scan, dark_scan,
                                                         downsample_factor=downsample_factor)
     # cropping in pixels
     obj_scan, blank_scan, dark_scan = _crop_scans(obj_scan, blank_scan, dark_scan,
                                                   crop_factor=crop_factor)
+    sino, weight_mask = _compute_sino_and_weight_mask_from_scans(obj_scan, blank_scan, dark_scan)
 
-    sino = _compute_sino_from_scans(obj_scan, blank_scan, dark_scan)
-    return sino.astype(np.float32), angles.astype(np.float64)
+    # set invalid sinogram entries to 0
+    sino[weight_mask == 0] = 0.
+    # compute sinogram weights
+    weights = cone3D.calc_weights(sino, weight_type=weight_type)
+    # set the weights corresponding to invalid sinogram entries to 0.
+    weights[weight_mask == 0] = 0.
+    # background offset calibration
+    background_offset = background_offset_calibration(sino, background_box_info_list)
+    print("background offset = ", background_offset)
+    sino = sino - background_offset
+    return sino.astype(np.float32), weights.astype(np.float32)
