@@ -424,7 +424,7 @@ def generate_2D_mask_from_snake(snake, num_rows_cols):
     return mask
 
 
-def image_mask(image, roi_ratio, smart_contour, gauss_sigma, alpha, beta, w_line, w_edge, gamma):
+def image_mask(image, roi_ratio, use_active_contour, gauss_sigma, alpha, beta, w_line, w_edge, gamma):
     ''' Automatic image segmentation:
         1. Blur the input image with a 2D Gaussian filter (with hamming window).
         2. Compute a binary mask that indicates the region of image support.
@@ -443,7 +443,7 @@ def image_mask(image, roi_ratio, smart_contour, gauss_sigma, alpha, beta, w_line
     roi_radius = num_rows_cols * roi_ratio / 2
     center_pt = num_rows_cols // 2
     roi_limit_points = _circle_points([center_pt, center_pt], roi_radius)
-    if smart_contour:
+    if use_active_contour:
         print("Use active contour detection algorithm!")
         if alpha is None:
             alpha = 0.000365*num_rows_cols
@@ -459,8 +459,8 @@ def image_mask(image, roi_ratio, smart_contour, gauss_sigma, alpha, beta, w_line
 
 
 def blind_fixture_correction(sino, angles, dist_source_detector, magnification,
-                             recon_init=None,
-                             roi_ratio=0.8, smart_contour=True, gauss_sigma=2., 
+                             recon_init=None, 
+                             gauss_sigma=2., roi_ratio=0.8, use_active_contour=True, 
                              alpha=None, beta=10., w_line=-0.5, w_edge=1.5, gamma=0.01, 
                              channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
                              delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
@@ -470,6 +470,67 @@ def blind_fixture_correction(sino, angles, dist_source_detector, magnification,
                              sharpness=0.0, sigma_x=None, max_iterations=20, stop_threshold=0.02,
                              num_threads=None, NHICD=False, verbose=1, lib_path=__lib_path):
     """ Corrects the sinogram data for fixtures placed out of the field of view of the scanner.
+    
+    Required arguments:
+        - **sino** (*ndarray*): 3D sinogram array with shape (num_views, num_det_rows, num_det_channels)
+        - **angles** (*ndarray*): 1D view angles array in radians.
+        - **dist_source_detector** (*float*): Distance between the X-ray source and the detector in units of ALU
+        - **magnification** (*float*): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
+    Optional arguments specific to blind fixture correction:
+        - **recon_init** (*ndarray, optional*): [Default=None] Reconstruction from input sinogram. It is assumed that ``recon_init`` is the reconstruction corresponding to the input ``sino`` (This is important in order for the algorithm to work as expected). If None, a qGGMRF reconstruction based on ``sino`` will be used as ``recon_init``. 
+        - **gauss_sigma** (*float, optional*): [Default=2.] standard deviation of Gaussian filter used in both image masking and sinogram error blurring.
+        - **roi_ratio** (*float, optional*): [Default=0.8] Should be a number in [0,1]. This is the ratio of ROI_radius/ROR_radius. The region between ROR and ROI will be marked as background. Note that the ROI circle is also used as the initial contour in active contour detection algorithm. 
+        - **use_active_contour** (*boolean, optional*): [Default=True] parameter that specifies whether to use active contour detection algorithm. If False, the contour used for image masking will simply be the ROI circle determined from ``roi_ratio``.
+    Optional arguments inherited from :py:func:`skimage.segmentation.active_contour` (with different default values). See `scikit-image API <https://scikit-image.org/docs/dev/api/skimage.segmentation.html#skimage.segmentation.active_contour>`_ for more information.:
+        - **alpha** (*float, optional*): [Default=None] Hyper-parameter for active contour detection. Snake length shape parameter. Higher values makes snake contract faster. If None, the value of alpha will be automatically calculated from the size of ``recon_init``.
+        - **beta** (*float, optional*): [Default=10.] Hyper-parameter for active contour detection. Snake smoothness shape parameter. Higher values makes snake smoother.
+        - **w_line** (*float, optional*): [Default=-0.5] Hyper-parameter for active contour detection. Controls attraction to brightness. Use negative values to attract toward dark regions.
+        - **w_edge** (*float, optional*): [Default=1.5] Hyper-parameter for active contour detection. Controls attraction to edges. Use negative values to repel snake from edges.
+        - **gamma** (*float, optional*): [Default=0.01] Hyper-parameter for active contour detection. Explicit time stepping parameter.
+    Optional arguments inherited from :py:func:`cone3D.recon` and :py:func:`cone3D.project`:
+        - **channel_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
+        - **row_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
+        - **rotation_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space. This is normally set to zero.
+
+        - **delta_pixel_detector** (*float, optional*): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
+        - **delta_pixel_image** (*float*): [Default=None] Scalar value of image pixel spacing in :math:`ALU`. If None, automatically set to delta_pixel_detector/magnification
+        - **ror_radius** (*float*): [Default=None] Scalar value of radius of reconstruction in :math:`ALU`. If None, automatically set with compute_img_params. Pixels outside the radius ror_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
+
+        - **init_image** (*ndarray, optional*): [Default=0.0] Initial value of reconstruction image, specified by either a scalar value or a 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols)
+        prox_image (ndarray, optional): [Default=None] 3D proximal map input image. 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols)
+
+        - **sigma_y** (*float, optional*): [Default=None] Scalar value of noise standard deviation parameter. If None, automatically set with auto_sigma_y.
+        - **snr_db** (*float, optional*): [Default=30.0] Scalar value that controls assumed signal-to-noise ratio of the data in dB. Ignored if sigma_y is not None.
+        - **weights** (*ndarray, optional*): [Default=None] 3D weights array with same shape as sino.
+        - **weight_type** (*string, optional*): [Default='unweighted'] Type of noise model used for data. If the ``weights`` array is not supplied, then the function ``cone3D.calc_weights`` is used to set weights using specified ``weight_type`` parameter.
+
+                - Option "unweighted" corresponds to unweighted reconstruction;
+                - Option "transmission" is the correct weighting for transmission CT with constant dosage;
+                - Option "transmission_root" is commonly used with transmission CT data to improve image homogeneity;
+                - Option "emission" is appropriate for emission CT data.
+
+        - **positivity** (*bool, optional*): [Default=True] Boolean value that determines if positivity constraint is enforced. The positivity parameter defaults to True; however, it should be changed to False when used in applications that can generate negative image values.
+        - **p** (*float, optional*): [Default=1.2] Scalar value in range :math:`[1,2]` that specifies the qGGMRF shape parameter.
+        - **q** (*float, optional*): [Default=2.0] Scalar value in range :math:`[p,1]` that specifies the qGGMRF shape parameter.
+        - **T** (*float, optional*): [Default=1.0] Scalar value :math:`>0` that specifies the qGGMRF threshold parameter.
+        - **num_neighbors** (*int, optional*): [Default=6] Possible values are {26,18,6}. Number of neightbors in the qggmrf neighborhood. Higher number of neighbors result in a better regularization but a slower reconstruction.
+        - **sharpness** (*float, optional*): [Default=0.0] Scalar value that controls level of sharpness in the reconstruction. ``sharpness=0.0`` is neutral; ``sharpness>0`` increases sharpness; ``sharpness<0`` reduces sharpness. Ignored if ``sigma_x`` is not None in qGGMRF mode, or if ``sigma_p`` is not None in proximal map mode.
+        - **sigma_x** (*float, optional*): [Default=None] Scalar value :math:`>0` that specifies the qGGMRF scale parameter. Ignored if prox_image is not None. If None and prox_image is also None, automatically set with auto_sigma_x. Regularization should be controled with the ``sharpness`` parameter, but ``sigma_x`` can be set directly by expert users.
+        - **sigma_p** (*float, optional*): [Default=None] Scalar value :math:`>0` that specifies the proximal map parameter. Ignored if prox_image is None. If None and proximal image is not None, automatically set with auto_sigma_p. Regularization should be controled with the ``sharpness`` parameter, but ``sigma_p`` can be set directly by expert users.
+        - **max_iterations** (*int, optional*): [Default=20] Integer valued specifying the maximum number of iterations.
+        - **stop_threshold** (*float, optional*): [Default=0.02] Scalar valued stopping threshold in percent. If stop_threshold=0.0, then run max iterations.
+        - **num_threads** (*int, optional*): [Default=None] Number of compute threads requested when executed. If None, num_threads is set to the number of cores in the system
+        - **NHICD** (*bool, optional*): [Default=False] If true, uses Non-homogeneous ICD updates
+        - **verbose** (*int, optional*): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal reconstruction progress information, and 2 prints the full information.
+        - **lib_path** (*str, optional*): [Default=~/.cache/mbircone] Path to directory containing library of forward projection matrices.
+    Returns:
+        2-element tuple containing:
+        
+        - **sino_corected** (*ndarray, float*): corrected 3D sinogram with shape (num_views, num_det_rows, num_det_channels)
+        
+        - **snake** (*ndarray, float*): 3D array containing the coordinates of contour generated from active contour detection algorithm.
+    
+   
     """
     # initial recon
     if recon_init is None:
@@ -484,7 +545,7 @@ def blind_fixture_correction(sino, angles, dist_source_detector, magnification,
                          num_threads=num_threads, NHICD=NHICD, verbose=verbose, lib_path=lib_path)
     # Image segmentation
     print("Performing image segmentation ......")
-    mask, snake = image_mask(recon_init, roi_ratio=roi_ratio, smart_contour=smart_contour, gauss_sigma=gauss_sigma, alpha=alpha, beta=beta, w_line=w_line, w_edge=w_edge, gamma=gamma)
+    mask, snake = image_mask(recon_init, roi_ratio=roi_ratio, use_active_contour=use_active_contour, gauss_sigma=gauss_sigma, alpha=alpha, beta=beta, w_line=w_line, w_edge=w_edge, gamma=gamma)
     x_m = recon_init*mask
     (num_views, num_det_rows, num_det_channels) = np.shape(sino)
     print("Calculating sinogram error ......")

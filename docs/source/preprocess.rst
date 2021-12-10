@@ -14,4 +14,5 @@ mbircone.preprocess
       NSI_process_raw_scans
       compute_sino_from_scans
       background_offset_calibration
+      blind_fixture_correction
       
