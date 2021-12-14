@@ -424,6 +424,14 @@ def generate_2D_mask_from_snake(snake, num_rows_cols):
     return mask
 
 
+def smooth_adjacent_masks(mask):
+    mask_smooth[0] = mask[0] | mask[1]
+    for i in range(1, len(mask)-1): 
+        mask_smooth[i] = mask[i-1] | mask[i] | mask[i+1]
+    mask_smooth[len(mask)-1] = mask[len(mask)-2] | mask[len(mask)-1]
+    return mask_smooth    
+
+
 def image_mask(image, roi_ratio, use_active_contour, gauss_sigma, alpha, beta, w_line, w_edge, gamma):
     ''' Automatic image segmentation:
         1. Blur the input image with a 2D Gaussian filter (with hamming window).
@@ -446,7 +454,7 @@ def image_mask(image, roi_ratio, use_active_contour, gauss_sigma, alpha, beta, w
     if use_active_contour:
         print("Use active contour detection algorithm!")
         if alpha is None:
-            alpha = 0.000365*num_rows_cols
+            alpha = 0.00035*num_rows_cols
             print(f"alpha automatically calculated. alpha={alpha:.4f}")
         snake = np.array([active_contour(image[i], roi_limit_points, alpha=alpha, w_line=w_line, w_edge=w_edge, beta=beta, gamma=gamma) for i in range(num_slices)])
         mask = np.array([generate_2D_mask_from_snake(snake[i], num_rows_cols) for i in range(num_slices)])
@@ -455,12 +463,13 @@ def image_mask(image, roi_ratio, use_active_contour, gauss_sigma, alpha, beta, w
         snake = np.array([np.copy(roi_limit_points) for _ in range(num_slices)])
         mask_2D = generate_2D_mask_from_snake(roi_limit_points, num_rows_cols)
         mask = np.array([np.copy(mask_2D) for _ in range(num_slices)])
-    return mask, snake
+        mask = smooth_adjacent_masks(mask)
+    return mask
 
 
 def blind_fixture_correction(sino, angles, dist_source_detector, magnification,
                              recon_init=None, 
-                             gauss_sigma=2., roi_ratio=0.8, use_active_contour=True, 
+                             gauss_sigma=2., roi_ratio=0.9, use_active_contour=True, 
                              alpha=None, beta=10., w_line=-0.5, w_edge=1.5, gamma=0.01, 
                              channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
                              delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
@@ -479,7 +488,7 @@ def blind_fixture_correction(sino, angles, dist_source_detector, magnification,
     Optional arguments specific to blind fixture correction:
         - **recon_init** (*ndarray, optional*): [Default=None] Reconstruction from input sinogram. It is assumed that ``recon_init`` is the reconstruction corresponding to the input ``sino`` (This is important in order for the algorithm to work as expected). If None, a qGGMRF reconstruction based on ``sino`` will be used as ``recon_init``. 
         - **gauss_sigma** (*float, optional*): [Default=2.] standard deviation of Gaussian filter used in both image masking and sinogram error blurring.
-        - **roi_ratio** (*float, optional*): [Default=0.8] Should be a number in [0,1]. This is the ratio of ROI_radius/ROR_radius. The region between ROR and ROI will be marked as background. Note that the ROI circle is also used as the initial contour in active contour detection algorithm. 
+        - **roi_ratio** (*float, optional*): [Default=0.9] Should be a number in [0,1]. This is the ratio of ROI_radius/ROR_radius. The region between ROR and ROI will be marked as background. Note that the ROI circle is also used as the initial contour in active contour detection algorithm. 
         - **use_active_contour** (*boolean, optional*): [Default=True] parameter that specifies whether to use active contour detection algorithm. If False, the contour used for image masking will simply be the ROI circle determined from ``roi_ratio``.
     Optional arguments inherited from :py:func:`skimage.segmentation.active_contour` (with different default values). See `scikit-image API <https://scikit-image.org/docs/dev/api/skimage.segmentation.html#skimage.segmentation.active_contour>`_ for more information.:
         - **alpha** (*float, optional*): [Default=None] Hyper-parameter for active contour detection. Snake length shape parameter. Higher values makes snake contract faster. If None, the value of alpha will be automatically calculated from the size of ``recon_init``.
@@ -545,7 +554,7 @@ def blind_fixture_correction(sino, angles, dist_source_detector, magnification,
                          num_threads=num_threads, NHICD=NHICD, verbose=verbose, lib_path=lib_path)
     # Image segmentation
     print("Performing image segmentation ......")
-    mask, snake = image_mask(recon_init, roi_ratio=roi_ratio, use_active_contour=use_active_contour, gauss_sigma=gauss_sigma, alpha=alpha, beta=beta, w_line=w_line, w_edge=w_edge, gamma=gamma)
+    mask = image_mask(recon_init, roi_ratio=roi_ratio, use_active_contour=use_active_contour, gauss_sigma=gauss_sigma, alpha=alpha, beta=beta, w_line=w_line, w_edge=w_edge, gamma=gamma)
     x_m = recon_init*mask
     (num_views, num_det_rows, num_det_channels) = np.shape(sino)
     print("Calculating sinogram error ......")
@@ -562,7 +571,7 @@ def blind_fixture_correction(sino, angles, dist_source_detector, magnification,
     c = np.sum(e*p) / np.sum(p*p)
     print("linear fitting constant = ", c)
     sino_corrected = sino - c*p
-    return sino_corrected, snake
+    return sino_corrected, mask
 
 
 def background_offset_calibration(sino, background_box_info_list):
