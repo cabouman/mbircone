@@ -347,6 +347,7 @@ def NSI_to_MBIRCONE_params(NSI_system_params):
         Dictionary: MBIRCONE format geometric parameters
 
     """
+    print("#################### Test message #################")
     geo_params = dict()
     geo_params["num_channels"] = NSI_system_params['N_dv']
     geo_params["num_slices"] = NSI_system_params['N_dw']
@@ -425,11 +426,12 @@ def generate_2D_mask_from_snake(snake, num_rows_cols):
 
 
 def smooth_adjacent_masks(mask):
-    mask_smooth[0] = mask[0] | mask[1]
+    mask_smooth = np.copy(mask)
+    mask_smooth[0] = mask[0] + mask[1]
     for i in range(1, len(mask)-1): 
-        mask_smooth[i] = mask[i-1] | mask[i] | mask[i+1]
-    mask_smooth[len(mask)-1] = mask[len(mask)-2] | mask[len(mask)-1]
-    return mask_smooth    
+        mask_smooth[i] = mask[i-1] + mask[i] + mask[i+1]
+    mask_smooth[len(mask)-1] = mask[len(mask)-2] + mask[len(mask)-1]
+    return mask_smooth.astype(bool) 
 
 
 def image_mask(image, roi_ratio, use_active_contour, gauss_sigma, alpha, beta, w_line, w_edge, gamma):
@@ -454,16 +456,15 @@ def image_mask(image, roi_ratio, use_active_contour, gauss_sigma, alpha, beta, w
     if use_active_contour:
         print("Use active contour detection algorithm!")
         if alpha is None:
-            alpha = 0.00035*num_rows_cols
+            alpha = 0.00037*num_rows_cols
             print(f"alpha automatically calculated. alpha={alpha:.4f}")
         snake = np.array([active_contour(image[i], roi_limit_points, alpha=alpha, w_line=w_line, w_edge=w_edge, beta=beta, gamma=gamma) for i in range(num_slices)])
         mask = np.array([generate_2D_mask_from_snake(snake[i], num_rows_cols) for i in range(num_slices)])
+        mask = smooth_adjacent_masks(mask)
     else:
         print("Use default contour of ROI circle.")
-        snake = np.array([np.copy(roi_limit_points) for _ in range(num_slices)])
         mask_2D = generate_2D_mask_from_snake(roi_limit_points, num_rows_cols)
         mask = np.array([np.copy(mask_2D) for _ in range(num_slices)])
-        mask = smooth_adjacent_masks(mask)
     return mask
 
 

@@ -465,6 +465,6 @@ def mace4D(sino, angles, dist_source_detector, magnification,
             elapsed_t = end-start
             print(f"Done MACE iteration {itr}/{max_admm_itr}. Elapsed time: {elapsed_t:.2f} sec.")
     #################### end ADMM iterations
-    print("Done MACE reconstruction.")
+    print("Done MACE reconstruction!")
     return recon
 
