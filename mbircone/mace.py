@@ -206,7 +206,7 @@ def mace3D(sino, angles, dist_source_detector, magnification,
             beta.append(w)
     else:
         beta = [1-prior_weight,prior_weight/(image_dim),prior_weight/(image_dim),prior_weight/(image_dim)]
-    assert(all(w>=0 for w in beta) and sum(beta)==1), 'Incorrect value of prior_weight given. All elements in prior_weight should be non-negative, and sum should be no greater than 1.'   
+    assert(all(w>=0 for w in beta) and (sum(beta)-1.)<1e-5), 'Incorrect value of prior_weight given. All elements in prior_weight should be non-negative, and sum should be no greater than 1.'   
     # make denoiser_args an instance if necessary
     if not isinstance(denoiser_args, tuple):
         denoiser_args = (denoiser_args,) 
