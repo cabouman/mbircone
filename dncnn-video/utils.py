@@ -350,10 +350,22 @@ def pythonize_params(params):
 
     return params
 
-def segmentation_and_percentile(img, percentile=90, gauss_sigma=1.5):
-    num_channels = img.shape[2]
-    img_smooth = np.array([gaussian(img[:,:,i], gauss_sigma, preserve_range=True) for i in range(num_channels)])
-    img_mean = np.mean(img_smooth)
-    indicator = img_smooth > 0.5 * img_mean
+
+def calc_upper_range(img, percentile=75, gauss_sigma=1.5, is_segment=True, threshold=0.5):
+    '''
+    Given a 4D image volume of shape (Nt, Nz, Nx, Ny), calculate the image upper range.
+    '''
+    assert(np.ndim(img)<=4), 'Error! Input image dim must be 4 or lower!' 
+    if np.ndim(img) < 4:
+        print(f"{np.ndim(img)} dim image provided. Automatically adding axes to make the input a 4D image volume.")    
+        for _ in range(4-np.ndim(img)):
+            img = np.expand_dims(img, axis=0)
+    num_tp, num_axial_slices, _, _ = np.shape(img)
+    img_smooth = np.array([[gaussian(img[t,i,:,:], gauss_sigma, preserve_range=True) for t in range(num_tp)] for i in range(num_axial_slices)])
+    if is_segment:
+        img_mean = np.mean(img_smooth)
+        indicator = img_smooth > threshold * img_mean
+    else:
+        indicator = np.ones(img.shape)
     img_upper_range = np.percentile(img_smooth[indicator], percentile)
-    return img_upper_range, indicator
+    return img_upper_range, np.squeeze(img_smooth), np.squeeze(indicator)

@@ -85,18 +85,3 @@ def compute_inv_permute_vector(permute_vector):
 
     return inv_permute_vector
 
-
-def normalize(img, image_range):
-    """Normalizes ``img`` from specified image range to the range of (0,1).
-    """
-    #print('original image range:',image_range)
-    img_normalized = (img-image_range[0])/(image_range[1]-image_range[0])
-    #print('normalized image range:',np.percentile(img_normalized,10),np.percentile(img_normalized,90))
-    return img_normalized
-
-def denormalize(img_normalized, image_range):
-    """Denormalizes ``img_normalized`` from (0,1) to desired image range.
-    """
-    img = img_normalized*(image_range[1]-image_range[0])+image_range[0]
-    return img
-

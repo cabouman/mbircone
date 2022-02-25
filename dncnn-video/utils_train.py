@@ -167,9 +167,11 @@ def randomGradient(sizes):
     x = 2*x - 1
     return x
 
-def addNoise_batch(clean_batch, noise_sigma):
+def addNoise_batch(clean_batch, noise_sigma, upper_range):
 
-    noise = np.random.normal(scale=noise_sigma, size=clean_batch.shape)
+    noise_sigma_adjusted = noise_sigma*upper_range
+    print("Adding AWGN with sigma = ", noise_sigma_adjusted)
+    noise = np.random.normal(scale=noise_sigma*upper_range, size=clean_batch.shape)
     # noise_sd = np.sqrt((noise**2).mean())
     # print("gen_batch_noisy: noise sigma: {}".format(noise_sd))
     # print("gen_batch_noisy: noise min: {}".format(noise.min()))
