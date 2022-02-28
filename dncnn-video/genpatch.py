@@ -78,9 +78,9 @@ def getPatchList_3D_rotAll(recon3D, params):
 
     return patchList3D
 
-def get_patches_from_recon4D(fileList_recon4D, params):
+def get_patches_from_recon4D(reconList, params):
 
-    reconList = read3Dlist(fileList_recon4D, isRecon=True)
+    # reconList = read3Dlist(fileList_recon4D, isRecon=True)
 
     stack_of_patchList3D = []
     for id,recon in enumerate(reconList):
@@ -165,7 +165,6 @@ def main():
 
     patchArray_clean = np.stack(patchList_clean_good, axis=0) # n x conv1 x conv2 x chan
     patchArray_noisy = np.stack(patchList_noisy_good, axis=0) # n x conv1 x conv2 x chan
-
     print("patchArray_clean shape: {}".format(patchArray_clean.shape))
     print("patchArray_noisy shape: {}".format(patchArray_noisy.shape))
     print("saving clean patch data to ", params['paths']['patches_train_clean'])

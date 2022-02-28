@@ -7,6 +7,7 @@ import array
 import pdb
 from ruamel.yaml import YAML
 from skimage.filters import gaussian
+import time
 
 #############################################################################
 ## Semi 2D
@@ -351,7 +352,7 @@ def pythonize_params(params):
     return params
 
 
-def calc_upper_range(img, percentile=75, gauss_sigma=1.5, is_segment=True, threshold=0.5):
+def calc_upper_range(img, percentile=75, gauss_sigma=2., is_segment=True, threshold=0.5):
     '''
     Given a 4D image volume of shape (Nt, Nz, Nx, Ny), calculate the image upper range.
     '''
@@ -361,11 +362,16 @@ def calc_upper_range(img, percentile=75, gauss_sigma=1.5, is_segment=True, thres
         for _ in range(4-np.ndim(img)):
             img = np.expand_dims(img, axis=0)
     num_tp, num_axial_slices, _, _ = np.shape(img)
+    start_time = time.time()
     img_smooth = np.array([[gaussian(img[t,i,:,:], gauss_sigma, preserve_range=True) for t in range(num_tp)] for i in range(num_axial_slices)])
+    end_time = time.time()
+    time_elapsed = end_time - start_time
+    print(f"Gaussian filtering takes {time_elapsed:.2f} sec for an image of size ", img.shape)
     if is_segment:
         img_mean = np.mean(img_smooth)
         indicator = img_smooth > threshold * img_mean
     else:
         indicator = np.ones(img.shape)
     img_upper_range = np.percentile(img_smooth[indicator], percentile)
-    return img_upper_range, np.squeeze(img_smooth), np.squeeze(indicator)
+    #return img_upper_range, np.squeeze(img_smooth), np.squeeze(indicator)
+    return img_upper_range

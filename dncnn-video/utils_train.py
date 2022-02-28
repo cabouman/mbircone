@@ -19,16 +19,10 @@ from utils import *
 ## Data Augment
 #############################################################################
 
-def generateCleanNoisyPair(clean_data, noisy_data, batch_id, train_params):
-
+def generateCleanNoisyPair(clean_data, batch_id, train_params):
     clean_batch = select_batch(clean_data, batch_id, train_params['batch_size'])
-    noisy_batch = select_batch(noisy_data, batch_id, train_params['batch_size'])
-
-    clean_batch, noisy_batch = augment_batch([clean_batch, noisy_batch], train_params)
-
-    clean_batch = addNoise_batch(clean_batch, train_params['perturb_sigma'])
-    noisy_batch = addNoise_batch(noisy_batch, train_params['noise_sigma'])
-
+    clean_batch = augment_batch(clean_batch, train_params)
+    noisy_batch = addNoise_batch(clean_batch, train_params['noise_sigma'])
     clean_batch = semi2DCNN_select_z_out_from_z_in(clean_batch, train_params['size_z_in'], train_params['size_z_out'])
 
     return clean_batch, noisy_batch
@@ -55,35 +49,27 @@ def select_batch(data, batch_id, batch_size):
 
     return batch
 
-def augment_batch(batchList, train_params):
+def augment_batch(clean_batch, train_params):
 
-    batch_size = batchList[0].shape[0]
+    batch_size = clean_batch.shape[0]
     for patch_id in range(batch_size):
+        clean_batch[patch_id] = augment_patch(clean_batch[patch_id], train_params)
 
-        patchList = [ batch[patch_id] for batch in batchList ]
-
-        patchList = augment_patch(patchList, train_params)
-
-        for batch,patch in zip(batchList,patchList):
-            batch[patch_id] = patch 
-
-    return batchList
+    return clean_batch
 
 
-def augment_patch(patchList, train_params):
+def augment_patch(patch, train_params):
 
     # rotate and flip
-    if patchList[0].shape[0]!=1 and patchList[0].shape[1]!=1:
-        patchList = orient_patch(patchList, train_params['is_augOrientOn'])
+    if patch.shape[0]!=1 and patch.shape[1]!=1:
+        patch = orient_patch(patch, train_params['is_augOrientOn'])
+    if train_params['is_randShift_on']:
+        print("Adding random shift and gradient to clean patch!")
+        patch = addRandShiftAndGradient_patch(patch, train_params)
 
-    #print('Before: min: {}, max: {}'.format( batch[imgID].min(), batch[imgID].max() ) )
-    #print('dark: {}, ,bright: {}'.format(dark,bright))
-    patchList = addRandShiftAndGradient_patch(patchList, train_params)
-    #print('After : min: {}, max: {}'.format( batch[imgID].min(), batch[imgID].max() ) )
+    return patch
 
-    return patchList
-
-def orient_patch(patchList, is_augOrientOn):
+def orient_patch(patch, is_augOrientOn):
 
     if is_augOrientOn:
         is_flipud = np.random.randint(2)
@@ -96,32 +82,23 @@ def orient_patch(patchList, is_augOrientOn):
         is_flipz = 0
         is_swapxy = 0 
 
-    # print([is_flipud, is_fliplr, is_flipz, is_swapxy])
+    orig_shape = patch.shape
 
-    for i,patch in enumerate(patchList):
-
-        orig_shape = patch.shape
-
-        if is_flipud==1:
-            patch = np.flipud(patch)
-
-        if is_fliplr==1:
-            patch = np.fliplr(patch)
-
-        if is_flipz==1:
-            patch = np.flip(patch, axis=2)
-
-        if is_swapxy==1:
-            patch = np.swapaxes(patch, 0, 1)
-
-        assert patch.shape==orig_shape, 'orient_patch: shape changed'
-
-        patchList[i] = patch
-
-    return patchList
+    if is_flipud==1:
+        patch = np.flipud(patch)
+    if is_fliplr==1:
+        patch = np.fliplr(patch)
+    if is_flipz==1:
+        patch = np.flip(patch, axis=2)
+    if is_swapxy==1:
+        patch = np.swapaxes(patch, 0, 1)
+    assert patch.shape==orig_shape, 'orient_patch: shape changed'
 
 
-def addRandShiftAndGradient_patch(patchList, train_params):
+    return patch
+
+
+def addRandShiftAndGradient_patch(patch, train_params):
     ''' Shifts 0 to randShift_dark and 1 to randShift_bright
         Applies gradients with range [-randGrad,randGrad] to dark and bright
         Each shifts and radius values are picked randomly and independently.
@@ -131,18 +108,14 @@ def addRandShiftAndGradient_patch(patchList, train_params):
     randGrad_dark =     np.random.uniform(low=train_params['randGrad_dark_lo'],      high=train_params['randGrad_dark_hi'])
     randGrad_bright =   np.random.uniform(low=train_params['randGrad_bright_lo'],    high=train_params['randGrad_bright_hi'])
 
-    sizes = np.array(patchList[0].shape)
+    sizes = np.array(patch.shape)
     randomGradient_dark = randomGradient(sizes)
     randomGradient_bright = randomGradient(sizes)
 
-    for i,patch in enumerate(patchList):
-        
-        patch =   randShift_dark*(1-patch) + randShift_bright*patch \
-                + randGrad_dark*(1-patch)*randomGradient_dark + randGrad_bright*patch*randomGradient_bright 
+    patch = randShift_dark*(1-patch) + randShift_bright*patch \
+            + randGrad_dark*(1-patch)*randomGradient_dark + randGrad_bright*patch*randomGradient_bright 
 
-        patchList[i] = patch
-
-    return patchList
+    return patch
 
 def randomGradient(sizes):
     ''' sizes must be 3D. output is strictly [-1,1] '''
@@ -167,15 +140,10 @@ def randomGradient(sizes):
     x = 2*x - 1
     return x
 
-def addNoise_batch(clean_batch, noise_sigma, upper_range):
+def addNoise_batch(clean_batch, noise_sigma):
 
-    noise_sigma_adjusted = noise_sigma*upper_range
-    print("Adding AWGN with sigma = ", noise_sigma_adjusted)
-    noise = np.random.normal(scale=noise_sigma*upper_range, size=clean_batch.shape)
-    # noise_sd = np.sqrt((noise**2).mean())
-    # print("gen_batch_noisy: noise sigma: {}".format(noise_sd))
-    # print("gen_batch_noisy: noise min: {}".format(noise.min()))
-    # print("gen_batch_noisy: noise max: {}".format(noise.max()))
+    print("Adding AWGN with sigma = ", noise_sigma)
+    noise = np.random.normal(scale=noise_sigma, size=clean_batch.shape)
     noisy_batch = clean_batch + noise
     
     return noisy_batch
