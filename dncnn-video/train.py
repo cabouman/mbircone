@@ -24,39 +24,6 @@ args, extra = arg_parser.parse_known_args()
 args = vars(args)
 
 
-def partition_training_data(params):
-
-    makeDirInPath(params['paths']['out_dir'])
-
-    cleanData_train = np.load(params['paths']['patches_train_clean'])
-    noisyData_train = np.load(params['paths']['patches_train_noisy'])
-    assert cleanData_train.shape==noisyData_train.shape, 'Noisy and Clean image have different shape'
-    print('Training Data Shape: {}'.format(cleanData_train.shape))
-
-    print('Shuffling Clean and Noisy Training Data')
-    permutation = np.random.permutation(cleanData_train.shape[0])
-    cleanData_train = cleanData_train[permutation]
-    noisyData_train = noisyData_train[permutation]
-    print('Shuffle Done')
-
-    total_trainSize = cleanData_train.shape[0]
-    evalSize_numBatch = np.int( np.ceil(total_trainSize * params['getEvalFromTrain_fraction'] / params['batch_size']) )
-    evalSize = evalSize_numBatch * params['batch_size']
-    
-    cleanData_eval = cleanData_train[0:evalSize]
-    cleanData_train = cleanData_train[evalSize:]
-    noisyData_eval = noisyData_train[0:evalSize]
-    noisyData_train = noisyData_train[evalSize:]
-
-    print("New Training Data Size: {}".format(cleanData_train.shape[0]))
-    print("New Eval Data Size: {}".format(cleanData_eval.shape[0]))
-
-    save_summary(cleanData_train, folderName=os.path.join(params['paths']['out_dir'], 'patch_summary_train_init'), num_patch_summary=100, verbose=0)
-
-    return cleanData_train, cleanData_eval, noisyData_train, noisyData_eval
-
-
-
 def main():
     params = get_params(args['params_path'])
     print_params(params)
@@ -85,6 +52,8 @@ def main():
 
     clean_patches_train = np.stack(clean_patches_train, axis=0) # n x conv1 x conv2 x chan
     print("shape of clean patches after inspection = ", np.shape(clean_patches_train))
+    permutation = np.random.permutation(clean_patches_train.shape[0])
+    clean_patches_train = clean_patches_train[permutation]
     clean_patches_train = clean_patches_train / upper_range
     np.save(os.path.join(params['paths']['out_dir'], 'clean_patches.npy'), clean_patches_train)
     with tf.Session(config=config) as sess:

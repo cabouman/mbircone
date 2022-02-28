@@ -46,10 +46,10 @@ class denoiser:
         self.numLayers = numLayers
         self.width = width
         self.is_training = tf.placeholder(tf.bool, name='is_training')
-        self.learning_rate = tf.placeholder(tf.float32, name='learning_rate')
+        self.learning_rate = tf.placeholder(tf.float64, name='learning_rate')
         # build model
-        self.Y_ = tf.placeholder(tf.float32, [None, None, None, self.size_z_out], name='clean_image')
-        self.X  = tf.placeholder(tf.float32, [None, None, None, self.size_z_in], name='noisy_image')
+        self.Y_ = tf.placeholder(tf.float64, [None, None, None, self.size_z_out], name='clean_image')
+        self.X  = tf.placeholder(tf.float64, [None, None, None, self.size_z_in], name='noisy_image')
         self.Y = dncnn(self.X, is_training=self.is_training,
                        size_z_in=self.size_z_in, size_z_out=self.size_z_out, 
                        numLayers=self.numLayers, width=self.width)
@@ -59,7 +59,6 @@ class denoiser:
         self.psnr = tf_psnr(self.Y, self.Y_, 1.0)
         
         optimizer = tf.train.AdamOptimizer(self.learning_rate, name='AdamOptimizer')
-        #optimizer = tf.keras.optimizers.Adam(self.learning_rate)
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         with tf.control_dependencies(update_ops):
             self.train_op = optimizer.minimize(self.loss)
@@ -113,7 +112,11 @@ class denoiser:
                     np.save(os.path.join(params['paths']['out_dir'], f'residual_batch{batch_id}_epoch{epoch}.npy'), denoised_batch) 
                 iter_num += 1
 
-            
+            if np.mod(epoch , params['eval_every_epoch']) == 0:
+                self.save(iter_num, params['paths']['checkpoint_dir'])
+                self.save(iter_num, params['paths']['checkpoint_dir']+'_epoch_'+str(epoch))
+
+
         print("############################## Finish training.")
         np.save(os.path.join(params['paths']['out_dir'], f'train_loss.npy'), loss_arr)
         np.save(os.path.join(params['paths']['out_dir'], f'train_psnr.npy'), psnr_arr)
