@@ -1,0 +1,103 @@
+
+paths:
+    #checkpoint_dir: '/scratch/gilbreth/yang1467/dncnn-video/data/dncnn-4d/train_vanila_outputs/Checkpoints_all/'
+    checkpoint_dir: '/scratch/gilbreth/yang1467/dncnn-video/data/dncnn-4d/train_orig_randshift_outputs/Checkpoints_all/'
+    checkpoint_src_transfer: ''
+    out_dir: '/scratch/gilbreth/yang1467/dncnn-video/data/dncnn-4d/train_orig_randshift_outputs/'
+
+
+use_gpu: 1
+
+###################### Model Params ######################
+# 1D model
+# numLayers: 17
+# width: 64
+# size_z_in: 1
+# size_z_out: 1
+# 2.5D model
+numLayers: 17
+width: 64
+size_z_in: 5
+size_z_out: 1
+
+###################### Scaling Params ######################
+gauss_sigma: 2.
+percentile: 75
+indicator_threshold: 0.5
+
+###################### Gen from Recon ######################
+num_patch_summary: 200
+
+recon_augment: 'none' # none, all_xy_3D
+
+# 3D data
+patch_sizes: [1,5,60,60]
+patch_strides: [1,5,20,20]
+patch_permute: [0,3,2,1]
+patch_squeezeDim: [0]
+
+# 4D data
+# patch_sizes: [1,1,40,40]
+# patch_strides: [1,1,10,10]
+# patch_permute: [1,3,2,0]
+# patch_squeezeDim: [0]
+
+# 1D data
+# patch_sizes: '1,1,40,1'
+# patch_strides: '1,1,10,10' 
+# patch_permute: '0,1,2,3'
+# patch_squeezeDim: '0'
+
+# acceptThreshold_lo: 0.0
+# acceptThreshold_hi: 1.0
+acceptThreshold_lo: 0.2
+acceptThreshold_hi: 0.6
+rejectProb_lo: 1.0
+rejectProb_mid: 0.0
+rejectProb_hi: 1.0
+
+
+############################################################
+###################### Training Params
+############################################################
+batch_size: 128
+epoch_count: 100
+learning_rate: 0.001
+
+noise_sigma: 0.1
+perturb_sigma: 0.0
+
+is_augOrientOn: 1
+is_randShift_on: 1
+
+# no shifting
+# randShift_dark_lo: 0.0
+# randShift_dark_hi: 0.0
+# randShift_bright_lo: 1.0
+# randShift_bright_hi: 1.0
+
+# some shifting
+randShift_dark_lo: 0.0
+randShift_dark_hi: 0.5
+randShift_bright_lo: 0.5
+randShift_bright_hi: 1.0
+
+# full shifting
+# randShift_dark_lo: 0.0
+# randShift_dark_hi: 1.0
+# randShift_bright_lo: 0.0
+# randShift_bright_hi: 1.0
+
+# no grads
+randGrad_dark_lo: 0.0
+randGrad_dark_hi: 0.0
+randGrad_bright_lo: 0.0
+randGrad_bright_hi: 0.0
+
+# some grads
+# randGrad_dark_lo: 0.0
+# randGrad_dark_hi: 0.3
+# randGrad_bright_lo: 0.0
+# randGrad_bright_hi: 0.3
+
+
