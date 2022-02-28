@@ -19,6 +19,14 @@ from utils import *
 ## Data Augment
 #############################################################################
 
+def generateCleanNoisyPair_All(clean_data, train_params):
+    clean_data = augment_batch(clean_data, train_params)
+    noisy_data = addNoise_batch(clean_data, train_params['noise_sigma'])
+    clean_data = semi2DCNN_select_z_out_from_z_in(clean_data, train_params['size_z_in'], train_params['size_z_out'])
+
+    return clean_data, noisy_data
+
+
 def generateCleanNoisyPair(clean_data, batch_id, train_params):
     clean_batch = select_batch(clean_data, batch_id, train_params['batch_size'])
     clean_batch = augment_batch(clean_batch, train_params)
@@ -64,7 +72,6 @@ def augment_patch(patch, train_params):
     if patch.shape[0]!=1 and patch.shape[1]!=1:
         patch = orient_patch(patch, train_params['is_augOrientOn'])
     if train_params['is_randShift_on']:
-        print("Adding random shift and gradient to clean patch!")
         patch = addRandShiftAndGradient_patch(patch, train_params)
 
     return patch
