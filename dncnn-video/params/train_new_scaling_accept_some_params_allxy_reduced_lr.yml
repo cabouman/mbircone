@@ -1,9 +1,9 @@
 
 paths:
     #checkpoint_dir: '/scratch/gilbreth/yang1467/dncnn-video/data/dncnn-4d/train_vanila_outputs/Checkpoints_all/'
-    checkpoint_dir: '/home/yang1467/dncnn-video/data/dncnn-4d/train_orig_full_randshift_gpu_outputs/Checkpoints_all/'
+    checkpoint_dir: '/home/yang1467/dncnn-video/data/dncnn-4d/train_new_scaling_sigma0.2_accept_0.2_0.6_allxy_reduced_lr_outputs/Checkpoints_all/'
     checkpoint_src_transfer: ''
-    out_dir: '/home/yang1467/dncnn-video/data/dncnn-4d/train_orig_full_randshift_gpu_outputs/'
+    out_dir: '/home/yang1467/dncnn-video/data/dncnn-4d/train_new_scaling_sigma0.2_accept_0.2_0.6_allxy_reduced_lr_outputs/'
 
 
 use_gpu: 1
@@ -28,7 +28,7 @@ indicator_threshold: 0.5
 ###################### Gen from Recon ######################
 num_patch_summary: 200
 
-recon_augment: 'none' # none, all_xy_3D
+recon_augment: 'all_xy_3D' # none, all_xy_3D
 
 # 3D data
 patch_sizes: [1,5,60,60]
@@ -62,19 +62,20 @@ rejectProb_hi: 1.0
 ############################################################
 batch_size: 128
 epoch_count: 100
+eval_every_epoch: 1
 learning_rate: 0.001
 
-noise_sigma: 0.1
+noise_sigma: 0.2
 perturb_sigma: 0.0
 
 is_augOrientOn: 1
-is_randShift_on: 1
+is_randShift_on: 0
 
 # no shifting
-# randShift_dark_lo: 0.0
-# randShift_dark_hi: 0.0
-# randShift_bright_lo: 1.0
-# randShift_bright_hi: 1.0
+randShift_dark_lo: 0.0
+randShift_dark_hi: 0.0
+randShift_bright_lo: 1.0
+randShift_bright_hi: 1.0
 
 # some shifting
 # randShift_dark_lo: 0.0
@@ -83,10 +84,10 @@ is_randShift_on: 1
 # randShift_bright_hi: 1.0
 
 # full shifting
-randShift_dark_lo: 0.0
-randShift_dark_hi: 1.0
-randShift_bright_lo: 0.0
-randShift_bright_hi: 1.0
+# randShift_dark_lo: 0.0
+# randShift_dark_hi: 1.0
+# randShift_bright_lo: 0.0
+# randShift_bright_hi: 1.0
 
 # no grads
 randGrad_dark_lo: 0.0

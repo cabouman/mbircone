@@ -28,7 +28,7 @@ def main():
     params = get_params(args['params_path'])
     print_params(params)
     #os.environ['CUDA_VISIBLE_DEVICES'] = str(params['CUDA_VISIBLE_DEVICES'])
-    os.environ['CUDA_VISIBLE_DEVICES'] = "1"
+    os.environ['CUDA_VISIBLE_DEVICES'] = "3"
     os.makedirs(os.path.dirname(params['paths']['checkpoint_dir']), exist_ok=True)
     if params['use_gpu']:
         config = tf.ConfigProto(gpu_options=tf.GPUOptions(per_process_gpu_memory_fraction=0.9))
@@ -36,7 +36,7 @@ def main():
         config = tf.ConfigProto()
 
 
-    train_path = '/depot/bouman/data/share_wenrui_diyu/training/16955-2014-1-057-AT 18 inlb Y Slices'
+    train_path = '/home/yang1467/dncnn-video/data/16955-2014-1-057-AT 18 inlb Y Slices'
     train_path_list = sorted(glob(os.path.join(train_path, '*')))
     cleanData_train = np.array([preprocess._read_scan_img(img_path) for img_path in train_path_list])
     np.random.seed(seed=1)
