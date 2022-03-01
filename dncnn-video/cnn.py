@@ -46,10 +46,10 @@ class denoiser:
         self.numLayers = numLayers
         self.width = width
         self.is_training = tf.placeholder(tf.bool, name='is_training')
-        self.learning_rate = tf.placeholder(tf.float64, name='learning_rate')
+        self.learning_rate = tf.placeholder(tf.float32, name='learning_rate')
         # build model
-        self.Y_ = tf.placeholder(tf.float64, [None, None, None, self.size_z_out], name='clean_image')
-        self.X  = tf.placeholder(tf.float64, [None, None, None, self.size_z_in], name='noisy_image')
+        self.Y_ = tf.placeholder(tf.float32, [None, None, None, self.size_z_out], name='clean_image')
+        self.X  = tf.placeholder(tf.float32, [None, None, None, self.size_z_in], name='noisy_image')
         self.Y = dncnn(self.X, is_training=self.is_training,
                        size_z_in=self.size_z_in, size_z_out=self.size_z_out, 
                        numLayers=self.numLayers, width=self.width)
@@ -69,8 +69,9 @@ class denoiser:
 
 
     def train(self, clean_patches_train, params):              
-        learning_rate = params['learning_rate'] * np.ones([params['epoch_count'] ])
-        learning_rate[params['epoch_count']//2:] = params['learning_rate']/10
+        learning_rate = np.ones([params['epoch_count'] ])
+        for i in range(params['epoch_count']//10):
+            learning_rate[i*10:(i+1)*10] = params['learning_rate']/(2**i)
         batch_count = get_numBatches(clean_patches_train, params['batch_size'])        
         # load pretrained model
         load_model_status, global_step = self.load(params['paths']['checkpoint_dir'], params['paths']['checkpoint_src_transfer'])
@@ -104,12 +105,12 @@ class denoiser:
                 loss_arr[epoch].append(loss)
                 psnr_arr[epoch].append(psnr)
                 
-                if epoch%5==0 and batch_id%5==0:
+                if epoch==params['epoch_count']-1 and batch_id%10==0:
                     np.save(os.path.join(params['paths']['out_dir'], f'clean_batch_id{batch_id}_epoch{epoch}.npy'), clean_batch) 
                     np.save(os.path.join(params['paths']['out_dir'], f'noisy_batch_id{batch_id}_epoch{epoch}.npy'), noisy_batch) 
 
                     np.save(os.path.join(params['paths']['out_dir'], f'denoised_batch{batch_id}_epoch{epoch}.npy'), denoised_batch) 
-                    np.save(os.path.join(params['paths']['out_dir'], f'residual_batch{batch_id}_epoch{epoch}.npy'), denoised_batch) 
+                    np.save(os.path.join(params['paths']['out_dir'], f'residual_batch{batch_id}_epoch{epoch}.npy'), residual_batch) 
                 iter_num += 1
 
             if np.mod(epoch , params['eval_every_epoch']) == 0:

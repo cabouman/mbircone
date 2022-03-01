@@ -1,9 +1,9 @@
 
 paths:
     #checkpoint_dir: '/scratch/gilbreth/yang1467/dncnn-video/data/dncnn-4d/train_vanila_outputs/Checkpoints_all/'
-    checkpoint_dir: '/scratch/gilbreth/yang1467/dncnn-video/data/dncnn-4d/train_orig_randshift_outputs/Checkpoints_all/'
+    checkpoint_dir: '/home/yang1467/dncnn-video/data/dncnn-4d/train_orig_full_randshift_gpu_outputs/Checkpoints_all/'
     checkpoint_src_transfer: ''
-    out_dir: '/scratch/gilbreth/yang1467/dncnn-video/data/dncnn-4d/train_orig_randshift_outputs/'
+    out_dir: '/home/yang1467/dncnn-video/data/dncnn-4d/train_orig_full_randshift_gpu_outputs/'
 
 
 use_gpu: 1
@@ -77,16 +77,16 @@ is_randShift_on: 1
 # randShift_bright_hi: 1.0
 
 # some shifting
-randShift_dark_lo: 0.0
-randShift_dark_hi: 0.5
-randShift_bright_lo: 0.5
-randShift_bright_hi: 1.0
+# randShift_dark_lo: 0.0
+# randShift_dark_hi: 0.5
+# randShift_bright_lo: 0.5
+# randShift_bright_hi: 1.0
 
 # full shifting
-# randShift_dark_lo: 0.0
-# randShift_dark_hi: 1.0
-# randShift_bright_lo: 0.0
-# randShift_bright_hi: 1.0
+randShift_dark_lo: 0.0
+randShift_dark_hi: 1.0
+randShift_bright_lo: 0.0
+randShift_bright_hi: 1.0
 
 # no grads
 randGrad_dark_lo: 0.0
