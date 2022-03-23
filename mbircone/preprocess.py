@@ -589,7 +589,7 @@ def background_offset_calibration(sino, background_box_info_list):
     if not background_box_info_list:
         return 0.
     for box_info in background_box_info_list:
-        print(f"box used for background offset calbiration: (x,y,width,height,view_ind)=", box_info)
+        #print(f"box used for background offset calbiration: (x,y,width,height,view_ind)=", box_info)
         (x, y, box_width, box_height, view_ind) = box_info
         avg_offset += np.mean(sino[view_ind, y:y + box_height, x:x + box_width])
     avg_offset /= len(background_box_info_list)
@@ -632,14 +632,19 @@ def NSI_process_raw_scans(radiographs_directory, NSI_system_params,
 
     num_acquired_scans = NSI_system_params["num_acquired_scans"]
     total_angles = NSI_system_params["total_angles"]
-    if num_sampled_scans is None:
-        num_sampled_scans = num_acquired_scans
+    angle_step = total_angles/num_acquired_scans
     if num_time_points is None:
-        num_time_points = total_angles//360 
-    scan_ids = _compute_views_index_list([0, num_acquired_scans], num_sampled_scans)
+        num_time_points = total_angles//360
+        num_acquired_scans_cropped = int(num_time_points*360/angle_step)
+        if num_acquired_scans != num_acquired_scans_cropped:
+            print("Last rotation is incomplete! Discarding scans of the last rotation.")
+            total_angles = num_acquired_scans_cropped*angle_step
+    if num_sampled_scans is None:
+        num_sampled_scans = num_acquired_scans_cropped
+    scan_ids = _compute_views_index_list([0, num_acquired_scans_cropped], num_sampled_scans)
     view_ids = _select_contiguous_subset(scan_ids, num_time_points, time_point)
      
-    angles = _compute_angles_list(view_ids, num_acquired_scans, total_angles, rotation_direction)
+    angles = _compute_angles_list(view_ids, num_acquired_scans_cropped, total_angles, rotation_direction)
     obj_scan = _read_scan_dir(radiographs_directory, view_ids)
 
     # Should deal with situation when input is None.
