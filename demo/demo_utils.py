@@ -178,7 +178,7 @@ def image_resize(image, output_shape):
     image_resized = np.empty((image.shape[0], output_shape[0], output_shape[1]), dtype=image.dtype)
     for i in range(image.shape[0]):
         PIL_image = Image.fromarray(image[i])
-        PIL_image_resized = PIL_image.resize((output_shape[1], output_shape[0]), resample=Image.BILINEAR)
+        PIL_image_resized = PIL_image.resize((output_shape[1], output_shape[0]), resample=Image.BICUBIC)
         image_resized[i] = np.array(PIL_image_resized)
 
     return image_resized
@@ -240,11 +240,10 @@ def download_and_extract(download_url, save_dir):
     # Parse extracted dir and extract data if necessary
     return save_path
 
-
-def query_yes_no(question):
+def query_yes_no(question, default="n"):
     """Ask a yes/no question via input() and return the answer.
         Code modified from reference: `https://stackoverflow.com/questions/3041986/apt-command-line-interface-like-yes-no-input/3041990`
-    
+
     Args:
         question (string): Question that is presented to the user.
     Returns:
@@ -252,12 +251,12 @@ def query_yes_no(question):
     """
 
     valid = {"yes": True, "y": True, "ye": True, "no": False, "n": False}
-    prompt = " [y/n, default=n] "
+    prompt = f" [y/n, default={default}] "
     while True:
         sys.stdout.write(question + prompt)
         choice = input().lower()
         if choice == "":
-            return False
+            return valid[default]
         elif choice in valid:
             return valid[choice]
         else:
@@ -365,7 +364,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
         else:
             sys.stdout.write("Please Enter a positive number.\n")
         ask_times -= 1
-
+    
     # Ask for the maximum allowable walltime.
     question = '\nPlease enter the maximum allowable walltime.'
     prompt = 'This should be a string in the form D-HH:MM:SS.  E.g., \'0-01:00:00\' for one hour.\n'
@@ -373,16 +372,10 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
     sys.stdout.write(prompt)
 
     choice = input()
-    try:
-        validate(choice, strftime_format('%d-%H:%M:%S'))
-        walltime_valid = True
-    except ValidationError:
-        walltime_valid = False
-
-    if walltime_valid:
+    if choice != "":
         config['cluster_params']['maximum_allowable_walltime'] = choice
     else:
-        sys.stdout.write("Since the entered string did not match the format, the scheduler will allocate system-determined maximum allowable walltime.\n")
+        config['cluster_params']['maximum_allowable_walltime'] = None
 
     # Ask for the maximum memory per node.
     question = '\nPlease enter the maximum memory per node. [Default = 16GB]\n'
