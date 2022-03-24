@@ -63,10 +63,10 @@ def mace3D(sino, angles, dist_source_detector, magnification,
             sharpness=0.0, sigma_x=None, sigma_p=None, max_iterations=3, stop_threshold=0.02,
             num_threads=None, NHICD=False, verbose=1, 
             lib_path=__lib_path):
-    """Computes 3D conebeam beam reconstruction with multi-slice MACE alogorithm by fusing forward model proximal map with 2D denoisers across xy, xz, and yz planes.
+    """Computes 3-D conebeam beam reconstruction with multi-slice MACE alogorithm by fusing forward model proximal map with 2D denoisers across xy, xz, and yz planes.
     
     Required arguments: 
-        - **sino** (*ndarray*): 3D sinogram array with shape (num_views, num_det_rows, num_det_channels)
+        - **sino** (*ndarray*): 3-D sinogram array with shape (num_views, num_det_rows, num_det_channels)
         - **angles** (*ndarray*): 1D view angles array in radians.
         - **dist_source_detector** (*float*): Distance between the X-ray source and the detector in units of ALU
         - **magnification** (*float*): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance). 
@@ -80,7 +80,7 @@ def mace3D(sino, angles, dist_source_detector, magnification,
         - **max_admm_itr** (*int*): [Default=10] Maximum number of MACE ADMM iterations.
         - **rho** (*float*): [Default=0.5] step size of ADMM update in MACE, range (0,1). The value of ``rho`` mainly controls the convergence speed of MACE algorithm.
         - **prior_weight** (*ndarray*): [Default=0.5] weights for prior agents, specified by either a scalar value or a 1D array. If a scalar is specified, then all three prior agents use the same weight of (prior_weight/3). If an array is provided, then the array should have three elements corresponding to the weight of denoisers in XY, YZ, and XZ planes respectively. The weight for forward model proximal map agent will be calculated as 1-sum(prior_weight) so that the sum of all agent weights are equal to 1. Each entry of prior_weight should have value between 0 and 1. sum(prior_weight) needs to be no greater than 1.
-        - **init_image** (*ndarray, optional*): [Default=None] Initial value of MACE reconstruction image, specified by either a scalar value or a 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols). If None, the inital value of MACE will be automatically determined by a qGGMRF reconstruction.
+        - **init_image** (*ndarray, optional*): [Default=None] Initial value of MACE reconstruction image, specified by either a scalar value or a 3-D numpy array with shape (num_img_slices,num_img_rows,num_img_cols). If None, the inital value of MACE will be automatically determined by a qGGMRF reconstruction.
         - **save_path** (*str, optional*): [Default=None] Path to directory that saves the intermediate results of MACE.
     Optional arguments inherited from ``cone3D.recon`` (with changing default value of ``max_iterations``): 
         - **channel_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
@@ -91,7 +91,7 @@ def mace3D(sino, angles, dist_source_detector, magnification,
         - **ror_radius** (*float, optional*): [Default=None] Scalar value of radius of reconstruction in :math:`ALU`. If None, automatically set with compute_img_params. Pixels outside the radius ror_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
         - **sigma_y** (*float, optional*): [Default=None] Scalar value of noise standard deviation parameter. If None, automatically set with auto_sigma_y.
         - **snr_db** (*float, optional*): [Default=30.0] Scalar value that controls assumed signal-to-noise ratio of the data in dB. Ignored if sigma_y is not None.
-        - **weights** (*ndarray, optional*): [Default=None] 3D weights array with same shape as sino.
+        - **weights** (*ndarray, optional*): [Default=None] 3-D weights array with same shape as sino.
         - **weight_type** (*string, optional*): [Default='unweighted'] Type of noise model used for data. If the ``weights`` array is not supplied, then the function ``cone3D.calc_weights`` is used to set weights using specified ``weight_type`` parameter.
                 
                 - Option "unweighted" corresponds to unweighted reconstruction;
@@ -114,7 +114,7 @@ def mace3D(sino, angles, dist_source_detector, magnification,
         - **lib_path** (*str, optional*): [Default=~/.cache/mbircone] Path to directory containing library of forward projection matrices.
     
     Returns:
-        3D numpy array: 3D reconstruction with shape (num_img_slices, num_img_rows, num_img_cols) in units of :math:`ALU^{-1}`.        
+        3-D numpy array: 3-D reconstruction with shape (num_img_slices, num_img_rows, num_img_cols) in units of :math:`ALU^{-1}`.        
     """
     
     if verbose: 
@@ -241,27 +241,34 @@ def mace4D(sino, angles, dist_source_detector, magnification,
            sharpness=0.0, sigma_x=None, sigma_p=None, max_iterations=3, stop_threshold=0.02,
            num_threads=None, NHICD=False, verbose=1, 
            lib_path=__lib_path):
-    """Computes 4D conebeam beam reconstruction with multi-slice MACE alogorithm by fusing forward model proximal map with 2.5-D denoisers across xy-t, xz-t, and yz-t planes.
+    """Computes 4-D conebeam beam reconstruction with multi-slice MACE alogorithm by fusing forward model proximal map with 2.5-D denoisers across XY-t, XZ-t, and YZ-t hyperplanes.
 
     Required arguments:
-        - **sino** (*ndarray*): 4D sinogram array with shape (num_time_points, num_views, num_det_rows, num_det_channels)
-        - **angles** (*ndarray*): View angles array in radians. Specified by either a 1D array with shape (num_views,), or a 2D array with shape (num_time_points, num_views). If a 1D array is provided, it will be assumed that the view angles at all time points are the same.
+        - **sino** (*list[ndarray]*): list of 3-D sinogram array. The length of sino is equal to num_time_points, where sino[t] is a 3-D array with shape (num_views, num_det_rows, num_det_channels), specifying sinogram of time point t.
+        - **angles** (*list[list]*): List of view angles in radians. The length of angles is equal to num_time_points, where angles[t] is a 1D array specifying view angles of time point t. 
         - **dist_source_detector** (*float*): Distance between the X-ray source and the detector in units of ALU
         - **magnification** (*float*): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
     Arguments specific to MACE reconstruction algorithm:
-        - **denoiser** (*callable*): The denoiser function used as the prior agent in MACE.
+        - **denoiser** (*callable*): The denoiser function used as the prior agent in MACE. 
 
                 ``denoiser(x, *denoiser_args) -> ndarray``
 
-            where ``x`` is an ndarray of the noisy image volume, and ``denoiser_args`` is a tuple of the fixed parameters needed to completely specify the denoiser function.
+            where ``x`` is a 4-D array of the noisy image volume with shape :math:`(N_{batch}, N_t, N_1, N_2)`, where the 2.5-D denoising hyper-plane is defined by :math:`(N_t, N_1, N_2)`. 
+
+            ``denoiser_args`` is a tuple of the fixed parameters needed to completely specify the denoiser function. 
+            
+            The denoiser function should return a 4-D array of the denoised image, where the shape of the denoised image volume is the same as shape of the noisy image volume ``x``. 
+
+            The same ``denoiser`` function is used to by all three denoising agents corresponding to XY-t, YZ-t and XZ-t hyperplanes. For each of the three denoising agents in MACE4D, the input noisy image volume will be permuted before fed into ``denoiser``, s.t. after permutation, :math:`(N_t, N_1, N_2)` corresponds to the denoising hyper-plane of the agent. 
+
         - **denoiser_args** (*tuple*): [Default=()] Extra arguments passed to the denoiser function.
         - **max_admm_itr** (*int*): [Default=10] Maximum number of MACE ADMM iterations.
         - **rho** (*float*): [Default=0.5] step size of ADMM update in MACE, range (0,1). The value of ``rho`` mainly controls the convergence speed of MACE algorithm.
-        - **prior_weight** (*ndarray*): [Default=0.5] weights for prior agents, specified by either a scalar value or a 1D array. If a scalar is specified, then all three prior agents use the same weight of (prior_weight/3). If an array is provided, then the array should have three elements corresponding to the weight of denoisers in XY-t, YZ-t, and XZ-t planes respectively. The weight for forward model proximal map agent will be calculated as 1-sum(prior_weight) so that the sum of all agent weights are equal to 1. Each entry of prior_weight should have value between 0 and 1. sum(prior_weight) needs to be no greater than 1.
-        - **init_image** (*ndarray, optional*): [Default=None] Initial value of MACE reconstruction image, specified by either a scalar value, a 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols), or a 4D numpy array with shape (num_time_points, num_img_slices,num_img_rows,num_img_cols). If None, the inital value of MACE will be automatically determined by a stack of 3D qGGMRF reconstructions at different time points.
-        - **save_path** (*str, optional*): [Default=None] Path to directory that saves the intermediate results of MACE.
+        - **prior_weight** (*ndarray*): [Default=0.5] weights for prior agents, specified by either a scalar value or a 1D array. If a scalar is specified, then all three prior agents use the same weight of (prior_weight/3). If an array is provided, then the array should have three elements corresponding to the weight of denoisers in XY-t, YZ-t, and XZ-t hyperplanes respectively. The weight for forward model proximal map agent will be calculated as 1-sum(prior_weight) so that the sum of all agent weights are equal to 1. Each entry of prior_weight should have value between 0 and 1. sum(prior_weight) needs to be no greater than 1.
+        - **init_image** (*ndarray, optional*): [Default=None] Initial value of MACE reconstruction image, specified by either a scalar value, a 3-D numpy array with shape (num_img_slices,num_img_rows,num_img_cols), or a 4-D numpy array with shape (num_time_points, num_img_slices,num_img_rows,num_img_cols). If None, the inital value of MACE will be automatically determined by a stack of 3-D qGGMRF reconstructions at different time points.
+        - **save_path** (*str, optional*): [Default=None] Path to directory that saves the intermediate results of MACE. If not None, the inital qGGMRF reconstruction and input/output images of all agents from each MACE iteration will be saved to ``save_path``. 
     Arguments specific to multi-node computation:
-        - **cluster_ticket** (*Object*): [Default=None] A ticket used to access a specific cluster, that can be obtained from :py:func:`~multinode.get_cluster_ticket`. If cluster_ticket=None, the process will run in serial. See `dask_jobqueue <https://jobqueue.dask.org/en/latest/api.html>`_ for more information.
+        - **cluster_ticket** (*Object*): [Default=None] A ticket used to access a specific cluster, that can be obtained from ``multinode.get_cluster_ticket``. If cluster_ticket is None, the process will run in serial. See `dask_jobqueue <https://jobqueue.dask.org/en/latest/api.html>`_ for more information.
     Optional arguments inherited from ``cone3D.recon`` (with changing default value of ``max_iterations``):
         - **channel_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
         - **row_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
@@ -271,7 +278,7 @@ def mace4D(sino, angles, dist_source_detector, magnification,
         - **ror_radius** (*float, optional*): [Default=None] Scalar value of radius of reconstruction in :math:`ALU`. If None, automatically set with compute_img_params. Pixels outside the radius ror_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
         - **sigma_y** (*float, optional*): [Default=None] Scalar value of noise standard deviation parameter. If None, automatically set with auto_sigma_y.
         - **snr_db** (*float, optional*): [Default=30.0] Scalar value that controls assumed signal-to-noise ratio of the data in dB. Ignored if sigma_y is not None.
-        - **weights** (*ndarray, optional*): [Default=None] 4D weights array with same shape as sino.
+        - **weights** (*list[ndarray], optional*): [Default=None] List of 3-D weights array with same shape as sino.
         - **weight_type** (*string, optional*): [Default='unweighted'] Type of noise model used for data. If the ``weights`` array is not supplied, then the function ``cone3D.calc_weights`` is used to set weights using specified ``weight_type`` parameter.
 
                 - Option "unweighted" corresponds to unweighted reconstruction;
@@ -294,7 +301,7 @@ def mace4D(sino, angles, dist_source_detector, magnification,
         - **lib_path** (*str, optional*): [Default=~/.cache/mbircone] Path to directory containing library of forward projection matrices.
 
     Returns:
-        4D numpy array: 4D reconstruction with shape (num_time_points, num_img_slices, num_img_rows, num_img_cols) in units of :math:`ALU^{-1}`.
+        4-D numpy array: 4-D reconstruction with shape (num_time_points, num_img_slices, num_img_rows, num_img_cols) in units of :math:`ALU^{-1}`.
     """    
     
     if verbose: 

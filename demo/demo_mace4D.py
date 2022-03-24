@@ -27,8 +27,8 @@ if __name__=='__main__':
     \n\t * generating 4D simulated data by rotating the 3D phantom with positive angular steps with each time point. \
     \n\t * obtaining a cluster ticket with get_cluster_ticket(). \
     \n\t * Performing multinode computation with the cluster ticket. This includes: \
-    \n\t    * generating sinogram data by projecting each phantom at each timepoint, and then adding transmission noise \
-    \n\t    * performing a 4D MACE reconstruction.')
+    \n\t * generating sinogram data by projecting each phantom at each timepoint, and then adding transmission noise \
+    \n\t * performing a 4D MACE reconstruction.')
 
     # ###########################################################################
     # Set the parameters to get the data and do the recon 
