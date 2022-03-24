@@ -47,7 +47,8 @@ denoiser_name = denoiser_type
 # destination path to download and extract the phantom and NN weight files.
 target_dir = './demo_data/'   
 # path to store output recon images
-output_dir = './output/mace3D/'
+save_path = './output/mace3D/'
+os.makedirs(save_path, exist_ok=True)
 
 # Geometry parameters
 dist_source_detector = 839.0472     # Distance between the X-ray source and the detector in units of ALU
@@ -62,6 +63,7 @@ sino_noise_sigma = 0.01      # transmission noise level
 
 # MACE recon parameters
 max_admm_itr = 10            # max ADMM iterations for MACE reconstruction
+sharpness = 1.0
 prior_weight = 0.5           # cumulative weights for three prior agents.
 # ######### End of parameters #########
 
@@ -125,15 +127,15 @@ if denoiser_type == 'dncnn_ct':
 
     # Load denoiser model structure and weights
     denoiser_model = denoiser_utils.DenoiserCT(checkpoint_dir=os.path.join(denoiser_path, 'model_dncnn_ct'))
-
     # Define the denoiser using this model.  This version requires some interface code to match with MACE.
     def denoiser(img_noisy):
         img_noisy = np.expand_dims(img_noisy, axis=1)
+        upper_range = denoiser_utils.calc_upper_range(img_noisy)
+        img_noisy = img_noisy/upper_range
         testData_obj = denoiser_utils.DataLoader(img_noisy)
-        denoiser_model.denoise(testData_obj)
-        img_denoised = np.stack(testData_obj.outData, axis=0)
+        img_denoised = denoiser_model.denoise(testData_obj, batch_size=256)
+        img_denoised = img_denoised*upper_range
         return np.squeeze(img_denoised)
-
 # DnCNN denoiser in Keras. This denoiser model is trained on natural images. 
 elif denoiser_type == 'dncnn_keras':
     print("Denoiser function: DnCNN trained on natural images.")
@@ -163,7 +165,9 @@ recon_mace = mbircone.mace.mace3D(sino_noisy, angles, dist_source_detector, magn
                                   denoiser=denoiser, denoiser_args=(),
                                   max_admm_itr=max_admm_itr, prior_weight=prior_weight,
                                   delta_pixel_detector=delta_pixel_detector,
-                                  weight_type='transmission')
+                                  weight_type='transmission',
+                                  sharpness=sharpness,
+                                  save_path=save_path)
 recon_shape = recon_mace.shape
 print("Reconstruction shape = ", recon_shape)
 
@@ -173,27 +177,23 @@ print("Reconstruction shape = ", recon_shape)
 # ###########################################################################
 print("Post processing MACE reconstruction results ...")
 # Save recon results as a numpy array
-os.makedirs(output_dir, exist_ok=True)
-np.save(os.path.join(output_dir, "recon_mace.npy"), recon_mace)
-
-# Plot sinogram data
-demo_utils.plot_image(sino_noisy[0], title='sinogram view 0, noise level=0.05',
-                      filename=os.path.join(output_dir, 'sino_noisy.png'), vmin=0, vmax=4)
-demo_utils.plot_image(sino[0], title='clean sinogram view 0', filename=os.path.join(output_dir, 'sino_clean.png'),
-                      vmin=0, vmax=4)
-demo_utils.plot_image(noise[0], title='sinogram additive Gaussian noise,  view 0',
-                      filename=os.path.join(output_dir, 'sino_transmission_noise.png'), vmin=-0.08, vmax=0.08)
+np.save(os.path.join(save_path, "recon_mace.npy"), recon_mace)
+# load qGGMRF recon
+recon_qGGMRF = np.load(os.path.join(save_path, "recon_qGGMRF.npy"))
 
 # Plot axial slices of phantom and recon
-display_slices = [2, recon_shape[0] // 2]
+display_slices = [7, 10, 13, 16, 19, 22]
 for display_slice in display_slices:
     demo_utils.plot_image(phantom[display_slice], title=f'phantom, axial slice {display_slice}',
-                          filename=os.path.join(output_dir, f'phantom_slice{display_slice}.png'), vmin=0, vmax=0.5)
+                          filename=os.path.join(save_path, f'phantom_slice{display_slice}.png'), vmin=0, vmax=0.5)
     demo_utils.plot_image(recon_mace[display_slice], title=f'MACE reconstruction, axial slice {display_slice}',
-                          filename=os.path.join(output_dir, f'recon_mace_slice{display_slice}.png'), vmin=0, vmax=0.5)
+                          filename=os.path.join(save_path, f'recon_mace_slice{display_slice}.png'), vmin=0, vmax=0.5)
+    demo_utils.plot_image(recon_qGGMRF[display_slice], title=f'qGGMRF reconstruction, axial slice {display_slice}',
+                          filename=os.path.join(save_path, f'recon_qGGMRF_slice{display_slice}.png'), vmin=0, vmax=0.5)
 
 # Plot 3D phantom and recon image volumes as gif images.
-demo_utils.plot_gif(phantom, output_dir, 'phantom', vmin=0, vmax=0.5)
-demo_utils.plot_gif(recon_mace, output_dir, 'recon_mace', vmin=0, vmax=0.5)
+demo_utils.plot_gif(phantom, save_path, 'phantom', vmin=0, vmax=0.5)
+demo_utils.plot_gif(recon_mace, save_path, 'recon_mace', vmin=0, vmax=0.5)
+demo_utils.plot_gif(recon_qGGMRF, save_path, 'recon_qGGMRF', vmin=0, vmax=0.5)
 
 input("press Enter")

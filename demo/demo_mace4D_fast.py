@@ -282,7 +282,7 @@ if __name__=='__main__':
     recon_qGGMRF = np.load(os.path.join(save_path, "recon_qGGMRF.npy"))
 
     # Plot axial slices of phantom and recon
-    display_slices = [4, 7, 10]
+    display_slices = [7, 10, 13, 16, 19, 22]
     for t in range(num_time_points//4,3*num_time_points//4):
         for display_slice in display_slices:
             demo_utils.plot_image(phantom_4D[t,display_slice,:,:], 

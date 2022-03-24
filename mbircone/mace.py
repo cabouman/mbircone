@@ -55,14 +55,14 @@ def denoiser_wrapper(image_noisy, denoiser, denoiser_args, permute_vector, posit
 def mace3D(sino, angles, dist_source_detector, magnification,
             denoiser, denoiser_args=(),
             max_admm_itr=10, rho=0.5, prior_weight=0.5,
-            init_image=None,
+            init_image=None, save_path=None,
             channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
             delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
             sigma_y=None, snr_db=30.0, weights=None, weight_type='unweighted',
             positivity=True, p=1.2, q=2.0, T=1.0, num_neighbors=6,
             sharpness=0.0, sigma_x=None, sigma_p=None, max_iterations=3, stop_threshold=0.02,
             num_threads=None, NHICD=False, verbose=1, 
-            lib_path=__lib_path, save_path=None):
+            lib_path=__lib_path):
     """Computes 3D conebeam beam reconstruction with multi-slice MACE alogorithm by fusing forward model proximal map with 2D denoisers across xy, xz, and yz planes.
     
     Required arguments: 
@@ -81,6 +81,7 @@ def mace3D(sino, angles, dist_source_detector, magnification,
         - **rho** (*float*): [Default=0.5] step size of ADMM update in MACE, range (0,1). The value of ``rho`` mainly controls the convergence speed of MACE algorithm.
         - **prior_weight** (*ndarray*): [Default=0.5] weights for prior agents, specified by either a scalar value or a 1D array. If a scalar is specified, then all three prior agents use the same weight of (prior_weight/3). If an array is provided, then the array should have three elements corresponding to the weight of denoisers in XY, YZ, and XZ planes respectively. The weight for forward model proximal map agent will be calculated as 1-sum(prior_weight) so that the sum of all agent weights are equal to 1. Each entry of prior_weight should have value between 0 and 1. sum(prior_weight) needs to be no greater than 1.
         - **init_image** (*ndarray, optional*): [Default=None] Initial value of MACE reconstruction image, specified by either a scalar value or a 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols). If None, the inital value of MACE will be automatically determined by a qGGMRF reconstruction.
+        - **save_path** (*str, optional*): [Default=None] Path to directory that saves the intermediate results of MACE.
     Optional arguments inherited from ``cone3D.recon`` (with changing default value of ``max_iterations``): 
         - **channel_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
         - **row_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
@@ -231,7 +232,7 @@ def mace3D(sino, angles, dist_source_detector, magnification,
 def mace4D(sino, angles, dist_source_detector, magnification,
            denoiser, denoiser_args=(),
            max_admm_itr=10, rho=0.5, prior_weight=0.5,
-           init_image=None, 
+           init_image=None, save_path=None, 
            cluster_ticket=None,
            channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
            delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
@@ -239,7 +240,7 @@ def mace4D(sino, angles, dist_source_detector, magnification,
            positivity=True, p=1.2, q=2.0, T=1.0, num_neighbors=6,
            sharpness=0.0, sigma_x=None, sigma_p=None, max_iterations=3, stop_threshold=0.02,
            num_threads=None, NHICD=False, verbose=1, 
-           lib_path=__lib_path, save_path=None):
+           lib_path=__lib_path):
     """Computes 4D conebeam beam reconstruction with multi-slice MACE alogorithm by fusing forward model proximal map with 2.5-D denoisers across xy-t, xz-t, and yz-t planes.
 
     Required arguments:
@@ -258,10 +259,9 @@ def mace4D(sino, angles, dist_source_detector, magnification,
         - **rho** (*float*): [Default=0.5] step size of ADMM update in MACE, range (0,1). The value of ``rho`` mainly controls the convergence speed of MACE algorithm.
         - **prior_weight** (*ndarray*): [Default=0.5] weights for prior agents, specified by either a scalar value or a 1D array. If a scalar is specified, then all three prior agents use the same weight of (prior_weight/3). If an array is provided, then the array should have three elements corresponding to the weight of denoisers in XY-t, YZ-t, and XZ-t planes respectively. The weight for forward model proximal map agent will be calculated as 1-sum(prior_weight) so that the sum of all agent weights are equal to 1. Each entry of prior_weight should have value between 0 and 1. sum(prior_weight) needs to be no greater than 1.
         - **init_image** (*ndarray, optional*): [Default=None] Initial value of MACE reconstruction image, specified by either a scalar value, a 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols), or a 4D numpy array with shape (num_time_points, num_img_slices,num_img_rows,num_img_cols). If None, the inital value of MACE will be automatically determined by a stack of 3D qGGMRF reconstructions at different time points.
-        - **image_range** (*tuple*): [Default=None] dynamic range of reconstruction image. If None, the lower bound will be 0, and the upper bound will be determined by 95% pixel value of the qGGMRF reconstruction. If an init_image is provided, then image_range must be also provided.
+        - **save_path** (*str, optional*): [Default=None] Path to directory that saves the intermediate results of MACE.
     Arguments specific to multi-node computation:
         - **cluster_ticket** (*Object*): [Default=None] A ticket used to access a specific cluster, that can be obtained from :py:func:`~multinode.get_cluster_ticket`. If cluster_ticket=None, the process will run in serial. See `dask_jobqueue <https://jobqueue.dask.org/en/latest/api.html>`_ for more information.
-        - **min_nodes** (*int*): [Default=None] Requested minimum number of workers to start parallel computation. The job will not start until the number of nodes >= min_nodes, and once it starts, no further nodes will be used.  The default is num_nodes from the cluster_ticket.
     Optional arguments inherited from ``cone3D.recon`` (with changing default value of ``max_iterations``):
         - **channel_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
         - **row_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
