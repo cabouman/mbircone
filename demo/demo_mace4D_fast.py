@@ -66,13 +66,13 @@ if __name__=='__main__':
     dist_source_detector = 839.0472     # Distance between the X-ray source and the detector in units of ALU
     magnification = 5.572128439964856   # magnification = (source to detector distance)/(source to center-of-rotation distance)
     delta_pixel_detector = 0.25         # Scalar value of detector pixel spacing in units of ALU
-    num_det_rows = 28                   # number of detector rows
-    num_det_channels = 240              # number of detector channels
+    num_det_rows = 29                   # number of detector rows
+    num_det_channels = 120              # number of detector channels
 
     # Simulated 4D phantom and sinogram parameters
     num_time_points = 8 # number of time points. This is also number of jobs that can be parallellized with multinode computation.
-    num_views = 75               # number of projection views
-    sino_noise_sigma = 0.01      # transmission noise level
+    num_views = 50               # number of projection views
+    sino_noise_sigma = 0.005      # transmission noise level
 
     # MACE recon parameters
     max_admm_itr = 10            # max ADMM iterations for MACE reconstruction
@@ -161,9 +161,9 @@ if __name__=='__main__':
     (Nz, Nx, Ny) = phantom_3D.shape
     Nx_ds = Nx // 2 + 1
     Ny_ds = Ny // 2 + 1
-    Nz_ds = Nz // 2
+    #Nz_ds = Nz // 2
     phantom_3D = demo_utils.image_resize(phantom_3D, (Nx_ds, Ny_ds))
-    phantom_3D = phantom_3D[:Nz_ds]
+    #phantom_3D = phantom_3D[:Nz_ds]
     # Take first half of the slices to form the downsampled phantom.
     print("shape of downsampled 3D phantom = ", phantom_3D.shape)
  
@@ -299,5 +299,4 @@ if __name__=='__main__':
         demo_utils.plot_gif(recon_mace[t], save_path, f'recon_mace_{t}', vmin=0, vmax=0.5)
         demo_utils.plot_gif(recon_qGGMRF[t], save_path, f'recon_qGGMRF_{t}', vmin=0, vmax=0.5)
 
-    input("press Enter")
     print(f"Reconstruction results saved in {save_path}")
