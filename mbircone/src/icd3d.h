@@ -17,7 +17,7 @@ void computeTheta1Theta2PriorTermQGGMRF(struct ICDInfo3DCone *icdInfo, struct Re
 
 void computeTheta1Theta2PriorTermProxMap(struct ICDInfo3DCone *icdInfo, struct ReconParams *reconParams);
 
-double surrogateCoeffQGGMRF(double Delta, struct ReconParams *reconParams);
+float surrogateCoeffQGGMRF(float Delta, struct ReconParams *reconParams);
 
 void updateErrorSinogram(struct Sino *sino, struct SysMatrix *A, struct ICDInfo3DCone *icdInfo);
 
@@ -32,17 +32,17 @@ void indexExtraction3D(long int j_xyz, long int *j_x, long int N_x, long int *j_
 
 
 
-double MAPCost3D(struct Sino *sino, struct Image *img, struct ReconParams *reconParams);
+float MAPCost3D(struct Sino *sino, struct Image *img, struct ReconParams *reconParams);
 
-double MAPCostForward(struct Sino *sino);
+float MAPCostForward(struct Sino *sino);
 
-double MAPCostPrior_QGGMRF(struct Image *img, struct ReconParams *reconParams);
+float MAPCostPrior_QGGMRF(struct Image *img, struct ReconParams *reconParams);
 
-double MAPCostPrior_ProxMap(struct Image *img, struct ReconParams *reconParams);
+float MAPCostPrior_ProxMap(struct Image *img, struct ReconParams *reconParams);
 
-double MAPCostPrior_QGGMRFSingleVoxel_HalfNeighborhood(struct ICDInfo3DCone *icdInfo, struct ReconParams *reconParams);
+float MAPCostPrior_QGGMRFSingleVoxel_HalfNeighborhood(struct ICDInfo3DCone *icdInfo, struct ReconParams *reconParams);
 
-double QGGMRFPotential(double delta, struct ReconParams *reconParams);
+float QGGMRFPotential(float delta, struct ReconParams *reconParams);
 
 
 void partialZipline_computeStartStopIndex(long int *j_z_start, long int *j_z_stop, long int indexZiplines, long int numVoxelsPerZipline, long int N_z);
@@ -55,9 +55,9 @@ void computeDeltaXjAndUpdateGroup(struct ICDInfo3DCone *icdInfo, struct RandomZi
 
 void updateIterationStatsGroup(struct ReconAux *reconAux, struct ICDInfo3DCone *icdInfoArray, struct RandomZiplineAux *randomZiplineAux, struct Image *img, struct ReconParams *reconParams);
 
-void disp_iterationInfo(struct ReconAux *reconAux, struct ReconParams *reconParams, int itNumber, int MaxIterations, double cost, double relUpdate, double stopThresholdChange, double weightScaler_value, double voxelsPerSecond, double ticToc_iteration, double weightedNormSquared_e, double ratioUpdated, double totalEquits);
+void disp_iterationInfo(struct ReconAux *reconAux, struct ReconParams *reconParams, int itNumber, int MaxIterations, float cost, float relUpdate, float stopThresholdChange, float weightScaler_value, float voxelsPerSecond, float ticToc_iteration, float weightedNormSquared_e, float ratioUpdated, float totalEquits);
 
-double computeRelUpdate(struct ReconAux *reconAux, struct ReconParams *reconParams, struct Image *img);
+float computeRelUpdate(struct ReconAux *reconAux, struct ReconParams *reconParams, struct Image *img);
 
 /* * * * * * * * * * * * parallel * * * * * * * * * * * * **/
 void prepareParallelAux(struct ParallelAux *parallelAux, long int N_M_max);
@@ -84,9 +84,9 @@ void speedAuxICD_computeSpeed(struct SpeedAuxICD *speedAuxICD);
 
 /* * * * * * * * * * * * NHICD * * * * * * * * * * * * **/
 
-int NHICD_isVoxelHot(struct ReconParams *reconParams, struct Image *img, long int j_x, long int j_y, long int j_z, double lastChangeThreshold);
+int NHICD_isVoxelHot(struct ReconParams *reconParams, struct Image *img, long int j_x, long int j_y, long int j_z, float lastChangeThreshold);
 
-int NHICD_activatePartialUpdate(struct ReconParams *reconParams, double relativeWeightedForwardError);
+int NHICD_activatePartialUpdate(struct ReconParams *reconParams, float relativeWeightedForwardError);
 
 int NHICD_checkPartialZiplineHot(struct ReconAux *reconAux, long int j_x, long int j_y, long int indexZiplines, struct Image *img);
 

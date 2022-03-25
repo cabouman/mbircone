@@ -5,7 +5,7 @@
 
 void computeSysMatrix(struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A, struct ViewAngleList *viewAngleList)
 {
-	double ticToc;
+	float ticToc;
 	tic(&ticToc);
     
     // printf("\nInitialize Sinogram Mask ...\n");
@@ -31,24 +31,24 @@ void computeSysMatrix(struct SinoParams *sinoParams, struct ImageParams *imgPara
 void computeAMatrixParameters(struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A, struct ViewAngleList *viewAngleList)
 {
 	/* Part 1: Find i_vstride_max, u_0, u_1 */
-	double x_v, y_v;
-	double u_v, v_v, w_v;
-	double beta, alpha_xy, theta;
-	double cosine, sine;
-	double W_pv, W_pw, M;
+	float x_v, y_v;
+	float u_v, v_v, w_v;
+	float beta, alpha_xy, theta;
+	float cosine, sine;
+	float W_pv, W_pw, M;
 	long int j_x, j_y, i_beta, i_vstart, i_vstride, i_wstart, i_wstride, j_u, j_z;
 
 
 	long int i_vstride_max = 0, i_wstride_max = 0;
-	double u_0 = INFINITY;
-	double u_1 = -INFINITY;
+	float u_0 = INFINITY;
+	float u_1 = -INFINITY;
 
-	double B_ij_max = 0;
-	double C_ij_max = 0;
-	double delta_v;
-	double delta_w;
-	double L_v;
-	double L_w;
+	float B_ij_max = 0;
+	float C_ij_max = 0;
+	float delta_v;
+	float delta_w;
+	float L_v;
+	float L_w;
 	int temp_stop;
 
 	for (j_x = 0; j_x <= imgParams->N_x-1; ++j_x)
@@ -173,16 +173,16 @@ void computeAMatrixParameters(struct SinoParams *sinoParams, struct ImageParams 
 void computeBMatrix(struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A, struct ViewAngleList *viewAngleList)
 {
 	/* Variable declarations */
-	double x_v, y_v;
-	double u_v, v_v;
-	double beta, theta, alpha_xy;
-	double cosine, sine;
-	double W_pv, M;
-	double v_d;
-	double delta_v;
-	double L_v;
-	double B_ij;
-	double temp_stop;
+	float x_v, y_v;
+	float u_v, v_v;
+	float beta, theta, alpha_xy;
+	float cosine, sine;
+	float W_pv, M;
+	float v_d;
+	float delta_v;
+	float L_v;
+	float B_ij;
+	float temp_stop;
 
 	long int j_x, j_y, i_beta, i_v;
 
@@ -258,13 +258,13 @@ void computeBMatrix(struct SinoParams *sinoParams, struct ImageParams *imgParams
 
 void computeCMatrix( struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A)
 {
-        double u_v, w_v;
-        double M;
-        double W_pw;
-        double w_d;
-        double delta_w;
-        double L_w;
-        double C_ij;
+        float u_v, w_v;
+        float M;
+        float W_pw;
+        float w_d;
+        float delta_w;
+        float L_w;
+        float C_ij;
 
         long int j_u, j_z, i_w;
         int temp_stop;
@@ -343,13 +343,13 @@ void writeSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImagePara
     totsize += keepWritingToBinaryFile(fp, &(A->i_vstride_max),     1, sizeof(long int), fName);
     totsize += keepWritingToBinaryFile(fp, &(A->i_wstride_max),     1, sizeof(long int), fName);
     totsize += keepWritingToBinaryFile(fp, &(A->N_u),               1, sizeof(long int), fName);
-    totsize += keepWritingToBinaryFile(fp, &(A->B_ij_max),          1, sizeof(double), fName);
-    totsize += keepWritingToBinaryFile(fp, &(A->C_ij_max),          1, sizeof(double), fName);
-    totsize += keepWritingToBinaryFile(fp, &(A->B_ij_scaler),       1, sizeof(double), fName);
-    totsize += keepWritingToBinaryFile(fp, &(A->C_ij_scaler),       1, sizeof(double), fName);
-    totsize += keepWritingToBinaryFile(fp, &(A->Delta_u),           1, sizeof(double), fName);
-    totsize += keepWritingToBinaryFile(fp, &(A->u_0),               1, sizeof(double), fName);
-    totsize += keepWritingToBinaryFile(fp, &(A->u_1),               1, sizeof(double), fName);
+    totsize += keepWritingToBinaryFile(fp, &(A->B_ij_max),          1, sizeof(float), fName);
+    totsize += keepWritingToBinaryFile(fp, &(A->C_ij_max),          1, sizeof(float), fName);
+    totsize += keepWritingToBinaryFile(fp, &(A->B_ij_scaler),       1, sizeof(float), fName);
+    totsize += keepWritingToBinaryFile(fp, &(A->C_ij_scaler),       1, sizeof(float), fName);
+    totsize += keepWritingToBinaryFile(fp, &(A->Delta_u),           1, sizeof(float), fName);
+    totsize += keepWritingToBinaryFile(fp, &(A->u_0),               1, sizeof(float), fName);
+    totsize += keepWritingToBinaryFile(fp, &(A->u_1),               1, sizeof(float), fName);
 
     /**
      *      Writing array variables
@@ -408,13 +408,13 @@ void readSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageParam
     totsize += keepReadingFromBinaryFile(fp, &(A->i_vstride_max),   1, sizeof(long int), fName);
     totsize += keepReadingFromBinaryFile(fp, &(A->i_wstride_max),   1, sizeof(long int), fName);
     totsize += keepReadingFromBinaryFile(fp, &(A->N_u),             1, sizeof(long int), fName);
-    totsize += keepReadingFromBinaryFile(fp, &(A->B_ij_max),        1, sizeof(double), fName);
-    totsize += keepReadingFromBinaryFile(fp, &(A->C_ij_max),        1, sizeof(double), fName);
-    totsize += keepReadingFromBinaryFile(fp, &(A->B_ij_scaler),     1, sizeof(double), fName);
-    totsize += keepReadingFromBinaryFile(fp, &(A->C_ij_scaler),     1, sizeof(double), fName);
-    totsize += keepReadingFromBinaryFile(fp, &(A->Delta_u),         1, sizeof(double), fName);
-    totsize += keepReadingFromBinaryFile(fp, &(A->u_0),             1, sizeof(double), fName);
-    totsize += keepReadingFromBinaryFile(fp, &(A->u_1),             1, sizeof(double), fName);
+    totsize += keepReadingFromBinaryFile(fp, &(A->B_ij_max),        1, sizeof(float), fName);
+    totsize += keepReadingFromBinaryFile(fp, &(A->C_ij_max),        1, sizeof(float), fName);
+    totsize += keepReadingFromBinaryFile(fp, &(A->B_ij_scaler),     1, sizeof(float), fName);
+    totsize += keepReadingFromBinaryFile(fp, &(A->C_ij_scaler),     1, sizeof(float), fName);
+    totsize += keepReadingFromBinaryFile(fp, &(A->Delta_u),         1, sizeof(float), fName);
+    totsize += keepReadingFromBinaryFile(fp, &(A->u_0),             1, sizeof(float), fName);
+    totsize += keepReadingFromBinaryFile(fp, &(A->u_1),             1, sizeof(float), fName);
 
     /**
      *          Note: Allocation has to happen here (after reading part of the file).
@@ -455,7 +455,7 @@ void readSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageParam
 
 void allocateSysMatrix(struct SysMatrix *A, long int N_x, long int N_y, long int N_z, long int N_beta, long int i_vstride_max, long int i_wstride_max, long int N_u)
 {
-    /*double totSizeGB;*/
+    /*float totSizeGB;*/
 
     /*
     totSizeGB =\

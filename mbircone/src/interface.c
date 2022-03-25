@@ -6,7 +6,7 @@
 #include "recon3DCone.h"
 
 
-void AmatrixComputeToFile(double *angles, 
+void AmatrixComputeToFile(float *angles, 
 	struct SinoParams sinoParams, struct ImageParams imgParams, 
 	char *Amatrix_fname, char verbose)
 {

@@ -154,7 +154,7 @@ void computeTheta1Theta2ForwardTerm(struct Sino *sino, struct SysMatrix *A, stru
 
 	long int i_beta, i_v, i_w;
 	long int j_x, j_y, j_z, j_u;
-	double B_ij, A_ij;
+	float B_ij, A_ij;
 
 	j_x = icdInfo->j_x;
 	j_y = icdInfo->j_y;
@@ -214,13 +214,13 @@ void computeTheta1Theta2PriorTermQGGMRF(struct ICDInfo3DCone *icdInfo, struct Re
      */
 
 	int i;
-	double delta, surrogateCoeff;
-	double sum1Face = 0;
-	double sum1Edge = 0;
-	double sum1Vertex = 0;
-	double sum2Face = 0;
-	double sum2Edge = 0;
-	double sum2Vertex = 0;
+	float delta, surrogateCoeff;
+	float sum1Face = 0;
+	float sum1Edge = 0;
+	float sum1Vertex = 0;
+	float sum2Face = 0;
+	float sum2Edge = 0;
+	float sum2Vertex = 0;
 
 	if (reconParams->bFace>=0)
 	{
@@ -277,15 +277,15 @@ void computeTheta1Theta2PriorTermProxMap(struct ICDInfo3DCone *icdInfo, struct R
 	icdInfo->theta2_p_proxMap = 1.0 / (reconParams->sigma_lambda * reconParams->sigma_lambda);
 }
 
-double surrogateCoeffQGGMRF(double Delta, struct ReconParams *reconParams)
+float surrogateCoeffQGGMRF(float Delta, struct ReconParams *reconParams)
 {
 	/**
 	 * 				 		 /  rho'(Delta) / (2 Delta) 			if Delta != 0
 	 *   surrCoeff(Delta) = {
 	 * 				 		 \	rho''(0) / 2 						if Delta = 0
 	 */
-    double p, q, T, sigmaX, qmp;
-    double num, denom, temp;
+    float p, q, T, sigmaX, qmp;
+    float num, denom, temp;
     
     p = reconParams->p;
     q = reconParams->q;
@@ -333,7 +333,7 @@ void updateErrorSinogram(struct Sino *sino, struct SysMatrix *A, struct ICDInfo3
 
 	long int i_beta, i_v, i_w;
 	long int j_x, j_y, j_z, j_u;
-	double B_ij;
+	float B_ij;
 
 	j_x = icdInfo->j_x;
 	j_y = icdInfo->j_y;
@@ -399,12 +399,12 @@ void indexExtraction3D(long int j_xyz, long int *j_x, long int N_x, long int *j_
 }
 
 
-double MAPCost3D(struct Sino *sino, struct Image *img, struct ReconParams *reconParams)
+float MAPCost3D(struct Sino *sino, struct Image *img, struct ReconParams *reconParams)
 {
 	/**
 	 *      Computes MAP cost function
 	 */
-	double cost;
+	float cost;
 
     // Initialize cost with forward model cost	
     cost = MAPCostForward(sino);
@@ -421,13 +421,13 @@ double MAPCost3D(struct Sino *sino, struct Image *img, struct ReconParams *recon
 }
 
 
-double MAPCostForward(struct Sino *sino)
+float MAPCostForward(struct Sino *sino)
 {
 	/**
 	 * 		ForwardCost =  1/2 ||e||^{2}_{W}
 	 */
 	long int i_beta, i_v, i_w;
-	double cost;
+	float cost;
 
     cost = 0;
     for (i_beta = 0; i_beta < sino->params.N_beta; ++i_beta)
@@ -445,7 +445,7 @@ double MAPCostForward(struct Sino *sino)
     return cost / (2.0 * sino->params.weightScaler_value);
 }
 
-double MAPCostPrior_QGGMRF(struct Image *img, struct ReconParams *reconParams)
+float MAPCostPrior_QGGMRF(struct Image *img, struct ReconParams *reconParams)
 {
 	/**
 	 *	cost = sum     b_{s,r}  rho(x_s-x_r)
@@ -454,8 +454,8 @@ double MAPCostPrior_QGGMRF(struct Image *img, struct ReconParams *reconParams)
 	
 	long int j_x, j_y, j_z;
 	struct ICDInfo3DCone icdInfo;
-	double cost;
-	double temp;
+	float cost;
+	float temp;
     
     cost = 0;
 	for (j_x = 0; j_x < img->params.N_x; ++j_x)
@@ -478,7 +478,7 @@ double MAPCostPrior_QGGMRF(struct Image *img, struct ReconParams *reconParams)
 	return cost * reconParams->priorWeight_QGGMRF;
 }
 
-double MAPCostPrior_ProxMap(struct Image *img, struct ReconParams *reconParams)
+float MAPCostPrior_ProxMap(struct Image *img, struct ReconParams *reconParams)
 {
     /**
      * 			Compute proximal mapping prior cost
@@ -489,7 +489,7 @@ double MAPCostPrior_ProxMap(struct Image *img, struct ReconParams *reconParams)
      */
     
     long int j_x, j_y, j_z;
-    double cost, diff_voxel;
+    float cost, diff_voxel;
 
     cost = 0; 
     for (j_x = 0; j_x < img->params.N_x; ++j_x)
@@ -507,7 +507,7 @@ double MAPCostPrior_ProxMap(struct Image *img, struct ReconParams *reconParams)
     return cost;
 }
 
-double MAPCostPrior_QGGMRFSingleVoxel_HalfNeighborhood(struct ICDInfo3DCone *icdInfo, struct ReconParams *reconParams)
+float MAPCostPrior_QGGMRFSingleVoxel_HalfNeighborhood(struct ICDInfo3DCone *icdInfo, struct ReconParams *reconParams)
 {
     /**
      * 			Compute prior model term of theta1 and theta2:
@@ -518,7 +518,7 @@ double MAPCostPrior_QGGMRFSingleVoxel_HalfNeighborhood(struct ICDInfo3DCone *icd
      */
 
 	int i;
-	double sum1Face, sum1Edge, sum1Vertex;
+	float sum1Face, sum1Edge, sum1Vertex;
 
     sum1Face = 0;
     sum1Edge = 0;
@@ -544,10 +544,10 @@ double MAPCostPrior_QGGMRFSingleVoxel_HalfNeighborhood(struct ICDInfo3DCone *icd
 
 
 /* the potential function of the QGGMRF prior model.  p << q <= 2 */
-double QGGMRFPotential(double delta, struct ReconParams *reconParams)
+float QGGMRFPotential(float delta, struct ReconParams *reconParams)
 {
-    double p, q, T, sigmaX;
-    double temp, GGMRF_Pot;
+    float p, q, T, sigmaX;
+    float temp, GGMRF_Pot;
     
     p = reconParams->p;
     q = reconParams->q;
@@ -613,7 +613,7 @@ void computeDeltaXjAndUpdate(struct ICDInfo3DCone *icdInfo, struct ReconParams *
 	 * 		
 	 * 		Delta_xj = clip{   -theta1/theta2, [-x_j, inf)   }
 	 */
-	double theta1, theta2;
+	float theta1, theta2;
 
 	theta1 = icdInfo->theta1_f + reconParams->priorWeight_QGGMRF*icdInfo->theta1_p_QGGMRF + reconParams->priorWeight_proxMap*icdInfo->theta1_p_proxMap;
 	theta2 = icdInfo->theta2_f + reconParams->priorWeight_QGGMRF*icdInfo->theta2_p_QGGMRF + reconParams->priorWeight_proxMap*icdInfo->theta2_p_proxMap;
@@ -672,7 +672,7 @@ void computeDeltaXjAndUpdateGroup(struct ICDInfo3DCone *icdInfo, struct RandomZi
 void updateIterationStatsGroup(struct ReconAux *reconAux, struct ICDInfo3DCone *icdInfoArray, struct RandomZiplineAux *randomZiplineAux, struct Image *img, struct ReconParams *reconParams)
 {
 	long int N_M, k_M;
-	double absDelta, totValue;
+	float absDelta, totValue;
 	struct ICDInfo3DCone *icdInfo;
 	long int j_x, j_y, j_z;
 	long int indexZiplines;
@@ -705,7 +705,7 @@ void updateIterationStatsGroup(struct ReconAux *reconAux, struct ICDInfo3DCone *
 }
 
 
-void disp_iterationInfo(struct ReconAux *reconAux, struct ReconParams *reconParams, int itNumber, int MaxIterations, double cost, double relUpdate, double stopThresholdChange, double weightScaler_value, double voxelsPerSecond, double ticToc_iteration, double weightedNormSquared_e, double ratioUpdated, double totalEquits)
+void disp_iterationInfo(struct ReconAux *reconAux, struct ReconParams *reconParams, int itNumber, int MaxIterations, float cost, float relUpdate, float stopThresholdChange, float weightScaler_value, float voxelsPerSecond, float ticToc_iteration, float weightedNormSquared_e, float ratioUpdated, float totalEquits)
 {
 	printf("************************** Iteration %-2d (max. %d) **************************\n", itNumber, MaxIterations);
 	printf("*  Cost                   = %-10.10e\n", cost);
@@ -723,11 +723,11 @@ void disp_iterationInfo(struct ReconAux *reconAux, struct ReconParams *reconPara
 	printf("******************************************************************************\n\n");
 }
 
-double computeRelUpdate(struct ReconAux *reconAux, struct ReconParams *reconParams, struct Image *img)
+float computeRelUpdate(struct ReconAux *reconAux, struct ReconParams *reconParams, struct Image *img)
 {
-	double relUpdate;
-	double AvgValueChange, AvgVoxelValue;
-	double scaler;
+	float relUpdate;
+	float AvgValueChange, AvgVoxelValue;
+	float scaler;
 	int subsampleFactor = 10; /* when chosen 1 this is completely accurate. User can mess with this to some extend*/
 
 	if(reconAux->NumUpdatedVoxels>0)
@@ -789,11 +789,11 @@ void prepareParallelAux(struct ParallelAux *parallelAux, long int N_M_max)
 
 	parallelAux->j_u = mem_alloc_1D(numThreads, sizeof(long int));
 	parallelAux->i_v = mem_alloc_1D(numThreads, sizeof(long int));
-	parallelAux->B_ij = mem_alloc_1D(numThreads, sizeof(double));
+	parallelAux->B_ij = mem_alloc_1D(numThreads, sizeof(float));
 	parallelAux->k_M = mem_alloc_1D(numThreads, sizeof(long int));
 	parallelAux->j_z = mem_alloc_1D(numThreads, sizeof(long int));
 	parallelAux->i_w = mem_alloc_1D(numThreads, sizeof(long int));
-	parallelAux->A_ij = mem_alloc_1D(numThreads, sizeof(double));
+	parallelAux->A_ij = mem_alloc_1D(numThreads, sizeof(float));
 
 }
 
@@ -841,7 +841,7 @@ void computeTheta1Theta2ForwardTermGroup(struct Sino *sino, struct SysMatrix *A,
 
 	long int i_beta, i_v, i_w;
 	long int j_x, j_y, j_z, j_u;
-	double B_ij, A_ij;
+	float B_ij, A_ij;
 	long int N_M, k_M;
 	int threadID;
 
@@ -955,7 +955,7 @@ void updateErrorSinogramGroup(struct Sino *sino, struct SysMatrix *A, struct ICD
 
 	long int i_beta, i_v, i_w;
 	long int j_x, j_y, j_z, j_u;
-	double B_ij;
+	float B_ij;
 
 	N_M = randomZiplineAux->N_M;
 	j_x = icdInfo[0].j_x;
@@ -1022,7 +1022,7 @@ void speedAuxICD_computeSpeed(struct SpeedAuxICD *speedAuxICD)
 	if (speedAuxICD->numberUpdatedVoxels > 0)
 	{
 		speedAuxICD->toc = omp_get_wtime();
-		speedAuxICD->voxelsPerSecond = ((double)speedAuxICD->numberUpdatedVoxels) / (speedAuxICD->toc - speedAuxICD->tic);
+		speedAuxICD->voxelsPerSecond = ((float)speedAuxICD->numberUpdatedVoxels) / (speedAuxICD->toc - speedAuxICD->tic);
 	}
 	else
 	{
@@ -1033,7 +1033,7 @@ void speedAuxICD_computeSpeed(struct SpeedAuxICD *speedAuxICD)
 
 /* * * * * * * * * * * * NHICD * * * * * * * * * * * * **/
 
-int NHICD_isVoxelHot(struct ReconParams *reconParams, struct Image *img, long int j_x, long int j_y, long int j_z, double lastChangeThreshold)
+int NHICD_isVoxelHot(struct ReconParams *reconParams, struct Image *img, long int j_x, long int j_y, long int j_z, float lastChangeThreshold)
 {
     if(img->lastChange[j_x][j_y][j_z] > lastChangeThreshold)
         return 1;
@@ -1044,7 +1044,7 @@ int NHICD_isVoxelHot(struct ReconParams *reconParams, struct Image *img, long in
     return 0;
 }
 
-int NHICD_activatePartialUpdate(struct ReconParams *reconParams, double relativeWeightedForwardError)
+int NHICD_activatePartialUpdate(struct ReconParams *reconParams, float relativeWeightedForwardError)
 {
 	if (relativeWeightedForwardError*100<reconParams->NHICD_ThresholdAllVoxels_ErrorPercent && strcmp(reconParams->NHICD_Mode, "off")!=0)
 		return 1;
@@ -1089,13 +1089,13 @@ void NHICD_checkPartialZiplinesHot(struct ReconAux *reconAux, long int j_x, long
 void updateNHICDStats(struct ReconAux *reconAux, long int j_x, long int j_y, struct Image *img, struct ReconParams *reconParams)
 {
 	long int jj_x, jj_y, jj_x_min, jj_y_min, jj_x_max, jj_y_max;
-	double avgChange;
-	double mean_timeToChange;
+	float avgChange;
+	float mean_timeToChange;
 	long int sigma_timeToChange;
 	long int indexZiplines;
-	double w_self = 1;
-	double w_past = 0.5;
-	double w_neighbors = 0.5;
+	float w_self = 1;
+	float w_past = 0.5;
+	float w_neighbors = 0.5;
 
 
 
