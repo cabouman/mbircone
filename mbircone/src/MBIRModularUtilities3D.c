@@ -9,7 +9,7 @@
 void forwardProject3DCone( float ***Ax, float ***x, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams)
 {
     long int j_u, j_x, j_y, i_beta, i_v, j_z, i_w;
-    double B_ij, B_ij_times_x_j;
+    float B_ij, B_ij_times_x_j;
 
     setFloatArray2Value( &Ax[0][0][0], sinoParams->N_beta*sinoParams->N_dv*sinoParams->N_dw, 0);
 
@@ -44,8 +44,8 @@ void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageParams *i
 {
 
     long int j_u, j_x, j_y, i_beta, i_v, j_z, i_w;
-    double B_ij, A_ij;
-    double ticToc;
+    float B_ij, A_ij;
+    float ticToc;
     float ***normalization, val, val2;
 
 
@@ -145,8 +145,8 @@ void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageParams *i
 void initializeWghtRecon(struct SysMatrix *A, struct Sino *sino, struct Image *img, struct ReconParams *reconParams)
 {
     long int j_u, j_x, j_y, i_beta, i_v, j_z, i_w;
-    double B_ij, A_ij;
-    double ticToc, avg;
+    float B_ij, A_ij;
+    float ticToc, avg;
 
     if (reconParams->verbosity>0)
         printf("\nInitialize WghtRecon ...\n");
@@ -205,11 +205,11 @@ void initializeWghtRecon(struct SysMatrix *A, struct Sino *sino, struct Image *i
 
 }
 
-double computeAvgWghtRecon(struct Image *img)
+float computeAvgWghtRecon(struct Image *img)
 {
     long int j_x, j_y, j_z;
 
-    double sum = 0;
+    float sum = 0;
     long int num = 0;
 
     #pragma omp parallel for private(j_y, j_z) reduction(+:sum,num)
@@ -232,7 +232,7 @@ double computeAvgWghtRecon(struct Image *img)
 
 void computeSecondaryReconParams(struct ReconParams *reconParams, struct ImageParams *imgParams)
 {
-    double sum;
+    float sum;
     int N_max, N_z;
 
     sum = 0;
@@ -257,15 +257,15 @@ void computeSecondaryReconParams(struct ReconParams *reconParams, struct ImagePa
 
     N_z = imgParams->N_z;
     N_max = reconParams->numVoxelsPerZiplineMax;
-    reconParams->numVoxelsPerZipline = ceil((double)N_z / ceil((double)N_z/N_max));
+    reconParams->numVoxelsPerZipline = ceil((float)N_z / ceil((float)N_z/N_max));
 
-    reconParams->numZiplines = ceil((double)N_z / reconParams->numVoxelsPerZipline);
+    reconParams->numZiplines = ceil((float)N_z / reconParams->numVoxelsPerZipline);
 
 }
 
-void invertDoubleMatrix(double **A, double ** A_inv, int size)
+void invertDoubleMatrix(float **A, float ** A_inv, int size)
 {
-    double det;
+    float det;
     if(size == 1)
     {
         A_inv[0][0] = 1.0 / A[0][0];
@@ -292,11 +292,11 @@ void invertDoubleMatrix(double **A, double ** A_inv, int size)
     }
 }
 
-double computeNormSquaredFloatArray(float *arr, long int len)
+float computeNormSquaredFloatArray(float *arr, long int len)
 {
     /* out = ||x||^2*/
     long int i;
-    double out = 0;
+    float out = 0;
     for (i = 0; i < len; ++i)
     {
         out += (arr[i]*arr[i]);
@@ -304,7 +304,7 @@ double computeNormSquaredFloatArray(float *arr, long int len)
     return out;
 }
 
-double computeRelativeRMSEFloatArray(float *arr1, float *arr2, long int len)
+float computeRelativeRMSEFloatArray(float *arr1, float *arr2, long int len)
 {
     /**
      *      out = sqrt(numerator/denominator)
@@ -312,7 +312,7 @@ double computeRelativeRMSEFloatArray(float *arr1, float *arr2, long int len)
      *      numerator = ||x1-x2||^2     denominator = ||max(x1,x2)||^2
      */
     long int i;
-    double numerator = 0, denominator = 0, m;
+    float numerator = 0, denominator = 0, m;
     for (i = 0; i < len; ++i)
     {
         numerator += (arr1[i]-arr2[i])*(arr1[i]-arr2[i]);
@@ -323,7 +323,7 @@ double computeRelativeRMSEFloatArray(float *arr1, float *arr2, long int len)
 }
 
 
-double computeSinogramWeightedNormSquared(struct Sino *sino, float ***arr)
+float computeSinogramWeightedNormSquared(struct Sino *sino, float ***arr)
 {
     /**
      *                      1  ||     ||2   
@@ -336,7 +336,7 @@ double computeSinogramWeightedNormSquared(struct Sino *sino, float ***arr)
      */
     long int i_beta, i_v, i_w;
     long int num_mask;
-    double normError = 0;
+    float normError = 0;
 
     for (i_beta = 0; i_beta < sino->params.N_beta; ++i_beta)
     for (i_v = 0; i_v < sino->params.N_dv; ++i_v)
@@ -358,9 +358,9 @@ char isInsideMask(long int i_1, long int i_2, long int N1, long int N2)
     /**
      *      returns 1 iff pixel is inside the ellipse that fits in the rectangle
      */
-    double center_1, center_2;
-    double radius_1, radius_2;
-    double reldistance;
+    float center_1, center_2;
+    float radius_1, radius_2;
+    float reldistance;
 
     center_1 = (N1-1.0)/2.0;
     center_2 = (N2-1.0)/2.0;
@@ -442,7 +442,7 @@ void applyMask(float ***arr, long int N1, long int N2, long int N3)
     }
 }
 
-void floatArray_z_equals_aX_plus_bY(float *Z, double a, float *X, double b, float *Y, long int len)
+void floatArray_z_equals_aX_plus_bY(float *Z, float a, float *X, float b, float *Y, long int len)
 {
     long int i;
 
@@ -709,16 +709,16 @@ void shuffleLongIntArray(long int *arr, long int len)
  *      bernoulli(P/100)==1 is true with probability P[%]
  */     
         
-int bernoulli(double p)
+int bernoulli(float p)
 {
-    double r;
+    float r;
     if(p==0)
         return 0;
 
     if(p==1)
         return 1;
 
-    r = ((double) rand() / (RAND_MAX));
+    r = ((float) rand() / (RAND_MAX));
     if(r<p)
         return 1;
     else
@@ -730,13 +730,13 @@ long int uniformIntegerRV(long int l, long int h)
     return l+rand()%(h-l+1);
 }
 
-long int almostUniformIntegerRV(double mean, int sigma)
+long int almostUniformIntegerRV(float mean, int sigma)
 {
     /* creates random integer, Z, variable that is approx uniform in [mean-sigma, mean+sigma] */
     /* "mean" corresponds to the real expectation of Z*/
     /* range(Z) = 2*simga + 1 - delta(mean-ceil(mean)) */
-    double mean_low, mean_high;
-    double X_low, X_high;
+    float mean_low, mean_high;
+    float X_low, X_high;
     int b;
 
     mean_low = floor(mean);
@@ -753,30 +753,30 @@ long int almostUniformIntegerRV(double mean, int sigma)
 
 
 /**************************************** tic toc ****************************************/
-void tic(double *ticToc)
+void tic(float *ticToc)
 {
     (*ticToc) = -omp_get_wtime();
 }
 
-void toc(double *ticToc)
+void toc(float *ticToc)
 {
     (*ticToc) += omp_get_wtime();
 }
 
-void ticTocDisp(double ticToc, char *ticTocName)
+void ticTocDisp(float ticToc, char *ticTocName)
 {
     printf("[ticToc] %s = %e s\n", ticTocName, ticToc);
 }
 
 /**************************************** timer ****************************************/
-void timer_reset(double *timer)
+void timer_reset(float *timer)
 {
     (*timer) = -omp_get_wtime();
 }
 
-int timer_hasPassed(double *timer, double time_passed)
+int timer_hasPassed(float *timer, float time_passed)
 {
-    double time_now;
+    float time_now;
     time_now = omp_get_wtime();
     if ((*timer) + time_now > time_passed )
     {
@@ -945,16 +945,16 @@ void printFileIOInfo( char* functionName, char* fName, long int size, char mode)
     printf(" ****  File access in: %s\n", functionName);
     printf("*****  File name     : %s\n", fName);
     printf("*****  %-14s: %-15ld bytes\n", readwrite, size);
-    printf("*****                = %-15e kB\n", (double) size*1e-3);
-    printf(" ****                = %-15e MB\n", (double) size*1e-6);
+    printf("*****                = %-15e kB\n", (float) size*1e-3);
+    printf(" ****                = %-15e MB\n", (float) size*1e-6);
     printf("    ***********************************************************\n");
 }
 
 void printProgressOfLoop( long int indexOfLoop, long int NumIterations)
 {
-    double percent;
+    float percent;
 
-    percent = (double) (1+indexOfLoop) / (double) NumIterations * 100;
+    percent = (float) (1+indexOfLoop) / (float) NumIterations * 100;
     printf("\r[%.1e%%]", percent );
     fflush(stdout); 
 

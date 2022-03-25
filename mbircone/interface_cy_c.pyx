@@ -14,33 +14,33 @@ cdef extern from "./src/MBIRModularUtilities3D.h":
     
         long int N_dv;
         long int N_dw; 
-        double Delta_dv;
-        double Delta_dw;
+        float Delta_dv;
+        float Delta_dw;
        
         long int N_beta;
         
-        double u_s;
-        double u_r;
-        double v_r;
-        double u_d0;
-        double v_d0;
-        double w_d0;
+        float u_s;
+        float u_r;
+        float v_r;
+        float u_d0;
+        float v_d0;
+        float w_d0;
         
-        double weightScaler_value; 
+        float weightScaler_value; 
 
 
     struct ImageParams:
 
-        double x_0;
-        double y_0;
-        double z_0;
+        float x_0;
+        float y_0;
+        float z_0;
 
         long int N_x;
         long int N_y;
         long int N_z;
 
-        double Delta_xy;
-        double Delta_z;
+        float Delta_xy;
+        float Delta_z;
         
         long int j_xstart_roi;
         long int j_ystart_roi;
@@ -57,31 +57,31 @@ cdef extern from "./src/MBIRModularUtilities3D.h":
 
     struct ReconParams:
     
-        double priorWeight_QGGMRF;                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping) 
-        double priorWeight_proxMap;                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping) 
+        float priorWeight_QGGMRF;                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping) 
+        float priorWeight_proxMap;                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping) 
         
         # QGGMRF 
-        double q;                   # q: QGGMRF parameter (q>1, typical choice q=2) 
-        double p;                   # p: QGGMRF parameter (1<=p<q) 
-        double T;                   # T: QGGMRF parameter 
-        double sigmaX;              # sigmaX: QGGMRF parameter 
-        double bFace;               # bFace: relative neighbor weight: cube faces 
-        double bEdge;               # bEdge: relative neighbor weight: cube edges 
-        double bVertex;             # bVertex: relative neighbor weight: cube vertices 
+        float q;                   # q: QGGMRF parameter (q>1, typical choice q=2) 
+        float p;                   # p: QGGMRF parameter (1<=p<q) 
+        float T;                   # T: QGGMRF parameter 
+        float sigmaX;              # sigmaX: QGGMRF parameter 
+        float bFace;               # bFace: relative neighbor weight: cube faces 
+        float bEdge;               # bEdge: relative neighbor weight: cube edges 
+        float bVertex;             # bVertex: relative neighbor weight: cube vertices 
         # Proximal Mapping 
-        double sigma_lambda;        # sigma_lambda: Proximal mapping scalar 
+        float sigma_lambda;        # sigma_lambda: Proximal mapping scalar 
         int is_positivity_constraint;
         
 
          # Stopping Conditions
 
-        double stopThresholdChange_pct;           # stop threshold (%) 
-        double stopThesholdRWFE_pct;
-        double stopThesholdRUFE_pct;
+        float stopThresholdChange_pct;           # stop threshold (%) 
+        float stopThesholdRWFE_pct;
+        float stopThesholdRUFE_pct;
         int MaxIterations;              # maximum number of iterations 
         char relativeChangeMode[200];
-        double relativeChangeScaler;
-        double relativeChangePercentile;
+        float relativeChangeScaler;
+        float relativeChangePercentile;
     
     
          # Zipline Stuff
@@ -96,14 +96,14 @@ cdef extern from "./src/MBIRModularUtilities3D.h":
 
         char weightScaler_estimateMode[200];     # Estimate weight scaler? 1: Yes. 0: Use user specified value 
         char weightScaler_domain[200];     
-        double weightScaler_value;            # User specified weight scaler 
+        float weightScaler_value;            # User specified weight scaler 
     
     
         # NHICD stuff 
         char NHICD_Mode[200];
-        double NHICD_ThresholdAllVoxels_ErrorPercent;
-        double NHICD_percentage;
-        double NHICD_random;
+        float NHICD_ThresholdAllVoxels_ErrorPercent;
+        float NHICD_percentage;
+        float NHICD_random;
     
         # Misc 
         int verbosity;
@@ -112,7 +112,7 @@ cdef extern from "./src/MBIRModularUtilities3D.h":
 
 # Import a c function to compute A matrix.
 cdef extern from "./src/interface.h":
-    void AmatrixComputeToFile(double *angles, SinoParams c_sinoparams, ImageParams c_imgparams, 
+    void AmatrixComputeToFile(float *angles, SinoParams c_sinoparams, ImageParams c_imgparams, 
         char *Amatrix_fname, char verbose);
 
     void recon(float *x, float *sino, float *wght, float *x_init, float *proxmap_input,
@@ -256,7 +256,7 @@ def AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname, verbos
     # Get pointer to 1D char array of Amatrix 
     cdef cnp.ndarray[char, ndim=1, mode="c"] c_Amatrix_fname
     # Get pointer to 1D array of angles
-    cdef cnp.ndarray[double, ndim=1, mode="c"] c_angles = angles
+    cdef cnp.ndarray[float, ndim=1, mode="c"] c_angles = angles.astype(np.single)
 
     convert_py2c_SinoParams3D(&c_sinoparams, sinoparams)
     convert_py2c_ImageParams3D(&c_imgparams, imgparams)
