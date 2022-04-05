@@ -387,7 +387,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
         config['cluster_params']['maximum_memory_per_node'] = choice
     else:
         config['cluster_params']['maximum_memory_per_node'] = '16GB'
-    sys.stdout.write("Set maximum_memory_per_node to default value '16GB'.\n")
+        sys.stdout.write("Set maximum_memory_per_node to default value '16GB'.\n")
 
     # Ask for any additional arguments to pass to the job scheduling system.
     question = '\nPlease enter any additional arguments to pass to the job scheduling system. [Default = ""]\n'
