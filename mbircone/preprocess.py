@@ -274,17 +274,17 @@ def NSI_read_params(config_file_path):
     params = _NSI_read_str_from_config(config_file_path, tag_section_list)
     NSI_system_params = dict()
 
-    NSI_system_params['u_s'] = np.double(params[0].split(' ')[-1])
+    NSI_system_params['u_s'] = np.single(params[0].split(' ')[-1])
 
     vals = params[1].split(' ')
-    NSI_system_params['u_d1'] = np.double(vals[2])
-    NSI_system_params['v_d1'] = np.double(vals[0])
+    NSI_system_params['u_d1'] = np.single(vals[2])
+    NSI_system_params['v_d1'] = np.single(vals[0])
 
-    NSI_system_params['w_d1'] = np.double(vals[1])
+    NSI_system_params['w_d1'] = np.single(vals[1])
 
     vals = params[2].split(' ')
-    NSI_system_params['delta_dv'] = np.double(vals[0])
-    NSI_system_params['delta_dw'] = np.double(vals[1])
+    NSI_system_params['delta_dv'] = np.single(vals[0])
+    NSI_system_params['delta_dw'] = np.single(vals[1])
 
     NSI_system_params['N_dv'] = int(params[3])
     NSI_system_params['N_dw'] = int(params[4])
@@ -385,7 +385,7 @@ def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
 
         - **sino** (*ndarray, float*): Preprocessed 3D sinogram.
 
-        - **angles** (*array, double*): 1D array of angles corresponding to preprocessed sinogram.
+        - **angles** (*array, single*): 1D array of angles corresponding to preprocessed sinogram.
 
     """
 
