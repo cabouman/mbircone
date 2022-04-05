@@ -242,6 +242,7 @@ def _NSI_read_str_from_config(filepath, tags_sections):
         print("Could not read file:", filepath)
 
     for tag_str, section_start, section_end in zip(tag_strs, section_starts, section_ends):
+        print("tag_str = ", tag_str)
         section_start_inds = [ind for ind, match in enumerate(lines) if section_start in match]
         section_end_inds = [ind for ind, match in enumerate(lines) if section_end in match]
         section_start_ind = section_start_inds[0]
@@ -259,7 +260,7 @@ def _NSI_read_str_from_config(filepath, tags_sections):
     return params
 
 
-def NSI_read_params(config_file_path):
+def NSI_read_params(config_file_path, flip_d0=(0, 0.5), transpose=False):
     """Reads NSI system parameters from a NSI configuration file.
 
     Args:
@@ -291,11 +292,31 @@ def NSI_read_params(config_file_path):
 
     NSI_system_params['N_dv'] = int(params[3])
     NSI_system_params['N_dw'] = int(params[4])
+
     NSI_system_params['num_acquired_scans'] = int(params[5])
     NSI_system_params['total_angles'] = int(params[6])
+    if transpose:
+        NSI_system_params['delta_dv'], NSI_system_params['delta_dw'] = NSI_system_params['delta_dw'], NSI_system_params['delta_dv']
+        NSI_system_params['v_d1'], NSI_system_params['w_d1'] = NSI_system_params['w_d1'], NSI_system_params['v_d1']
 
-    NSI_system_params['v_d0'] = - NSI_system_params['v_d1']
-    NSI_system_params['w_d0'] = - NSI_system_params['N_dw'] * NSI_system_params['delta_dw'] / 2.0
+    (flip_v_d0, flip_w_d0) = flip_d0
+    if flip_v_d0 == 0:
+        NSI_system_params['v_d0'] = - NSI_system_params['v_d1']
+    elif flip_v_d0 == 1:
+        NSI_system_params['v_d0'] = NSI_system_params['v_d1'] - NSI_system_params['N_dv'] * NSI_system_params['delta_dv']
+    elif flip_v_d0 == 0.5:
+        NSI_system_params['v_d0'] = - NSI_system_params['N_dv'] * NSI_system_params['delta_dv'] / 2.0
+    else:
+        raise ValueError("Unknown flip_v_d0 value. Must be one of 0, 0.5, 1")
+    if flip_w_d0 == 0:
+        NSI_system_params['w_d0'] = - NSI_system_params['w_d1']
+    elif flip_w_d0 == 1:
+        NSI_system_params['w_d0'] = NSI_system_params['w_d1'] - NSI_system_params['N_dw'] * NSI_system_params['delta_dw']
+    elif flip_w_d0 == 0.5:
+        NSI_system_params['w_d0'] = - NSI_system_params['N_dw'] * NSI_system_params['delta_dw'] / 2.0
+    else:
+        raise ValueError("Unknown flip_w_d0 value. Must be one of 0, 0.5, 1")
+
     NSI_system_params['v_r'] = 0.0
     return NSI_system_params
 
@@ -347,7 +368,6 @@ def NSI_to_MBIRCONE_params(NSI_system_params):
         Dictionary: MBIRCONE format geometric parameters
 
     """
-    print("#################### Test message #################")
     geo_params = dict()
     geo_params["num_channels"] = NSI_system_params['N_dv']
     geo_params["num_slices"] = NSI_system_params['N_dw']
@@ -357,8 +377,10 @@ def NSI_to_MBIRCONE_params(NSI_system_params):
     geo_params["dist_source_detector"] = NSI_system_params['u_d1'] - NSI_system_params['u_s']
     geo_params["magnification"] = -geo_params["dist_source_detector"] / NSI_system_params['u_s']
 
-    dist_dv_to_detector_corner_from_detector_center = - NSI_system_params['N_dv'] * NSI_system_params['delta_dw'] / 2.0
-    dist_dw_to_detector_corner_from_detector_center = - NSI_system_params['N_dw'] * NSI_system_params['delta_dv'] / 2.0
+    dist_dv_to_detector_corner_from_detector_center = - NSI_system_params['N_dv'] * NSI_system_params['delta_dv'] / 2.0
+    dist_dw_to_detector_corner_from_detector_center = - NSI_system_params['N_dw'] * NSI_system_params['delta_dw'] / 2.0
+    print('half of detector row width = ', -dist_dw_to_detector_corner_from_detector_center)
+    print('half of detector channel width = ', -dist_dv_to_detector_corner_from_detector_center)
     geo_params["channel_offset"] = -(NSI_system_params['v_d0'] - dist_dv_to_detector_corner_from_detector_center)
     geo_params["row_offset"] = - (NSI_system_params['w_d0'] - dist_dw_to_detector_corner_from_detector_center)
     return geo_params
