@@ -99,7 +99,8 @@ def get_cluster_ticket(job_queue_system_type,
                                job_extra=[system_specific_args],
                                job_cpu=num_physical_cores_per_node,
                                local_directory=local_directory,
-                               log_directory=log_directory)
+                               log_directory=log_directory,
+                               death_timeout=300)
         cluster.scale(jobs=num_nodes)
         print(cluster.job_script())
 
