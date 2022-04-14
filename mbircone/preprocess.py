@@ -242,7 +242,6 @@ def _NSI_read_str_from_config(filepath, tags_sections):
         print("Could not read file:", filepath)
 
     for tag_str, section_start, section_end in zip(tag_strs, section_starts, section_ends):
-        print("tag_str = ", tag_str)
         section_start_inds = [ind for ind, match in enumerate(lines) if section_start in match]
         section_end_inds = [ind for ind, match in enumerate(lines) if section_end in match]
         section_start_ind = section_start_inds[0]
@@ -296,10 +295,9 @@ def NSI_read_params(config_file_path, flip_d0=(0, 0.5), transpose=False):
     NSI_system_params['num_acquired_scans'] = int(params[5])
     NSI_system_params['total_angles'] = int(params[6])
     if transpose:
-        NSI_system_params['delta_dv'], NSI_system_params['delta_dw'] = NSI_system_params['delta_dw'], NSI_system_params['delta_dv']
-        NSI_system_params['v_d1'], NSI_system_params['w_d1'] = NSI_system_params['w_d1'], NSI_system_params['v_d1']
-
+        NSI_system_params['N_dv'], NSI_system_params['N_dw'] = NSI_system_params['N_dw'], NSI_system_params['N_dv']
     (flip_v_d0, flip_w_d0) = flip_d0
+    
     if flip_v_d0 == 0:
         NSI_system_params['v_d0'] = - NSI_system_params['v_d1']
     elif flip_v_d0 == 1:
@@ -308,6 +306,7 @@ def NSI_read_params(config_file_path, flip_d0=(0, 0.5), transpose=False):
         NSI_system_params['v_d0'] = - NSI_system_params['N_dv'] * NSI_system_params['delta_dv'] / 2.0
     else:
         raise ValueError("Unknown flip_v_d0 value. Must be one of 0, 0.5, 1")
+    
     if flip_w_d0 == 0:
         NSI_system_params['w_d0'] = - NSI_system_params['w_d1']
     elif flip_w_d0 == 1:
@@ -359,6 +358,12 @@ def NSI_adjust_sysparam(NSI_system_params, downsample_factor=[1, 1], crop_factor
     return NSI_system_params
 
 
+def calc_cone_angle(detector_width, dist_source_detector):
+    """ Calculate coneangle along detector rows.      
+    """
+    return 2*np.arctan(detector_width/2./dist_source_detector) 
+
+
 def NSI_to_MBIRCONE_params(NSI_system_params):
     """Returns MBIRCONE format geometric parameters from adjusted NSI system parameters.
 
@@ -379,8 +384,6 @@ def NSI_to_MBIRCONE_params(NSI_system_params):
 
     dist_dv_to_detector_corner_from_detector_center = - NSI_system_params['N_dv'] * NSI_system_params['delta_dv'] / 2.0
     dist_dw_to_detector_corner_from_detector_center = - NSI_system_params['N_dw'] * NSI_system_params['delta_dw'] / 2.0
-    print('half of detector row width = ', -dist_dw_to_detector_corner_from_detector_center)
-    print('half of detector channel width = ', -dist_dv_to_detector_corner_from_detector_center)
     geo_params["channel_offset"] = -(NSI_system_params['v_d0'] - dist_dv_to_detector_corner_from_detector_center)
     geo_params["row_offset"] = - (NSI_system_params['w_d0'] - dist_dw_to_detector_corner_from_detector_center)
     return geo_params
