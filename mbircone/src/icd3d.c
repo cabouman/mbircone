@@ -42,7 +42,6 @@ void prepareICDInfo(long int j_x, long int j_y, long int j_z, struct ICDInfo3DCo
 {
 	icdInfo->old_xj = img->vox[j_x][j_y][j_z];
 	icdInfo->proxMapInput_j = img->proxMapInput[j_x][j_y][j_z];
-	icdInfo->wghtRecon_j = img->wghtRecon[j_x][j_y][j_z];
 	icdInfo->j_x = j_x;
 	icdInfo->j_y = j_y;
 	icdInfo->j_z = j_z;
@@ -183,12 +182,7 @@ void computeTheta1Theta2ForwardTerm(struct Sino *sino, struct SysMatrix *A, stru
         }
     }
 
-    if (strcmp(reconParams->weightScaler_domain,"spatiallyVariant") == 0)
-    {
-	    icdInfo->theta1_f /= icdInfo->wghtRecon_j;
-	    icdInfo->theta2_f /= icdInfo->wghtRecon_j;
-    }
-    else if(strcmp(reconParams->weightScaler_domain,"spatiallyInvariant") == 0)
+    if(strcmp(reconParams->weightScaler_domain,"spatiallyInvariant") == 0)
     {
 	    icdInfo->theta1_f /= sino->params.weightScaler_value;
 	    icdInfo->theta2_f /= sino->params.weightScaler_value;
@@ -906,15 +900,7 @@ void computeTheta1Theta2ForwardTermGroup(struct Sino *sino, struct SysMatrix *A,
 		}
 	}
 
-    if (strcmp(reconParams->weightScaler_domain,"spatiallyVariant") == 0)
-    {
-        for (k_M = 0; k_M < N_M; ++k_M)
-        {
-            icdInfo[k_M].theta1_f /= icdInfo[k_M].wghtRecon_j;
-            icdInfo[k_M].theta2_f /= icdInfo[k_M].wghtRecon_j;
-        }
-    }
-    else if(strcmp(reconParams->weightScaler_domain,"spatiallyInvariant") == 0)
+    if(strcmp(reconParams->weightScaler_domain,"spatiallyInvariant") == 0)
     {
         for (k_M = 0; k_M < N_M; ++k_M)
         {
