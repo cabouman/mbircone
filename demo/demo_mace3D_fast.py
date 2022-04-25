@@ -50,6 +50,7 @@ denoiser_name = denoiser_type
 target_dir = './demo_data/'   
 # path to store output recon images
 save_path = './output/mace3D_fast/'  
+os.makedirs(save_path, exist_ok=True)
 
 # Geometry parameters
 dist_source_detector = 839.0472     # Distance between the X-ray source and the detector in units of ALU
@@ -186,7 +187,6 @@ print("Reconstruction shape = ", recon_shape)
 # ###########################################################################
 print("Post processing MACE reconstruction results ...")
 # Save recon results as a numpy array
-os.makedirs(save_path, exist_ok=True)
 np.save(os.path.join(save_path, "recon_mace.npy"), recon_mace)
 # load qGGMRF recon
 recon_qGGMRF = np.load(os.path.join(save_path, "recon_qGGMRF.npy"))

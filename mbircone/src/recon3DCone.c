@@ -273,8 +273,6 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 		 */
 		if (strcmp(reconParams->weightScaler_estimateMode,"errorSino") == 0)
 			sino->params.weightScaler_value = weightedNormSquared_e;
-		else if (strcmp(reconParams->weightScaler_estimateMode,"avgWghtRecon") == 0)
-			sino->params.weightScaler_value = computeAvgWghtRecon(img);
 		else if (strcmp(reconParams->weightScaler_estimateMode,"None") == 0)
 			sino->params.weightScaler_value = reconParams->weightScaler_value;
 		else

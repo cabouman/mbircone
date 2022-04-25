@@ -112,7 +112,6 @@ struct PathNames
     char lastChange[1000];
     char timeToChange[1000];
     char sysMatrix[1000];
-    char wghtRecon[1000];
     char projInput[1000];
     char projOutput[1000];
     char backprojlikeInput[1000];
@@ -163,7 +162,6 @@ struct Image
 {
     struct ImageParams params;
     float ***vox;           /* [N_x][N_y][N_z] */
-    float ***wghtRecon;     /* [N_x][N_y][N_z] */
     float ***vox_roi;       /* [N_x_roi][N_y_roi][N_z_roi] */
     float ***proxMapInput;  /* input, v, to the proximal operator prox_f(.)*/
                             /*    prox_f(v) = argmin_x{ f(x) + 1/2 ||x-v||^2 } */
@@ -327,7 +325,6 @@ struct ICDInfo3DCone
     float neighborsFace[6], neighborsEdge[12], neighborsVertex[8];
     float lastChange;
     float old_xj; /* current pixel value */
-    float wghtRecon_j;
 
     /**
      *      The following is arbitrary when "ICDStep3DCone" is called
@@ -410,10 +407,6 @@ void forwardProject3DCone( float ***Ax, float ***x, struct ImageParams *imgParam
 
 void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams, char mode);
 
-void initializeWghtRecon(struct SysMatrix *A, struct Sino *sino, struct Image *img, struct ReconParams *reconParams);
-
-float computeAvgWghtRecon(struct Image *img);
-    
 void computeSecondaryReconParams(struct ReconParams *reconParams, struct ImageParams *imgParams);
 
 void invertDoubleMatrix(float **A, float ** A_inv, int size);
