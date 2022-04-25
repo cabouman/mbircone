@@ -4,8 +4,8 @@
 
 cd ..
 pip install -r requirements.txt
-pip install .
 pip install -r demo/requirements_demo.txt
 pip install -r docs/requirements.txt 
+pip install .
 cd dev_scripts
 
