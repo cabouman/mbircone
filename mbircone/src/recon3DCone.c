@@ -257,8 +257,8 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
         else
             reconAux.relativeWeightedForwardError = sqrt(weightedNormSquared_e);
 
-        normSquared_e = computeNormSquaredFloatArray(&sino->e[0][0][0], N_beta*N_dv*N_dw);
-        normSquared_y = computeNormSquaredFloatArray(&sino->vox[0][0][0], N_beta*N_dv*N_dw);
+        normSquared_e = computeNormSquaredFloatArray(&sino->e[0], N_beta*N_dv*N_dw);
+        normSquared_y = computeNormSquaredFloatArray(&sino->vox[0], N_beta*N_dv*N_dw);
         reconAux.relativeUnweightedForwardError = sqrt(normSquared_e / normSquared_y);
 
 

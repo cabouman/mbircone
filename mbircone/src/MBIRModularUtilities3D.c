@@ -1,11 +1,11 @@
 #include "MBIRModularUtilities3D.h"
 
-void forwardProject3DCone( float ***Ax, float *x, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams)
+void forwardProject3DCone( float *Ax, float *x, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams)
 {
     long int j_u, j_x, j_y, i_beta, i_v, j_z, i_w;
     float B_ij, B_ij_times_x_j;
 
-    setFloatArray2Value( &Ax[0][0][0], sinoParams->N_beta*sinoParams->N_dv*sinoParams->N_dw, 0);
+    setFloatArray2Value( &Ax[0], sinoParams->N_beta*sinoParams->N_dv*sinoParams->N_dw, 0);
 
 
     #pragma omp parallel for private(j_x, j_y, j_u, i_v, B_ij, j_z, B_ij_times_x_j, i_w)
@@ -25,7 +25,7 @@ void forwardProject3DCone( float ***Ax, float *x, struct ImageParams *imgParams,
                         B_ij_times_x_j = B_ij * x[idx_3D_to_1D(j_x,j_y,j_z,imgParams->N_y,imgParams->N_z)];    
                         for (i_w = A->i_wstart[j_u][j_z]; i_w < A->i_wstart[j_u][j_z]+A->i_wstride[j_u][j_z]; ++i_w)
                         {
-                            Ax[i_beta][i_v][i_w] += B_ij_times_x_j * A->C_ij_scaler * A->C[j_u][j_z*A->i_wstride_max + i_w-A->i_wstart[j_u][j_z]];
+                            Ax[idx_3D_to_1D(i_beta,i_v,i_w,sinoParams->N_dv,sinoParams->N_dw)] += B_ij_times_x_j * A->C_ij_scaler * A->C[j_u][j_z*A->i_wstride_max + i_w-A->i_wstart[j_u][j_z]];
                         }
                     }
                 }
@@ -228,8 +228,7 @@ float computeRelativeRMSEFloatArray(float *arr1, float *arr2, long int len)
     return sqrt(numerator/denominator);
 }
 
-
-float computeSinogramWeightedNormSquared(struct Sino *sino, float ***arr)
+float computeSinogramWeightedNormSquared(struct Sino *sino, float *arr)
 {
     /**
      *                      1  ||     ||2   
@@ -248,7 +247,7 @@ float computeSinogramWeightedNormSquared(struct Sino *sino, float ***arr)
     for (i_v = 0; i_v < sino->params.N_dv; ++i_v)
     for (i_w = 0; i_w < sino->params.N_dw; ++i_w)
     {
-        normError += arr[i_beta][i_v][i_w] * sino->wgt[i_beta][i_v][i_w] * arr[i_beta][i_v][i_w];
+        normError += arr[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)] * sino->wgt[i_beta][i_v][i_w] * arr[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)];
     }
 
     num_mask = sino->params.N_beta * sino->params.N_dv * sino->params.N_dw;
@@ -397,11 +396,10 @@ void setUCharArray2Value(unsigned char *arr, long int len, unsigned char value)
     }
 }
 
-void*** allocateSinoData3DCone(struct SinoParams *params, int dataTypeSize)
+void* allocateSinoData3DCone(struct SinoParams *params, int dataTypeSize)
 {
-    return mem_alloc_3D(params->N_beta, params->N_dv, params->N_dw, dataTypeSize);
+    return mem_alloc_1D(params->N_beta*params->N_dv*params->N_dw, dataTypeSize);
 }
-
 
 void*** allocateImageData3DCone( struct ImageParams *params, int dataTypeSize, int isROI)
 {

@@ -41,7 +41,7 @@ void ICDStep3DCone(struct Sino *sino, struct Image *img, struct SysMatrix *A, st
 void prepareICDInfo(long int j_x, long int j_y, long int j_z, struct ICDInfo3DCone *icdInfo, struct Image *img, struct ReconAux *reconAux, struct ReconParams *reconParams)
 {
 	icdInfo->old_xj = img->vox[idx_3D_to_1D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)];
-	icdInfo->proxMapInput_j = img->proxMapInput[j_x][j_y][j_z];
+	icdInfo->proxMapInput_j = img->proxMapInput[idx_3D_to_1D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)];
 	icdInfo->j_x = j_x;
 	icdInfo->j_y = j_y;
 	icdInfo->j_z = j_z;
@@ -199,7 +199,7 @@ void computeTheta1Theta2ForwardTerm(struct Sino *sino, struct SysMatrix *A, stru
             {
             	A_ij = B_ij * A->C_ij_scaler * A->C[j_u][j_z*A->i_wstride_max + i_w-A->i_wstart[j_u][j_z]];
             	icdInfo->theta1_f -=		
-            							  sino->e[i_beta][i_v][i_w]
+            							  sino->e[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
             							* sino->wgt[i_beta][i_v][i_w]
             							* A_ij;
 
@@ -372,7 +372,7 @@ void updateErrorSinogram(struct Sino *sino, struct SysMatrix *A, struct ICDInfo3
             for (i_w = A->i_wstart[j_u][j_z]; i_w < A->i_wstart[j_u][j_z]+A->i_wstride[j_u][j_z]; ++i_w)
             {
             	
-            	sino->e[i_beta][i_v][i_w] -= 	
+            	sino->e[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)] -= 	
             									  B_ij
             									* A->C_ij_scaler * A->C[j_u][j_z*A->i_wstride_max + i_w-A->i_wstart[j_u][j_z]]
             									* icdInfo->Delta_xj;
@@ -460,9 +460,9 @@ float MAPCostForward(struct Sino *sino)
         {
             for (i_w = 0; i_w < sino->params.N_dw; ++i_w)
             {
-            	cost +=   sino->e[i_beta][i_v][i_w]
+            	cost +=   sino->e[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
             			* sino->wgt[i_beta][i_v][i_w]
-            			* sino->e[i_beta][i_v][i_w];
+            			* sino->e[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)];
             }
         }
     }
@@ -523,7 +523,7 @@ float MAPCostPrior_ProxMap(struct Image *img, struct ReconParams *reconParams)
             for (j_z = 0; j_z < img->params.N_z; ++j_z)
             {
                 //diff_voxel = img->vox[j_x][j_y][j_z] - img->proxMapInput[j_x][j_y][j_z];
-                diff_voxel = img->vox[idx_3D_to_1D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)] - img->proxMapInput[j_x][j_y][j_z];
+                diff_voxel = img->vox[idx_3D_to_1D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)] - img->proxMapInput[idx_3D_to_1D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)];
                 cost += diff_voxel*diff_voxel*isInsideMask(j_x, j_y, img->params.N_x, img->params.N_y);
             }
         }
@@ -909,7 +909,7 @@ void computeTheta1Theta2ForwardTermGroup(struct Sino *sino, struct SysMatrix *A,
 		            	A_ij = B_ij * A->C_ij_scaler * A->C[j_u][j_z*A->i_wstride_max + i_w-A->i_wstart[j_u][j_z]];
 		            	
 		            	parallelAux->partialTheta[threadID][k_M].t1 -=	 
-		            													  sino->e[i_beta][i_v][i_w]
+		            													  sino->e[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
 		            													* sino->wgt[i_beta][i_v][i_w]
 		            													* A_ij;
 
@@ -995,7 +995,7 @@ void updateErrorSinogramGroup(struct Sino *sino, struct SysMatrix *A, struct ICD
 	            for (i_w = A->i_wstart[j_u][j_z]; i_w < A->i_wstart[j_u][j_z]+A->i_wstride[j_u][j_z]; ++i_w)
 	            {
 	            	
-	            	sino->e[i_beta][i_v][i_w] -= 	
+	            	sino->e[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)] -= 	
 	            									  B_ij
 	            									* A->C_ij_scaler * A->C[j_u][j_z*A->i_wstride_max + i_w-A->i_wstart[j_u][j_z]]
 	            									* icdInfo[k_M].Delta_xj;
