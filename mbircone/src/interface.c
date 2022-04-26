@@ -49,15 +49,12 @@ void recon(float *x, float *y, float *wght, float *proxmap_input,
     char dummy_var;
     fprintf(stdout, "Ready to allocate memory in C. Press any char to continue ... \n");
     scanf("%c",&dummy_var);	
-	/* Allocate 3D image from 1D vector */
 	img.vox = x;
-	//img.proxMapInput = (float ***)mem_alloc_float3D_from_flat(proxmap_input, imgParams.N_x, imgParams.N_y, imgParams.N_z);
 	img.proxMapInput = proxmap_input;
 
-	/* Allocate 3D sino from 1D vector */
-	//sino.vox = (float ***)mem_alloc_float3D_from_flat(y, sinoParams.N_beta, sinoParams.N_dv, sinoParams.N_dw);
 	sino.vox = y;
-    sino.wgt = (float ***)mem_alloc_float3D_from_flat(wght, sinoParams.N_beta, sinoParams.N_dv, sinoParams.N_dw);
+    //sino.wgt = (float ***)mem_alloc_float3D_from_flat(wght, sinoParams.N_beta, sinoParams.N_dv, sinoParams.N_dw);
+    sino.wgt = wght;
     /* Allocate error sinogram */
     //sino.e = (float***)allocateSinoData3DCone(&sino.params, sizeof(float));
     sino.e = (float*)allocateSinoData3DCone(&sino.params, sizeof(float));
@@ -93,7 +90,6 @@ void recon(float *x, float *y, float *wght, float *proxmap_input,
     freeSysMatrix(&A);
 	
 	/* Free 2D pointer array for 3D data */
-	mem_free_2D((void**)sino.wgt);
 	// printf("Done free_2D\n");
 
 	/* Free allocated data */

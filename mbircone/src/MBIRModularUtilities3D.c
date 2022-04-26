@@ -247,7 +247,7 @@ float computeSinogramWeightedNormSquared(struct Sino *sino, float *arr)
     for (i_v = 0; i_v < sino->params.N_dv; ++i_v)
     for (i_w = 0; i_w < sino->params.N_dw; ++i_w)
     {
-        normError += arr[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)] * sino->wgt[i_beta][i_v][i_w] * arr[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)];
+        normError += arr[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)] * sino->wgt[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)] * arr[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)];
     }
 
     num_mask = sino->params.N_beta * sino->params.N_dv * sino->params.N_dw;

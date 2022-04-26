@@ -210,7 +210,7 @@ struct Sino
 {
     struct SinoParams params;
     float *vox;       /* [N_beta][N_dv][N_dw] */
-    WEIGHTDATATYPE ***wgt;
+    WEIGHTDATATYPE *wgt;
     float *e;
     float ***projOutput;
     float ***backprojlikeInput;

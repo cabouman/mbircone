@@ -200,12 +200,12 @@ void computeTheta1Theta2ForwardTerm(struct Sino *sino, struct SysMatrix *A, stru
             	A_ij = B_ij * A->C_ij_scaler * A->C[j_u][j_z*A->i_wstride_max + i_w-A->i_wstart[j_u][j_z]];
             	icdInfo->theta1_f -=		
             							  sino->e[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
-            							* sino->wgt[i_beta][i_v][i_w]
+            							* sino->wgt[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
             							* A_ij;
 
             	icdInfo->theta2_f +=	
             							  A_ij
-            							* sino->wgt[i_beta][i_v][i_w]
+            							* sino->wgt[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
             							* A_ij;
             }
         }
@@ -461,7 +461,7 @@ float MAPCostForward(struct Sino *sino)
             for (i_w = 0; i_w < sino->params.N_dw; ++i_w)
             {
             	cost +=   sino->e[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
-            			* sino->wgt[i_beta][i_v][i_w]
+            			* sino->wgt[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
             			* sino->e[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)];
             }
         }
@@ -910,12 +910,12 @@ void computeTheta1Theta2ForwardTermGroup(struct Sino *sino, struct SysMatrix *A,
 		            	
 		            	parallelAux->partialTheta[threadID][k_M].t1 -=	 
 		            													  sino->e[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
-		            													* sino->wgt[i_beta][i_v][i_w]
+		            													* sino->wgt[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
 		            													* A_ij;
 
 		            	parallelAux->partialTheta[threadID][k_M].t2 +=	
 		            													  A_ij
-		            													* sino->wgt[i_beta][i_v][i_w]
+		            													* sino->wgt[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
 		            													* A_ij;
 
 		            }
