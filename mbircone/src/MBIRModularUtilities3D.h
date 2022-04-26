@@ -530,4 +530,6 @@ void printReconParams(struct ReconParams *params);
 
 void printSysMatrixParams(struct SysMatrix *A);
 
+int idx_3D_to_1D(int i_x, int i_y, int i_z, size_t Nx, size_t Ny, size_t Nz);
+
 #endif /* MBIR_MODULAR_UTILITIES_3D_H */
