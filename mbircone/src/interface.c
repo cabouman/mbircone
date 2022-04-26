@@ -27,7 +27,7 @@ void AmatrixComputeToFile(float *angles,
 
 }
 
-void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
+void recon(float *x, float *y, float *wght, float *proxmap_input,
 	struct SinoParams sinoParams, struct ImageParams imgParams, struct ReconParams reconParams, 
 	char *Amatrix_fname)
 {
@@ -63,10 +63,6 @@ void recon(float *x, float *y, float *wght, float *x_init, float *proxmap_input,
     img.timeToChange = (unsigned char***) mem_alloc_3D(img.params.N_x, img.params.N_y, reconParams.numZiplines, sizeof(unsigned char));
 
 
-    /* Initialize image */
-    for(i=0; i<imgParams.N_x*imgParams.N_y*imgParams.N_z; i++){
-		x[i] = x_init[i];
-	}
 	applyMask(img.vox, img.params.N_x, img.params.N_y, img.params.N_z);
 
      /* Initialize error sinogram e = y - Ax */

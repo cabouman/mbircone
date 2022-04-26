@@ -115,7 +115,7 @@ cdef extern from "./src/interface.h":
     void AmatrixComputeToFile(float *angles, SinoParams c_sinoparams, ImageParams c_imgparams, 
         char *Amatrix_fname, char verbose);
 
-    void recon(float *x, float *sino, float *wght, float *x_init, float *proxmap_input,
+    void recon(float *x, float *sino, float *wght, float *proxmap_input,
 	SinoParams c_sinoparams, ImageParams c_imgparams, ReconParams c_reconparams,
 	char *Amatrix_fname);
 
@@ -272,15 +272,13 @@ def recon_cy(sino, wght, x_init, proxmap_input,
     # recon shape: N_x N_y N_z (source-detector-line, channels, slices)
 
     cdef cnp.ndarray[float, ndim=3, mode="c"] py_x
-    py_x = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']), dtype=ctypes.c_float)
     py_sino = np.ascontiguousarray(sino, dtype=np.single)
     py_wght = np.ascontiguousarray(wght, dtype=np.single)
-    py_x_init = np.ascontiguousarray(x_init, dtype=np.single)
+    py_x = np.ascontiguousarray(x_init, dtype=np.single)
     py_proxmap_input = np.ascontiguousarray(proxmap_input, dtype=np.single)
 
     cdef cnp.ndarray[float, ndim=3, mode="c"] cy_sino = py_sino
     cdef cnp.ndarray[float, ndim=3, mode="c"] cy_wght = py_wght
-    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_x_init = py_x_init
     cdef cnp.ndarray[float, ndim=3, mode="c"] cy_proxmap_input = py_proxmap_input
     cdef cnp.ndarray[char, ndim=1, mode="c"] c_Amatrix_fname = string_to_char_array(py_Amatrix_fname)
     cdef cnp.ndarray[char, ndim=1, mode="c"] cy_relativeChangeMode = string_to_char_array(reconparams["relativeChangeMode"])
@@ -306,7 +304,6 @@ def recon_cy(sino, wght, x_init, proxmap_input,
     recon(&py_x[0,0,0],
           &cy_sino[0,0,0],
           &cy_wght[0,0,0],
-          &cy_x_init[0,0,0],
           &cy_proxmap_input[0,0,0],
           c_sinoparams,
           c_imgparams,
