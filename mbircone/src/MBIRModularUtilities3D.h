@@ -161,7 +161,8 @@ struct ImageParams
 struct Image
 {
     struct ImageParams params;
-    float ***vox;           /* [N_x][N_y][N_z] */
+    //float ***vox;           /* [N_x][N_y][N_z] */
+    float *vox;           /* [N_x][N_y][N_z] */
     float ***vox_roi;       /* [N_x_roi][N_y_roi][N_z_roi] */
     float ***proxMapInput;  /* input, v, to the proximal operator prox_f(.)*/
                             /*    prox_f(v) = argmin_x{ f(x) + 1/2 ||x-v||^2 } */
@@ -403,7 +404,7 @@ struct ReconAux
 };
 
 
-void forwardProject3DCone( float ***Ax, float ***x, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams);
+void forwardProject3DCone( float ***Ax, float *x, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams);
 
 void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams, char mode);
 
@@ -423,7 +424,9 @@ long int computeNumVoxelsInImageMask(struct Image *img);
 
 void copyImage2ROI(struct Image *img);
 
-void applyMask(float ***arr, long int N1, long int N2, long int N3);
+void applyMask(float *arr, long int N1, long int N2, long int N3);
+
+void applyMask3D(float ***arr, long int N1, long int N2, long int N3);
 
 void floatArray_z_equals_aX_plus_bY(float *Z, float a, float *X, float b, float *Y, long int len);
 
@@ -530,6 +533,6 @@ void printReconParams(struct ReconParams *params);
 
 void printSysMatrixParams(struct SysMatrix *A);
 
-int idx_3D_to_1D(int i_x, int i_y, int i_z, size_t Nx, size_t Ny, size_t Nz);
+int idx_3D_to_1D(int i_x, int i_y, int i_z, size_t Ny, size_t Nz);
 
 #endif /* MBIR_MODULAR_UTILITIES_3D_H */

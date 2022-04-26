@@ -46,32 +46,42 @@ void recon(float *x, float *y, float *wght, float *proxmap_input,
 
 	/* Read system matrix from disk */
 	readSysMatrix(Amatrix_fname, &sino.params, &img.params, &A);
-
+    char dummy_var;
+    fprintf(stdout, "Ready to allocate memory in C. Press any char to continue ... \n");
+    scanf("%c",&dummy_var);	
 	/* Allocate 3D image from 1D vector */
-	img.vox = (float ***)mem_alloc_float3D_from_flat(x, imgParams.N_x, imgParams.N_y, imgParams.N_z);
+	//img.vox = (float ***)mem_alloc_float3D_from_flat(x, imgParams.N_x, imgParams.N_y, imgParams.N_z);
+	img.vox = x;
 	img.proxMapInput = (float ***)mem_alloc_float3D_from_flat(proxmap_input, imgParams.N_x, imgParams.N_y, imgParams.N_z);
 
 	/* Allocate 3D sino from 1D vector */
 	sino.vox = (float ***)mem_alloc_float3D_from_flat(y, sinoParams.N_beta, sinoParams.N_dv, sinoParams.N_dw);
 	sino.wgt = (float ***)mem_alloc_float3D_from_flat(wght, sinoParams.N_beta, sinoParams.N_dv, sinoParams.N_dw);
-
-	/* Allocate error sinogram */
+    /* Allocate error sinogram */
     sino.e = (float***)allocateSinoData3DCone(&sino.params, sizeof(float));
 
 	/* Allocate other image data */
     img.lastChange = (float***) mem_alloc_3D(img.params.N_x, img.params.N_y, reconParams.numZiplines, sizeof(float));
     img.timeToChange = (unsigned char***) mem_alloc_3D(img.params.N_x, img.params.N_y, reconParams.numZiplines, sizeof(unsigned char));
 
+    fprintf(stdout, "Done allocating memory in C. Press any char to continue ... \n");
+    scanf("%c",&dummy_var);	
 
 	applyMask(img.vox, img.params.N_x, img.params.N_y, img.params.N_z);
+    fprintf(stdout, "Done applying mask. Press any char to continue ... \n");
+    scanf("%c",&dummy_var);	
 
      /* Initialize error sinogram e = y - Ax */
     forwardProject3DCone( sino.e, img.vox, &img.params, &A, &sino.params); /* e = Ax */
     floatArray_z_equals_aX_plus_bY(&sino.e[0][0][0], 1.0, &sino.vox[0][0][0], -1.0, &sino.e[0][0][0], sino.params.N_beta*sino.params.N_dv*sino.params.N_dw); /* e = 1.0 * y + (-1.0) * e */
+    fprintf(stdout, "Done initializing error sinogram. Press any char to continue ... \n");
+    scanf("%c",&dummy_var);	
 
     /* Initialize other image data */
     setFloatArray2Value(&img.lastChange[0][0][0], img.params.N_x*img.params.N_y*reconParams.numZiplines, 0.0);
     setUCharArray2Value(&img.timeToChange[0][0][0], img.params.N_x*img.params.N_y*reconParams.numZiplines, 0);
+    fprintf(stdout, "Done initializing other image data. Ready to enter MBIR3DCone. Press any char to continue ... \n");
+    scanf("%c",&dummy_var);	
 
     /* 
     Reconstruct 
@@ -80,7 +90,6 @@ void recon(float *x, float *y, float *wght, float *proxmap_input,
     freeSysMatrix(&A);
 	
 	/* Free 2D pointer array for 3D data */
-	mem_free_2D((void**)img.vox);
 	mem_free_2D((void**)img.proxMapInput);
 	mem_free_2D((void**)sino.vox);
 	mem_free_2D((void**)sino.wgt);
@@ -99,24 +108,24 @@ void forwardProject(float *y, float *x,
 	char *Amatrix_fname)
 {
 	
-	float ***img_3D, ***sino_3D;
+	//float ***img_3D;
+	/* Allocate 3D image from 1D vector */
+	//img_3D = (float ***)mem_alloc_float3D_from_flat(x, imgParams.N_x, imgParams.N_y, imgParams.N_z);
+
+    float ***sino_3D;
     struct SysMatrix A;
 
-    /* Allocate 3D image from 1D vector */
-	img_3D = (float ***)mem_alloc_float3D_from_flat(x, imgParams.N_x, imgParams.N_y, imgParams.N_z);
-
-	/* Allocate 3D sino from 1D vector */
+    /* Allocate 3D sino from 1D vector */
 	sino_3D = (float ***)mem_alloc_float3D_from_flat(y, sinoParams.N_beta, sinoParams.N_dv, sinoParams.N_dw);
-
 	/* Read system matrix from disk */
 	readSysMatrix(Amatrix_fname, &sinoParams, &imgParams, &A);
 
-	forwardProject3DCone( sino_3D, img_3D, &imgParams, &A, &sinoParams);
+	forwardProject3DCone(sino_3D, x, &imgParams, &A, &sinoParams);
 
 	freeSysMatrix(&A);
 
+	//mem_free_2D((void**)img_3D);
 	mem_free_2D((void**)sino_3D);
-	mem_free_2D((void**)img_3D);
 	// printf("Done free_2D\n");
 
 }

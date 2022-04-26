@@ -445,7 +445,7 @@ void readSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageParam
     totsize += keepReadingFromBinaryFile(fp, &(A->i_wstart[0][0]),    N_u*N_z,                sizeof(INDEXSTARTSTOPDATATYPE),   fName);
     totsize += keepReadingFromBinaryFile(fp, &(A->i_wstride[0][0]),   N_u*N_z,                sizeof(INDEXSTRIDEDATATYPE),   fName);
     
-    /*printf("Total size read = %e GB\n", totsize/1e9);*/
+    printf("Total size read = %e GB\n", totsize/1e9);
 
     fclose(fp);
     

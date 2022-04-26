@@ -40,7 +40,7 @@ void ICDStep3DCone(struct Sino *sino, struct Image *img, struct SysMatrix *A, st
 
 void prepareICDInfo(long int j_x, long int j_y, long int j_z, struct ICDInfo3DCone *icdInfo, struct Image *img, struct ReconAux *reconAux, struct ReconParams *reconParams)
 {
-	icdInfo->old_xj = img->vox[j_x][j_y][j_z];
+	icdInfo->old_xj = img->vox[idx_3D_to_1D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)];
 	icdInfo->proxMapInput_j = img->proxMapInput[j_x][j_y][j_z];
 	icdInfo->j_x = j_x;
 	icdInfo->j_y = j_y;
@@ -98,45 +98,74 @@ void extractNeighbors(struct ICDInfo3DCone *icdInfo, struct Image *img, struct R
 	if (reconParams->bFace>=0)
 	{
 		/* Face Neighbors (primal) */
-		icdInfo->neighborsFace[0] = img->vox[PLx][j_y][j_z];
-		icdInfo->neighborsFace[1] = img->vox[j_x][PLy][j_z];
-		icdInfo->neighborsFace[2] = img->vox[j_x][j_y][PLz];
-		/* Face Neighbors (opposite) */
-		icdInfo->neighborsFace[3] = img->vox[MIx][j_y][j_z];
-		icdInfo->neighborsFace[4] = img->vox[j_x][MIy][j_z];
-		icdInfo->neighborsFace[5] = img->vox[j_x][j_y][MIz];
+		//icdInfo->neighborsFace[0] = img->vox[PLx][j_y][j_z];
+        //icdInfo->neighborsFace[1] = img->vox[j_x][PLy][j_z];
+        //icdInfo->neighborsFace[2] = img->vox[j_x][j_y][PLz];
+	    icdInfo->neighborsFace[0] = img->vox[idx_3D_to_1D(PLx,j_y,j_z,img->params.N_y,img->params.N_z)];	
+        icdInfo->neighborsFace[1] = img->vox[idx_3D_to_1D(j_x,PLy,j_z,img->params.N_y,img->params.N_z)];
+        icdInfo->neighborsFace[2] = img->vox[idx_3D_to_1D(j_x,j_y,PLz,img->params.N_y,img->params.N_z)];
+        /* Face Neighbors (opposite) */
+		//icdInfo->neighborsFace[3] = img->vox[MIx][j_y][j_z];
+        //icdInfo->neighborsFace[4] = img->vox[j_x][MIy][j_z];
+		//icdInfo->neighborsFace[5] = img->vox[j_x][j_y][MIz];
+        icdInfo->neighborsFace[3] = img->vox[idx_3D_to_1D(MIx,j_y,j_z,img->params.N_y,img->params.N_z)];
+        icdInfo->neighborsFace[4] = img->vox[idx_3D_to_1D(j_x,MIy,j_z,img->params.N_y,img->params.N_z)];
+        icdInfo->neighborsFace[5] = img->vox[idx_3D_to_1D(j_x,j_y,MIz,img->params.N_y,img->params.N_z)];
 	}
 
 	if (reconParams->bEdge>=0)
 	{
 		/* Edge Neighbors (primal) */
-		icdInfo->neighborsEdge[ 0] = img->vox[j_x][PLy][PLz];
-		icdInfo->neighborsEdge[ 1] = img->vox[j_x][PLy][MIz];
-		icdInfo->neighborsEdge[ 2] = img->vox[PLx][j_y][PLz];
-		icdInfo->neighborsEdge[ 3] = img->vox[PLx][j_y][MIz];
-		icdInfo->neighborsEdge[ 4] = img->vox[PLx][PLy][j_z];
-		icdInfo->neighborsEdge[ 5] = img->vox[PLx][MIy][j_z];
+		//icdInfo->neighborsEdge[ 0] = img->vox[j_x][PLy][PLz];
+	    //icdInfo->neighborsEdge[ 1] = img->vox[j_x][PLy][MIz];
+		//icdInfo->neighborsEdge[ 2] = img->vox[PLx][j_y][PLz];
+		//icdInfo->neighborsEdge[ 3] = img->vox[PLx][j_y][MIz];
+		//icdInfo->neighborsEdge[ 4] = img->vox[PLx][PLy][j_z];
+		//icdInfo->neighborsEdge[ 5] = img->vox[PLx][MIy][j_z];
+
+        icdInfo->neighborsEdge[0] = img->vox[idx_3D_to_1D(j_x,PLy,PLz,img->params.N_y,img->params.N_z)];	
+        icdInfo->neighborsEdge[1] = img->vox[idx_3D_to_1D(j_x,PLy,MIz,img->params.N_y,img->params.N_z)];	
+        icdInfo->neighborsEdge[2] = img->vox[idx_3D_to_1D(PLx,j_y,PLz,img->params.N_y,img->params.N_z)];	
+        icdInfo->neighborsEdge[3] = img->vox[idx_3D_to_1D(PLx,j_y,MIz,img->params.N_y,img->params.N_z)];	
+        icdInfo->neighborsEdge[4] = img->vox[idx_3D_to_1D(PLx,PLy,j_z,img->params.N_y,img->params.N_z)];	
+        icdInfo->neighborsEdge[5] = img->vox[idx_3D_to_1D(PLx,MIy,j_z,img->params.N_y,img->params.N_z)];	
 		/* Edge Neighbors (opposite) */
-		icdInfo->neighborsEdge[ 6] = img->vox[j_x][MIy][MIz];
-		icdInfo->neighborsEdge[ 7] = img->vox[j_x][MIy][PLz];
-		icdInfo->neighborsEdge[ 8] = img->vox[MIx][j_y][MIz];
-		icdInfo->neighborsEdge[ 9] = img->vox[MIx][j_y][PLz];
-		icdInfo->neighborsEdge[10] = img->vox[MIx][MIy][j_z];
-		icdInfo->neighborsEdge[11] = img->vox[MIx][PLy][j_z];
+		//icdInfo->neighborsEdge[ 6] = img->vox[j_x][MIy][MIz];
+		//icdInfo->neighborsEdge[ 7] = img->vox[j_x][MIy][PLz];
+		//icdInfo->neighborsEdge[ 8] = img->vox[MIx][j_y][MIz];
+		//icdInfo->neighborsEdge[ 9] = img->vox[MIx][j_y][PLz];
+		//icdInfo->neighborsEdge[10] = img->vox[MIx][MIy][j_z];
+		//icdInfo->neighborsEdge[11] = img->vox[MIx][PLy][j_z];
+		icdInfo->neighborsEdge[6] = img->vox[idx_3D_to_1D(j_x,MIy,MIz,img->params.N_y,img->params.N_z)];	
+        icdInfo->neighborsEdge[7] = img->vox[idx_3D_to_1D(j_x,MIy,PLz,img->params.N_y,img->params.N_z)];	
+        icdInfo->neighborsEdge[8] = img->vox[idx_3D_to_1D(MIx,j_y,MIz,img->params.N_y,img->params.N_z)];	
+        icdInfo->neighborsEdge[9] = img->vox[idx_3D_to_1D(MIx,j_y,PLz,img->params.N_y,img->params.N_z)];	
+        icdInfo->neighborsEdge[10] = img->vox[idx_3D_to_1D(MIx,MIy,j_z,img->params.N_y,img->params.N_z)];	
+        icdInfo->neighborsEdge[11] = img->vox[idx_3D_to_1D(MIx,PLy,j_z,img->params.N_y,img->params.N_z)];	
+
 	}
 
 	if (reconParams->bVertex>=0)
 	{
 		/* Vertex Neighbors (primal) */
-		icdInfo->neighborsVertex[0] = img->vox[PLx][PLy][PLz];
-		icdInfo->neighborsVertex[1] = img->vox[PLx][PLy][MIz];
-		icdInfo->neighborsVertex[2] = img->vox[PLx][MIy][PLz];
-		icdInfo->neighborsVertex[3] = img->vox[PLx][MIy][MIz];
-		/* Vertex Neighbors (opposite) */
-		icdInfo->neighborsVertex[4] = img->vox[MIx][MIy][MIz];
-		icdInfo->neighborsVertex[5] = img->vox[MIx][MIy][PLz];
-		icdInfo->neighborsVertex[6] = img->vox[MIx][PLy][MIz];
-		icdInfo->neighborsVertex[7] = img->vox[MIx][PLy][PLz];
+		//icdInfo->neighborsVertex[0] = img->vox[PLx][PLy][PLz];
+		//icdInfo->neighborsVertex[1] = img->vox[PLx][PLy][MIz];
+		//icdInfo->neighborsVertex[2] = img->vox[PLx][MIy][PLz];
+		//icdInfo->neighborsVertex[3] = img->vox[PLx][MIy][MIz];
+		icdInfo->neighborsVertex[0] = img->vox[idx_3D_to_1D(PLx,PLy,PLz,img->params.N_y,img->params.N_z)];	
+		icdInfo->neighborsVertex[1] = img->vox[idx_3D_to_1D(PLx,PLy,MIz,img->params.N_y,img->params.N_z)];	
+		icdInfo->neighborsVertex[2] = img->vox[idx_3D_to_1D(PLx,MIy,PLz,img->params.N_y,img->params.N_z)];	
+		icdInfo->neighborsVertex[3] = img->vox[idx_3D_to_1D(PLx,MIy,MIz,img->params.N_y,img->params.N_z)];	
+        /* Vertex Neighbors (opposite) */
+		//icdInfo->neighborsVertex[4] = img->vox[MIx][MIy][MIz];
+		//icdInfo->neighborsVertex[5] = img->vox[MIx][MIy][PLz];
+		//icdInfo->neighborsVertex[6] = img->vox[MIx][PLy][MIz];
+		//icdInfo->neighborsVertex[7] = img->vox[MIx][PLy][PLz];
+		icdInfo->neighborsVertex[4] = img->vox[idx_3D_to_1D(MIx,MIy,MIz,img->params.N_y,img->params.N_z)];	
+		icdInfo->neighborsVertex[5] = img->vox[idx_3D_to_1D(MIx,MIy,PLz,img->params.N_y,img->params.N_z)];	
+		icdInfo->neighborsVertex[6] = img->vox[idx_3D_to_1D(MIx,PLy,MIz,img->params.N_y,img->params.N_z)];	
+		icdInfo->neighborsVertex[7] = img->vox[idx_3D_to_1D(MIx,PLy,PLz,img->params.N_y,img->params.N_z)];	
+
 	}
 
 }
@@ -355,7 +384,8 @@ void updateErrorSinogram(struct Sino *sino, struct SysMatrix *A, struct ICDInfo3
 void updateIterationStats(struct ReconAux *reconAux, struct ICDInfo3DCone *icdInfo, struct Image *img)
 {
 	reconAux->TotalValueChange += fabs(icdInfo->Delta_xj);
-	reconAux->TotalVoxelValue += _MAX_(img->vox[icdInfo->j_x][icdInfo->j_y][icdInfo->j_z], icdInfo->old_xj);
+	//reconAux->TotalVoxelValue += _MAX_(img->vox[icdInfo->j_x][icdInfo->j_y][icdInfo->j_z], icdInfo->old_xj);
+	reconAux->TotalVoxelValue += _MAX_(img->vox[idx_3D_to_1D(icdInfo->j_x,icdInfo->j_y,icdInfo->j_z,img->params.N_y,img->params.N_z)], icdInfo->old_xj);
 	reconAux->NumUpdatedVoxels++;
 }
 
@@ -464,7 +494,7 @@ float MAPCostPrior_QGGMRF(struct Image *img, struct ReconParams *reconParams)
 			icdInfo.j_y = j_y;
 			icdInfo.j_z = j_z;
 			extractNeighbors(&icdInfo, img, reconParams);
-			icdInfo.old_xj = img->vox[j_x][j_y][j_z];
+			icdInfo.old_xj = img->vox[idx_3D_to_1D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)];
 			temp = MAPCostPrior_QGGMRFSingleVoxel_HalfNeighborhood(&icdInfo, reconParams);
 			cost += temp;
 		}
@@ -492,7 +522,8 @@ float MAPCostPrior_ProxMap(struct Image *img, struct ReconParams *reconParams)
         {
             for (j_z = 0; j_z < img->params.N_z; ++j_z)
             {
-                diff_voxel = img->vox[j_x][j_y][j_z] - img->proxMapInput[j_x][j_y][j_z];
+                //diff_voxel = img->vox[j_x][j_y][j_z] - img->proxMapInput[j_x][j_y][j_z];
+                diff_voxel = img->vox[idx_3D_to_1D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)] - img->proxMapInput[j_x][j_y][j_z];
                 cost += diff_voxel*diff_voxel*isInsideMask(j_x, j_y, img->params.N_x, img->params.N_y);
             }
         }
@@ -645,7 +676,8 @@ void computeDeltaXjAndUpdate(struct ICDInfo3DCone *icdInfo, struct ReconParams *
 	 * 		x_j <- x_j + Delta_xj
 	 */
 
-	img->vox[icdInfo->j_x][icdInfo->j_y][icdInfo->j_z] 			+= icdInfo->Delta_xj;
+	//img->vox[icdInfo->j_x][icdInfo->j_y][icdInfo->j_z] 			+= icdInfo->Delta_xj;
+	img->vox[idx_3D_to_1D(icdInfo->j_x,icdInfo->j_y,icdInfo->j_z,img->params.N_y,img->params.N_z)] += icdInfo->Delta_xj;
 
 }
 
@@ -686,7 +718,8 @@ void updateIterationStatsGroup(struct ReconAux *reconAux, struct ICDInfo3DCone *
 		indexZiplines = partialZipline_computeZiplineIndex(j_z, reconParams->numVoxelsPerZipline);
 
 		absDelta = fabs(icdInfo->Delta_xj);
-		totValue = _MAX_(img->vox[j_x][j_y][j_z], icdInfo->old_xj);
+		//totValue = _MAX_(img->vox[j_x][j_y][j_z], icdInfo->old_xj);
+		totValue = _MAX_(img->vox[idx_3D_to_1D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)], icdInfo->old_xj);
 
 		reconAux->TotalValueChange 	+= absDelta;
 		reconAux->TotalVoxelValue 	+= totValue;
@@ -748,7 +781,8 @@ float computeRelUpdate(struct ReconAux *reconAux, struct ReconParams *reconParam
 		}
 		else if (strcmp(reconParams->relativeChangeMode, "percentile")==0)
 		{
-			scaler = prctile_copyFast(&img->vox[0][0][0], img->params.N_x*img->params.N_y*img->params.N_z,  reconParams->relativeChangePercentile, subsampleFactor);
+			//scaler = prctile_copyFast(&img->vox[0][0][0], img->params.N_x*img->params.N_y*img->params.N_z,  reconParams->relativeChangePercentile, subsampleFactor);
+			scaler = prctile_copyFast(&img->vox[0], img->params.N_x*img->params.N_y*img->params.N_z,  reconParams->relativeChangePercentile, subsampleFactor);
 			relUpdate = AvgValueChange / scaler;
 		}
 		else

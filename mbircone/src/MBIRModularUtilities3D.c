@@ -1,12 +1,6 @@
-
-
 #include "MBIRModularUtilities3D.h"
 
-
-
-
-
-void forwardProject3DCone( float ***Ax, float ***x, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams)
+void forwardProject3DCone( float ***Ax, float *x, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams)
 {
     long int j_u, j_x, j_y, i_beta, i_v, j_z, i_w;
     float B_ij, B_ij_times_x_j;
@@ -28,7 +22,7 @@ void forwardProject3DCone( float ***Ax, float ***x, struct ImageParams *imgParam
                     B_ij = A->B_ij_scaler * A->B[j_x][j_y][i_beta*A->i_vstride_max + i_v-A->i_vstart[j_x][j_y][i_beta]];
                     for (j_z = 0; j_z <= imgParams->N_z-1; ++j_z)
                     {
-                        B_ij_times_x_j = B_ij * x[j_x][j_y][j_z];    
+                        B_ij_times_x_j = B_ij * x[idx_3D_to_1D(j_x,j_y,j_z,imgParams->N_y,imgParams->N_z)];    
                         for (i_w = A->i_wstart[j_u][j_z]; i_w < A->i_wstart[j_u][j_z]+A->i_wstride[j_u][j_z]; ++i_w)
                         {
                             Ax[i_beta][i_v][i_w] += B_ij_times_x_j * A->C_ij_scaler * A->C[j_u][j_z*A->i_wstride_max + i_w-A->i_wstart[j_u][j_z]];
@@ -328,14 +322,14 @@ void copyImage2ROI(struct Image *img)
             for (j_z = j_zstart; j_z <= j_zstop; ++j_z)
             {
                 img->vox_roi[j_x-j_xstart][j_y-j_ystart][j_z-j_zstart] = 
-                          img->vox[j_x][j_y][j_z]
+                          img->vox[idx_3D_to_1D(j_x,j_y,j_z,img->params.N_y, img->params.N_z)]
                         * isInsideMask(j_x-img->params.j_xstart_roi, j_y-img->params.j_ystart_roi, N_x_roi, N_y_roi);
             }
         }
     }
 }
 
-void applyMask(float ***arr, long int N1, long int N2, long int N3)
+void applyMask3D(float ***arr, long int N1, long int N2, long int N3)
 {
     long int i1, i2, i3;
     int b;
@@ -348,6 +342,25 @@ void applyMask(float ***arr, long int N1, long int N2, long int N3)
             for (i3 = 0; i3 < N3; ++i3)
             {
                 arr[i1][i2][i3] *= b;
+            }
+
+        }
+    }
+}
+
+void applyMask(float *arr, long int N1, long int N2, long int N3)
+{
+    long int i1, i2, i3;
+    int b;
+
+    for (i1 = 0; i1 < N1; ++i1)
+    {
+        for (i2 = 0; i2 < N2; ++i2)
+        {
+            b = isInsideMask(i1, i2, N1, N2);
+            for (i3 = 0; i3 < N3; ++i3)
+            {
+                arr[idx_3D_to_1D(i1,i2,i3,N2,N3)] *= b;
             }
 
         }
@@ -1047,7 +1060,7 @@ void printSysMatrixParams(struct SysMatrix *A)
 
 }
 
-int idx_3D_to_1D(int i_x, int i_y, int i_z, size_t Nx, size_t Ny, size_t Nz)
+int idx_3D_to_1D(int i_x, int i_y, int i_z, size_t Ny, size_t Nz)
 {
     return i_x*Ny*Nz+i_y*Nz+i_z;
 }
