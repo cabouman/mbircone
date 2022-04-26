@@ -665,7 +665,7 @@ def recon(sino, angles, dist_source_detector, magnification,
     if prox_image is None:
         reconparams['priorWeight_QGGMRF'] = 1
         reconparams['priorWeight_proxMap'] = -1
-        proxmap_input = np.zeros((imgparams['N_x'], imgparams['N_y'], imgparams['N_z']))
+        prox_image = np.zeros((imgparams['N_x'], imgparams['N_y'], imgparams['N_z']))
         reconparams['sigma_lambda'] = 1
     else:
         reconparams['priorWeight_QGGMRF'] = -1
@@ -673,11 +673,12 @@ def recon(sino, angles, dist_source_detector, magnification,
         if sigma_p is None:
             sigma_p = auto_sigma_p(sino, delta_pixel_detector, sharpness)
         reconparams['sigma_lambda'] = sigma_p
-        proxmap_input = np.swapaxes(prox_image, 0, 2)
+        prox_image = np.swapaxes(prox_image, 0, 2)
 
     sino = np.swapaxes(sino, 1, 2)
     weights = np.swapaxes(weights, 1, 2)
-    x = ci.recon_cy(sino, weights, init_image, proxmap_input,
+    input("About to call cython interface. Press Enter to continue ...")
+    x = ci.recon_cy(sino, weights, init_image, prox_image,
                     sinoparams, imgparams, reconparams, sysmatrix_fname, num_threads)
 
     # Convert shape from Cython interface specifications to Python interface specifications

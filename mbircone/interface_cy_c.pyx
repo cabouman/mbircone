@@ -270,16 +270,21 @@ def recon_cy(sino, wght, x_init, proxmap_input,
              sinoparams, imgparams, reconparams, py_Amatrix_fname, num_threads):
     # sino, wght shape : views x slices x channels
     # recon shape: N_x N_y N_z (source-detector-line, channels, slices)
-
-    cdef cnp.ndarray[float, ndim=3, mode="c"] py_x
-    py_sino = np.ascontiguousarray(sino, dtype=np.single)
-    py_wght = np.ascontiguousarray(wght, dtype=np.single)
-    py_x = np.ascontiguousarray(x_init, dtype=np.single)
-    py_proxmap_input = np.ascontiguousarray(proxmap_input, dtype=np.single)
-
-    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_sino = py_sino
-    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_wght = py_wght
-    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_proxmap_input = py_proxmap_input
+    if not x_init.flags["C_CONTIGUOUS"]:
+        x_init = np.ascontiguousarray(x_init, dtype=np.single)
+    else:
+        x_init = x_init.astype(np.single, copy=False)
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_x = x_init
+    
+    if not proxmap_input.flags["C_CONTIGUOUS"]:
+        proxmap_input = np.ascontiguousarray(proxmap_input, dtype=np.single)
+    else:
+        proxmap_input = proxmap_input.astype(np.single, copy=False) 
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_proxmap_input = proxmap_input
+    
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_sino = np.ascontiguousarray(sino, dtype=np.single)
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_wght = np.ascontiguousarray(wght, dtype=np.single)
+    
     cdef cnp.ndarray[char, ndim=1, mode="c"] c_Amatrix_fname = string_to_char_array(py_Amatrix_fname)
     cdef cnp.ndarray[char, ndim=1, mode="c"] cy_relativeChangeMode = string_to_char_array(reconparams["relativeChangeMode"])
     cdef cnp.ndarray[char, ndim=1, mode="c"] cy_weightScaler_estimateMode = string_to_char_array(reconparams["weightScaler_estimateMode"])
@@ -300,8 +305,8 @@ def recon_cy(sino, wght, x_init, proxmap_input,
                           &cy_NHICD_Mode[0])
 
     openmp.omp_set_num_threads(num_threads)
-
-    recon(&py_x[0,0,0],
+    input("About to call C subroutine. Press Enter to continue ...")
+    recon(&cy_x[0,0,0],
           &cy_sino[0,0,0],
           &cy_wght[0,0,0],
           &cy_proxmap_input[0,0,0],
@@ -309,10 +314,8 @@ def recon_cy(sino, wght, x_init, proxmap_input,
           c_imgparams,
           c_reconparams,
 	      &c_Amatrix_fname[0])
-
     # print("Cython done")
-
-    return py_x
+    return cy_x
 
 
 def project(image, settings):
