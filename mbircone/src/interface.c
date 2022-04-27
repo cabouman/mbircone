@@ -45,10 +45,18 @@ void recon(float *x, float *y, float *wght, float *proxmap_input,
 	/* Read system matrix from disk */
 	readSysMatrix(Amatrix_fname, &sino.params, &img.params, &A);
     
-	img.vox = x;
-	img.proxMapInput = proxmap_input;
-
-	sino.vox = y;
+    /* 'x' is reconstructed in place, so if proximal map is the same array, make a local copy */
+    if(proxmap_input == x)
+    {
+        img.proxMapInput = (float *) mget_spc((size_t)img.params.N_x*img.params.N_y*img.params.N_z,sizeof(float));
+        for(i=0; i<(size_t)img.params.N_x*img.params.N_y*img.params.N_z; i++)
+            img.proxMapInput[i] = proxmap_input[i];
+    }
+    else
+	    img.proxMapInput = proxmap_input;
+	
+    img.vox = x;
+    sino.vox = y;
     sino.wgt = wght;
     /* Allocate error sinogram */
     sino.e = (float*)allocateSinoData3DCone(&sino.params, sizeof(float));
