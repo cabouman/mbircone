@@ -31,7 +31,6 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 	float ticToc_computeLastChangeThreshold;
 
 	char stopFlag = 0;
-    char dummy_var;
 	struct ICDInfo3DCone *icdInfoArray;			/* Only used when using zip line option*/
 	struct ICDInfo3DCone icdInfo;				/* Only used when not using zip line option*/
 	struct ParallelAux parallelAux;
@@ -120,8 +119,6 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 	timer_reset(&timer_icd_loop);
 	tic(&ticToc_all);
 	ticToc_icdUpdate_total = 0;
-    fprintf(stdout, "Ready for qGGMRF iterations. Press any char to continue ... \n");
-    scanf("%c",&dummy_var);
 	for (itNumber = 0; (itNumber <= MaxIterations) && (stopFlag==0); ++itNumber) 
 	{
 
