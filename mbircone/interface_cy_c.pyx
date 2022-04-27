@@ -360,7 +360,6 @@ def project(image, settings):
     cdef cnp.ndarray[char, ndim=1, mode="c"] Amatrix_fname = string_to_char_array(sysmatrix_fname)
 
     # Forward projection by calling C subroutine
-    print("Calling C subroutine forwardProject")
     forwardProject(&proj[0,0,0],
                     &cy_image[0,0,0],
                     c_sinoparams,
