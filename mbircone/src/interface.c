@@ -14,14 +14,16 @@ void AmatrixComputeToFile(float *angles,
     struct ViewAngleList viewAngleList;
 
     viewAngleList.beta = angles;
-
+    fprintf(stdout, "interface.c: calling computeSysMatrix\n");
     computeSysMatrix(&sinoParams, &imgParams, &A, &viewAngleList);
     
     if(verbose){
     	printSysMatrixParams(&A);
     }
 
+    fprintf(stdout, "interface.c: writing SysMatrix\n");
     writeSysMatrix(Amatrix_fname, &sinoParams, &imgParams, &A);
+    fprintf(stdout, "interface.c: writeSysMatrix Done\n");
 
     freeSysMatrix(&A);
 
@@ -64,8 +66,8 @@ void recon(float *x, float *y, float *wght, float *proxmap_input,
     scanf("%c",&dummy_var);	
 
 	/* Allocate other image data */
-    img.lastChange = (float***) get_3D(img.params.N_x, img.params.N_y, reconParams.numZiplines, sizeof(float));
-    img.timeToChange = (unsigned char***) get_3D(img.params.N_x, img.params.N_y, reconParams.numZiplines, sizeof(unsigned char));
+    img.lastChange = (float***) multialloc(sizeof(float), 3, img.params.N_x, img.params.N_y, reconParams.numZiplines);
+    img.timeToChange = (unsigned char***) multialloc(sizeof(unsigned char), 3, img.params.N_x, img.params.N_y, reconParams.numZiplines);
     fprintf(stdout, "Done allocating memory in C. Press any char to continue ... \n");
     scanf("%c",&dummy_var);	
 
@@ -96,10 +98,10 @@ void recon(float *x, float *y, float *wght, float *proxmap_input,
 	// printf("Done free_2D\n");
 
 	/* Free allocated data */
-    free_3D((void***)img.lastChange);
-    free_3D((void***)img.timeToChange);
+    multifree((void***)img.lastChange, 3);
+    multifree((void***)img.timeToChange, 3);
     free((void*)sino.e);
-    // printf("Done free_3D\n");
+    // printf("Done mem_free_3D\n");
 
 }
 
@@ -111,8 +113,8 @@ void forwardProject(float *y, float *x,
     struct SysMatrix A;
 
 	/* Read system matrix from disk */
+    fprintf(stdout,"interface.c: calling readSysMatrix.\n");
 	readSysMatrix(Amatrix_fname, &sinoParams, &imgParams, &A);
-
 	forwardProject3DCone(y, x, &imgParams, &A, &sinoParams);
 
 	freeSysMatrix(&A);

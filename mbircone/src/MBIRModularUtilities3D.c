@@ -126,7 +126,7 @@ void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageParams *i
                 }
             }   
         }
-        free_3D((void***)normalization);
+        multifree((void***)normalization, 3);
     }
 
 
@@ -411,11 +411,11 @@ void*** allocateImageData3DCone( struct ImageParams *params, int dataTypeSize, i
 
     if (isROI)
     {
-        return get_3D(N_x_roi, N_y_roi, N_z_roi, dataTypeSize);
+        return multialloc(dataTypeSize, 3, N_x_roi, N_y_roi, N_z_roi);
     }
     else
     {
-        return get_3D(params->N_x, params->N_y, params->N_z, dataTypeSize);
+        return multialloc(dataTypeSize, 3, params->N_x, params->N_y, params->N_z);
     }
 
 
@@ -445,7 +445,7 @@ void RandomZiplineAux_allocate(struct RandomZiplineAux *aux, struct ImageParams 
     /**
      *      Initialize groupIndex
      */
-    aux->groupIndex = (unsigned char***) get_3D(N_x, N_y, N_z, sizeof(unsigned char***));
+    aux->groupIndex = (unsigned char***) multialloc(sizeof(unsigned char***), 3, N_x, N_y, N_z);
 }
 
 void RandomZiplineAux_Initialize(struct RandomZiplineAux *aux, struct ImageParams *imgParams, struct ReconParams *reconParams, int N_M_max)
@@ -499,7 +499,7 @@ void RandomAux_Initialize(struct RandomAux *aux, struct ImageParams *imgParams)
 void RandomZiplineAux_free(struct RandomZiplineAux *aux)
 {
     free((void*)aux->orderXY);
-    free_3D((void***)aux->groupIndex);
+    multifree((void***)aux->groupIndex, 3);
 }
 
 void RandomAux_free(struct RandomAux *aux)
