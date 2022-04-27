@@ -677,7 +677,6 @@ def recon(sino, angles, dist_source_detector, magnification,
 
     sino = np.swapaxes(sino, 1, 2)
     weights = np.swapaxes(weights, 1, 2)
-    input("About to call cython interface. Press Enter to continue ...")
     x = ci.recon_cy(sino, weights, init_image, prox_image,
                     sinoparams, imgparams, reconparams, sysmatrix_fname, num_threads)
 

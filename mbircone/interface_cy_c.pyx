@@ -305,7 +305,6 @@ def recon_cy(sino, wght, x_init, proxmap_input,
                           &cy_NHICD_Mode[0])
 
     openmp.omp_set_num_threads(num_threads)
-    input("About to call C subroutine. Press Enter to continue ...")
     recon(&cy_x[0,0,0],
           &cy_sino[0,0,0],
           &cy_wght[0,0,0],
@@ -361,6 +360,7 @@ def project(image, settings):
     cdef cnp.ndarray[char, ndim=1, mode="c"] Amatrix_fname = string_to_char_array(sysmatrix_fname)
 
     # Forward projection by calling C subroutine
+    print("Calling C subroutine forwardProject")
     forwardProject(&proj[0,0,0],
                     &cy_image[0,0,0],
                     c_sinoparams,
