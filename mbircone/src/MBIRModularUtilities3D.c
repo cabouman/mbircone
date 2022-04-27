@@ -126,7 +126,7 @@ void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageParams *i
                 }
             }   
         }
-        mem_free_3D((void***)normalization);
+        free_3D((void***)normalization);
     }
 
 
@@ -398,7 +398,7 @@ void setUCharArray2Value(unsigned char *arr, long int len, unsigned char value)
 
 void* allocateSinoData3DCone(struct SinoParams *params, int dataTypeSize)
 {
-    return mem_alloc_1D(params->N_beta*params->N_dv*params->N_dw, dataTypeSize);
+    return mget_spc(params->N_beta*params->N_dv*params->N_dw, dataTypeSize);
 }
 
 void*** allocateImageData3DCone( struct ImageParams *params, int dataTypeSize, int isROI)
@@ -411,11 +411,11 @@ void*** allocateImageData3DCone( struct ImageParams *params, int dataTypeSize, i
 
     if (isROI)
     {
-        return mem_alloc_3D(N_x_roi, N_y_roi, N_z_roi, dataTypeSize);
+        return get_3D(N_x_roi, N_y_roi, N_z_roi, dataTypeSize);
     }
     else
     {
-        return mem_alloc_3D(params->N_x, params->N_y, params->N_z, dataTypeSize);
+        return get_3D(params->N_x, params->N_y, params->N_z, dataTypeSize);
     }
 
 
@@ -424,7 +424,7 @@ void*** allocateImageData3DCone( struct ImageParams *params, int dataTypeSize, i
 
 void freeViewAngleList(struct ViewAngleList *list)
 {
-    mem_free_1D((void*)list->beta);
+    free((void*)list->beta);
 }
 
 
@@ -440,12 +440,12 @@ void RandomZiplineAux_allocate(struct RandomZiplineAux *aux, struct ImageParams 
     /**
      *      Initialize orderXY
      */
-    aux->orderXY = mem_alloc_1D(N_x * N_y, sizeof(int));
+    aux->orderXY = mget_spc(N_x * N_y, sizeof(int));
 
     /**
      *      Initialize groupIndex
      */
-    aux->groupIndex = (unsigned char***) mem_alloc_3D(N_x, N_y, N_z, sizeof(unsigned char***));
+    aux->groupIndex = (unsigned char***) get_3D(N_x, N_y, N_z, sizeof(unsigned char***));
 }
 
 void RandomZiplineAux_Initialize(struct RandomZiplineAux *aux, struct ImageParams *imgParams, struct ReconParams *reconParams, int N_M_max)
@@ -473,7 +473,7 @@ void RandomZiplineAux_Initialize(struct RandomZiplineAux *aux, struct ImageParam
 
 void RandomAux_allocate(struct RandomAux *aux, struct ImageParams *imgParams)
 {
-    aux->orderXYZ = mem_alloc_1D(imgParams->N_x * imgParams->N_y * imgParams->N_z, sizeof(long ));
+    aux->orderXYZ = mget_spc(imgParams->N_x * imgParams->N_y * imgParams->N_z, sizeof(long ));
 }
 
 void RandomAux_Initialize(struct RandomAux *aux, struct ImageParams *imgParams)
@@ -498,13 +498,13 @@ void RandomAux_Initialize(struct RandomAux *aux, struct ImageParams *imgParams)
 
 void RandomZiplineAux_free(struct RandomZiplineAux *aux)
 {
-    mem_free_1D((void*)aux->orderXY);
-    mem_free_3D((void***)aux->groupIndex);
+    free((void*)aux->orderXY);
+    free_3D((void***)aux->groupIndex);
 }
 
 void RandomAux_free(struct RandomAux *aux)
 {
-    mem_free_1D((void*)aux->orderXYZ);
+    free((void*)aux->orderXYZ);
 }
 
 
@@ -546,7 +546,7 @@ void RandomZiplineAux_ShuffleGroupIndices_FixedDistance(struct RandomZiplineAux 
 
     N_G = aux->N_G;
 /*    srand(time(NULL));
-*/    first_N_G_members = mem_alloc_1D(N_G, sizeof(int));
+*/    first_N_G_members = mget_spc(N_G, sizeof(int));
 
     /* Initialize first_N_G_members with 0, 1, ..., N_G-1 */
     for (i = 0; i < N_G; ++i)
@@ -801,7 +801,7 @@ float prctile_copyFast(float arr[], long int len, float p, int subsampleFactor)
     float result;
 
     len_sub = len/subsampleFactor;
-    arr_sub = malloc(len_sub*sizeof(float));
+    arr_sub = mget_spc(len_sub, sizeof(float));
 
     for (i = 0; i < len_sub; ++i)
     {

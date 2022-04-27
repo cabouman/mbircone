@@ -472,24 +472,24 @@ void allocateSysMatrix(struct SysMatrix *A, long int N_x, long int N_y, long int
    /* printf("\tAllocating %e GB ...\n", totSizeGB);*/
 
 
-    A->B =          (BIJDATATYPE***)                mem_alloc_3D(N_x, N_y, N_beta*i_vstride_max,    sizeof(BIJDATATYPE));
-    A->i_vstart =   (INDEXSTARTSTOPDATATYPE***)     mem_alloc_3D(N_x, N_y, N_beta,                  sizeof(INDEXSTARTSTOPDATATYPE));
-    A->i_vstride =    (INDEXSTRIDEDATATYPE***)      mem_alloc_3D(N_x, N_y, N_beta,                  sizeof(INDEXSTRIDEDATATYPE));
-    A->j_u =        (INDEXJUDATATYPE***)            mem_alloc_3D(N_x, N_y, N_beta,                  sizeof(INDEXJUDATATYPE));
+    A->B =          (BIJDATATYPE***)                get_3D(N_x, N_y, N_beta*i_vstride_max,    sizeof(BIJDATATYPE));
+    A->i_vstart =   (INDEXSTARTSTOPDATATYPE***)     get_3D(N_x, N_y, N_beta,                  sizeof(INDEXSTARTSTOPDATATYPE));
+    A->i_vstride =    (INDEXSTRIDEDATATYPE***)      get_3D(N_x, N_y, N_beta,                  sizeof(INDEXSTRIDEDATATYPE));
+    A->j_u =        (INDEXJUDATATYPE***)            get_3D(N_x, N_y, N_beta,                  sizeof(INDEXJUDATATYPE));
 
-    A->C =          (CIJDATATYPE**)                mem_alloc_2D(N_u, N_z*i_wstride_max,            sizeof(CIJDATATYPE));
-    A->i_wstart =   (INDEXSTARTSTOPDATATYPE**)      mem_alloc_2D(N_u, N_z,                          sizeof(INDEXSTARTSTOPDATATYPE));
-    A->i_wstride =    (INDEXSTRIDEDATATYPE**)       mem_alloc_2D(N_u, N_z,                          sizeof(INDEXSTRIDEDATATYPE));
+    A->C =          (CIJDATATYPE**)                get_img(N_u, N_z*i_wstride_max,            sizeof(CIJDATATYPE));
+    A->i_wstart =   (INDEXSTARTSTOPDATATYPE**)      get_img(N_u, N_z,                          sizeof(INDEXSTARTSTOPDATATYPE));
+    A->i_wstride =    (INDEXSTRIDEDATATYPE**)       get_img(N_u, N_z,                          sizeof(INDEXSTRIDEDATATYPE));
 }
 
 void freeSysMatrix(struct SysMatrix *A)
 {
-    mem_free_3D((void***)A->B);
-    mem_free_3D((void***)A->i_vstart);
-    mem_free_3D((void***)A->i_vstride);
-    mem_free_3D((void***)A->j_u);
-    mem_free_2D((void**)A->C);
-    mem_free_2D((void**)A->i_wstart);
-    mem_free_2D((void**)A->i_wstride);
+    free_3D((void***)A->B);
+    free_3D((void***)A->i_vstart);
+    free_3D((void***)A->i_vstride);
+    free_3D((void***)A->j_u);
+    free_img((void**)A->C);
+    free_img((void**)A->i_wstart);
+    free_img((void**)A->i_wstride);
 }
 

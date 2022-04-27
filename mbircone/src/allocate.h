@@ -44,21 +44,5 @@ void free_3D(void ***pt);
 void *multialloc(size_t s, int d, ...);
 void multifree(void *r,int d);
 
-/* *************************************************************************************************** */
-void *****mem_alloc_5D(size_t N1, size_t N2, size_t N3, size_t N4, size_t N5, size_t dataTypeSize);
-void mem_free_5D(void *****p);
-
-void ****mem_alloc_4D(size_t N1, size_t N2, size_t N3, size_t N4, size_t dataTypeSize);
-void mem_free_4D(void ****p);
-
-void ***mem_alloc_3D(size_t N1, size_t N2, size_t N3, size_t dataTypeSize);
-void mem_free_3D(void ***p);
-
-void **mem_alloc_2D(size_t N1, size_t N2, size_t dataTypeSize);
-void mem_free_2D(void **pt);
-
-void *mem_alloc_1D(size_t N1, size_t dataTypeSize);
-void mem_free_1D(void *pt);
-
-
 #endif
+

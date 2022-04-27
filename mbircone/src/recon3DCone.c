@@ -115,7 +115,7 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
     /**
      * 		Loop initialization
      */
-	icdInfoArray = mem_alloc_1D(reconAux.N_M_max, sizeof(struct ICDInfo3DCone));
+	icdInfoArray = mget_spc(reconAux.N_M_max, sizeof(struct ICDInfo3DCone));
 
 	timer_reset(&timer_icd_loop);
 	tic(&ticToc_all);
@@ -325,14 +325,14 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 			disp_iterationInfo(&reconAux, reconParams, itNumber, MaxIterations, cost, relUpdate, stopThresholdChange, sino->params.weightScaler_value, speedAuxICD.voxelsPerSecond, ticToc_icdUpdate, weightedNormSquared_e, ratioUpdated, reconAux.totalEquits);
 	}
 
-	mem_free_1D((void*)reconAux.NHICD_numUpdatedVoxels);
-	mem_free_1D((void*)reconAux.NHICD_totalValueChange);
-	mem_free_1D((void*)reconAux.NHICD_isPartialZiplineHot);
+	free((void*)reconAux.NHICD_numUpdatedVoxels);
+	free((void*)reconAux.NHICD_totalValueChange);
+	free((void*)reconAux.NHICD_isPartialZiplineHot);
 
 
 
 	
-	mem_free_1D((void*)icdInfoArray);
+	free((void*)icdInfoArray);
 	RandomZiplineAux_free(&img->randomZiplineAux);
 	RandomAux_free(&img->randomAux);
 

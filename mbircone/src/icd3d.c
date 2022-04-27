@@ -813,29 +813,29 @@ void prepareParallelAux(struct ParallelAux *parallelAux, long int N_M_max)
 	}
 	parallelAux->N_M_max = N_M_max;
 
-	parallelAux->partialTheta = (struct PartialTheta**) mem_alloc_2D(numThreads, N_M_max, sizeof(struct PartialTheta));
+	parallelAux->partialTheta = (struct PartialTheta**) alloc_(numThreads, N_M_max, sizeof(struct PartialTheta));
 
-	parallelAux->j_u = mem_alloc_1D(numThreads, sizeof(long int));
-	parallelAux->i_v = mem_alloc_1D(numThreads, sizeof(long int));
-	parallelAux->B_ij = mem_alloc_1D(numThreads, sizeof(float));
-	parallelAux->k_M = mem_alloc_1D(numThreads, sizeof(long int));
-	parallelAux->j_z = mem_alloc_1D(numThreads, sizeof(long int));
-	parallelAux->i_w = mem_alloc_1D(numThreads, sizeof(long int));
-	parallelAux->A_ij = mem_alloc_1D(numThreads, sizeof(float));
+	parallelAux->j_u = mget_spc(numThreads, sizeof(long int));
+	parallelAux->i_v = mget_spc(numThreads, sizeof(long int));
+	parallelAux->B_ij = mget_spc(numThreads, sizeof(float));
+	parallelAux->k_M = mget_spc(numThreads, sizeof(long int));
+	parallelAux->j_z = mget_spc(numThreads, sizeof(long int));
+	parallelAux->i_w = mget_spc(numThreads, sizeof(long int));
+	parallelAux->A_ij = mget_spc(numThreads, sizeof(float));
 
 }
 
 void freeParallelAux(struct ParallelAux *parallelAux)
 {
-	mem_free_2D((void**)parallelAux->partialTheta);
+	free_img((void**)parallelAux->partialTheta);
 
-	mem_free_1D((void*)parallelAux->j_u);
-	mem_free_1D((void*)parallelAux->i_v);
-	mem_free_1D((void*)parallelAux->B_ij);
-	mem_free_1D((void*)parallelAux->k_M);
-	mem_free_1D((void*)parallelAux->j_z);
-	mem_free_1D((void*)parallelAux->i_w);
-	mem_free_1D((void*)parallelAux->A_ij);
+	free((void*)parallelAux->j_u);
+	free((void*)parallelAux->i_v);
+	free((void*)parallelAux->B_ij);
+	free((void*)parallelAux->k_M);
+	free((void*)parallelAux->j_z);
+	free((void*)parallelAux->i_w);
+	free((void*)parallelAux->A_ij);
 
 }
 

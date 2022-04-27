@@ -35,7 +35,7 @@ void recon(float *x, float *y, float *wght, float *proxmap_input,
     struct Image img;
     struct SysMatrix A;
 	int i_x, i_y, i_z, i;
-	
+    char dummy_var;
 
 	/* Set img and sino params inside data structure */
 	copyImgParams(&imgParams, &img.params);
@@ -43,26 +43,29 @@ void recon(float *x, float *y, float *wght, float *proxmap_input,
 
 	/* Perform normalizations on parameters*/
 	computeSecondaryReconParams(&reconParams, &img.params);
+    
+    fprintf(stdout, "Ready to allocate system matrix. Press any char to continue ... \n");
+    scanf("%c",&dummy_var);	
 
 	/* Read system matrix from disk */
 	readSysMatrix(Amatrix_fname, &sino.params, &img.params, &A);
-    char dummy_var;
-    fprintf(stdout, "Ready to allocate memory in C. Press any char to continue ... \n");
+    
+    fprintf(stdout, "Done reading system matrix. Ready to allocate memory in C. Press any char to continue ... \n");
     scanf("%c",&dummy_var);	
 	img.vox = x;
 	img.proxMapInput = proxmap_input;
 
 	sino.vox = y;
-    //sino.wgt = (float ***)mem_alloc_float3D_from_flat(wght, sinoParams.N_beta, sinoParams.N_dv, sinoParams.N_dw);
     sino.wgt = wght;
     /* Allocate error sinogram */
-    //sino.e = (float***)allocateSinoData3DCone(&sino.params, sizeof(float));
     sino.e = (float*)allocateSinoData3DCone(&sino.params, sizeof(float));
+    
+    fprintf(stdout, "Ready to allocate memory for lastChange and timeToChange. Press any char to continue ... \n");
+    scanf("%c",&dummy_var);	
 
 	/* Allocate other image data */
-    img.lastChange = (float***) mem_alloc_3D(img.params.N_x, img.params.N_y, reconParams.numZiplines, sizeof(float));
-    img.timeToChange = (unsigned char***) mem_alloc_3D(img.params.N_x, img.params.N_y, reconParams.numZiplines, sizeof(unsigned char));
-
+    img.lastChange = (float***) get_3D(img.params.N_x, img.params.N_y, reconParams.numZiplines, sizeof(float));
+    img.timeToChange = (unsigned char***) get_3D(img.params.N_x, img.params.N_y, reconParams.numZiplines, sizeof(unsigned char));
     fprintf(stdout, "Done allocating memory in C. Press any char to continue ... \n");
     scanf("%c",&dummy_var);	
 
@@ -93,9 +96,9 @@ void recon(float *x, float *y, float *wght, float *proxmap_input,
 	// printf("Done free_2D\n");
 
 	/* Free allocated data */
-    mem_free_3D((void***)img.lastChange);
-    mem_free_3D((void***)img.timeToChange);
-    mem_free_1D((void*)sino.e);
+    free_3D((void***)img.lastChange);
+    free_3D((void***)img.timeToChange);
+    free((void*)sino.e);
     // printf("Done free_3D\n");
 
 }
@@ -116,21 +119,4 @@ void forwardProject(float *y, float *x,
 
 	// printf("Done free_2D\n");
 
-}
-
-void ***mem_alloc_float3D_from_flat(float *dataArray, size_t N1, size_t N2, size_t N3)
-{
-	float ***topTree;
-	long int i1, i2;
-
-	topTree = (float***)mem_alloc_2D(N1, N2, sizeof(void*));
-
-	for(i1 = 0; i1 < N1; i1++)
-	for(i2 = 0; i2 < N2; i2++)
-	{
-		topTree[i1][i2] = dataArray + (i1*N2 + i2)*N3;	
-		// topTree[i1][i2] = &dataArray[i1*N2*N3+i2*N3];
-	}
-
-	return (topTree);	
 }
