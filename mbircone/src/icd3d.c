@@ -41,7 +41,8 @@ void ICDStep3DCone(struct Sino *sino, struct Image *img, struct SysMatrix *A, st
 void prepareICDInfo(long int j_x, long int j_y, long int j_z, struct ICDInfo3DCone *icdInfo, struct Image *img, struct ReconAux *reconAux, struct ReconParams *reconParams)
 {
 	icdInfo->old_xj = img->vox[idx_3D_to_1D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)];
-	icdInfo->proxMapInput_j = img->proxMapInput[idx_3D_to_1D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)];
+	if(reconParams->priorWeight_proxMap >= 0)
+        icdInfo->proxMapInput_j = img->proxMapInput[idx_3D_to_1D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)];
 	icdInfo->j_x = j_x;
 	icdInfo->j_y = j_y;
 	icdInfo->j_z = j_z;
@@ -52,7 +53,6 @@ void prepareICDInfo(long int j_x, long int j_y, long int j_z, struct ICDInfo3DCo
 	icdInfo->theta2_p_QGGMRF = 0;
 	icdInfo->theta1_p_proxMap = 0;
 	icdInfo->theta2_p_proxMap = 0;
-
 }
 
 
@@ -400,7 +400,8 @@ void resetIterationStats(struct ReconAux *reconAux)
 
 void RandomAux_ShuffleOrderXYZ(struct RandomAux *aux, struct ImageParams *params)
 {
-	shuffleLongIntArray(aux->orderXYZ, params->N_x * params->N_y * params->N_z);
+	fprintf(stdout, "zipline mode 0\n");
+    shuffleLongIntArray(aux->orderXYZ, params->N_x * params->N_y * params->N_z);
 }
 
 void indexExtraction3D(long int j_xyz, long int *j_x, long int N_x, long int *j_y, long int N_y, long int *j_z, long int N_z)
@@ -429,18 +430,16 @@ float MAPCost3D(struct Sino *sino, struct Image *img, struct ReconParams *reconP
 	 *      Computes MAP cost function
 	 */
 	float cost;
-
+    
     // Initialize cost with forward model cost	
     cost = MAPCostForward(sino);
 
     // if prior is used, add prior cost
     if(reconParams->priorWeight_QGGMRF >= 0)
 		cost += MAPCostPrior_QGGMRF(img, reconParams);
-
     // if proximal map is used, add proximal map cost
     if(reconParams->priorWeight_proxMap >= 0)
-		cost += MAPCostPrior_ProxMap(img, reconParams);
-
+        cost += MAPCostPrior_ProxMap(img, reconParams);
 	return cost;
 }
 

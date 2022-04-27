@@ -170,7 +170,6 @@ cdef map_py2c_reconparams(ReconParams* c_reconparams,
 
         c_reconparams.priorWeight_QGGMRF = reconparams['priorWeight_QGGMRF']                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping)
         c_reconparams.priorWeight_proxMap = reconparams['priorWeight_proxMap']                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping)
-
         # QGGMRF
         c_reconparams.q = reconparams['q']                   # q: QGGMRF parameter (q>1, typical choice q=2)
         c_reconparams.p = reconparams['p']                   # p: QGGMRF parameter (1<=p<q)
@@ -276,14 +275,25 @@ def recon_cy(sino, wght, x_init, proxmap_input,
         x_init = x_init.astype(np.single, copy=False)
     cdef cnp.ndarray[float, ndim=3, mode="c"] cy_x = x_init
     
-    if not proxmap_input.flags["C_CONTIGUOUS"]:
-        proxmap_input = np.ascontiguousarray(proxmap_input, dtype=np.single)
-    else:
-        proxmap_input = proxmap_input.astype(np.single, copy=False) 
-    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_proxmap_input = proxmap_input
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_proxmap_input
+    if proxmap_input is not None:
+        if not proxmap_input.flags["C_CONTIGUOUS"]:
+            proxmap_input = np.ascontiguousarray(proxmap_input, dtype=np.single)
+        else:
+            proxmap_input = proxmap_input.astype(np.single, copy=False) 
+        cy_proxmap_input = proxmap_input
     
-    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_sino = np.ascontiguousarray(sino, dtype=np.single)
-    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_wght = np.ascontiguousarray(wght, dtype=np.single)
+    if not sino.flags["C_CONTIGUOUS"]:
+        sino = np.ascontiguousarray(sino, dtype=np.single)
+    else:
+        sino = sino.astype(np.single, copy=False)
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_sino = sino
+    
+    if not wght.flags["C_CONTIGUOUS"]:
+        wght = np.ascontiguousarray(wght, dtype=np.single)
+    else:
+        wght = wght.astype(np.single, copy=False)
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_wght = wght
     
     cdef cnp.ndarray[char, ndim=1, mode="c"] c_Amatrix_fname = string_to_char_array(py_Amatrix_fname)
     cdef cnp.ndarray[char, ndim=1, mode="c"] cy_relativeChangeMode = string_to_char_array(reconparams["relativeChangeMode"])
