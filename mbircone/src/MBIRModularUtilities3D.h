@@ -58,6 +58,8 @@
 #define INDEXSTRIDEDATATYPE unsigned char
 #define INDEXSTRIDEDATATYPE_string "unsigned char"
 
+/* Added by Diyu for indexing flattened 3D array with 3D index */
+#define index_3D(i, j, k, Ny, Nz) (i*Ny*Nz+j*Nz+k)
 
 
 struct RandomZiplineAux
@@ -533,6 +535,6 @@ void printReconParams(struct ReconParams *params);
 
 void printSysMatrixParams(struct SysMatrix *A);
 
-int idx_3D_to_1D(int i_x, int i_y, int i_z, size_t Ny, size_t Nz);
+
 
 #endif /* MBIR_MODULAR_UTILITIES_3D_H */

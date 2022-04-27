@@ -22,10 +22,10 @@ void forwardProject3DCone( float *Ax, float *x, struct ImageParams *imgParams, s
                     B_ij = A->B_ij_scaler * A->B[j_x][j_y][i_beta*A->i_vstride_max + i_v-A->i_vstart[j_x][j_y][i_beta]];
                     for (j_z = 0; j_z <= imgParams->N_z-1; ++j_z)
                     {
-                        B_ij_times_x_j = B_ij * x[idx_3D_to_1D(j_x,j_y,j_z,imgParams->N_y,imgParams->N_z)];    
+                        B_ij_times_x_j = B_ij * x[index_3D(j_x,j_y,j_z,imgParams->N_y,imgParams->N_z)];    
                         for (i_w = A->i_wstart[j_u][j_z]; i_w < A->i_wstart[j_u][j_z]+A->i_wstride[j_u][j_z]; ++i_w)
                         {
-                            Ax[idx_3D_to_1D(i_beta,i_v,i_w,sinoParams->N_dv,sinoParams->N_dw)] += B_ij_times_x_j * A->C_ij_scaler * A->C[j_u][j_z*A->i_wstride_max + i_w-A->i_wstart[j_u][j_z]];
+                            Ax[index_3D(i_beta,i_v,i_w,sinoParams->N_dv,sinoParams->N_dw)] += B_ij_times_x_j * A->C_ij_scaler * A->C[j_u][j_z*A->i_wstride_max + i_w-A->i_wstart[j_u][j_z]];
                         }
                     }
                 }
@@ -247,7 +247,7 @@ float computeSinogramWeightedNormSquared(struct Sino *sino, float *arr)
     for (i_v = 0; i_v < sino->params.N_dv; ++i_v)
     for (i_w = 0; i_w < sino->params.N_dw; ++i_w)
     {
-        normError += arr[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)] * sino->wgt[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)] * arr[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)];
+        normError += arr[index_3D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)] * sino->wgt[index_3D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)] * arr[index_3D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)];
     }
 
     num_mask = sino->params.N_beta * sino->params.N_dv * sino->params.N_dw;
@@ -321,7 +321,7 @@ void copyImage2ROI(struct Image *img)
             for (j_z = j_zstart; j_z <= j_zstop; ++j_z)
             {
                 img->vox_roi[j_x-j_xstart][j_y-j_ystart][j_z-j_zstart] = 
-                          img->vox[idx_3D_to_1D(j_x,j_y,j_z,img->params.N_y, img->params.N_z)]
+                          img->vox[index_3D(j_x,j_y,j_z,img->params.N_y, img->params.N_z)]
                         * isInsideMask(j_x-img->params.j_xstart_roi, j_y-img->params.j_ystart_roi, N_x_roi, N_y_roi);
             }
         }
@@ -359,7 +359,7 @@ void applyMask(float *arr, long int N1, long int N2, long int N3)
             b = isInsideMask(i1, i2, N1, N2);
             for (i3 = 0; i3 < N3; ++i3)
             {
-                arr[idx_3D_to_1D(i1,i2,i3,N2,N3)] *= b;
+                arr[index_3D(i1,i2,i3,N2,N3)] *= b;
             }
 
         }
@@ -1056,9 +1056,4 @@ void printSysMatrixParams(struct SysMatrix *A)
     printf("\tB_ij_scaler = %e \n", A->B_ij_scaler);
     printf("\tC_ij_scaler = %e \n", A->C_ij_scaler);
 
-}
-
-int idx_3D_to_1D(int i_x, int i_y, int i_z, size_t Ny, size_t Nz)
-{
-    return i_x*Ny*Nz+i_y*Nz+i_z;
 }

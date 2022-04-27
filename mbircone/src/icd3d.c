@@ -40,9 +40,9 @@ void ICDStep3DCone(struct Sino *sino, struct Image *img, struct SysMatrix *A, st
 
 void prepareICDInfo(long int j_x, long int j_y, long int j_z, struct ICDInfo3DCone *icdInfo, struct Image *img, struct ReconAux *reconAux, struct ReconParams *reconParams)
 {
-	icdInfo->old_xj = img->vox[idx_3D_to_1D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)];
+	icdInfo->old_xj = img->vox[index_3D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)];
 	if(reconParams->priorWeight_proxMap >= 0)
-        icdInfo->proxMapInput_j = img->proxMapInput[idx_3D_to_1D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)];
+        icdInfo->proxMapInput_j = img->proxMapInput[index_3D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)];
 	icdInfo->j_x = j_x;
 	icdInfo->j_y = j_y;
 	icdInfo->j_z = j_z;
@@ -101,16 +101,16 @@ void extractNeighbors(struct ICDInfo3DCone *icdInfo, struct Image *img, struct R
 		//icdInfo->neighborsFace[0] = img->vox[PLx][j_y][j_z];
         //icdInfo->neighborsFace[1] = img->vox[j_x][PLy][j_z];
         //icdInfo->neighborsFace[2] = img->vox[j_x][j_y][PLz];
-	    icdInfo->neighborsFace[0] = img->vox[idx_3D_to_1D(PLx,j_y,j_z,img->params.N_y,img->params.N_z)];	
-        icdInfo->neighborsFace[1] = img->vox[idx_3D_to_1D(j_x,PLy,j_z,img->params.N_y,img->params.N_z)];
-        icdInfo->neighborsFace[2] = img->vox[idx_3D_to_1D(j_x,j_y,PLz,img->params.N_y,img->params.N_z)];
+	    icdInfo->neighborsFace[0] = img->vox[index_3D(PLx,j_y,j_z,img->params.N_y,img->params.N_z)];	
+        icdInfo->neighborsFace[1] = img->vox[index_3D(j_x,PLy,j_z,img->params.N_y,img->params.N_z)];
+        icdInfo->neighborsFace[2] = img->vox[index_3D(j_x,j_y,PLz,img->params.N_y,img->params.N_z)];
         /* Face Neighbors (opposite) */
 		//icdInfo->neighborsFace[3] = img->vox[MIx][j_y][j_z];
         //icdInfo->neighborsFace[4] = img->vox[j_x][MIy][j_z];
 		//icdInfo->neighborsFace[5] = img->vox[j_x][j_y][MIz];
-        icdInfo->neighborsFace[3] = img->vox[idx_3D_to_1D(MIx,j_y,j_z,img->params.N_y,img->params.N_z)];
-        icdInfo->neighborsFace[4] = img->vox[idx_3D_to_1D(j_x,MIy,j_z,img->params.N_y,img->params.N_z)];
-        icdInfo->neighborsFace[5] = img->vox[idx_3D_to_1D(j_x,j_y,MIz,img->params.N_y,img->params.N_z)];
+        icdInfo->neighborsFace[3] = img->vox[index_3D(MIx,j_y,j_z,img->params.N_y,img->params.N_z)];
+        icdInfo->neighborsFace[4] = img->vox[index_3D(j_x,MIy,j_z,img->params.N_y,img->params.N_z)];
+        icdInfo->neighborsFace[5] = img->vox[index_3D(j_x,j_y,MIz,img->params.N_y,img->params.N_z)];
 	}
 
 	if (reconParams->bEdge>=0)
@@ -123,12 +123,12 @@ void extractNeighbors(struct ICDInfo3DCone *icdInfo, struct Image *img, struct R
 		//icdInfo->neighborsEdge[ 4] = img->vox[PLx][PLy][j_z];
 		//icdInfo->neighborsEdge[ 5] = img->vox[PLx][MIy][j_z];
 
-        icdInfo->neighborsEdge[0] = img->vox[idx_3D_to_1D(j_x,PLy,PLz,img->params.N_y,img->params.N_z)];	
-        icdInfo->neighborsEdge[1] = img->vox[idx_3D_to_1D(j_x,PLy,MIz,img->params.N_y,img->params.N_z)];	
-        icdInfo->neighborsEdge[2] = img->vox[idx_3D_to_1D(PLx,j_y,PLz,img->params.N_y,img->params.N_z)];	
-        icdInfo->neighborsEdge[3] = img->vox[idx_3D_to_1D(PLx,j_y,MIz,img->params.N_y,img->params.N_z)];	
-        icdInfo->neighborsEdge[4] = img->vox[idx_3D_to_1D(PLx,PLy,j_z,img->params.N_y,img->params.N_z)];	
-        icdInfo->neighborsEdge[5] = img->vox[idx_3D_to_1D(PLx,MIy,j_z,img->params.N_y,img->params.N_z)];	
+        icdInfo->neighborsEdge[0] = img->vox[index_3D(j_x,PLy,PLz,img->params.N_y,img->params.N_z)];	
+        icdInfo->neighborsEdge[1] = img->vox[index_3D(j_x,PLy,MIz,img->params.N_y,img->params.N_z)];	
+        icdInfo->neighborsEdge[2] = img->vox[index_3D(PLx,j_y,PLz,img->params.N_y,img->params.N_z)];	
+        icdInfo->neighborsEdge[3] = img->vox[index_3D(PLx,j_y,MIz,img->params.N_y,img->params.N_z)];	
+        icdInfo->neighborsEdge[4] = img->vox[index_3D(PLx,PLy,j_z,img->params.N_y,img->params.N_z)];	
+        icdInfo->neighborsEdge[5] = img->vox[index_3D(PLx,MIy,j_z,img->params.N_y,img->params.N_z)];	
 		/* Edge Neighbors (opposite) */
 		//icdInfo->neighborsEdge[ 6] = img->vox[j_x][MIy][MIz];
 		//icdInfo->neighborsEdge[ 7] = img->vox[j_x][MIy][PLz];
@@ -136,12 +136,12 @@ void extractNeighbors(struct ICDInfo3DCone *icdInfo, struct Image *img, struct R
 		//icdInfo->neighborsEdge[ 9] = img->vox[MIx][j_y][PLz];
 		//icdInfo->neighborsEdge[10] = img->vox[MIx][MIy][j_z];
 		//icdInfo->neighborsEdge[11] = img->vox[MIx][PLy][j_z];
-		icdInfo->neighborsEdge[6] = img->vox[idx_3D_to_1D(j_x,MIy,MIz,img->params.N_y,img->params.N_z)];	
-        icdInfo->neighborsEdge[7] = img->vox[idx_3D_to_1D(j_x,MIy,PLz,img->params.N_y,img->params.N_z)];	
-        icdInfo->neighborsEdge[8] = img->vox[idx_3D_to_1D(MIx,j_y,MIz,img->params.N_y,img->params.N_z)];	
-        icdInfo->neighborsEdge[9] = img->vox[idx_3D_to_1D(MIx,j_y,PLz,img->params.N_y,img->params.N_z)];	
-        icdInfo->neighborsEdge[10] = img->vox[idx_3D_to_1D(MIx,MIy,j_z,img->params.N_y,img->params.N_z)];	
-        icdInfo->neighborsEdge[11] = img->vox[idx_3D_to_1D(MIx,PLy,j_z,img->params.N_y,img->params.N_z)];	
+		icdInfo->neighborsEdge[6] = img->vox[index_3D(j_x,MIy,MIz,img->params.N_y,img->params.N_z)];	
+        icdInfo->neighborsEdge[7] = img->vox[index_3D(j_x,MIy,PLz,img->params.N_y,img->params.N_z)];	
+        icdInfo->neighborsEdge[8] = img->vox[index_3D(MIx,j_y,MIz,img->params.N_y,img->params.N_z)];	
+        icdInfo->neighborsEdge[9] = img->vox[index_3D(MIx,j_y,PLz,img->params.N_y,img->params.N_z)];	
+        icdInfo->neighborsEdge[10] = img->vox[index_3D(MIx,MIy,j_z,img->params.N_y,img->params.N_z)];	
+        icdInfo->neighborsEdge[11] = img->vox[index_3D(MIx,PLy,j_z,img->params.N_y,img->params.N_z)];	
 
 	}
 
@@ -152,19 +152,19 @@ void extractNeighbors(struct ICDInfo3DCone *icdInfo, struct Image *img, struct R
 		//icdInfo->neighborsVertex[1] = img->vox[PLx][PLy][MIz];
 		//icdInfo->neighborsVertex[2] = img->vox[PLx][MIy][PLz];
 		//icdInfo->neighborsVertex[3] = img->vox[PLx][MIy][MIz];
-		icdInfo->neighborsVertex[0] = img->vox[idx_3D_to_1D(PLx,PLy,PLz,img->params.N_y,img->params.N_z)];	
-		icdInfo->neighborsVertex[1] = img->vox[idx_3D_to_1D(PLx,PLy,MIz,img->params.N_y,img->params.N_z)];	
-		icdInfo->neighborsVertex[2] = img->vox[idx_3D_to_1D(PLx,MIy,PLz,img->params.N_y,img->params.N_z)];	
-		icdInfo->neighborsVertex[3] = img->vox[idx_3D_to_1D(PLx,MIy,MIz,img->params.N_y,img->params.N_z)];	
+		icdInfo->neighborsVertex[0] = img->vox[index_3D(PLx,PLy,PLz,img->params.N_y,img->params.N_z)];	
+		icdInfo->neighborsVertex[1] = img->vox[index_3D(PLx,PLy,MIz,img->params.N_y,img->params.N_z)];	
+		icdInfo->neighborsVertex[2] = img->vox[index_3D(PLx,MIy,PLz,img->params.N_y,img->params.N_z)];	
+		icdInfo->neighborsVertex[3] = img->vox[index_3D(PLx,MIy,MIz,img->params.N_y,img->params.N_z)];	
         /* Vertex Neighbors (opposite) */
 		//icdInfo->neighborsVertex[4] = img->vox[MIx][MIy][MIz];
 		//icdInfo->neighborsVertex[5] = img->vox[MIx][MIy][PLz];
 		//icdInfo->neighborsVertex[6] = img->vox[MIx][PLy][MIz];
 		//icdInfo->neighborsVertex[7] = img->vox[MIx][PLy][PLz];
-		icdInfo->neighborsVertex[4] = img->vox[idx_3D_to_1D(MIx,MIy,MIz,img->params.N_y,img->params.N_z)];	
-		icdInfo->neighborsVertex[5] = img->vox[idx_3D_to_1D(MIx,MIy,PLz,img->params.N_y,img->params.N_z)];	
-		icdInfo->neighborsVertex[6] = img->vox[idx_3D_to_1D(MIx,PLy,MIz,img->params.N_y,img->params.N_z)];	
-		icdInfo->neighborsVertex[7] = img->vox[idx_3D_to_1D(MIx,PLy,PLz,img->params.N_y,img->params.N_z)];	
+		icdInfo->neighborsVertex[4] = img->vox[index_3D(MIx,MIy,MIz,img->params.N_y,img->params.N_z)];	
+		icdInfo->neighborsVertex[5] = img->vox[index_3D(MIx,MIy,PLz,img->params.N_y,img->params.N_z)];	
+		icdInfo->neighborsVertex[6] = img->vox[index_3D(MIx,PLy,MIz,img->params.N_y,img->params.N_z)];	
+		icdInfo->neighborsVertex[7] = img->vox[index_3D(MIx,PLy,PLz,img->params.N_y,img->params.N_z)];	
 
 	}
 
@@ -199,13 +199,13 @@ void computeTheta1Theta2ForwardTerm(struct Sino *sino, struct SysMatrix *A, stru
             {
             	A_ij = B_ij * A->C_ij_scaler * A->C[j_u][j_z*A->i_wstride_max + i_w-A->i_wstart[j_u][j_z]];
             	icdInfo->theta1_f -=		
-            							  sino->e[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
-            							* sino->wgt[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
+            							  sino->e[index_3D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
+            							* sino->wgt[index_3D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
             							* A_ij;
 
             	icdInfo->theta2_f +=	
             							  A_ij
-            							* sino->wgt[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
+            							* sino->wgt[index_3D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
             							* A_ij;
             }
         }
@@ -372,7 +372,7 @@ void updateErrorSinogram(struct Sino *sino, struct SysMatrix *A, struct ICDInfo3
             for (i_w = A->i_wstart[j_u][j_z]; i_w < A->i_wstart[j_u][j_z]+A->i_wstride[j_u][j_z]; ++i_w)
             {
             	
-            	sino->e[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)] -= 	
+            	sino->e[index_3D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)] -= 	
             									  B_ij
             									* A->C_ij_scaler * A->C[j_u][j_z*A->i_wstride_max + i_w-A->i_wstart[j_u][j_z]]
             									* icdInfo->Delta_xj;
@@ -385,7 +385,7 @@ void updateIterationStats(struct ReconAux *reconAux, struct ICDInfo3DCone *icdIn
 {
 	reconAux->TotalValueChange += fabs(icdInfo->Delta_xj);
 	//reconAux->TotalVoxelValue += _MAX_(img->vox[icdInfo->j_x][icdInfo->j_y][icdInfo->j_z], icdInfo->old_xj);
-	reconAux->TotalVoxelValue += _MAX_(img->vox[idx_3D_to_1D(icdInfo->j_x,icdInfo->j_y,icdInfo->j_z,img->params.N_y,img->params.N_z)], icdInfo->old_xj);
+	reconAux->TotalVoxelValue += _MAX_(img->vox[index_3D(icdInfo->j_x,icdInfo->j_y,icdInfo->j_z,img->params.N_y,img->params.N_z)], icdInfo->old_xj);
 	reconAux->NumUpdatedVoxels++;
 }
 
@@ -459,9 +459,9 @@ float MAPCostForward(struct Sino *sino)
         {
             for (i_w = 0; i_w < sino->params.N_dw; ++i_w)
             {
-            	cost +=   sino->e[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
-            			* sino->wgt[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
-            			* sino->e[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)];
+            	cost +=   sino->e[index_3D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
+            			* sino->wgt[index_3D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
+            			* sino->e[index_3D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)];
             }
         }
     }
@@ -493,7 +493,7 @@ float MAPCostPrior_QGGMRF(struct Image *img, struct ReconParams *reconParams)
 			icdInfo.j_y = j_y;
 			icdInfo.j_z = j_z;
 			extractNeighbors(&icdInfo, img, reconParams);
-			icdInfo.old_xj = img->vox[idx_3D_to_1D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)];
+			icdInfo.old_xj = img->vox[index_3D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)];
 			temp = MAPCostPrior_QGGMRFSingleVoxel_HalfNeighborhood(&icdInfo, reconParams);
 			cost += temp;
 		}
@@ -522,7 +522,7 @@ float MAPCostPrior_ProxMap(struct Image *img, struct ReconParams *reconParams)
             for (j_z = 0; j_z < img->params.N_z; ++j_z)
             {
                 //diff_voxel = img->vox[j_x][j_y][j_z] - img->proxMapInput[j_x][j_y][j_z];
-                diff_voxel = img->vox[idx_3D_to_1D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)] - img->proxMapInput[idx_3D_to_1D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)];
+                diff_voxel = img->vox[index_3D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)] - img->proxMapInput[index_3D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)];
                 cost += diff_voxel*diff_voxel*isInsideMask(j_x, j_y, img->params.N_x, img->params.N_y);
             }
         }
@@ -676,7 +676,7 @@ void computeDeltaXjAndUpdate(struct ICDInfo3DCone *icdInfo, struct ReconParams *
 	 */
 
 	//img->vox[icdInfo->j_x][icdInfo->j_y][icdInfo->j_z] 			+= icdInfo->Delta_xj;
-	img->vox[idx_3D_to_1D(icdInfo->j_x,icdInfo->j_y,icdInfo->j_z,img->params.N_y,img->params.N_z)] += icdInfo->Delta_xj;
+	img->vox[index_3D(icdInfo->j_x,icdInfo->j_y,icdInfo->j_z,img->params.N_y,img->params.N_z)] += icdInfo->Delta_xj;
 
 }
 
@@ -718,7 +718,7 @@ void updateIterationStatsGroup(struct ReconAux *reconAux, struct ICDInfo3DCone *
 
 		absDelta = fabs(icdInfo->Delta_xj);
 		//totValue = _MAX_(img->vox[j_x][j_y][j_z], icdInfo->old_xj);
-		totValue = _MAX_(img->vox[idx_3D_to_1D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)], icdInfo->old_xj);
+		totValue = _MAX_(img->vox[index_3D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)], icdInfo->old_xj);
 
 		reconAux->TotalValueChange 	+= absDelta;
 		reconAux->TotalVoxelValue 	+= totValue;
@@ -908,13 +908,13 @@ void computeTheta1Theta2ForwardTermGroup(struct Sino *sino, struct SysMatrix *A,
 		            	A_ij = B_ij * A->C_ij_scaler * A->C[j_u][j_z*A->i_wstride_max + i_w-A->i_wstart[j_u][j_z]];
 		            	
 		            	parallelAux->partialTheta[threadID][k_M].t1 -=	 
-		            													  sino->e[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
-		            													* sino->wgt[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
+		            													  sino->e[index_3D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
+		            													* sino->wgt[index_3D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
 		            													* A_ij;
 
 		            	parallelAux->partialTheta[threadID][k_M].t2 +=	
 		            													  A_ij
-		            													* sino->wgt[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
+		            													* sino->wgt[index_3D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)]
 		            													* A_ij;
 
 		            }
@@ -994,7 +994,7 @@ void updateErrorSinogramGroup(struct Sino *sino, struct SysMatrix *A, struct ICD
 	            for (i_w = A->i_wstart[j_u][j_z]; i_w < A->i_wstart[j_u][j_z]+A->i_wstride[j_u][j_z]; ++i_w)
 	            {
 	            	
-	            	sino->e[idx_3D_to_1D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)] -= 	
+	            	sino->e[index_3D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)] -= 	
 	            									  B_ij
 	            									* A->C_ij_scaler * A->C[j_u][j_z*A->i_wstride_max + i_w-A->i_wstart[j_u][j_z]]
 	            									* icdInfo[k_M].Delta_xj;
