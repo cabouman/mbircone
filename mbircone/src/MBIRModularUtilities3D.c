@@ -1,17 +1,11 @@
-
-
 #include "MBIRModularUtilities3D.h"
 
-
-
-
-
-void forwardProject3DCone( float ***Ax, float ***x, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams)
+void forwardProject3DCone( float *Ax, float *x, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams)
 {
     long int j_u, j_x, j_y, i_beta, i_v, j_z, i_w;
     float B_ij, B_ij_times_x_j;
 
-    setFloatArray2Value( &Ax[0][0][0], sinoParams->N_beta*sinoParams->N_dv*sinoParams->N_dw, 0);
+    setFloatArray2Value( &Ax[0], sinoParams->N_beta*sinoParams->N_dv*sinoParams->N_dw, 0);
 
 
     #pragma omp parallel for private(j_x, j_y, j_u, i_v, B_ij, j_z, B_ij_times_x_j, i_w)
@@ -28,10 +22,10 @@ void forwardProject3DCone( float ***Ax, float ***x, struct ImageParams *imgParam
                     B_ij = A->B_ij_scaler * A->B[j_x][j_y][i_beta*A->i_vstride_max + i_v-A->i_vstart[j_x][j_y][i_beta]];
                     for (j_z = 0; j_z <= imgParams->N_z-1; ++j_z)
                     {
-                        B_ij_times_x_j = B_ij * x[j_x][j_y][j_z];    
+                        B_ij_times_x_j = B_ij * x[index_3D(j_x,j_y,j_z,imgParams->N_y,imgParams->N_z)];    
                         for (i_w = A->i_wstart[j_u][j_z]; i_w < A->i_wstart[j_u][j_z]+A->i_wstride[j_u][j_z]; ++i_w)
                         {
-                            Ax[i_beta][i_v][i_w] += B_ij_times_x_j * A->C_ij_scaler * A->C[j_u][j_z*A->i_wstride_max + i_w-A->i_wstart[j_u][j_z]];
+                            Ax[index_3D(i_beta,i_v,i_w,sinoParams->N_dv,sinoParams->N_dw)] += B_ij_times_x_j * A->C_ij_scaler * A->C[j_u][j_z*A->i_wstride_max + i_w-A->i_wstart[j_u][j_z]];
                         }
                     }
                 }
@@ -132,100 +126,12 @@ void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageParams *i
                 }
             }   
         }
-        mem_free_3D((void***)normalization);
+        multifree((void***)normalization, 3);
     }
 
 
     toc(&ticToc);
     ticTocDisp(ticToc, "backProjectlike3DCone");
-
-}
-
-
-void initializeWghtRecon(struct SysMatrix *A, struct Sino *sino, struct Image *img, struct ReconParams *reconParams)
-{
-    long int j_u, j_x, j_y, i_beta, i_v, j_z, i_w;
-    float B_ij, A_ij;
-    float ticToc, avg;
-
-    if (reconParams->verbosity>0)
-        printf("\nInitialize WghtRecon ...\n");
-
-
-    tic(&ticToc);
-    #pragma omp parallel for private(j_y, j_z)
-    for (j_x = 0; j_x <= img->params.N_x-1; ++j_x)
-    {
-        for (j_y = 0; j_y <= img->params.N_y-1 ; ++j_y)
-        {
-            for (j_z = 0; j_z <= img->params.N_z-1; ++j_z)
-            {
-                img->wghtRecon[j_x][j_y][j_z] = 0;
-            }
-        }
-    }
-
-    #pragma omp parallel for private(j_x, j_y, j_u, i_v, B_ij, j_z, i_w, A_ij)
-    for (i_beta = 0; i_beta <= sino->params.N_beta-1; ++i_beta)
-    {
-
-        for (j_x = 0; j_x <= img->params.N_x-1; ++j_x)
-        {
-            for (j_y = 0; j_y <= img->params.N_y-1; ++j_y)
-            {
-                if(isInsideMask(j_x, j_y, img->params.N_x, img->params.N_y))
-                {
-                    j_u = A->j_u[j_x][j_y][i_beta];
-                    for (i_v = A->i_vstart[j_x][j_y][i_beta]; i_v < A->i_vstart[j_x][j_y][i_beta]+A->i_vstride[j_x][j_y][i_beta] ; ++i_v)
-                    {
-                        B_ij = A->B_ij_scaler * A->B[j_x][j_y][i_beta*A->i_vstride_max + i_v-A->i_vstart[j_x][j_y][i_beta]];
-                        for (j_z = 0; j_z <= img->params.N_z-1; ++j_z)
-                        {
-                            for (i_w = A->i_wstart[j_u][j_z]; i_w < A->i_wstart[j_u][j_z]+A->i_wstride[j_u][j_z]; ++i_w)
-                            {
-                                A_ij = B_ij * A->C_ij_scaler * A->C[j_u][j_z*A->i_wstride_max + i_w-A->i_wstart[j_u][j_z]];
-                                img->wghtRecon[j_x][j_y][j_z] += 0.5 * A_ij * sino->wgt[i_beta][i_v][i_w] * A_ij;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    avg = computeAvgWghtRecon(img);
-
-    if (reconParams->verbosity>0){
-        toc(&ticToc);
-        ticTocDisp(ticToc, "initializeWghtRecon");
-        printf("\n -> Average Weight Scaler = %e\n", avg);
-    }
-
-
-
-}
-
-float computeAvgWghtRecon(struct Image *img)
-{
-    long int j_x, j_y, j_z;
-
-    float sum = 0;
-    long int num = 0;
-
-    #pragma omp parallel for private(j_y, j_z) reduction(+:sum,num)
-    for (j_x = 0; j_x <= img->params.N_x-1; ++j_x)
-    {
-        for (j_y = 0; j_y <= img->params.N_y-1 ; ++j_y)
-        {
-            if(isInsideMask(j_x, j_y, img->params.N_x, img->params.N_y))
-                for (j_z = 0; j_z <= img->params.N_z-1; ++j_z)
-                {
-                    sum += img->wghtRecon[j_x][j_y][j_z];
-                    num += 1;
-                }
-        }
-    }
-    return sum/num;
 
 }
 
@@ -322,8 +228,7 @@ float computeRelativeRMSEFloatArray(float *arr1, float *arr2, long int len)
     return sqrt(numerator/denominator);
 }
 
-
-float computeSinogramWeightedNormSquared(struct Sino *sino, float ***arr)
+float computeSinogramWeightedNormSquared(struct Sino *sino, float *arr)
 {
     /**
      *                      1  ||     ||2   
@@ -342,7 +247,7 @@ float computeSinogramWeightedNormSquared(struct Sino *sino, float ***arr)
     for (i_v = 0; i_v < sino->params.N_dv; ++i_v)
     for (i_w = 0; i_w < sino->params.N_dw; ++i_w)
     {
-        normError += arr[i_beta][i_v][i_w] * sino->wgt[i_beta][i_v][i_w] * arr[i_beta][i_v][i_w];
+        normError += arr[index_3D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)] * sino->wgt[index_3D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)] * arr[index_3D(i_beta,i_v,i_w,sino->params.N_dv,sino->params.N_dw)];
     }
 
     num_mask = sino->params.N_beta * sino->params.N_dv * sino->params.N_dw;
@@ -416,14 +321,14 @@ void copyImage2ROI(struct Image *img)
             for (j_z = j_zstart; j_z <= j_zstop; ++j_z)
             {
                 img->vox_roi[j_x-j_xstart][j_y-j_ystart][j_z-j_zstart] = 
-                          img->vox[j_x][j_y][j_z]
+                          img->vox[index_3D(j_x,j_y,j_z,img->params.N_y, img->params.N_z)]
                         * isInsideMask(j_x-img->params.j_xstart_roi, j_y-img->params.j_ystart_roi, N_x_roi, N_y_roi);
             }
         }
     }
 }
 
-void applyMask(float ***arr, long int N1, long int N2, long int N3)
+void applyMask3D(float ***arr, long int N1, long int N2, long int N3)
 {
     long int i1, i2, i3;
     int b;
@@ -436,6 +341,25 @@ void applyMask(float ***arr, long int N1, long int N2, long int N3)
             for (i3 = 0; i3 < N3; ++i3)
             {
                 arr[i1][i2][i3] *= b;
+            }
+
+        }
+    }
+}
+
+void applyMask(float *arr, long int N1, long int N2, long int N3)
+{
+    long int i1, i2, i3;
+    int b;
+
+    for (i1 = 0; i1 < N1; ++i1)
+    {
+        for (i2 = 0; i2 < N2; ++i2)
+        {
+            b = isInsideMask(i1, i2, N1, N2);
+            for (i3 = 0; i3 < N3; ++i3)
+            {
+                arr[index_3D(i1,i2,i3,N2,N3)] *= b;
             }
 
         }
@@ -472,11 +396,10 @@ void setUCharArray2Value(unsigned char *arr, long int len, unsigned char value)
     }
 }
 
-void*** allocateSinoData3DCone(struct SinoParams *params, int dataTypeSize)
+void* allocateSinoData3DCone(struct SinoParams *params, int dataTypeSize)
 {
-    return mem_alloc_3D(params->N_beta, params->N_dv, params->N_dw, dataTypeSize);
+    return mget_spc(params->N_beta*params->N_dv*params->N_dw, dataTypeSize);
 }
-
 
 void*** allocateImageData3DCone( struct ImageParams *params, int dataTypeSize, int isROI)
 {
@@ -488,11 +411,11 @@ void*** allocateImageData3DCone( struct ImageParams *params, int dataTypeSize, i
 
     if (isROI)
     {
-        return mem_alloc_3D(N_x_roi, N_y_roi, N_z_roi, dataTypeSize);
+        return multialloc(dataTypeSize, 3, N_x_roi, N_y_roi, N_z_roi);
     }
     else
     {
-        return mem_alloc_3D(params->N_x, params->N_y, params->N_z, dataTypeSize);
+        return multialloc(dataTypeSize, 3, params->N_x, params->N_y, params->N_z);
     }
 
 
@@ -501,7 +424,7 @@ void*** allocateImageData3DCone( struct ImageParams *params, int dataTypeSize, i
 
 void freeViewAngleList(struct ViewAngleList *list)
 {
-    mem_free_1D((void*)list->beta);
+    free((void*)list->beta);
 }
 
 
@@ -517,12 +440,12 @@ void RandomZiplineAux_allocate(struct RandomZiplineAux *aux, struct ImageParams 
     /**
      *      Initialize orderXY
      */
-    aux->orderXY = mem_alloc_1D(N_x * N_y, sizeof(int));
+    aux->orderXY = mget_spc(N_x * N_y, sizeof(int));
 
     /**
      *      Initialize groupIndex
      */
-    aux->groupIndex = (unsigned char***) mem_alloc_3D(N_x, N_y, N_z, sizeof(unsigned char***));
+    aux->groupIndex = (unsigned char***) multialloc(sizeof(unsigned char***), 3, N_x, N_y, N_z);
 }
 
 void RandomZiplineAux_Initialize(struct RandomZiplineAux *aux, struct ImageParams *imgParams, struct ReconParams *reconParams, int N_M_max)
@@ -550,7 +473,7 @@ void RandomZiplineAux_Initialize(struct RandomZiplineAux *aux, struct ImageParam
 
 void RandomAux_allocate(struct RandomAux *aux, struct ImageParams *imgParams)
 {
-    aux->orderXYZ = mem_alloc_1D(imgParams->N_x * imgParams->N_y * imgParams->N_z, sizeof(long ));
+    aux->orderXYZ = mget_spc(imgParams->N_x * imgParams->N_y * imgParams->N_z, sizeof(long ));
 }
 
 void RandomAux_Initialize(struct RandomAux *aux, struct ImageParams *imgParams)
@@ -575,13 +498,13 @@ void RandomAux_Initialize(struct RandomAux *aux, struct ImageParams *imgParams)
 
 void RandomZiplineAux_free(struct RandomZiplineAux *aux)
 {
-    mem_free_1D((void*)aux->orderXY);
-    mem_free_3D((void***)aux->groupIndex);
+    free((void*)aux->orderXY);
+    multifree((void***)aux->groupIndex, 3);
 }
 
 void RandomAux_free(struct RandomAux *aux)
 {
-    mem_free_1D((void*)aux->orderXYZ);
+    free((void*)aux->orderXYZ);
 }
 
 
@@ -623,7 +546,7 @@ void RandomZiplineAux_ShuffleGroupIndices_FixedDistance(struct RandomZiplineAux 
 
     N_G = aux->N_G;
 /*    srand(time(NULL));
-*/    first_N_G_members = mem_alloc_1D(N_G, sizeof(int));
+*/    first_N_G_members = mget_spc(N_G, sizeof(int));
 
     /* Initialize first_N_G_members with 0, 1, ..., N_G-1 */
     for (i = 0; i < N_G; ++i)
@@ -878,7 +801,7 @@ float prctile_copyFast(float arr[], long int len, float p, int subsampleFactor)
     float result;
 
     len_sub = len/subsampleFactor;
-    arr_sub = malloc(len_sub*sizeof(float));
+    arr_sub = mget_spc(len_sub, sizeof(float));
 
     for (i = 0; i < len_sub; ++i)
     {
@@ -1134,4 +1057,3 @@ void printSysMatrixParams(struct SysMatrix *A)
     printf("\tC_ij_scaler = %e \n", A->C_ij_scaler);
 
 }
-

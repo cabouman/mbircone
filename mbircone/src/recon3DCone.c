@@ -31,7 +31,6 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 	float ticToc_computeLastChangeThreshold;
 
 	char stopFlag = 0;
-
 	struct ICDInfo3DCone *icdInfoArray;			/* Only used when using zip line option*/
 	struct ICDInfo3DCone icdInfo;				/* Only used when not using zip line option*/
 	struct ParallelAux parallelAux;
@@ -115,12 +114,11 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
     /**
      * 		Loop initialization
      */
-	icdInfoArray = mem_alloc_1D(reconAux.N_M_max, sizeof(struct ICDInfo3DCone));
+	icdInfoArray = mget_spc(reconAux.N_M_max, sizeof(struct ICDInfo3DCone));
 
 	timer_reset(&timer_icd_loop);
 	tic(&ticToc_all);
 	ticToc_icdUpdate_total = 0;
-
 	for (itNumber = 0; (itNumber <= MaxIterations) && (stopFlag==0); ++itNumber) 
 	{
 
@@ -256,8 +254,8 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
         else
             reconAux.relativeWeightedForwardError = sqrt(weightedNormSquared_e);
 
-        normSquared_e = computeNormSquaredFloatArray(&sino->e[0][0][0], N_beta*N_dv*N_dw);
-        normSquared_y = computeNormSquaredFloatArray(&sino->vox[0][0][0], N_beta*N_dv*N_dw);
+        normSquared_e = computeNormSquaredFloatArray(&sino->e[0], N_beta*N_dv*N_dw);
+        normSquared_y = computeNormSquaredFloatArray(&sino->vox[0], N_beta*N_dv*N_dw);
         reconAux.relativeUnweightedForwardError = sqrt(normSquared_e / normSquared_y);
 
 
@@ -273,8 +271,6 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 		 */
 		if (strcmp(reconParams->weightScaler_estimateMode,"errorSino") == 0)
 			sino->params.weightScaler_value = weightedNormSquared_e;
-		else if (strcmp(reconParams->weightScaler_estimateMode,"avgWghtRecon") == 0)
-			sino->params.weightScaler_value = computeAvgWghtRecon(img);
 		else if (strcmp(reconParams->weightScaler_estimateMode,"None") == 0)
 			sino->params.weightScaler_value = reconParams->weightScaler_value;
 		else
@@ -297,7 +293,7 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
         reconAux.totalEquits += ratioUpdated;
 
 		/* NHICD Arrays */
-		applyMask(img->lastChange, N_x, N_y, numZiplines);
+		applyMask3D(img->lastChange, N_x, N_y, numZiplines);
 
 		toc(&ticToc_iteration);
 
@@ -326,14 +322,14 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
 			disp_iterationInfo(&reconAux, reconParams, itNumber, MaxIterations, cost, relUpdate, stopThresholdChange, sino->params.weightScaler_value, speedAuxICD.voxelsPerSecond, ticToc_icdUpdate, weightedNormSquared_e, ratioUpdated, reconAux.totalEquits);
 	}
 
-	mem_free_1D((void*)reconAux.NHICD_numUpdatedVoxels);
-	mem_free_1D((void*)reconAux.NHICD_totalValueChange);
-	mem_free_1D((void*)reconAux.NHICD_isPartialZiplineHot);
+	free((void*)reconAux.NHICD_numUpdatedVoxels);
+	free((void*)reconAux.NHICD_totalValueChange);
+	free((void*)reconAux.NHICD_isPartialZiplineHot);
 
 
 
 	
-	mem_free_1D((void*)icdInfoArray);
+	free((void*)icdInfoArray);
 	RandomZiplineAux_free(&img->randomZiplineAux);
 	RandomAux_free(&img->randomAux);
 

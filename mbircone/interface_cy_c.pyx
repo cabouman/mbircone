@@ -115,7 +115,7 @@ cdef extern from "./src/interface.h":
     void AmatrixComputeToFile(float *angles, SinoParams c_sinoparams, ImageParams c_imgparams, 
         char *Amatrix_fname, char verbose);
 
-    void recon(float *x, float *sino, float *wght, float *x_init, float *proxmap_input,
+    void recon(float *x, float *sino, float *wght, float *proxmap_input,
 	SinoParams c_sinoparams, ImageParams c_imgparams, ReconParams c_reconparams,
 	char *Amatrix_fname);
 
@@ -170,7 +170,6 @@ cdef map_py2c_reconparams(ReconParams* c_reconparams,
 
         c_reconparams.priorWeight_QGGMRF = reconparams['priorWeight_QGGMRF']                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping)
         c_reconparams.priorWeight_proxMap = reconparams['priorWeight_proxMap']                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping)
-
         # QGGMRF
         c_reconparams.q = reconparams['q']                   # q: QGGMRF parameter (q>1, typical choice q=2)
         c_reconparams.p = reconparams['p']                   # p: QGGMRF parameter (1<=p<q)
@@ -270,18 +269,32 @@ def recon_cy(sino, wght, x_init, proxmap_input,
              sinoparams, imgparams, reconparams, py_Amatrix_fname, num_threads):
     # sino, wght shape : views x slices x channels
     # recon shape: N_x N_y N_z (source-detector-line, channels, slices)
-
-    cdef cnp.ndarray[float, ndim=3, mode="c"] py_x
-    py_x = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']), dtype=ctypes.c_float)
-    py_sino = np.ascontiguousarray(sino, dtype=np.single)
-    py_wght = np.ascontiguousarray(wght, dtype=np.single)
-    py_x_init = np.ascontiguousarray(x_init, dtype=np.single)
-    py_proxmap_input = np.ascontiguousarray(proxmap_input, dtype=np.single)
-
-    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_sino = py_sino
-    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_wght = py_wght
-    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_x_init = py_x_init
-    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_proxmap_input = py_proxmap_input
+    if not x_init.flags["C_CONTIGUOUS"]:
+        x_init = np.ascontiguousarray(x_init, dtype=np.single)
+    else:
+        x_init = x_init.astype(np.single, copy=False)
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_x = x_init
+    
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_proxmap_input
+    if proxmap_input is not None:
+        if not proxmap_input.flags["C_CONTIGUOUS"]:
+            proxmap_input = np.ascontiguousarray(proxmap_input, dtype=np.single)
+        else:
+            proxmap_input = proxmap_input.astype(np.single, copy=False) 
+        cy_proxmap_input = proxmap_input
+    
+    if not sino.flags["C_CONTIGUOUS"]:
+        sino = np.ascontiguousarray(sino, dtype=np.single)
+    else:
+        sino = sino.astype(np.single, copy=False)
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_sino = sino
+    
+    if not wght.flags["C_CONTIGUOUS"]:
+        wght = np.ascontiguousarray(wght, dtype=np.single)
+    else:
+        wght = wght.astype(np.single, copy=False)
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_wght = wght
+    
     cdef cnp.ndarray[char, ndim=1, mode="c"] c_Amatrix_fname = string_to_char_array(py_Amatrix_fname)
     cdef cnp.ndarray[char, ndim=1, mode="c"] cy_relativeChangeMode = string_to_char_array(reconparams["relativeChangeMode"])
     cdef cnp.ndarray[char, ndim=1, mode="c"] cy_weightScaler_estimateMode = string_to_char_array(reconparams["weightScaler_estimateMode"])
@@ -302,20 +315,16 @@ def recon_cy(sino, wght, x_init, proxmap_input,
                           &cy_NHICD_Mode[0])
 
     openmp.omp_set_num_threads(num_threads)
-
-    recon(&py_x[0,0,0],
+    recon(&cy_x[0,0,0],
           &cy_sino[0,0,0],
           &cy_wght[0,0,0],
-          &cy_x_init[0,0,0],
           &cy_proxmap_input[0,0,0],
           c_sinoparams,
           c_imgparams,
           c_reconparams,
 	      &c_Amatrix_fname[0])
-
     # print("Cython done")
-
-    return py_x
+    return cy_x
 
 
 def project(image, settings):
