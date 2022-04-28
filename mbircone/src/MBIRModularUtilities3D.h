@@ -58,6 +58,8 @@
 #define INDEXSTRIDEDATATYPE unsigned char
 #define INDEXSTRIDEDATATYPE_string "unsigned char"
 
+/* Added by Diyu for indexing flattened 3D array with 3D index */
+#define index_3D(i, j, k, Ny, Nz) (i*Ny*Nz+j*Nz+k)
 
 
 struct RandomZiplineAux
@@ -161,9 +163,10 @@ struct ImageParams
 struct Image
 {
     struct ImageParams params;
-    float ***vox;           /* [N_x][N_y][N_z] */
+    //float ***vox;           /* [N_x][N_y][N_z] */
+    float *vox;           /* [N_x][N_y][N_z] */
     float ***vox_roi;       /* [N_x_roi][N_y_roi][N_z_roi] */
-    float ***proxMapInput;  /* input, v, to the proximal operator prox_f(.)*/
+    float *proxMapInput;  /* input, v, to the proximal operator prox_f(.)*/
                             /*    prox_f(v) = argmin_x{ f(x) + 1/2 ||x-v||^2 } */
     float ***lastChange;
     unsigned char ***timeToChange;
@@ -208,9 +211,9 @@ struct SinoParams
 struct Sino
 {
     struct SinoParams params;
-    float ***vox;       /* [N_beta][N_dv][N_dw] */
-    WEIGHTDATATYPE ***wgt;
-    float ***e;
+    float *vox;       /* [N_beta][N_dv][N_dw] */
+    WEIGHTDATATYPE *wgt;
+    float *e;
     float ***projOutput;
     float ***backprojlikeInput;
 
@@ -403,7 +406,7 @@ struct ReconAux
 };
 
 
-void forwardProject3DCone( float ***Ax, float ***x, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams);
+void forwardProject3DCone( float *Ax, float *x, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams);
 
 void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams, char mode);
 
@@ -415,7 +418,7 @@ float computeNormSquaredFloatArray(float *arr, long int len);
 
 float computeRelativeRMSEFloatArray(float *arr1, float *arr2, long int len);
 
-float computeSinogramWeightedNormSquared(struct Sino *sino, float ***arr);
+float computeSinogramWeightedNormSquared(struct Sino *sino, float *arr);
 
 char isInsideMask(long int i_1, long int i_2, long int N1, long int N2);
 
@@ -423,7 +426,9 @@ long int computeNumVoxelsInImageMask(struct Image *img);
 
 void copyImage2ROI(struct Image *img);
 
-void applyMask(float ***arr, long int N1, long int N2, long int N3);
+void applyMask(float *arr, long int N1, long int N2, long int N3);
+
+void applyMask3D(float ***arr, long int N1, long int N2, long int N3);
 
 void floatArray_z_equals_aX_plus_bY(float *Z, float a, float *X, float b, float *Y, long int len);
 
@@ -431,7 +436,7 @@ void setFloatArray2Value(float *arr, long int len, float value);
 
 void setUCharArray2Value(unsigned char *arr, long int len, unsigned char value);
 
-void*** allocateSinoData3DCone(struct SinoParams *params, int dataTypeSize);
+void* allocateSinoData3DCone(struct SinoParams *params, int dataTypeSize);
 
 void*** allocateImageData3DCone( struct ImageParams *params, int dataTypeSize, int isROI);
 
@@ -529,5 +534,7 @@ void printImgParams(struct ImageParams *params);
 void printReconParams(struct ReconParams *params);
 
 void printSysMatrixParams(struct SysMatrix *A);
+
+
 
 #endif /* MBIR_MODULAR_UTILITIES_3D_H */
