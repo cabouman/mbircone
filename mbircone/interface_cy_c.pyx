@@ -269,6 +269,10 @@ def recon_cy(sino, wght, x_init, proxmap_input,
              sinoparams, imgparams, reconparams, py_Amatrix_fname, num_threads):
     # sino, wght shape : views x slices x channels
     # recon shape: N_x N_y N_z (source-detector-line, channels, slices)
+    if np.isscalar(x_init):
+        x_init = np.zeros((imgparams['N_x'], imgparams['N_y'], imgparams['N_z'])) + x_init
+    else:
+        x_init = np.swapaxes(x_init, 0, 2)
     if not x_init.flags["C_CONTIGUOUS"]:
         x_init = np.ascontiguousarray(x_init, dtype=np.single)
     else:
@@ -277,22 +281,16 @@ def recon_cy(sino, wght, x_init, proxmap_input,
     
     cdef cnp.ndarray[float, ndim=3, mode="c"] cy_proxmap_input
     if proxmap_input is not None:
-        if not proxmap_input.flags["C_CONTIGUOUS"]:
-            proxmap_input = np.ascontiguousarray(proxmap_input, dtype=np.single)
-        else:
-            proxmap_input = proxmap_input.astype(np.single, copy=False) 
+        proxmap_input = np.swapaxes(proxmap_input, 0, 2)
+        proxmap_input = np.ascontiguousarray(proxmap_input, dtype=np.single)
         cy_proxmap_input = proxmap_input
     
-    if not sino.flags["C_CONTIGUOUS"]:
-        sino = np.ascontiguousarray(sino, dtype=np.single)
-    else:
-        sino = sino.astype(np.single, copy=False)
+    sino = np.swapaxes(sino,1,2)
+    sino = np.ascontiguousarray(sino, dtype=np.single)
     cdef cnp.ndarray[float, ndim=3, mode="c"] cy_sino = sino
-    
-    if not wght.flags["C_CONTIGUOUS"]:
-        wght = np.ascontiguousarray(wght, dtype=np.single)
-    else:
-        wght = wght.astype(np.single, copy=False)
+   
+    wght = np.swapaxes(wght,1,2) 
+    wght = np.ascontiguousarray(wght, dtype=np.single)
     cdef cnp.ndarray[float, ndim=3, mode="c"] cy_wght = wght
     
     cdef cnp.ndarray[char, ndim=1, mode="c"] c_Amatrix_fname = string_to_char_array(py_Amatrix_fname)
@@ -324,7 +322,8 @@ def recon_cy(sino, wght, x_init, proxmap_input,
           c_reconparams,
 	      &c_Amatrix_fname[0])
     # print("Cython done")
-    return cy_x
+    # Convert shape from Cython interface specifications to Python interface specifications
+    return np.swapaxes(cy_x, 0, 2)
 
 
 def project(image, settings):
@@ -351,11 +350,8 @@ def project(image, settings):
     num_det_channels = sinoparams['N_dw']
 
     # Ensure image memory is aligned properly
-    if not image.flags["C_CONTIGUOUS"]:
-        image = np.ascontiguousarray(image, dtype=np.single)
-    else:
-        image = image.astype(np.single, copy=False)
-
+    image = np.swapaxes(image, 0, 2)
+    image = np.ascontiguousarray(image, dtype=np.single)
     cdef cnp.ndarray[float, ndim=3, mode="c"] cy_image = image
 
     # Allocates memory, without initialization, for matrix to be passed back from C subroutine
@@ -377,5 +373,5 @@ def project(image, settings):
                     &Amatrix_fname[0])
 
     # print("Cython done")
-
-    return proj
+    # Convert shape from Cython interface specifications to Python interface specifications
+    return np.swapaxes(proj, 1, 2)
