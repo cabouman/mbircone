@@ -323,7 +323,8 @@ def recon_cy(sino, wght, x_init, proxmap_input,
 	      &c_Amatrix_fname[0])
     # print("Cython done")
     # Convert shape from Cython interface specifications to Python interface specifications
-    return np.swapaxes(cy_x, 0, 2)
+    img_py = np.swapaxes(cy_x, 0, 2)
+    return img_py
 
 
 def project(image, settings):
@@ -374,4 +375,5 @@ def project(image, settings):
 
     # print("Cython done")
     # Convert shape from Cython interface specifications to Python interface specifications
-    return np.swapaxes(proj, 1, 2)
+    sino_py = np.swapaxes(proj, 1, 2)
+    return sino_py
