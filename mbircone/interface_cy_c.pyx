@@ -279,7 +279,7 @@ def recon_cy(sino, wght, x_init, proxmap_input,
         x_init = x_init.astype(np.single, copy=False)
     cdef cnp.ndarray[float, ndim=3, mode="c"] cy_x = x_init
     
-    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_proxmap_input
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_proxmap_input = np.empty(imgparams['N_x'], imgparams['N_y'], imgparams['N_z'], dtype=ctypes.c_float)
     if proxmap_input is not None:
         proxmap_input = np.swapaxes(proxmap_input, 0, 2)
         proxmap_input = np.ascontiguousarray(proxmap_input, dtype=np.single)
@@ -323,8 +323,7 @@ def recon_cy(sino, wght, x_init, proxmap_input,
 	      &c_Amatrix_fname[0])
     # print("Cython done")
     # Convert shape from Cython interface specifications to Python interface specifications
-    img_py = np.swapaxes(cy_x, 0, 2)
-    return img_py
+    return np.swapaxes(cy_x, 0, 2)
 
 
 def project(image, settings):
@@ -375,5 +374,4 @@ def project(image, settings):
 
     # print("Cython done")
     # Convert shape from Cython interface specifications to Python interface specifications
-    sino_py = np.swapaxes(proj, 1, 2)
-    return sino_py
+    return np.swapaxes(proj, 1, 2)
