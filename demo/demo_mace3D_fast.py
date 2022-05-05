@@ -36,7 +36,7 @@ yaml_url = os.path.join(data_repo_url, 'index.yaml')
 
 # Choice of phantom file. 
 # These should be valid choices specified in the index file. 
-# The urls to phantom data and NN weights will be parsed from data_repo_url and the choices of phantom specified below.
+# The url to phantom data will be parsed from data_repo_url and the choices of phantom specified below.
 phantom_name = 'bottle_cap_3D'
 
 # Destination path to download and extract the phantom and NN weight files.
@@ -108,10 +108,10 @@ sino = mbircone.cone3D.project(phantom, angles,
                                num_det_rows, num_det_channels,
                                dist_source_detector, magnification,
                                delta_pixel_detector=delta_pixel_detector)
-weights = mbircone.cone3D.calc_weights(sino, weight_type='transmission')
+sino_weights = mbircone.cone3D.calc_weights(sino, weight_type='transmission')
 
 # Add transmission noise
-noise = sino_noise_sigma * 1. / np.sqrt(weights) * np.random.normal(size=(num_views, num_det_rows, num_det_channels))
+noise = sino_noise_sigma * 1. / np.sqrt(sino_weights) * np.random.normal(size=(num_views, num_det_rows, num_det_channels))
 sino_noisy = sino + noise
 
 # ###########################################################################
@@ -128,7 +128,7 @@ recon_qGGMRF = mbircone.cone3D.recon(sino_noisy, angles, dist_source_detector, m
 # ###########################################################################
 # This demo includes a custom DnCNN denoiser trained on CT images.
 print("Loading denoiser function and model ...")
-# Load denoiser model structure and weights
+# Load denoiser model structure and pre-trained model weights
 denoiser_model = denoiser_utils.DenoiserCT(checkpoint_dir=os.path.join(denoiser_path, 'model_dncnn_ct'))
 # Define the denoiser using this model.  This version requires some interface code to match with MACE.
 def denoiser(img_noisy):
