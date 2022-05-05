@@ -5,11 +5,11 @@ from demo_utils import plot_image, plot_gif, plt_cmp_3dobj
 
 # Set sinogram shape
 num_det_rows = 200
-num_det_channels = 128
+num_det_channels = 256
 num_views = 144
 
 # Reconstruction parameters
-sharpness = 0.2
+sharpness = 2.0
 snr_db = 31.0
 
 # magnification is unitless.
