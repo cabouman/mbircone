@@ -231,7 +231,7 @@ def download_and_extract(download_url, save_dir):
     if save_path.endswith(('.tar', '.tar.gz')):
         if is_download:
             tar_file = tarfile.open(save_path)
-            print("Extracting tarball file to {save_dir} ...")
+            print(f"Extracting tarball file to {save_dir} ...")
             # Extract to save_dir.
             tar_file.extractall(save_dir)
             tar_file.close
