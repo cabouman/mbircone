@@ -9,17 +9,15 @@ import demo_utils, denoiser_utils
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 """
-This script is a quick demonstration of the mace3D reconstruction algorithm.  Demo functionality includes
+This script is a fast demonstration of the mace3D reconstruction algorithm that uses a low-res phantom. Demo functionality includes
  * downloading phantom and denoiser data from specified urls
- * downsampling the phantom along all three dimensions
- * generating sinogram by projecting the phantom and then adding transmission noise
- * performing a 3D MACE reconstruction.
+ * generating synthetic sinogram data by forward projecting the phantom and then adding transmission noise
+ * performing a 3D MACE and qGGMRF reconstructions and displaying them.
 """
-print('This script is a quick demonstration of the mace3D reconstruction algorithm.  Demo functionality includes \
+print('This script is a demonstration of the mace3D reconstruction algorithm. Demo functionality includes \
 \n\t * downloading phantom and denoiser data from specified urls \
-\n\t * downsampling the phantom along all three dimensions \
-\n\t * generating sinogram by projecting the phantom and then adding transmission noise\
-\n\t * performing a 3D MACE reconstruction.')
+\n\t * generating synthetic sinogram data by forward projecting the phantom and then adding transmission noise\
+\n\t * performing a 3D MACE and qGGMRF reconstructions and displaying them.')
 
 # ###########################################################################
 # Set the parameters to get the data and do the recon 
@@ -57,8 +55,8 @@ num_views = 50               # number of projection views
 sino_noise_sigma = 0.005      # transmission noise level
 
 # Recon parameters
-max_admm_itr = 10            # max ADMM iterations for MACE reconstruction
 sharpness = 1.0              # Parameter to control regularization level of reconstruction.
+max_admm_itr = 10            # max ADMM iterations for MACE reconstruction
 # ######### End of parameters #########
 
 

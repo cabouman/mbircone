@@ -9,15 +9,15 @@ import demo_utils, denoiser_utils
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 """
-This script is a demonstration of the mace3D reconstruction algorithm.  Demo functionality includes
+This script is a demonstration of the mace3D reconstruction algorithm. Demo functionality includes
  * downloading phantom and denoiser data from specified urls
- * generating sinogram by projecting the phantom and then adding transmission noise
- * performing a 3D MACE reconstruction.
+ * generating synthetic sinogram data by forward projecting the phantom and then adding transmission noise
+ * performing a 3D MACE and qGGMRF reconstructions and displaying them.
 """
-print('This script is a demonstration of the mace3D reconstruction algorithm.  Demo functionality includes \
+print('This script is a demonstration of the mace3D reconstruction algorithm. Demo functionality includes \
 \n\t * downloading phantom and denoiser data from specified urls \
-\n\t * generating sinogram by projecting the phantom and then adding transmission noise\
-\n\t * performing a 3D MACE reconstruction.')
+\n\t * generating synthetic sinogram data by forward projecting the phantom and then adding transmission noise\
+\n\t * performing a 3D MACE and qGGMRF reconstructions and displaying them.')
 
 # ###########################################################################
 # Set the parameters to get the data and do the recon 
@@ -55,8 +55,8 @@ num_views = 75               # number of projection views
 sino_noise_sigma = 0.01      # transmission noise level
 
 # MACE recon parameters
+sharpness = 1.0              # Parameter to control regularization level of reconstruction.
 max_admm_itr = 10            # max ADMM iterations for MACE reconstruction
-sharpness = 0.5              # Parameter to control regularization level of reconstruction.
 # ######### End of parameters #########
 
 
@@ -74,14 +74,8 @@ denoiser_url = os.path.join(data_repo_url, url_index['denoiser']['dncnn_ct'])  #
 
 # download phantom file
 phantom_path = demo_utils.download_and_extract(phantom_url, target_dir)
-# download and extract NN weights and structure files
+# download and extract NN weights and structure files used for MACE denoiser
 denoiser_path = demo_utils.download_and_extract(denoiser_url, target_dir)
-
-
-# ###########################################################################
-# Generate downsampled phantom 
-# ###########################################################################
-print("Generating downsampled 3D phantom volume ...")
 
 # load original phantom
 phantom = np.load(phantom_path)
@@ -117,7 +111,8 @@ recon_qGGMRF = mbircone.cone3D.recon(sino_noisy, angles, dist_source_detector, m
 # ###########################################################################
 # Set up the denoiser
 # ###########################################################################
-# This demo includes a custom DnCNN denoiser trained on CT images.
+# The MACE reconstruction algorithm requires the use of a denoiser as a prior model.
+# This demo includes a custom DnCNN denoiser trained on CT images, which can be used for other applications.
 print("Loading denoiser function and model ...")
 # Load denoiser model structure and pre-trained model weights
 denoiser_model = denoiser_utils.DenoiserCT(checkpoint_dir=os.path.join(denoiser_path, 'model_dncnn_ct'))
