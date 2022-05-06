@@ -27,8 +27,8 @@ if __name__=='__main__':
     \n\t * generating 4D simulated data by rotating the 3D phantom with positive angular steps with each time point. \
     \n\t * obtaining a cluster ticket with get_cluster_ticket(). \
     \n\t * Performing multinode computation with the cluster ticket. This includes: \
-    \n\t    * generating sinogram data by projecting each phantom at each timepoint, and then adding transmission noise \
-    \n\t    * performing a 4D MACE reconstruction.')
+    \n\t * generating sinogram data by projecting each phantom at each timepoint, and then adding transmission noise \
+    \n\t * performing a 4D MACE reconstruction.')
 
     # ###########################################################################
     # Set the parameters to get the data and do the recon 
@@ -57,7 +57,8 @@ if __name__=='__main__':
     # destination path to download and extract the phantom and NN weight files.
     target_dir = './demo_data/'   
     # path to store output recon images
-    output_dir = './output/mace4D_fast/'  
+    save_path = './output/mace4D/'  
+    os.makedirs(save_path, exist_ok=True)
 
     # Geometry parameters
     dist_source_detector = 839.0472     # Distance between the X-ray source and the detector in units of ALU
@@ -74,6 +75,7 @@ if __name__=='__main__':
     # MACE recon parameters
     max_admm_itr = 10            # max ADMM iterations for MACE reconstruction
     prior_weight = 0.5           # cumulative weights for three prior agents.
+    sharpness = 1.0 # sharpness
     # ######### End of parameters #########
 
 
@@ -159,13 +161,14 @@ if __name__=='__main__':
     print("Generating 4D simulated data by rotating the 3D phantom with positive angular steps with each time point ...")
     
     # Create the rotation angles and argument lists, and distribute to workers.
-    phantom_rot_para = np.linspace(0, 180, num_time_points, endpoint=False)  # Phantom rotation angles.
-    phantom_4D = np.array([ndimage.rotate(input=phantom_3D,
-                                   angle=phantom_rot_ang,
-                                   order=0,
-                                   mode='constant',
-                                   axes=(1, 2),
-                                   reshape=False) for phantom_rot_ang in phantom_rot_para]) 
+    phantom_rot_angle_list = np.linspace(0, 40, num_time_points, endpoint=False)  # Phantom rotation angles.
+    phantom_4D = np.array([ndimage.rotate(phantom_3D,
+                                          phantom_rot_angle,
+                                          order=5,
+                                          mode='constant',
+                                          axes=(1, 2),
+                                          reshape=False) 
+                           for phantom_rot_angle in phantom_rot_angle_list]) 
 
     print("shape of 4D phantom = ", phantom_4D.shape)
     # ###########################################################################
@@ -214,10 +217,12 @@ if __name__=='__main__':
 
         # Define the denoiser using this model.  This version requires some interface code to match with MACE.
         def denoiser(img_noisy):
+            upper_range = denoiser_utils.calc_upper_range(img_noisy)
+            img_noisy = img_noisy/upper_range
             testData_obj = denoiser_utils.DataLoader(img_noisy)
-            denoiser_model.denoise(testData_obj)
-            img_denoised = np.stack(testData_obj.outData, axis=0)
-            return np.squeeze(img_denoised)
+            img_denoised = denoiser_model.denoise(testData_obj, batch_size=256)
+            img_denoised = img_denoised*upper_range
+            return np.squeeze(img_denoised) 
 
     # DnCNN denoiser in Keras. This denoiser model is trained on natural images. 
     elif denoiser_type == 'dncnn_keras':
@@ -248,7 +253,9 @@ if __name__=='__main__':
                                       max_admm_itr=max_admm_itr, prior_weight=prior_weight,
                                       cluster_ticket=cluster_ticket,                                      
                                       delta_pixel_detector=delta_pixel_detector,
-                                      weight_type='transmission')
+                                      weight_type='transmission',
+                                      sharpness=sharpness,
+                                      save_path=save_path)
     recon_shape = recon_mace.shape
     print("Reconstruction shape = ", recon_shape)
 
@@ -258,23 +265,26 @@ if __name__=='__main__':
     # ###########################################################################
     print("Post processing MACE reconstruction results ...")
     # Save recon results as a numpy array
-    os.makedirs(output_dir, exist_ok=True)
-    np.save(os.path.join(output_dir, "recon_mace.npy"), recon_mace)
+    np.save(os.path.join(save_path, "recon_mace.npy"), recon_mace)
+    # load qGGMRF recon
 
+    recon_qGGMRF = np.load(os.path.join(save_path, "recon_qGGMRF.npy"))
     # Plot axial slices of phantom and recon
-    display_slices = [4, 7, 10]
+    display_slices = [7, 10, 13, 16, 19, 22]
     for t in range(num_time_points//4,3*num_time_points//4):
         for display_slice in display_slices:
             demo_utils.plot_image(phantom_4D[t,display_slice,:,:], 
                                   title=f"phantom, axial slice {display_slice}, time point {t}", 
-                                  filename=os.path.join(output_dir, f"phantom_slice{display_slice}_time{t}.png"), 
+                                  filename=os.path.join(save_path, f"phantom_slice{display_slice}_time{t}.png"), 
                                   vmin=0, vmax=0.5)
             demo_utils.plot_image(recon_mace[t,display_slice,:,:], title=f"MACE reconstruction, axial slice {display_slice}, time point {t}",
-                                  filename=os.path.join(output_dir, f"recon_mace_slice{display_slice}_time{t}.png"), vmin=0, vmax=0.5)
+                                  filename=os.path.join(save_path, f"recon_mace_slice{display_slice}_time{t}.png"), vmin=0, vmax=0.5)
+            demo_utils.plot_image(recon_qGGMRF[t,display_slice,:,:], title=f"qGGMRF reconstruction, axial slice {display_slice}, time point {t}",
+                                  filename=os.path.join(save_path, f"recon_qGGMRF_slice{display_slice}_time{t}.png"), vmin=0, vmax=0.5)
 
         # Plot 3D phantom and recon image volumes as gif images.
-        demo_utils.plot_gif(phantom_4D[t], output_dir, f'phantom_resized_{t}', vmin=0, vmax=0.5)
-        demo_utils.plot_gif(recon_mace[t], output_dir, f'recon_mace_{t}', vmin=0, vmax=0.5)
+        demo_utils.plot_gif(phantom_4D[t], save_path, f'phantom_resized_{t}', vmin=0, vmax=0.5)
+        demo_utils.plot_gif(recon_mace[t], save_path, f'recon_mace_{t}', vmin=0, vmax=0.5)
+        demo_utils.plot_gif(recon_qGGMRF[t], save_path, f'recon_qGGMRF_{t}', vmin=0, vmax=0.5)
 
-    input("press Enter")
-    print(f"Reconstruction results saved in {output_dir}")
+    print(f"Reconstruction results saved in {save_path}")

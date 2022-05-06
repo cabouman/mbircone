@@ -1,8 +1,8 @@
 matplotlib
 imageio
-scipy
-tensorflow~=2.6.0
-keras~=2.6.0
+scipy~=1.8
+tensorflow~=2.8.0
+keras~=2.8.0
 PyYAML
 datatest
-
+scikit-image

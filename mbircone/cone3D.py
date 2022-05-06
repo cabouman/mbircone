@@ -581,7 +581,6 @@ def recon(sino, angles, dist_source_detector, magnification,
         sysmatrix_fname_tmp = _gen_sysmatrix_fname_tmp(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
         ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, sysmatrix_fname_tmp, verbose=verbose)
         os.rename(sysmatrix_fname_tmp, sysmatrix_fname)
-    
     # make sure that weights do not contain negative entries
     # if weights is provided, and negative entry exists, then do not use the provided weights
     if not ((weights is None) or (np.amin(weights) >= 0.0)):
@@ -600,6 +599,7 @@ def recon(sino, angles, dist_source_detector, magnification,
     if sigma_x is None:
         sigma_x = auto_sigma_x(sino, delta_pixel_detector=delta_pixel_detector, sharpness=sharpness)
 
+    
     reconparams = dict()
     reconparams['is_positivity_constraint'] = int(positivity)
     reconparams['q'] = q
@@ -662,15 +662,9 @@ def recon(sino, angles, dist_source_detector, magnification,
     else:
         reconparams['NHICD_Mode'] = 'off'
 
-    if np.isscalar(init_image):
-        init_image = np.zeros((imgparams['N_x'], imgparams['N_y'], imgparams['N_z'])) + init_image
-    else:
-        init_image = np.swapaxes(init_image, 0, 2)
-
     if prox_image is None:
         reconparams['priorWeight_QGGMRF'] = 1
         reconparams['priorWeight_proxMap'] = -1
-        proxmap_input = np.zeros((imgparams['N_x'], imgparams['N_y'], imgparams['N_z']))
         reconparams['sigma_lambda'] = 1
     else:
         reconparams['priorWeight_QGGMRF'] = -1
@@ -678,16 +672,9 @@ def recon(sino, angles, dist_source_detector, magnification,
         if sigma_p is None:
             sigma_p = auto_sigma_p(sino, delta_pixel_detector, sharpness)
         reconparams['sigma_lambda'] = sigma_p
-        proxmap_input = np.swapaxes(prox_image, 0, 2)
 
-    sino = np.swapaxes(sino, 1, 2)
-    weights = np.swapaxes(weights, 1, 2)
-    x = ci.recon_cy(sino, weights, init_image, proxmap_input,
+    x = ci.recon_cy(sino, weights, init_image, prox_image,
                     sinoparams, imgparams, reconparams, sysmatrix_fname, num_threads)
-
-    # Convert shape from Cython interface specifications to Python interface specifications
-    x = np.swapaxes(x, 0, 2)
-
     return x
 
 
@@ -773,9 +760,5 @@ def project(image, angles,
     settings['sysmatrix_fname'] = sysmatrix_fname
     settings['num_threads'] = num_threads
 
-    image = np.swapaxes(image, 0, 2)
     proj = ci.project(image, settings)
-    # Convert shape from Cython interface specifications to Python interface specifications
-    proj = np.swapaxes(proj, 1, 2)
-
     return proj

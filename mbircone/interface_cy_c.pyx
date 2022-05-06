@@ -14,33 +14,33 @@ cdef extern from "./src/MBIRModularUtilities3D.h":
     
         long int N_dv;
         long int N_dw; 
-        double Delta_dv;
-        double Delta_dw;
+        float Delta_dv;
+        float Delta_dw;
        
         long int N_beta;
         
-        double u_s;
-        double u_r;
-        double v_r;
-        double u_d0;
-        double v_d0;
-        double w_d0;
+        float u_s;
+        float u_r;
+        float v_r;
+        float u_d0;
+        float v_d0;
+        float w_d0;
         
-        double weightScaler_value; 
+        float weightScaler_value; 
 
 
     struct ImageParams:
 
-        double x_0;
-        double y_0;
-        double z_0;
+        float x_0;
+        float y_0;
+        float z_0;
 
         long int N_x;
         long int N_y;
         long int N_z;
 
-        double Delta_xy;
-        double Delta_z;
+        float Delta_xy;
+        float Delta_z;
         
         long int j_xstart_roi;
         long int j_ystart_roi;
@@ -57,31 +57,31 @@ cdef extern from "./src/MBIRModularUtilities3D.h":
 
     struct ReconParams:
     
-        double priorWeight_QGGMRF;                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping) 
-        double priorWeight_proxMap;                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping) 
+        float priorWeight_QGGMRF;                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping) 
+        float priorWeight_proxMap;                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping) 
         
         # QGGMRF 
-        double q;                   # q: QGGMRF parameter (q>1, typical choice q=2) 
-        double p;                   # p: QGGMRF parameter (1<=p<q) 
-        double T;                   # T: QGGMRF parameter 
-        double sigmaX;              # sigmaX: QGGMRF parameter 
-        double bFace;               # bFace: relative neighbor weight: cube faces 
-        double bEdge;               # bEdge: relative neighbor weight: cube edges 
-        double bVertex;             # bVertex: relative neighbor weight: cube vertices 
+        float q;                   # q: QGGMRF parameter (q>1, typical choice q=2) 
+        float p;                   # p: QGGMRF parameter (1<=p<q) 
+        float T;                   # T: QGGMRF parameter 
+        float sigmaX;              # sigmaX: QGGMRF parameter 
+        float bFace;               # bFace: relative neighbor weight: cube faces 
+        float bEdge;               # bEdge: relative neighbor weight: cube edges 
+        float bVertex;             # bVertex: relative neighbor weight: cube vertices 
         # Proximal Mapping 
-        double sigma_lambda;        # sigma_lambda: Proximal mapping scalar 
+        float sigma_lambda;        # sigma_lambda: Proximal mapping scalar 
         int is_positivity_constraint;
         
 
          # Stopping Conditions
 
-        double stopThresholdChange_pct;           # stop threshold (%) 
-        double stopThesholdRWFE_pct;
-        double stopThesholdRUFE_pct;
+        float stopThresholdChange_pct;           # stop threshold (%) 
+        float stopThesholdRWFE_pct;
+        float stopThesholdRUFE_pct;
         int MaxIterations;              # maximum number of iterations 
         char relativeChangeMode[200];
-        double relativeChangeScaler;
-        double relativeChangePercentile;
+        float relativeChangeScaler;
+        float relativeChangePercentile;
     
     
          # Zipline Stuff
@@ -96,14 +96,14 @@ cdef extern from "./src/MBIRModularUtilities3D.h":
 
         char weightScaler_estimateMode[200];     # Estimate weight scaler? 1: Yes. 0: Use user specified value 
         char weightScaler_domain[200];     
-        double weightScaler_value;            # User specified weight scaler 
+        float weightScaler_value;            # User specified weight scaler 
     
     
         # NHICD stuff 
         char NHICD_Mode[200];
-        double NHICD_ThresholdAllVoxels_ErrorPercent;
-        double NHICD_percentage;
-        double NHICD_random;
+        float NHICD_ThresholdAllVoxels_ErrorPercent;
+        float NHICD_percentage;
+        float NHICD_random;
     
         # Misc 
         int verbosity;
@@ -112,10 +112,10 @@ cdef extern from "./src/MBIRModularUtilities3D.h":
 
 # Import a c function to compute A matrix.
 cdef extern from "./src/interface.h":
-    void AmatrixComputeToFile(double *angles, SinoParams c_sinoparams, ImageParams c_imgparams, 
+    void AmatrixComputeToFile(float *angles, SinoParams c_sinoparams, ImageParams c_imgparams, 
         char *Amatrix_fname, char verbose);
 
-    void recon(float *x, float *sino, float *wght, float *x_init, float *proxmap_input,
+    void recon(float *x, float *sino, float *wght, float *proxmap_input,
 	SinoParams c_sinoparams, ImageParams c_imgparams, ReconParams c_reconparams,
 	char *Amatrix_fname);
 
@@ -170,7 +170,6 @@ cdef map_py2c_reconparams(ReconParams* c_reconparams,
 
         c_reconparams.priorWeight_QGGMRF = reconparams['priorWeight_QGGMRF']                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping)
         c_reconparams.priorWeight_proxMap = reconparams['priorWeight_proxMap']                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping)
-
         # QGGMRF
         c_reconparams.q = reconparams['q']                   # q: QGGMRF parameter (q>1, typical choice q=2)
         c_reconparams.p = reconparams['p']                   # p: QGGMRF parameter (1<=p<q)
@@ -256,7 +255,7 @@ def AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname, verbos
     # Get pointer to 1D char array of Amatrix 
     cdef cnp.ndarray[char, ndim=1, mode="c"] c_Amatrix_fname
     # Get pointer to 1D array of angles
-    cdef cnp.ndarray[double, ndim=1, mode="c"] c_angles = angles
+    cdef cnp.ndarray[float, ndim=1, mode="c"] c_angles = angles.astype(np.single)
 
     convert_py2c_SinoParams3D(&c_sinoparams, sinoparams)
     convert_py2c_ImageParams3D(&c_imgparams, imgparams)
@@ -270,18 +269,30 @@ def recon_cy(sino, wght, x_init, proxmap_input,
              sinoparams, imgparams, reconparams, py_Amatrix_fname, num_threads):
     # sino, wght shape : views x slices x channels
     # recon shape: N_x N_y N_z (source-detector-line, channels, slices)
-
-    cdef cnp.ndarray[float, ndim=3, mode="c"] py_x
-    py_x = np.zeros((imgparams['N_x'],imgparams['N_y'],imgparams['N_z']), dtype=ctypes.c_float)
-    py_sino = np.ascontiguousarray(sino, dtype=np.single)
-    py_wght = np.ascontiguousarray(wght, dtype=np.single)
-    py_x_init = np.ascontiguousarray(x_init, dtype=np.single)
-    py_proxmap_input = np.ascontiguousarray(proxmap_input, dtype=np.single)
-
-    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_sino = py_sino
-    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_wght = py_wght
-    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_x_init = py_x_init
-    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_proxmap_input = py_proxmap_input
+    if np.isscalar(x_init):
+        x_init = np.zeros((imgparams['N_x'], imgparams['N_y'], imgparams['N_z'])) + x_init
+    else:
+        x_init = np.swapaxes(x_init, 0, 2)
+    if not x_init.flags["C_CONTIGUOUS"]:
+        x_init = np.ascontiguousarray(x_init, dtype=np.single)
+    else:
+        x_init = x_init.astype(np.single, copy=False)
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_x = x_init
+    
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_proxmap_input = np.empty((imgparams['N_x'], imgparams['N_y'], imgparams['N_z']), dtype=ctypes.c_float)
+    if proxmap_input is not None:
+        proxmap_input = np.swapaxes(proxmap_input, 0, 2)
+        proxmap_input = np.ascontiguousarray(proxmap_input, dtype=np.single)
+        cy_proxmap_input = proxmap_input
+    
+    sino = np.swapaxes(sino,1,2)
+    sino = np.ascontiguousarray(sino, dtype=np.single)
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_sino = sino
+   
+    wght = np.swapaxes(wght,1,2) 
+    wght = np.ascontiguousarray(wght, dtype=np.single)
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_wght = wght
+    
     cdef cnp.ndarray[char, ndim=1, mode="c"] c_Amatrix_fname = string_to_char_array(py_Amatrix_fname)
     cdef cnp.ndarray[char, ndim=1, mode="c"] cy_relativeChangeMode = string_to_char_array(reconparams["relativeChangeMode"])
     cdef cnp.ndarray[char, ndim=1, mode="c"] cy_weightScaler_estimateMode = string_to_char_array(reconparams["weightScaler_estimateMode"])
@@ -302,20 +313,17 @@ def recon_cy(sino, wght, x_init, proxmap_input,
                           &cy_NHICD_Mode[0])
 
     openmp.omp_set_num_threads(num_threads)
-
-    recon(&py_x[0,0,0],
+    recon(&cy_x[0,0,0],
           &cy_sino[0,0,0],
           &cy_wght[0,0,0],
-          &cy_x_init[0,0,0],
           &cy_proxmap_input[0,0,0],
           c_sinoparams,
           c_imgparams,
           c_reconparams,
 	      &c_Amatrix_fname[0])
-
     # print("Cython done")
-
-    return py_x
+    # Convert shape from Cython interface specifications to Python interface specifications
+    return np.swapaxes(cy_x, 0, 2)
 
 
 def project(image, settings):
@@ -342,11 +350,8 @@ def project(image, settings):
     num_det_channels = sinoparams['N_dw']
 
     # Ensure image memory is aligned properly
-    if not image.flags["C_CONTIGUOUS"]:
-        image = np.ascontiguousarray(image, dtype=np.single)
-    else:
-        image = image.astype(np.single, copy=False)
-
+    image = np.swapaxes(image, 0, 2)
+    image = np.ascontiguousarray(image, dtype=np.single)
     cdef cnp.ndarray[float, ndim=3, mode="c"] cy_image = image
 
     # Allocates memory, without initialization, for matrix to be passed back from C subroutine
@@ -368,5 +373,5 @@ def project(image, settings):
                     &Amatrix_fname[0])
 
     # print("Cython done")
-
-    return proj
+    # Convert shape from Cython interface specifications to Python interface specifications
+    return np.swapaxes(proj, 1, 2)

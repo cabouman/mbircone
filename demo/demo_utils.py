@@ -6,6 +6,27 @@ import urllib.request
 import tarfile
 import yaml
 from PIL import Image
+from datetime import datetime
+from datatest import validate, ValidationError
+
+
+def strftime_format(format):
+    """Check if string satisfy the require format.
+        Code modified from reference: `https://datatest.readthedocs.io/en/stable/how-to/date-time-str.html`
+    Args:
+        format: A format code.
+
+    Returns:
+
+    """
+    def func(value):
+        try:
+            datetime.strptime(value, format)
+        except ValueError:
+            return False
+        return True
+    func.__doc__ = f'should use date format {format}'
+    return func
 
 def font_setting():
     SMALL_SIZE = 8
@@ -53,7 +74,7 @@ def plt_cmp_3dobj(phantom, recon, display_slice=None, display_x=None, display_y=
     font_setting()
 
     # display phantom
-    fig, axs = plt.subplots(2, 3)
+    fig, axs = plt.subplots(2, 3, figsize=(20,10))
 
     title = f'Phantom: Axial Scan {display_slice:d}.'
     axs[0, 0].imshow(phantom[display_slice], vmin=vmin, vmax=vmax, cmap='gray', interpolation='none')
@@ -157,7 +178,7 @@ def image_resize(image, output_shape):
     image_resized = np.empty((image.shape[0], output_shape[0], output_shape[1]), dtype=image.dtype)
     for i in range(image.shape[0]):
         PIL_image = Image.fromarray(image[i])
-        PIL_image_resized = PIL_image.resize((output_shape[1], output_shape[0]), resample=Image.BILINEAR)
+        PIL_image_resized = PIL_image.resize((output_shape[1], output_shape[0]), resample=Image.BICUBIC)
         image_resized[i] = np.array(PIL_image_resized)
 
     return image_resized
@@ -210,7 +231,7 @@ def download_and_extract(download_url, save_dir):
     if save_path.endswith(('.tar', '.tar.gz')):
         if is_download:
             tar_file = tarfile.open(save_path)
-            print("Extracting tarball file to {save_dir} ...")
+            print(f"Extracting tarball file to {save_dir} ...")
             # Extract to save_dir.
             tar_file.extractall(save_dir)
             tar_file.close
@@ -219,11 +240,10 @@ def download_and_extract(download_url, save_dir):
     # Parse extracted dir and extract data if necessary
     return save_path
 
-
 def query_yes_no(question, default="n"):
     """Ask a yes/no question via input() and return the answer.
         Code modified from reference: `https://stackoverflow.com/questions/3041986/apt-command-line-interface-like-yes-no-input/3041990`
-    
+
     Args:
         question (string): Question that is presented to the user.
     Returns:
@@ -254,7 +274,7 @@ def load_yaml(yml_path):
     """
 
     with open(yml_path, 'r') as stream:
-        data_loaded = yaml.load(stream,Loader=yaml.BaseLoader)
+        data_loaded = yaml.safe_load(stream)
     return data_loaded
 
 
@@ -301,7 +321,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
     while config['job_queue_system_type'] is None:
         valid = ['SGE', 'SLURM']
         question = '\nPlease enter the type of job queuing system in your cluster.\n'
-        prompt = 'One of \'SGE\' (Sun Grid Engine) or \'SLURM\'. \n'
+        prompt = 'One of \'SGE\' (Sun Grid Engine) and \'SLURM\'. \n'
         sys.stdout.write(question)
         sys.stdout.write(prompt)
 
@@ -309,7 +329,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
         if choice in valid:
             config['job_queue_system_type'] = choice
         else:
-            sys.stdout.write("Please Enter one of \'SGE\' (Sun Grid Engine) or \'SLURM\'. \n")
+            sys.stdout.write("Please Enter one of \'SGE\' (Sun Grid Engine) and \'SLURM\'.\n")
 
     # Ask for the number of physical cores per node for 3 times.
     ask_times = 3
@@ -344,7 +364,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
         else:
             sys.stdout.write("Please Enter a positive number.\n")
         ask_times -= 1
-
+    
     # Ask for the maximum allowable walltime.
     question = '\nPlease enter the maximum allowable walltime.'
     prompt = 'This should be a string in the form D-HH:MM:SS.  E.g., \'0-01:00:00\' for one hour.\n'
@@ -367,7 +387,7 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
         config['cluster_params']['maximum_memory_per_node'] = choice
     else:
         config['cluster_params']['maximum_memory_per_node'] = '16GB'
-    sys.stdout.write("Set maximum_memory_per_node to default value '16GB'.\n")
+        sys.stdout.write("Set maximum_memory_per_node to default value '16GB'.\n")
 
     # Ask for any additional arguments to pass to the job scheduling system.
     question = '\nPlease enter any additional arguments to pass to the job scheduling system. [Default = ""]\n'
@@ -402,5 +422,5 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
 
     # Save arguments to yaml file for next time to use.
     os.makedirs(save_config_dir, exist_ok=True)
-    save_dict_yaml(config, os.path.join(save_config_dir, save_config_name+'.yaml'))
+    save_dict_yaml(config, save_config_dir+save_config_name+'.yaml')
     return config
