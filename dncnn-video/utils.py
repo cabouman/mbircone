@@ -14,16 +14,12 @@ import time
 #############################################################################
 
 def semi2DCNN_inPad(size_z_in, size_z_out):
-
     padSize_in1 = (size_z_in-size_z_out)//2
     padSize_in2 = size_z_in-size_z_out-padSize_in1
-
     return padSize_in1, padSize_in2
 
 def semi2DCNN_select_z_out_from_z_in(img_patch, size_z_in, size_z_out):
-
     padSize_in1, padSize_in2 = semi2DCNN_inPad(size_z_in, size_z_out)
-
     # range does not work with tf
     return img_patch[:,:,:,padSize_in1:padSize_in1+size_z_out]
 

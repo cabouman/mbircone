@@ -36,7 +36,7 @@ def main():
         config = tf.ConfigProto()
 
 
-    train_path = '/home/yang1467/dncnn-video/data/16955-2014-1-057-AT 18 inlb Y Slices'
+    train_path = '/depot/bouman/data/share_conebeam_data/StaticScanExample/Slices/16955-2014-1-057-AT 18 inlb Y Slices'
     train_path_list = sorted(glob(os.path.join(train_path, '*')))
     cleanData_train = np.array([preprocess._read_scan_img(img_path) for img_path in train_path_list])
     np.random.seed(seed=1)
@@ -51,11 +51,12 @@ def main():
             clean_patches_train.append(patch_clean)
 
     clean_patches_train = np.stack(clean_patches_train, axis=0) # n x conv1 x conv2 x chan
+    np.save(os.path.join(params['paths']['out_dir'], 'clean_patches_raw.npy'), clean_patches_train)
     print("shape of clean patches after inspection = ", np.shape(clean_patches_train))
     permutation = np.random.permutation(clean_patches_train.shape[0])
     clean_patches_train = clean_patches_train[permutation]
     clean_patches_train = clean_patches_train / upper_range
-    np.save(os.path.join(params['paths']['out_dir'], 'clean_patches.npy'), clean_patches_train)
+    #np.save(os.path.join(params['paths']['out_dir'], 'clean_patches.npy'), clean_patches_train)
     with tf.Session(config=config) as sess:
         denoiser_obj = cnn.denoiser(sess, size_z_in=params['size_z_in'], size_z_out=params['size_z_out'], numLayers=params['numLayers'], width=params['width'])
         denoiser_obj.train(clean_patches_train, params)

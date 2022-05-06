@@ -34,25 +34,32 @@ def isPatchGood(patch, params):
 
 
 def getPatch_3D(img_3D, idRange1, idRange2, idRange3):
+    ''' convert 3D full sized image of size (Nx,Ny,Nz) to a list of patches with size params['patch_sizes']
+        img_3D: full-size 3D image.
+        idRange1: list [idx1_low, idx1_hi, idx1_stride], Specifying the first index of the image patch to be extracted from full image.
+        idRange2: list [idx2_low, idx2_hi, idx2_stride], Specifying the second index of the image patch to be extracted from full image.
+        idRange3: list [idx3_low, idx3_hi, idx3_stride], Specifying the third index of the image patch to be extracted from full image.
 
-    idRange1_vect = range(idRange1[0],idRange1[1])
-    idRange2_vect = range(idRange2[0],idRange2[1])
-    idRange3_vect = range(idRange3[0],idRange3[1])
+    '''
+
+    idRange1_vect = range(idRange1[0], idRange1[1], idRange1[2])
+    idRange2_vect = range(idRange2[0], idRange2[1], idRange2[2])
+    idRange3_vect = range(idRange3[0], idRange3[1], idRange3[2])
 
     patch_3D = img_3D[np.ix_(idRange1_vect, idRange2_vect, idRange3_vect)] # z y x
-
+    #print("getPatch_3D: patch_3D shape = ", np.shape(patch_3D))
     return patch_3D
 
 def getPatchList_3D(recon3D, params):
-
+    ''' convert 3D full sized image of size (Nx,Ny,Nz) to a list of patches with size params['patch_sizes']
+    '''
     patchList3D = []
-    for i_z in range(0, recon3D.shape[0] - params['patch_sizes'][1] + 1, params['patch_strides'][1]):
-        for i_y in range(0, recon3D.shape[1] - params['patch_sizes'][2] + 1, params['patch_strides'][2]):
-            for i_x in range(0, recon3D.shape[2] - params['patch_sizes'][3] + 1, params['patch_strides'][3]):
-                
-                temp_patch = getPatch_3D(recon3D, [i_z,i_z+params['patch_sizes'][1]], [i_y,i_y+params['patch_sizes'][2]], [i_x,i_x+params['patch_sizes'][3]])
+    print("getPatchList_3D: recon3D shape = ", np.shape(recon3D))
+    for i_z in range(0, recon3D.shape[0] - params['stride'][1]*params['patch_sizes'][1] + 1, params['patch_strides'][1]):
+        for i_y in range(0, recon3D.shape[1] - params['stride'][2]*params['patch_sizes'][2] + 1, params['patch_strides'][2]):
+            for i_x in range(0, recon3D.shape[2] - params['stride'][3]*params['patch_sizes'][3] + 1, params['patch_strides'][3]):
+                temp_patch = getPatch_3D(recon3D, [i_z, i_z+params['stride'][1]*params['patch_sizes'][1], params['stride'][1]], [i_y,i_y+params['stride'][2]*params['patch_sizes'][2], params['stride'][2]], [i_x,i_x+params['stride'][3]*params['patch_sizes'][3], params['stride'][3]])
                 patchList3D.append(temp_patch)
-
     return patchList3D
 
 def getPatchList_3D_rotAll(recon3D, params):

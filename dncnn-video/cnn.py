@@ -99,7 +99,6 @@ class denoiser:
                 denoised_batch, residual_batch, _, loss, psnr = self.sess.run( [self.Y, self.R, self.train_op, self.loss, self.psnr],
                     feed_dict={self.X: noisy_batch, self.Y_: clean_batch,
                                self.learning_rate: learning_rate[epoch], self.is_training: True})
-                print('sum of denoised image tensor = ', np.sum(denoised_batch)) 
                 timeTaken = (time.time() - start_time)
                 print("Epoch: %2d, batch: %4d/%4d, time: %d s, loss: %.6f, psnr: %.6f" % (epoch, batch_id, batch_count, timeTaken, loss, psnr))
                 loss_arr[epoch].append(loss)
