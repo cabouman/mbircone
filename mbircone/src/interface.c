@@ -25,7 +25,22 @@ void AmatrixComputeToFile(float *angles,
     freeSysMatrix(&A);
 
 }
-
+/*
+ * This function initializes C variables related to qGGMRF reconstruction, read sysmatrix from disk, and invoke MBIR3DCone() function to perform qGGMRF recon or prox map estimation in place.
+ * This function is invoked by recon_cy() function in interface_cy.pyx.
+ * 
+ * Input Variables:
+ * x: pointer to the initial image array as well as the recon image array. This array will be modified in-place in ICD iterations.
+ * y: pointer to sinogram array. This array will not be modified by C code.
+ * wght: pointer to sinogram weight array. This array will not be modified by C code.
+ * proxmap_input: pointer to proximal map input array. Will only be accessed when imgParams->priorWeight_proxMap >= 0.
+ * sinoParams: struct to store sinogram params. See MBIRModularUtilities3D.h for struct definition.
+ * imgParams: struct to store recon image params. See MBIRModularUtilities3D.h for struct definition.
+ * reconParams: struct to store reconstruction related hyperparams. See MBIRModularUtilities3D.h for struct definition.
+ * Amatrix_fname: pointer to sysmatrix filename string.
+ *
+ * Return Variables: None.
+ */
 void recon(float *x, float *y, float *wght, float *proxmap_input,
 	struct SinoParams sinoParams, struct ImageParams imgParams, struct ReconParams reconParams, 
 	char *Amatrix_fname)
@@ -33,7 +48,7 @@ void recon(float *x, float *y, float *wght, float *proxmap_input,
 	struct Sino sino;
     struct Image img;
     struct SysMatrix A;
-	int i_x, i_y, i_z, i;
+	int i;
 
 	/* Set img and sino params inside data structure */
 	copyImgParams(&imgParams, &img.params);
