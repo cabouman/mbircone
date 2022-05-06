@@ -74,7 +74,7 @@ def plt_cmp_3dobj(phantom, recon, display_slice=None, display_x=None, display_y=
     font_setting()
 
     # display phantom
-    fig, axs = plt.subplots(2, 3)
+    fig, axs = plt.subplots(2, 3, figsize=(20,10))
 
     title = f'Phantom: Axial Scan {display_slice:d}.'
     axs[0, 0].imshow(phantom[display_slice], vmin=vmin, vmax=vmax, cmap='gray', interpolation='none')
@@ -231,7 +231,7 @@ def download_and_extract(download_url, save_dir):
     if save_path.endswith(('.tar', '.tar.gz')):
         if is_download:
             tar_file = tarfile.open(save_path)
-            print("Extracting tarball file to {save_dir} ...")
+            print(f"Extracting tarball file to {save_dir} ...")
             # Extract to save_dir.
             tar_file.extractall(save_dir)
             tar_file.close
