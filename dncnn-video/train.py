@@ -1,4 +1,5 @@
 import os
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
 import sys
 import argparse
 import random
@@ -28,9 +29,9 @@ def main():
     params = get_params(args['params_path'])
     print_params(params)
     #os.environ['CUDA_VISIBLE_DEVICES'] = str(params['CUDA_VISIBLE_DEVICES'])
-    os.environ['CUDA_VISIBLE_DEVICES'] = "3"
     os.makedirs(os.path.dirname(params['paths']['checkpoint_dir']), exist_ok=True)
     if params['use_gpu']:
+        print("Using GPU!")
         config = tf.ConfigProto(gpu_options=tf.GPUOptions(per_process_gpu_memory_fraction=0.9))
     else:
         config = tf.ConfigProto()
