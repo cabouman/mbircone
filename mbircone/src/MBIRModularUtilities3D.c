@@ -1000,7 +1000,6 @@ void printReconParams(struct ReconParams *params)
 
     printf("\nReconstruction parameters read:\n");
     
-    printf("\tProxMap Mode = %e \n", params->prox_mode);
     printf("\tq = %e \n", params->q);
     printf("\tp = %e \n", params->p);
     printf("\tT = %e \n", params->T);

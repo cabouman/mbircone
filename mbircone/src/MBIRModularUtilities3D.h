@@ -230,7 +230,7 @@ struct ViewAngleList
 struct ReconParams
 {
     /* Flags Controlling Type of Prior Used */
-    int prox_mode; 
+    int prox_mode;             /* 1: Proximal Map Mode; 0: qGGMRF Mode*/ 
     /* QGGMRF Parameters */
     float q;                   /* q: QGGMRF parameter (q>1, typical choice q=2) */
     float p;                   /* p: QGGMRF parameter (1<=p<q) */
