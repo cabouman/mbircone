@@ -6,7 +6,6 @@ cimport numpy as cnp    # Import specialized cython support for numpy
 cimport openmp
 from libc.string cimport memset,strcpy
 
-
 # Import c data structure
 cdef extern from "./src/MBIRModularUtilities3D.h":
      
@@ -57,7 +56,7 @@ cdef extern from "./src/MBIRModularUtilities3D.h":
 
     struct ReconParams:
     
-        bool prox_mode;                  # Prior mode: (True: proximal map mode, False: QGGMRF mode) 
+        int prox_mode;                  # Prior mode: (True: proximal map mode, False: QGGMRF mode) 
         
         # QGGMRF 
         float q;                   # q: QGGMRF parameter (q>1, typical choice q=2) 
