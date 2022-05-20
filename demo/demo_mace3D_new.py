@@ -44,15 +44,11 @@ save_path = './output/mace3D/'
 os.makedirs(save_path, exist_ok=True)
 
 # Geometry parameters
-dist_source_detector = 839.0472     # Distance between the X-ray source and the detector in units of ALU
-magnification = 5.572128439964856   # magnification = (source to detector distance)/(source to center-of-rotation distance)
-delta_pixel_detector = 0.25         # Scalar value of detector pixel spacing in units of ALU
+dist_source_detector = 3000         # Distance between the X-ray source and the detector in units of ALU
+magnification = 5.0                 # magnification = (source to detector distance)/(source to center-of-rotation distance)
 num_det_rows = 28                   # number of detector rows
 num_det_channels = 240              # number of detector channels
-
-# Simulated sinogram parameters
-num_views = 75               # number of projection views
-sino_noise_sigma = 0.01      # transmission noise level
+num_views = 60                      # number of projection views
 
 # MACE recon parameters
 sharpness = 1.0              # Parameter to control regularization level of reconstruction.
@@ -77,8 +73,8 @@ phantom_path = demo_utils.download_and_extract(phantom_url, target_dir)
 # download and extract NN weights and structure files used for MACE denoiser
 denoiser_path = demo_utils.download_and_extract(denoiser_url, target_dir)
 
-# load original phantom
-phantom = np.load(phantom_path)
+# load original phantom and scale so it generates physically reasonable projection values
+phantom = np.load(phantom_path)/4.0
 print("shape of phantom = ", phantom.shape)
 
 
@@ -91,21 +87,14 @@ print("Generating sinogram ...")
 angles = np.linspace(0, 2 * np.pi, num_views, endpoint=False)
 sino = mbircone.cone3D.project(phantom, angles,
                                num_det_rows, num_det_channels,
-                               dist_source_detector, magnification,
-                               delta_pixel_detector=delta_pixel_detector)
-sino_weights = mbircone.cone3D.calc_weights(sino, weight_type='transmission')
-
-# Add transmission noise
-noise = sino_noise_sigma * 1. / np.sqrt(sino_weights) * np.random.normal(size=(num_views, num_det_rows, num_det_channels))
-sino_noisy = sino + noise
+                               dist_source_detector, magnification)
 
 # ###########################################################################
 # Perform qGGMRF reconstruction
 # ###########################################################################
 print("Performing qGGMRF reconstruction ...")
-recon_qGGMRF = mbircone.cone3D.recon(sino_noisy, angles, dist_source_detector, magnification,
-                                     delta_pixel_detector=delta_pixel_detector,
-                                     sharpness=sharpness, weight_type='transmission',
+recon_qGGMRF = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification,
+                                     sharpness=sharpness, 
                                      verbose=1)
 
 # ###########################################################################
@@ -131,13 +120,11 @@ def denoiser(img_noisy):
 # Perform MACE reconstruction
 # ###########################################################################
 print("Performing MACE reconstruction ...")
-recon_mace = mbircone.mace.mace3D(sino_noisy, angles, dist_source_detector, magnification,
+recon_mace = mbircone.mace.mace3D(sino, angles, dist_source_detector, magnification,
                                   denoiser=denoiser, denoiser_args=(),
                                   max_admm_itr=max_admm_itr,
                                   init_image=recon_qGGMRF,
                                   sharpness=sharpness,
-                                  delta_pixel_detector=delta_pixel_detector,
-                                  weight_type='transmission',
                                   verbose=1)
 recon_shape = recon_mace.shape
 print("Reconstruction shape = ", recon_shape)
@@ -151,14 +138,14 @@ print("Generating phantom and reconstruction images ...")
 display_slices = [7, 12, 17, 22]
 for display_slice in display_slices:
     demo_utils.plot_image(phantom[display_slice], title=f'phantom, axial slice {display_slice}',
-                          filename=os.path.join(save_path, f'phantom_slice{display_slice}.png'), vmin=0, vmax=0.5)
+                          filename=os.path.join(save_path, f'phantom_slice{display_slice}.png'), vmin=0, vmax=0.2)
     demo_utils.plot_image(recon_mace[display_slice], title=f'MACE reconstruction, axial slice {display_slice}',
-                          filename=os.path.join(save_path, f'recon_mace_slice{display_slice}.png'), vmin=0, vmax=0.5)
+                          filename=os.path.join(save_path, f'recon_mace_slice{display_slice}.png'), vmin=0, vmax=0.2)
     demo_utils.plot_image(recon_qGGMRF[display_slice], title=f'qGGMRF reconstruction, axial slice {display_slice}',
-                          filename=os.path.join(save_path, f'recon_qGGMRF_slice{display_slice}.png'), vmin=0, vmax=0.5)
+                          filename=os.path.join(save_path, f'recon_qGGMRF_slice{display_slice}.png'), vmin=0, vmax=0.2)
 # Plot 3D phantom and recon image volumes as gif images.
-demo_utils.plot_gif(phantom, save_path, 'phantom', vmin=0, vmax=0.5)
-demo_utils.plot_gif(recon_mace, save_path, 'recon_mace', vmin=0, vmax=0.5)
-demo_utils.plot_gif(recon_qGGMRF, save_path, 'recon_qGGMRF', vmin=0, vmax=0.5)
+demo_utils.plot_gif(phantom, save_path, 'phantom', vmin=0, vmax=0.2)
+demo_utils.plot_gif(recon_mace, save_path, 'recon_mace', vmin=0, vmax=0.2)
+demo_utils.plot_gif(recon_qGGMRF, save_path, 'recon_qGGMRF', vmin=0, vmax=0.2)
 
 input("press Enter")
