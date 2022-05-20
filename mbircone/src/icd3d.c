@@ -434,7 +434,7 @@ float MAPCost3D(struct Sino *sino, struct Image *img, struct ReconParams *reconP
     cost = MAPCostForward(sino);
 
     // if proximal map mode, add proximal map cost
-    if(reconParams->prox_mode >= 0)
+    if(reconParams->prox_mode)
         cost += MAPCostPrior_ProxMap(img, reconParams);
     // if qGGMRF mode, add prior cost
     else
@@ -639,9 +639,15 @@ void computeDeltaXjAndUpdate(struct ICDInfo3DCone *icdInfo, struct ReconParams *
 	float theta1, theta2;
 
 	if(reconParams->prox_mode)
+    {
         theta1 = icdInfo->theta1_f + icdInfo->theta1_p_proxMap;
-	else
+	    theta2 = icdInfo->theta2_f + icdInfo->theta2_p_proxMap;
+    }
+    else
+    {
+        theta1 = icdInfo->theta1_f + icdInfo->theta1_p_QGGMRF; 
         theta2 = icdInfo->theta2_f + icdInfo->theta2_p_QGGMRF;
+    }
 
 	if (theta2 != 0)
 	{
