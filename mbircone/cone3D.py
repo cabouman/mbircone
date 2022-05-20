@@ -122,11 +122,12 @@ def calc_weights(sino, weight_type):
     return weights
 
 
-def auto_sigma_y(sino, weights, snr_db=30.0, delta_pixel_image=1.0, delta_pixel_detector=1.0):
+def auto_sigma_y(sino, magnification, weights, snr_db=30.0, delta_pixel_image=1.0, delta_pixel_detector=1.0):
     """Compute the automatic value of ``sigma_y`` for use in MBIR reconstruction.
 
     Args:
         sino (ndarray): numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels) or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
+        magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
         weights (ndarray):
             numpy array of weights with same shape as sino.
             The parameters weights should be the same values as used in mbircone reconstruction.
@@ -150,9 +151,14 @@ def auto_sigma_y(sino, weights, snr_db=30.0, delta_pixel_image=1.0, delta_pixel_
 
     # convert snr to relative noise standard deviation
     rel_noise_std = 10 ** (-snr_db / 20)
+    # compute the default_pixel_pitch = the detector pixel pitch in the image plane given the magnification
+    default_pixel_pitch = delta_pixel_detector / magnification
 
-    # compute sigma_y and scale by relative pixel and detector pitch
-    sigma_y = rel_noise_std * signal_rms * (delta_pixel_image / delta_pixel_detector) ** (0.5)
+    # compute the image pixel pitch relative to the default.
+    pixel_pitch_relative_to_default = delta_pixel_image / default_pixel_pitch
+
+    # compute sigma_y and scale by relative pixel pitch
+    sigma_y = rel_noise_std * signal_rms * (pixel_pitch_relative_to_default ** 0.5)
 
     if sigma_y > 0:
         return sigma_y
@@ -590,7 +596,8 @@ def recon(sino, angles, dist_source_detector, magnification,
 
     # Set automatic value of sigma_y
     if sigma_y is None:
-        sigma_y = auto_sigma_y(sino, weights, snr_db, delta_pixel_image=delta_pixel_image,
+        sigma_y = auto_sigma_y(sino, magnification, weights, snr_db, 
+                               delta_pixel_image=delta_pixel_image,
                                delta_pixel_detector=delta_pixel_detector)
 
     # Set automatic value of sigma_x
