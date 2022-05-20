@@ -241,30 +241,30 @@ struct ReconParams
     float bVertex;             /* bVertex: relative neighbor weight: cube vertices */
 
     /* Proximal Map Parameters */
-    float sigma_lambda;			/* sigma_lambda: Proximal mapping scalar */
-    char is_positivity_constraint;	/* controls positive: (0: positivity off; 1: positivity on) */
+    float sigma_lambda;            /* sigma_lambda: Proximal mapping scalar */
+    char is_positivity_constraint;    /* controls positive: (0: positivity off; 1: positivity on) */
     
     /* Stopping Condition Parameters */
     float stopThresholdChange_pct;      /* stop threshold (%) */
     float stopThesholdRWFE_pct;
     float stopThesholdRUFE_pct;
-    int MaxIterations;			/* maximum number of full ICD iterations */
+    int MaxIterations;            /* maximum number of full ICD iterations */
     char relativeChangeMode[200];
     float relativeChangeScaler;
     float relativeChangePercentile;
 
 
     /* Zipline Parameters */
-    int N_G;				/* Number of groups for group ICD */
-    int zipLineMode;			/* Zipline mode: (0: off, 1: conventional Zipline, 2: randomized Zipline) */
+    int N_G;                /* Number of groups for group ICD */
+    int zipLineMode;            /* Zipline mode: (0: off, 1: conventional Zipline, 2: randomized Zipline) */
     int numVoxelsPerZiplineMax;
     int numVoxelsPerZipline;
     int numZiplines;
 
     /* Weight scaler Parameters */
-    char weightScaler_estimateMode[200];	/* Estimate weight scaler? 1: Yes. 0: Use user specified value */
+    char weightScaler_estimateMode[200];    /* Estimate weight scaler? 1: Yes. 0: Use user specified value */
     char weightScaler_domain[200];     
-    float weightScaler_value;			/* User specified weight scaler */
+    float weightScaler_value;            /* User specified weight scaler */
 
     /* NHICD Parameters */
     char NHICD_Mode[200];
@@ -273,7 +273,7 @@ struct ReconParams
     float NHICD_random;
 
     /* Misc Parameters */
-    int verbosity;		/* 0: minimum output; 1: intermediate output; 2: most output */
+    int verbosity;        /* 0: minimum output; 1: intermediate output; 2: most output */
     int isComputeCost;
 };
 
