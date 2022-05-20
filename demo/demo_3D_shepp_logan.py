@@ -11,7 +11,7 @@ num_views = 144
 # Reconstruction parameters
 sharpness = 1.0                                               # Controls sharpness of reconstruction
 magnification = 2.0                                           # Ratio of (source to detector)/(source to center of rotation)
-dist_source_detector = 2*num_det_channels                     # distance from source to detector in ALU
+dist_source_detector = 4*num_det_channels                     # distance from source to detector in ALU
 angles = np.linspace(0, 2 * np.pi, num_views, endpoint=False) # set of projection angles
 
 # Display parameters
