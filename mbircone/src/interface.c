@@ -30,10 +30,10 @@ void AmatrixComputeToFile(float *angles,
  * This function is invoked by recon_cy() function in interface_cy.pyx.
  * 
  * Input Variables:
- * x: pointer to the initial image array as well as the recon image array. This array will be modified in-place in ICD iterations.
- * y: pointer to sinogram array. This array will not be modified by C code.
- * wght: pointer to sinogram weight array. This array will not be modified by C code.
- * proxmap_input: pointer to proximal map input array. Will only be accessed when imgParams->priorWeight_proxMap >= 0.
+ * x: pointer to the 1D initial image array as well as the recon image array. This array will be modified in-place in ICD iterations.
+ * y: pointer to 1D sinogram array. This array will not be modified by C code.
+ * wght: pointer to 1D sinogram weight array. This array will not be modified by C code.
+ * proxmap_input: pointer to 1D proximal map input array. Will only be accessed when imgParams->prox_mode is True.
  * sinoParams: struct to store sinogram params. See MBIRModularUtilities3D.h for struct definition.
  * imgParams: struct to store recon image params. See MBIRModularUtilities3D.h for struct definition.
  * reconParams: struct to store reconstruction related hyperparams. See MBIRModularUtilities3D.h for struct definition.

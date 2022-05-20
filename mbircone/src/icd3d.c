@@ -26,12 +26,11 @@ void ICDStep3DCone(struct Sino *sino, struct Image *img, struct SysMatrix *A, st
      * 			Compute prior model term of theta1 and theta2:
      * 		
      */
-    if(reconParams->priorWeight_QGGMRF >= 0)
-		computeTheta1Theta2PriorTermQGGMRF(icdInfo, reconParams);
-
-    if(reconParams->priorWeight_proxMap >= 0)
+    
+    if(reconParams->prox_mode)
 		computeTheta1Theta2PriorTermProxMap(icdInfo, reconParams);
-
+    else
+		computeTheta1Theta2PriorTermQGGMRF(icdInfo, reconParams);
 	computeDeltaXjAndUpdate(icdInfo, reconParams, img, reconAux);
 
 	updateErrorSinogram(sino, A, icdInfo);
@@ -41,7 +40,7 @@ void ICDStep3DCone(struct Sino *sino, struct Image *img, struct SysMatrix *A, st
 void prepareICDInfo(long int j_x, long int j_y, long int j_z, struct ICDInfo3DCone *icdInfo, struct Image *img, struct ReconAux *reconAux, struct ReconParams *reconParams)
 {
 	icdInfo->old_xj = img->vox[index_3D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)];
-	if(reconParams->priorWeight_proxMap >= 0)
+	if(reconParams->prox_mode)
         icdInfo->proxMapInput_j = img->proxMapInput[index_3D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)];
 	icdInfo->j_x = j_x;
 	icdInfo->j_y = j_y;
@@ -434,12 +433,12 @@ float MAPCost3D(struct Sino *sino, struct Image *img, struct ReconParams *reconP
     // Initialize cost with forward model cost	
     cost = MAPCostForward(sino);
 
-    // if prior is used, add prior cost
-    if(reconParams->priorWeight_QGGMRF >= 0)
-		cost += MAPCostPrior_QGGMRF(img, reconParams);
-    // if proximal map is used, add proximal map cost
-    if(reconParams->priorWeight_proxMap >= 0)
+    // if proximal map mode, add proximal map cost
+    if(reconParams->prox_mode >= 0)
         cost += MAPCostPrior_ProxMap(img, reconParams);
+    // if qGGMRF mode, add prior cost
+    else
+		cost += MAPCostPrior_QGGMRF(img, reconParams);
 	return cost;
 }
 
@@ -498,7 +497,7 @@ float MAPCostPrior_QGGMRF(struct Image *img, struct ReconParams *reconParams)
 			cost += temp;
 		}
 	}
-	return cost * reconParams->priorWeight_QGGMRF;
+	return cost;
 }
 
 float MAPCostPrior_ProxMap(struct Image *img, struct ReconParams *reconParams)
@@ -639,8 +638,10 @@ void computeDeltaXjAndUpdate(struct ICDInfo3DCone *icdInfo, struct ReconParams *
 	 */
 	float theta1, theta2;
 
-	theta1 = icdInfo->theta1_f + reconParams->priorWeight_QGGMRF*icdInfo->theta1_p_QGGMRF + reconParams->priorWeight_proxMap*icdInfo->theta1_p_proxMap;
-	theta2 = icdInfo->theta2_f + reconParams->priorWeight_QGGMRF*icdInfo->theta2_p_QGGMRF + reconParams->priorWeight_proxMap*icdInfo->theta2_p_proxMap;
+	if(reconParams->prox_mode)
+        theta1 = icdInfo->theta1_f + icdInfo->theta1_p_proxMap;
+	else
+        theta2 = icdInfo->theta2_f + icdInfo->theta2_p_QGGMRF;
 
 	if (theta2 != 0)
 	{
@@ -844,13 +845,12 @@ void ICDStep3DConeGroup(struct Sino *sino, struct Image *img, struct SysMatrix *
 	{
 		computeTheta1Theta2ForwardTermGroup(sino, A, icdInfo, randomZiplineAux, parallelAux, reconParams);
 
-	    if(reconParams->priorWeight_QGGMRF >= 0)
-			computeTheta1Theta2PriorTermQGGMRFGroup(icdInfo, reconParams, randomZiplineAux);
-
-	    if(reconParams->priorWeight_proxMap >= 0)
+	    if(reconParams->prox_mode)
 			computeTheta1Theta2PriorTermProxMapGroup(icdInfo, reconParams, randomZiplineAux);
-
-	    computeDeltaXjAndUpdateGroup(icdInfo, randomZiplineAux, reconParams, img, reconAux);
+        else
+			computeTheta1Theta2PriorTermQGGMRFGroup(icdInfo, reconParams, randomZiplineAux);
+	    
+        computeDeltaXjAndUpdateGroup(icdInfo, randomZiplineAux, reconParams, img, reconAux);
 
 		updateErrorSinogramGroup(sino, A, icdInfo, randomZiplineAux);
 	}

@@ -57,8 +57,7 @@ cdef extern from "./src/MBIRModularUtilities3D.h":
 
     struct ReconParams:
     
-        float priorWeight_QGGMRF;                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping) 
-        float priorWeight_proxMap;                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping) 
+        bool prox_mode;                  # Prior mode: (True: proximal map mode, False: QGGMRF mode) 
         
         # QGGMRF 
         float q;                   # q: QGGMRF parameter (q>1, typical choice q=2) 
@@ -168,8 +167,8 @@ cdef map_py2c_reconparams(ReconParams* c_reconparams,
                           const char* cy_weightScaler_domain,
                           const char* cy_NHICD_Mode):
 
-        c_reconparams.priorWeight_QGGMRF = reconparams['priorWeight_QGGMRF']                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping)
-        c_reconparams.priorWeight_proxMap = reconparams['priorWeight_proxMap']                  # Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping)
+        c_reconparams.prox_mode = reconparams['prox_mode']   # Prior mode: (True: proximal map mode, False: QGGMRF mode) 
+
         # QGGMRF
         c_reconparams.q = reconparams['q']                   # q: QGGMRF parameter (q>1, typical choice q=2)
         c_reconparams.p = reconparams['p']                   # p: QGGMRF parameter (1<=p<q)

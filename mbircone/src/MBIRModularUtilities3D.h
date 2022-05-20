@@ -230,9 +230,7 @@ struct ViewAngleList
 struct ReconParams
 {
     /* Flags Controlling Type of Prior Used */
-    float priorWeight_QGGMRF;		/* Prior mode: (0: QGGMRF mode off; 1: QGGMRF mode on) */
-    float priorWeight_proxMap;		/* Prior mode: (0: prox mode off; 1: prox mode on) */
-    
+    bool prox_mode; 
     /* QGGMRF Parameters */
     float q;                   /* q: QGGMRF parameter (q>1, typical choice q=2) */
     float p;                   /* p: QGGMRF parameter (1<=p<q) */
