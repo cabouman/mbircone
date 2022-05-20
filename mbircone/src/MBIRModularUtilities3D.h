@@ -229,64 +229,54 @@ struct ViewAngleList
 
 struct ReconParams
 {
+    /* Flags Controlling Type of Prior Used */
+    char prox_mode;             /* 1: Proximal Map Mode; 0: qGGMRF Mode*/ 
+    /* QGGMRF Parameters */
+    float q;                   /* q: QGGMRF parameter (q>1, typical choice q=2) */
+    float p;                   /* p: QGGMRF parameter (1<=p<q) */
+    float T;                   /* T: QGGMRF parameter */
+    float sigmaX;              /* sigmaX: QGGMRF parameter */
+    float bFace;               /* bFace: relative neighbor weight: cube faces */
+    float bEdge;               /* bEdge: relative neighbor weight: cube edges */
+    float bVertex;             /* bVertex: relative neighbor weight: cube vertices */
 
-    /**
-     *     Prior
-     */
-    float priorWeight_QGGMRF;                  /* Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping) */
-    float priorWeight_proxMap;                  /* Prior mode: (0: off, 1: QGGMRF, 2: proximal mapping) */
+    /* Proximal Map Parameters */
+    float sigma_lambda;            /* sigma_lambda: Proximal mapping scalar */
+    char is_positivity_constraint;    /* controls positive: (0: positivity off; 1: positivity on) */
     
-    /* QGGMRF */
-        float q;                   /* q: QGGMRF parameter (q>1, typical choice q=2) */
-        float p;                   /* p: QGGMRF parameter (1<=p<q) */
-        float T;                   /* T: QGGMRF parameter */
-        float sigmaX;              /* sigmaX: QGGMRF parameter */
-        float bFace;               /* bFace: relative neighbor weight: cube faces */
-        float bEdge;               /* bEdge: relative neighbor weight: cube edges */
-        float bVertex;             /* bVertex: relative neighbor weight: cube vertices */
-    /* Proximal Mapping */
-        float sigma_lambda;        /* sigma_lambda: Proximal mapping scalar */
-        int is_positivity_constraint;
-    
-    /**
-     *      Stopping Conditions
-     */
-    float stopThresholdChange_pct;           /* stop threshold (%) */
+    /* Stopping Condition Parameters */
+    float stopThresholdChange_pct;      /* stop threshold (%) */
     float stopThesholdRWFE_pct;
     float stopThesholdRUFE_pct;
-    int MaxIterations;              /* maximum number of iterations */
+    int MaxIterations;            /* maximum number of full ICD iterations */
     char relativeChangeMode[200];
     float relativeChangeScaler;
     float relativeChangePercentile;
 
 
-    /**
-     *      Zipline Stuff
-     */
-    int N_G;      /*(*)*/           /* Number of groups for group ICD */
-    int zipLineMode;                /* Zipline mode: (0: off, 1: conventional Zipline, 2: randomized Zipline) */
+    /* Zipline Parameters */
+    int N_G;                /* Number of groups for group ICD */
+    int zipLineMode;            /* Zipline mode: (0: off, 1: conventional Zipline, 2: randomized Zipline) */
     int numVoxelsPerZiplineMax;
     int numVoxelsPerZipline;
     int numZiplines;
 
-    /**
-     *      Weight scaler stuff
-     */
-    char weightScaler_estimateMode[200];     /* Estimate weight scaler? 1: Yes. 0: Use user specified value */
+    /* Weight scaler Parameters */
+    char weightScaler_estimateMode[200];    /* Estimate weight scaler? 1: Yes. 0: Use user specified value */
     char weightScaler_domain[200];     
     float weightScaler_value;            /* User specified weight scaler */
 
-
-    /* NHICD stuff */
+    /* NHICD Parameters */
     char NHICD_Mode[200];
     float NHICD_ThresholdAllVoxels_ErrorPercent;
     float NHICD_percentage;
     float NHICD_random;
 
-    /* Misc */
-    int verbosity;
+    /* Misc Parameters */
+    int verbosity;        /* 0: minimum output; 1: intermediate output; 2: most output */
     int isComputeCost;
 };
+
 
 struct SysMatrix
 { 

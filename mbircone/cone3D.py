@@ -606,7 +606,7 @@ def recon(sino, angles, dist_source_detector, magnification,
 
     
     reconparams = dict()
-    reconparams['is_positivity_constraint'] = int(positivity)
+    reconparams['is_positivity_constraint'] = bool(positivity)
     reconparams['q'] = q
     reconparams['p'] = p
     reconparams['T'] = T
@@ -668,12 +668,10 @@ def recon(sino, angles, dist_source_detector, magnification,
         reconparams['NHICD_Mode'] = 'off'
 
     if prox_image is None:
-        reconparams['priorWeight_QGGMRF'] = 1
-        reconparams['priorWeight_proxMap'] = -1
+        reconparams['prox_mode'] = False
         reconparams['sigma_lambda'] = 1
     else:
-        reconparams['priorWeight_QGGMRF'] = -1
-        reconparams['priorWeight_proxMap'] = 1
+        reconparams['prox_mode'] = True
         if sigma_p is None:
             sigma_p = auto_sigma_p(sino, magnification, delta_pixel_detector, sharpness)
         reconparams['sigma_lambda'] = sigma_p
