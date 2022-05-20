@@ -230,7 +230,7 @@ struct ViewAngleList
 struct ReconParams
 {
     /* Flags Controlling Type of Prior Used */
-    int prox_mode;             /* 1: Proximal Map Mode; 0: qGGMRF Mode*/ 
+    char prox_mode;             /* 1: Proximal Map Mode; 0: qGGMRF Mode*/ 
     /* QGGMRF Parameters */
     float q;                   /* q: QGGMRF parameter (q>1, typical choice q=2) */
     float p;                   /* p: QGGMRF parameter (1<=p<q) */
@@ -242,7 +242,7 @@ struct ReconParams
 
     /* Proximal Map Parameters */
     float sigma_lambda;			/* sigma_lambda: Proximal mapping scalar */
-    int is_positivity_constraint;	/* controls positive: (0: ???; 1: ???) */
+    char is_positivity_constraint;	/* controls positive: (0: positivity off; 1: positivity on) */
     
     /* Stopping Condition Parameters */
     float stopThresholdChange_pct;      /* stop threshold (%) */

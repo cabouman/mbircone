@@ -56,7 +56,7 @@ cdef extern from "./src/MBIRModularUtilities3D.h":
 
     struct ReconParams:
     
-        int prox_mode;                  # Prior mode: (True: proximal map mode, False: QGGMRF mode) 
+        char prox_mode;                  # Prior mode: (True: proximal map mode, False: QGGMRF mode) 
         
         # QGGMRF 
         float q;                   # q: QGGMRF parameter (q>1, typical choice q=2) 
@@ -68,7 +68,7 @@ cdef extern from "./src/MBIRModularUtilities3D.h":
         float bVertex;             # bVertex: relative neighbor weight: cube vertices 
         # Proximal Mapping 
         float sigma_lambda;        # sigma_lambda: Proximal mapping scalar 
-        int is_positivity_constraint;
+        char is_positivity_constraint;
         
 
          # Stopping Conditions
