@@ -44,9 +44,8 @@ save_path = './output/mace3D_fast/'
 os.makedirs(save_path, exist_ok=True)
 
 # Geometry parameters
-dist_source_detector = 839.0472     # Distance between the X-ray source and the detector in units of ALU
+dist_source_detector = 4*839.0472   # Distance between the X-ray source and the detector in units of ALU
 magnification = 5.572128439964856   # magnification = (source to detector distance)/(source to center-of-rotation distance)
-delta_pixel_detector = 0.25         # Scalar value of detector pixel spacing in units of ALU
 num_det_rows = 29                   # number of detector rows
 num_det_channels = 120              # number of detector channels
 
@@ -104,8 +103,7 @@ print("Generating sinogram ...")
 angles = np.linspace(0, 2 * np.pi, num_views, endpoint=False)
 sino = mbircone.cone3D.project(phantom, angles,
                                num_det_rows, num_det_channels,
-                               dist_source_detector, magnification,
-                               delta_pixel_detector=delta_pixel_detector)
+                               dist_source_detector, magnification)
 sino_weights = mbircone.cone3D.calc_weights(sino, weight_type='transmission')
 
 # Add transmission noise
@@ -117,7 +115,6 @@ sino_noisy = sino + noise
 # ###########################################################################
 print("Performing qGGMRF reconstruction ...")
 recon_qGGMRF = mbircone.cone3D.recon(sino_noisy, angles, dist_source_detector, magnification,
-                                     delta_pixel_detector=delta_pixel_detector,
                                      sharpness=sharpness, weight_type='transmission', 
                                      verbose=1)
 
@@ -147,7 +144,6 @@ recon_mace = mbircone.mace.mace3D(sino_noisy, angles, dist_source_detector, magn
                                   max_admm_itr=max_admm_itr,
                                   init_image=recon_qGGMRF,
                                   sharpness=sharpness,
-                                  delta_pixel_detector=delta_pixel_detector,
                                   weight_type='transmission',
                                   verbose=1)
 recon_shape = recon_mace.shape
