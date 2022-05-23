@@ -40,7 +40,7 @@ phantom_name = 'bottle_cap_3D'
 # destination path to download and extract the phantom and NN weight files.
 target_dir = './demo_data/'   
 # path to store output recon images
-save_path = './output/mace3D/'
+save_path = './output/mace3D_new/'
 os.makedirs(save_path, exist_ok=True)
 
 # Geometry parameters
@@ -74,7 +74,7 @@ phantom_path = demo_utils.download_and_extract(phantom_url, target_dir)
 denoiser_path = demo_utils.download_and_extract(denoiser_url, target_dir)
 
 # load original phantom and scale so it generates physically reasonable projection values
-phantom = np.load(phantom_path)/4.0
+phantom = np.load(phantom_path)
 print("shape of phantom = ", phantom.shape)
 
 
@@ -133,19 +133,20 @@ print("Reconstruction shape = ", recon_shape)
 # ###########################################################################
 # Generating phantom and reconstruction images
 # ###########################################################################
-print("Generating phantom and reconstruction images ...")
+print("Generating phantom, sinogram, and reconstruction images ...")
+# Plot sinogram views
+demo_utils.plot_gif(sino, save_path, 'sino', vmin=0, vmax=15)
+for view_idx in [0, num_views//4, num_views//2]:
+    demo_utils.plot_image(sino[view_idx], title=f'sinogram view {view_idx}',
+                          filename=os.path.join(save_path, f'sino_view{view_idx}.png'))
 # Plot axial slices of phantom and recon
 display_slices = [7, 12, 17, 22]
 for display_slice in display_slices:
     demo_utils.plot_image(phantom[display_slice], title=f'phantom, axial slice {display_slice}',
-                          filename=os.path.join(save_path, f'phantom_slice{display_slice}.png'), vmin=0, vmax=0.2)
+                          filename=os.path.join(save_path, f'phantom_slice{display_slice}.png'), vmin=0, vmax=0.5)
     demo_utils.plot_image(recon_mace[display_slice], title=f'MACE reconstruction, axial slice {display_slice}',
-                          filename=os.path.join(save_path, f'recon_mace_slice{display_slice}.png'), vmin=0, vmax=0.2)
+                          filename=os.path.join(save_path, f'recon_mace_slice{display_slice}.png'), vmin=0, vmax=0.5)
     demo_utils.plot_image(recon_qGGMRF[display_slice], title=f'qGGMRF reconstruction, axial slice {display_slice}',
-                          filename=os.path.join(save_path, f'recon_qGGMRF_slice{display_slice}.png'), vmin=0, vmax=0.2)
-# Plot 3D phantom and recon image volumes as gif images.
-demo_utils.plot_gif(phantom, save_path, 'phantom', vmin=0, vmax=0.2)
-demo_utils.plot_gif(recon_mace, save_path, 'recon_mace', vmin=0, vmax=0.2)
-demo_utils.plot_gif(recon_qGGMRF, save_path, 'recon_qGGMRF', vmin=0, vmax=0.2)
+                          filename=os.path.join(save_path, f'recon_qGGMRF_slice{display_slice}.png'), vmin=0, vmax=0.5)
 
 input("press Enter")

@@ -48,10 +48,7 @@ dist_source_detector = 4*839.0472   # Distance between the X-ray source and the 
 magnification = 5.572128439964856   # magnification = (source to detector distance)/(source to center-of-rotation distance)
 num_det_rows = 29                   # number of detector rows
 num_det_channels = 120              # number of detector channels
-
-# Simulated sinogram parameters
-num_views = 50               # number of projection views
-sino_noise_sigma = 0.005      # transmission noise level
+num_views = 45               # number of projection views
 
 # Recon parameters
 sharpness = 1.0              # Parameter to control regularization level of reconstruction.
@@ -104,18 +101,13 @@ angles = np.linspace(0, 2 * np.pi, num_views, endpoint=False)
 sino = mbircone.cone3D.project(phantom, angles,
                                num_det_rows, num_det_channels,
                                dist_source_detector, magnification)
-sino_weights = mbircone.cone3D.calc_weights(sino, weight_type='transmission')
-
-# Add transmission noise
-noise = sino_noise_sigma * 1. / np.sqrt(sino_weights) * np.random.normal(size=(num_views, num_det_rows, num_det_channels))
-sino_noisy = sino + noise
 
 # ###########################################################################
 # Perform qGGMRF reconstruction
 # ###########################################################################
 print("Performing qGGMRF reconstruction ...")
-recon_qGGMRF = mbircone.cone3D.recon(sino_noisy, angles, dist_source_detector, magnification,
-                                     sharpness=sharpness, weight_type='transmission', 
+recon_qGGMRF = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification,
+                                     sharpness=sharpness, 
                                      verbose=1)
 
 # ###########################################################################
@@ -139,12 +131,11 @@ def denoiser(img_noisy):
 # Perform MACE reconstruction
 # ###########################################################################
 print("Performing MACE reconstruction ...")
-recon_mace = mbircone.mace.mace3D(sino_noisy, angles, dist_source_detector, magnification,
+recon_mace = mbircone.mace.mace3D(sino, angles, dist_source_detector, magnification,
                                   denoiser=denoiser, denoiser_args=(),
                                   max_admm_itr=max_admm_itr,
                                   init_image=recon_qGGMRF,
                                   sharpness=sharpness,
-                                  weight_type='transmission',
                                   verbose=1)
 recon_shape = recon_mace.shape
 print("Reconstruction shape = ", recon_shape)
@@ -153,7 +144,12 @@ print("Reconstruction shape = ", recon_shape)
 # ###########################################################################
 # Generating phantom and reconstruction images
 # ###########################################################################
-print("Generating phantom and reconstruction images ...")
+print("Generating phantom, sinogram, and reconstruction images ...")
+# Plot sinogram views
+demo_utils.plot_gif(sino, save_path, 'sino', vmin=0, vmax=15)
+for view_idx in [0, num_views//4, num_views//2]:
+    demo_utils.plot_image(sino[view_idx], title=f'sinogram view {view_idx}',
+                          filename=os.path.join(save_path, f'sino_view{view_idx}.png'))
 # Plot axial slices of phantom and recon
 display_slices = [7, 12, 17, 22]
 for display_slice in display_slices:
@@ -163,9 +159,5 @@ for display_slice in display_slices:
                           filename=os.path.join(save_path, f'recon_mace_slice{display_slice}.png'), vmin=0, vmax=0.5)
     demo_utils.plot_image(recon_qGGMRF[display_slice], title=f'qGGMRF reconstruction, axial slice {display_slice}',
                           filename=os.path.join(save_path, f'recon_qGGMRF_slice{display_slice}.png'), vmin=0, vmax=0.5)
-# Plot 3D phantom and recon image volumes as gif images.
-demo_utils.plot_gif(phantom, save_path, 'phantom', vmin=0, vmax=0.5)
-demo_utils.plot_gif(recon_mace, save_path, 'recon_mace', vmin=0, vmax=0.5)
-demo_utils.plot_gif(recon_qGGMRF, save_path, 'recon_qGGMRF', vmin=0, vmax=0.5)
 
 input("press Enter")
