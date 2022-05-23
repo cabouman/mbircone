@@ -136,7 +136,7 @@ print("Generating phantom, sinogram, and reconstruction images ...")
 # Plot sinogram views
 demo_utils.plot_gif(sino, save_path, 'sino', vmin=0, vmax=15)
 for view_idx in [0, num_views//4, num_views//2]:
-    demo_utils.plot_image(sino[view_idx], title=f'sinogram view {view_idx}',
+    demo_utils.plot_image(sino[view_idx], title=f'sinogram view {view_idx}', vmin=0, vmax=15,
                           filename=os.path.join(save_path, f'sino_view{view_idx}.png'))
 # Plot axial slices of phantom and recon
 display_slices = [7, 12, 17, 22]
