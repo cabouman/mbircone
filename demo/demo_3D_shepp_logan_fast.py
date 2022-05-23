@@ -8,8 +8,8 @@ from demo_utils import plot_image, plot_gif, plt_cmp_3dobj
 ###################################
 
 # Set sinogram shape
-num_det_rows = 256
-num_det_channels = 256
+num_det_rows = 128
+num_det_channels = 128
 num_views = 256
 
 # Set reconstruction parameters
