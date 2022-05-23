@@ -10,19 +10,19 @@ from demo_utils import plot_image, plot_gif, plt_cmp_3dobj
 # Set sinogram shape
 num_det_rows = 128
 num_det_channels = 128
-num_views = 64
+num_views = 256
 
 # Set reconstruction parameters
 sharpness = 0.0                                               # Controls sharpness of reconstruction
 magnification = 2.0                                           # Ratio of (source to detector)/(source to center of rotation)
-dist_source_detector = 10*num_det_channels                     # distance from source to detector in ALU
+dist_source_detector = 4*num_det_channels                     # distance from source to detector in ALU
 angles = np.linspace(0, 2 * np.pi, num_views, endpoint=False) # set of projection angles
 
 # Set display parameters
 vmin = 1.0  # minimum display value
 vmax = 1.1  # maximum display value
-filename = 'output/3D_shepp_logan/results.png'
-
+save_path = f'output/3D_shepp_logan/'
+os.makedirs(save_path, exist_ok=True)
 
 ######################################################################################
 # This section determines the required phantom size based on the parameters set above.
@@ -59,23 +59,19 @@ sino = mbircone.cone3D.project(phantom, angles, num_det_rows, num_det_channels, 
 #########################################################
 # Reconstruct the phantom
 #########################################################
-recon = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification, sharpness=sharpness )
+recon = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification, sharpness=sharpness)
 
-# create output folder
-os.makedirs('output/3D_shepp_logan/', exist_ok=True)
-
+# Generate sino and recon images
 print('sino shape = ', np.shape(sino), sino.dtype)
-plot_image(sino[display_view, :, :], title='sino', filename='output/3D_shepp_logan/sino-shepp-logan-3D-view(%.2f).png' % angles[0])
+plot_image(sino[display_view, :, :], title='sino', filename=os.path.join(save_path, f'sino-shepp-logan-3D-view_angle{angles[0]:.1f}.png'))
 # plot_gif(sino, 'output', 'sino-shepp-logan-3D')
 
 print('recon shape = ', np.shape(recon))
-np.save('output/3D_shepp_logan/recon.npy', recon)
-
 
 #####################################
 # Display and compare reconstruction.
 #####################################
 # Display results
-plt_cmp_3dobj(phantom, recon, display_slice, display_x, display_y, vmin, vmax, filename)
+plt_cmp_3dobj(phantom, recon, display_slice, display_x, display_y, vmin, vmax, filename=os.path.join(save_path, 'results.png'))
 
 input("press Enter")
