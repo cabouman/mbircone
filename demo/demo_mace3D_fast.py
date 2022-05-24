@@ -146,7 +146,6 @@ print("Reconstruction shape = ", recon_shape)
 # ###########################################################################
 print("Generating phantom, sinogram, and reconstruction images ...")
 # Plot sinogram views
-demo_utils.plot_gif(sino, save_path, 'sino', vmin=0, vmax=4.0)
 for view_idx in [0, num_views//4, num_views//2]:
     demo_utils.plot_image(sino[view_idx], title=f'sinogram view {view_idx}', vmin=0, vmax=4.0,
                           filename=os.path.join(save_path, f'sino_view{view_idx}.png'))
