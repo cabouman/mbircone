@@ -74,7 +74,7 @@ phantom_path = demo_utils.download_and_extract(phantom_url, target_dir)
 denoiser_path = demo_utils.download_and_extract(denoiser_url, target_dir)
 
 # load original phantom
-phantom = np.load(phantom_path)
+phantom = np.load(phantom_path) / 4.
 print("shape of phantom = ", phantom.shape)
 
 
@@ -134,18 +134,18 @@ print("Reconstruction shape = ", recon_shape)
 # ###########################################################################
 print("Generating phantom, sinogram, and reconstruction images ...")
 # Plot sinogram views
-demo_utils.plot_gif(sino, save_path, 'sino', vmin=0, vmax=15)
+demo_utils.plot_gif(sino, save_path, 'sino', vmin=0, vmax=4.0)
 for view_idx in [0, num_views//4, num_views//2]:
-    demo_utils.plot_image(sino[view_idx], title=f'sinogram view {view_idx}', vmin=0, vmax=15,
+    demo_utils.plot_image(sino[view_idx], title=f'sinogram view {view_idx}', vmin=0, vmax=4.0,
                           filename=os.path.join(save_path, f'sino_view{view_idx}.png'))
 # Plot axial slices of phantom and recon
 display_slices = [7, 12, 17, 22]
 for display_slice in display_slices:
     demo_utils.plot_image(phantom[display_slice], title=f'phantom, axial slice {display_slice}',
-                          filename=os.path.join(save_path, f'phantom_slice{display_slice}.png'), vmin=0, vmax=0.5)
+                          filename=os.path.join(save_path, f'phantom_slice{display_slice}.png'), vmin=0, vmax=0.2)
     demo_utils.plot_image(recon_mace[display_slice], title=f'MACE reconstruction, axial slice {display_slice}',
-                          filename=os.path.join(save_path, f'recon_mace_slice{display_slice}.png'), vmin=0, vmax=0.5)
+                          filename=os.path.join(save_path, f'recon_mace_slice{display_slice}.png'), vmin=0, vmax=0.2)
     demo_utils.plot_image(recon_qGGMRF[display_slice], title=f'qGGMRF reconstruction, axial slice {display_slice}',
-                          filename=os.path.join(save_path, f'recon_qGGMRF_slice{display_slice}.png'), vmin=0, vmax=0.5)
+                          filename=os.path.join(save_path, f'recon_qGGMRF_slice{display_slice}.png'), vmin=0, vmax=0.2)
 
 input("press Enter")
