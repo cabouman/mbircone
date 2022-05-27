@@ -12,12 +12,12 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 This script is a fast demonstration of the mace3D reconstruction algorithm that uses a low-res phantom. Demo functionality includes
  * downloading phantom and denoiser data from specified urls
  * generating synthetic sinogram data by forward projecting the phantom and then adding transmission noise
- * performing a 3D MACE and qGGMRF reconstructions and displaying them.
+ * performing a 3D qGGMRF and MACE reconstructions and displaying them.
 """
 print('This script is a demonstration of the mace3D reconstruction algorithm. Demo functionality includes \
 \n\t * downloading phantom and denoiser data from specified urls \
 \n\t * generating synthetic sinogram data by forward projecting the phantom and then adding transmission noise\
-\n\t * performing a 3D MACE and qGGMRF reconstructions and displaying them.')
+\n\t * performing a 3D qGGMRF and MACE reconstructions and displaying them.')
 
 # ###########################################################################
 # Set the parameters to get the data and do the recon 
@@ -44,7 +44,7 @@ save_path = './output/mace3D_fast/'
 os.makedirs(save_path, exist_ok=True)
 
 # Geometry parameters
-dist_source_detector = 4*839.0472   # Distance between the X-ray source and the detector in units of ALU
+dist_source_detector = 3356.1888    # Distance between the X-ray source and the detector in units of ALU
 magnification = 5.572128439964856   # magnification = (source to detector distance)/(source to center-of-rotation distance)
 num_det_rows = 29                   # number of detector rows
 num_det_channels = 120              # number of detector channels
@@ -105,7 +105,8 @@ sino = mbircone.cone3D.project(phantom, angles,
 # ###########################################################################
 # Perform qGGMRF reconstruction
 # ###########################################################################
-print("Performing qGGMRF reconstruction ...")
+print("Performing qGGMRF reconstruction. \
+\nThis will be used as the initial image for mace3D reconstruction.")
 recon_qGGMRF = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification,
                                      sharpness=sharpness, 
                                      verbose=1)
