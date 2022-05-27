@@ -76,6 +76,7 @@ def gen_microscopy_sample(num_rows, num_cols):
 
     return image
 
+
 def gen_shepp_logan_3d(num_rows, num_cols, num_slices, block_size=(4,4,4)):
     """
     Generate a smoothed 3D Shepp Logan phantom with block-averaging strategy.
@@ -92,11 +93,13 @@ def gen_shepp_logan_3d(num_rows, num_cols, num_slices, block_size=(4,4,4)):
         out_image: 3D array, num_slices*num_rows*num_cols
     """
 
-    phantom_raw = gen_shepp_logan_3d_raw(num_rows*block_length, num_cols*block_length, num_slices*block_length)
-    phantom = phantom_raw.reshape(phantom_raw.shape[0]//block_length, block_length, 
-                                  phantom_raw.shape[1]//block_length, block_length,
-                                  phantom_raw.shape[2]//block_length, block_length).sum((1, 3, 5)) / (block_length**3)
+    phantom_raw = gen_shepp_logan_3d_raw(num_rows*block_size[1], num_cols*block_size[2], num_slices*block_size[0])
+    phantom = phantom_raw.reshape(phantom_raw.shape[0]//block_size[0], block_size[0], 
+                                  phantom_raw.shape[1]//block_size[1], block_size[1],
+                                  phantom_raw.shape[2]//block_size[2], block_size[2]).sum((1, 3, 5)) / (block_size[0]*block_size[1]*block_size[2])
     return phantom
+
+
 def gen_shepp_logan_3d_raw(num_rows, num_cols, num_slices):
     """
     Generate a 3D Shepp Logan phantom based on below reference.
