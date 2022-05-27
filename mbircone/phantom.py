@@ -1,6 +1,6 @@
 import numpy as np
 
-def gen_shepp_logan_raw(num_rows,num_cols):
+def gen_shepp_logan(num_rows,num_cols):
     """
     Generate a Shepp Logan phantom
     
