@@ -12,12 +12,12 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 This script is a fast demonstration of the mace3D reconstruction algorithm that uses a low-res phantom. Demo functionality includes
  * downloading phantom and denoiser data from specified urls
  * generating synthetic sinogram data by forward projecting the phantom and then adding transmission noise
- * performing a 3D MACE and qGGMRF reconstructions and displaying them.
+ * performing a 3D qGGMRF and MACE reconstructions and displaying them.
 """
 print('This script is a demonstration of the mace3D reconstruction algorithm. Demo functionality includes \
 \n\t * downloading phantom and denoiser data from specified urls \
 \n\t * generating synthetic sinogram data by forward projecting the phantom and then adding transmission noise\
-\n\t * performing a 3D MACE and qGGMRF reconstructions and displaying them.')
+\n\t * performing a 3D qGGMRF and MACE reconstructions and displaying them.')
 
 # ###########################################################################
 # Set the parameters to get the data and do the recon 
@@ -44,14 +44,11 @@ save_path = './output/mace3D_fast/'
 os.makedirs(save_path, exist_ok=True)
 
 # Geometry parameters
-dist_source_detector = 4*839.0472   # Distance between the X-ray source and the detector in units of ALU
+dist_source_detector = 3356.1888    # Distance between the X-ray source and the detector in units of ALU
 magnification = 5.572128439964856   # magnification = (source to detector distance)/(source to center-of-rotation distance)
 num_det_rows = 29                   # number of detector rows
 num_det_channels = 120              # number of detector channels
-
-# Simulated sinogram parameters
-num_views = 50               # number of projection views
-sino_noise_sigma = 0.005      # transmission noise level
+num_views = 45               # number of projection views
 
 # Recon parameters
 sharpness = 1.0              # Parameter to control regularization level of reconstruction.
@@ -83,7 +80,7 @@ denoiser_path = demo_utils.download_and_extract(denoiser_url, target_dir)
 print("Generating downsampled 3D phantom volume ...")
 
 # load original phantom
-phantom_orig = np.load(phantom_path)
+phantom_orig = np.load(phantom_path) / 4.0
 print("shape of original phantom = ", phantom_orig.shape)
 
 # downsample the original phantom along slice axis
@@ -104,18 +101,14 @@ angles = np.linspace(0, 2 * np.pi, num_views, endpoint=False)
 sino = mbircone.cone3D.project(phantom, angles,
                                num_det_rows, num_det_channels,
                                dist_source_detector, magnification)
-sino_weights = mbircone.cone3D.calc_weights(sino, weight_type='transmission')
-
-# Add transmission noise
-noise = sino_noise_sigma * 1. / np.sqrt(sino_weights) * np.random.normal(size=(num_views, num_det_rows, num_det_channels))
-sino_noisy = sino + noise
 
 # ###########################################################################
 # Perform qGGMRF reconstruction
 # ###########################################################################
-print("Performing qGGMRF reconstruction ...")
-recon_qGGMRF = mbircone.cone3D.recon(sino_noisy, angles, dist_source_detector, magnification,
-                                     sharpness=sharpness, weight_type='transmission', 
+print("Performing qGGMRF reconstruction. \
+\nThis will be used as the initial image for mace3D reconstruction.")
+recon_qGGMRF = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification,
+                                     sharpness=sharpness, 
                                      verbose=1)
 
 # ###########################################################################
@@ -139,12 +132,11 @@ def denoiser(img_noisy):
 # Perform MACE reconstruction
 # ###########################################################################
 print("Performing MACE reconstruction ...")
-recon_mace = mbircone.mace.mace3D(sino_noisy, angles, dist_source_detector, magnification,
+recon_mace = mbircone.mace.mace3D(sino, angles, dist_source_detector, magnification,
                                   denoiser=denoiser, denoiser_args=(),
                                   max_admm_itr=max_admm_itr,
                                   init_image=recon_qGGMRF,
                                   sharpness=sharpness,
-                                  weight_type='transmission',
                                   verbose=1)
 recon_shape = recon_mace.shape
 print("Reconstruction shape = ", recon_shape)
@@ -153,19 +145,19 @@ print("Reconstruction shape = ", recon_shape)
 # ###########################################################################
 # Generating phantom and reconstruction images
 # ###########################################################################
-print("Generating phantom and reconstruction images ...")
+print("Generating phantom, sinogram, and reconstruction images ...")
+# Plot sinogram views
+for view_idx in [0, num_views//4, num_views//2]:
+    demo_utils.plot_image(sino[view_idx], title=f'sinogram view {view_idx}', vmin=0, vmax=4.0,
+                          filename=os.path.join(save_path, f'sino_view{view_idx}.png'))
 # Plot axial slices of phantom and recon
 display_slices = [7, 12, 17, 22]
 for display_slice in display_slices:
     demo_utils.plot_image(phantom[display_slice], title=f'phantom, axial slice {display_slice}',
-                          filename=os.path.join(save_path, f'phantom_slice{display_slice}.png'), vmin=0, vmax=0.5)
+                          filename=os.path.join(save_path, f'phantom_slice{display_slice}.png'), vmin=0, vmax=0.2)
     demo_utils.plot_image(recon_mace[display_slice], title=f'MACE reconstruction, axial slice {display_slice}',
-                          filename=os.path.join(save_path, f'recon_mace_slice{display_slice}.png'), vmin=0, vmax=0.5)
+                          filename=os.path.join(save_path, f'recon_mace_slice{display_slice}.png'), vmin=0, vmax=0.2)
     demo_utils.plot_image(recon_qGGMRF[display_slice], title=f'qGGMRF reconstruction, axial slice {display_slice}',
-                          filename=os.path.join(save_path, f'recon_qGGMRF_slice{display_slice}.png'), vmin=0, vmax=0.5)
-# Plot 3D phantom and recon image volumes as gif images.
-demo_utils.plot_gif(phantom, save_path, 'phantom', vmin=0, vmax=0.5)
-demo_utils.plot_gif(recon_mace, save_path, 'recon_mace', vmin=0, vmax=0.5)
-demo_utils.plot_gif(recon_qGGMRF, save_path, 'recon_qGGMRF', vmin=0, vmax=0.5)
+                          filename=os.path.join(save_path, f'recon_qGGMRF_slice{display_slice}.png'), vmin=0, vmax=0.2)
 
 input("press Enter")
