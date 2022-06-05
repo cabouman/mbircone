@@ -32,7 +32,6 @@ num_views = 64
 angles = np.linspace(0, 2 * np.pi, num_views, endpoint=False)
 # qGGMRF recon parameters
 sharpness = 1.0                             # Controls regularization level of reconstruction by controling prior term weighting
-snr_db = 40                                 # Controls regularization level of reconstruction by controling data term weighting
 T = 0.1                                     # Controls edginess of reconstruction
 # convergence parameters
 stop_threshold = 0.005
@@ -84,7 +83,7 @@ print('Synthetic sinogram shape: (num_views, num_det_rows, num_det_channels) = '
 # Perform 3D qGGMRF reconstruction
 ######################################################################################
 print('Performing 3D qGGMRF reconstruction ...')
-recon = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification, sharpness=sharpness, snr_db = snr_db, T = T, stop_threshold = stop_threshold)
+recon = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification, sharpness=sharpness, T = T, stop_threshold = stop_threshold)
 print('recon shape = ', np.shape(recon))
 
 
