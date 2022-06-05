@@ -122,7 +122,7 @@ def calc_weights(sino, weight_type):
     return weights
 
 
-def auto_sigma_y(sino, magnification, weights, snr_db=30.0, delta_pixel_image=1.0, delta_pixel_detector=1.0):
+def auto_sigma_y(sino, magnification, weights, snr_db=40.0, delta_pixel_image=1.0, delta_pixel_detector=1.0):
     """Compute the automatic value of ``sigma_y`` for use in MBIR reconstruction.
 
     Args:
@@ -132,7 +132,7 @@ def auto_sigma_y(sino, magnification, weights, snr_db=30.0, delta_pixel_image=1.
             numpy array of weights with same shape as sino.
             The parameters weights should be the same values as used in mbircone reconstruction.
         snr_db (float, optional):
-            [Default=30.0] Scalar value that controls assumed signal-to-noise ratio of the data in dB.
+            [Default=40.0] Scalar value that controls assumed signal-to-noise ratio of the data in dB.
         delta_pixel_image (float, optional):
             [Default=1.0] Scalar value of pixel spacing in :math:`ALU`.
         delta_pixel_detector (float, optional):
@@ -484,7 +484,7 @@ def recon(sino, angles, dist_source_detector, magnification,
           channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
           delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
           init_image=0.0, prox_image=None,
-          sigma_y=None, snr_db=30.0, weights=None, weight_type='unweighted',
+          sigma_y=None, snr_db=40.0, weights=None, weight_type='unweighted',
           positivity=True, p=1.2, q=2.0, T=1.0, num_neighbors=6,
           sharpness=0.0, sigma_x=None, sigma_p=None, max_iterations=100, stop_threshold=0.02,
           num_threads=None, NHICD=False, verbose=1, lib_path=__lib_path):
@@ -513,7 +513,7 @@ def recon(sino, angles, dist_source_detector, magnification,
         
         sigma_y (float, optional): [Default=None] Scalar value of noise standard deviation parameter.
             If None, automatically set with auto_sigma_y.
-        snr_db (float, optional): [Default=30.0] Scalar value that controls assumed signal-to-noise ratio of the data in dB.
+        snr_db (float, optional): [Default=40.0] Scalar value that controls assumed signal-to-noise ratio of the data in dB.
             Ignored if sigma_y is not None.
         weights (ndarray, optional): [Default=None] 3D weights array with same shape as sino.
         weight_type (string, optional): [Default='unweighted'] Type of noise model used for data.
