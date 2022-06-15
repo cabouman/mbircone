@@ -49,7 +49,7 @@ pip install .
 1) Install demo requirements
 ```
 cd demo
-pip install -r requirements.txt
+pip install -r requirements_demo.txt
 ```
 2) Run basic demo
 ```
