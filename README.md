@@ -40,7 +40,7 @@ conda activate mbircone
 ```
 pip install -r requirements.txt
 ```
-5) Ensure GCC is installed per instructions here
+5) Ensure GCC is installed per instructions here: https://svmbir.readthedocs.io/en/latest/install.html
 
 6) Install package
 ```
