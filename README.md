@@ -40,7 +40,9 @@ conda activate mbircone
 ```
 pip install -r requirements.txt
 ```
-5) Install package
+5) Ensure GCC is installed per instructions here
+
+6) Install package
 ```
 pip install .
 ```
