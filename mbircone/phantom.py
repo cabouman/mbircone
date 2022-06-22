@@ -77,7 +77,7 @@ def gen_microscopy_sample(num_rows, num_cols):
     return image
 
 
-def gen_shepp_logan_3d(num_rows, num_cols, num_slices, block_size=(4,4,4)):
+def gen_shepp_logan_3d(num_rows, num_cols, num_slices, block_size=(2,2,2)):
     """
     Generate a smoothed 3D Shepp Logan phantom with block-averaging strategy.
     
