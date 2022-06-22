@@ -129,17 +129,17 @@ def mace3D(sino, angles, dist_source_detector, magnification,
         delta_pixel_image = delta_pixel_detector/magnification
     # Calculate automatic value of sigma_y
     if sigma_y is None:
-        sigma_y = cone3D.auto_sigma_y(sino, weights, snr_db=snr_db, delta_pixel_image=delta_pixel_image, delta_pixel_detector=delta_pixel_detector)
+        sigma_y = cone3D.auto_sigma_y(sino, magnification, weights, snr_db=snr_db, delta_pixel_image=delta_pixel_image, delta_pixel_detector=delta_pixel_detector)
     # Calculate automatic value of sigma_p
     if sigma_p is None:
-        sigma_p = cone3D.auto_sigma_p(sino, delta_pixel_detector=delta_pixel_detector, sharpness=sharpness)
+        sigma_p = cone3D.auto_sigma_p(sino, magnification, delta_pixel_detector=delta_pixel_detector, sharpness=sharpness)
     # if no init_image is provided, then use qGGMRF recon as init_image.
     if init_image is None:
         if verbose:
             start = time.time()
             print("Computing qGGMRF reconstruction. This will be used as MACE initialization point.") 
         if sigma_x is None:
-            sigma_x = cone3D.auto_sigma_x(sino, delta_pixel_detector=delta_pixel_detector, sharpness=sharpness)
+            sigma_x = cone3D.auto_sigma_x(sino, magnification, delta_pixel_detector=delta_pixel_detector, sharpness=sharpness)
         # qGGMRF recon
         init_image = cone3D.recon(sino, angles, dist_source_detector, magnification,
                                   channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
@@ -331,10 +331,10 @@ def mace4D(sino, angles, dist_source_detector, magnification,
         delta_pixel_image = delta_pixel_detector/magnification
     # Calculate automatic value of sigma_y
     if sigma_y is None:
-        sigma_y = cone3D.auto_sigma_y(sino, weights, snr_db=snr_db, delta_pixel_image=delta_pixel_image, delta_pixel_detector=delta_pixel_detector)
+        sigma_y = cone3D.auto_sigma_y(sino, magnification, weights, snr_db=snr_db, delta_pixel_image=delta_pixel_image, delta_pixel_detector=delta_pixel_detector)
     # Calculate automatic value of sigma_p
     if sigma_p is None:
-        sigma_p = cone3D.auto_sigma_p(sino, delta_pixel_detector=delta_pixel_detector, sharpness=sharpness)
+        sigma_p = cone3D.auto_sigma_p(sino, magnification, delta_pixel_detector=delta_pixel_detector, sharpness=sharpness)
     if cluster_ticket is not None:
         # Fixed args dictionary used for multi-node parallelization
         constant_args = {'dist_source_detector':dist_source_detector, 'magnification':magnification,
@@ -354,7 +354,7 @@ def mace4D(sino, angles, dist_source_detector, magnification,
             start = time.time()
             print("Computing qGGMRF reconstruction at all time points. This will be used as MACE initialization point.") 
         if sigma_x is None:
-            sigma_x = cone3D.auto_sigma_x(sino, delta_pixel_detector=delta_pixel_detector, sharpness=sharpness)
+            sigma_x = cone3D.auto_sigma_x(sino, magnification, delta_pixel_detector=delta_pixel_detector, sharpness=sharpness)
              
         if cluster_ticket is not None:
             constant_args['sigma_x'] = sigma_x

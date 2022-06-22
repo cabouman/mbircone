@@ -6,52 +6,52 @@
 
 void *get_spc(size_t num, size_t size)
 {
-	void *pt;
+    void *pt;
 
-	if( (pt=calloc(num,size)) == NULL ) {
-		fprintf(stderr, "get_spc(): calloc() error\n");
-		exit(-1);
-		}
-	return(pt);
+    if( (pt=calloc(num,size)) == NULL ) {
+        fprintf(stderr, "get_spc(): calloc() error\n");
+        exit(-1);
+        }
+    return(pt);
 }
 
 void *mget_spc(size_t num, size_t size)
 {
-	void *pt;
+    void *pt;
 
-	if( (pt=malloc(num*size)) == NULL ) {
-		fprintf(stderr, "mget_spc(): malloc() error\n");
-		exit(-1);
-		}
-	return(pt);
+    if( (pt=malloc(num*size)) == NULL ) {
+        fprintf(stderr, "mget_spc(): malloc() error\n");
+        exit(-1);
+        }
+    return(pt);
 }
 
 void **get_img(size_t wd,size_t ht,size_t size)
 {
-	size_t i;
-	void  **ppt;
-	char   *pt;
+    size_t i;
+    void  **ppt;
+    char   *pt;
 
-	ppt = (void **)mget_spc(ht,sizeof(void *));
-	pt = (char *)mget_spc(wd*ht,size);
+    ppt = (void **)mget_spc(ht,sizeof(void *));
+    pt = (char *)mget_spc(wd*ht,size);
 
-	for(i=0; i<ht; i++) ppt[i] = pt + i*wd*size;
+    for(i=0; i<ht; i++) ppt[i] = pt + i*wd*size;
 
-	return(ppt);
+    return(ppt);
 }
 
 void free_img(void **pt)
 {
-	free( (void *)pt[0]);
-	free( (void *)pt);
+    free( (void *)pt[0]);
+    free( (void *)pt);
 }
 
 
 
 
 /* modified from dynamem.c on 4/29/91 C. Bouman                           */
-/* Converted to ANSI on 7/13/93 C. Bouman         	                  */
-/* Modified for 1-D case on 6/29/95 C. Bouman         	                  */
+/* Converted to ANSI on 7/13/93 C. Bouman                               */
+/* Modified for 1-D case on 6/29/95 C. Bouman                               */
 /* Modified for 64 bit memory allocation 8/29/2013 A. Mohan               */
 /* multialloc( s, d,  d1, d2 ....) allocates a d dimensional array, whose */
 /* dimensions are stored in a list starting at d1. Each array element is  */
