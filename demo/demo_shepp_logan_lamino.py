@@ -17,8 +17,8 @@ theta_degrees = 60
 theta = theta_degrees * (np.pi/180)
 
 # detector size
-num_det_rows = 128
-num_det_channels = 128
+num_det_rows = 64
+num_det_channels = 64
 # Geometry parameters
 
 
@@ -30,7 +30,7 @@ angles = np.linspace(0, 2 * np.pi, num_views, endpoint=False)
 sharpness = 1.0                             # Controls regularization level of reconstruction by controling prior term weighting
 T = 0.1                                     # Controls edginess of reconstruction
 # convergence parameters
-stop_threshold = 1000
+stop_threshold = 0.005
 # display parameters
 vmin = 0.10
 vmax = 0.12
