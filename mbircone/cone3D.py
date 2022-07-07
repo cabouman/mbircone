@@ -230,6 +230,7 @@ def auto_sigma_p(sino, magnification, delta_pixel_detector = 1.0, sharpness = 0.
 
 def compute_sino_params(dist_source_detector, magnification,
                         num_views, num_det_rows, num_det_channels,
+                        geometry='cone',
                         channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
                         delta_pixel_detector=1.0):
     """ Compute sinogram parameters specify coordinates and bounds relating to the sinogram
@@ -281,8 +282,8 @@ def compute_sino_params(dist_source_detector, magnification,
     return sinoparams
 
 
-def compute_img_params(sinoparams, delta_pixel_image=None, ror_radius=None):
-    """ Compute image parameters that specify coordinates and bounds relating to the image. 
+def compute_img_params(sinoparams, geometry='cone', delta_pixel_image=None, ror_radius=None):
+    """ Compute image parameters that specify coordinates and bounds relating to the image.
         For detailed specifications of imgparams, see cone3D.interface_cy_c
     
     Args:
@@ -395,6 +396,7 @@ def compute_img_params(sinoparams, delta_pixel_image=None, ror_radius=None):
 def compute_img_size(num_views, num_det_rows, num_det_channels,
                      dist_source_detector,
                      magnification,
+                     geometry='cone',
                      channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
                      delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None):
     """Compute size of the reconstructed image given the geometric parameters.
@@ -482,6 +484,7 @@ def extract_roi_from_ror(image, boundary_size):
 
 
 def recon(sino, angles, dist_source_detector, magnification,
+          geometry='cone',
           channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
           delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
           init_image=0.0, prox_image=None,
@@ -504,7 +507,7 @@ def recon(sino, angles, dist_source_detector, magnification,
         
         delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
         delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
-            If None, automatically set to delta_pixel_detector/magnification  
+            If None, automatically set to delta_pixel_detector/magnification
         ror_radius (float, optional): [Default=None] Scalar value of radius of reconstruction in :math:`ALU`.
             If None, automatically set with compute_img_params.
             Pixels outside the radius ror_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
@@ -525,7 +528,7 @@ def recon(sino, angles, dist_source_detector, magnification,
                 - Option "transmission_root" is commonly used with transmission CT data to improve image homogeneity;
                 - Option "emission" is appropriate for emission CT data.
 
-        positivity (bool, optional): [Default=True] Boolean value that determines if positivity constraint is enforced. 
+        positivity (bool, optional): [Default=True] Boolean value that determines if positivity constraint is enforced.
             The positivity parameter defaults to True; however, it should be changed to False when used in applications that can generate negative image values.
         p (float, optional): [Default=1.2] Scalar value in range :math:`[1,2]` that specifies the qGGMRF shape parameter.
         q (float, optional): [Default=2.0] Scalar value in range :math:`[p,1]` that specifies the qGGMRF shape parameter.
@@ -555,7 +558,7 @@ def recon(sino, angles, dist_source_detector, magnification,
     """
 
     # Internally set
-    # NHICD_ThresholdAllVoxels_ErrorPercent=80, NHICD_percentage=15, NHICD_random=20, 
+    # NHICD_ThresholdAllVoxels_ErrorPercent=80, NHICD_percentage=15, NHICD_random=20,
     # zipLineMode=2, N_G=2, numVoxelsPerZiplineMax=200
 
     if num_threads is None:
@@ -597,7 +600,7 @@ def recon(sino, angles, dist_source_detector, magnification,
 
     # Set automatic value of sigma_y
     if sigma_y is None:
-        sigma_y = auto_sigma_y(sino, magnification, weights, snr_db, 
+        sigma_y = auto_sigma_y(sino, magnification, weights, snr_db,
                                delta_pixel_image=delta_pixel_image,
                                delta_pixel_detector=delta_pixel_detector)
 
@@ -685,6 +688,7 @@ def recon(sino, angles, dist_source_detector, magnification,
 def project(image, angles,
             num_det_rows, num_det_channels,
             dist_source_detector, magnification,
+            geometry='cone',
             channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
             delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
             num_threads=None, verbose=1, lib_path=__lib_path):
@@ -709,7 +713,7 @@ def project(image, angles,
         
         delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
         delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
-            If None, automatically set to delta_pixel_detector/magnification  
+            If None, automatically set to delta_pixel_detector/magnification
         ror_radius (float, optional): [Default=None] Scalar value of radius of reconstruction in :math:`ALU`.
             If None, automatically set with compute_img_params.
             Pixels outside the radius ror_radius in the :math:`(x,y)` plane are disregarded.
