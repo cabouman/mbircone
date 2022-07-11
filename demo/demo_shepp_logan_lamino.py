@@ -45,7 +45,7 @@ print('Genrating 3D Shepp Logan phantom ...')
 # This section determines the phantom size corresponding to the geometry parameters
 ######################################################################################
 # Compute ROR (Region of Reconstruction) and boundary size
-(num_slices_ROR, num_rows_ROR, num_cols_ROR), boundary_size = mbircone.lamino.compute_img_size_lamino(num_views, num_det_rows, num_det_channels, theta)
+(num_slices_ROR, num_rows_ROR, num_cols_ROR), boundary_size = mbircone.cone3D.compute_img_size(num_views, num_det_rows, num_det_channels, None, 1, geometry='lamino', theta=theta)
 
 # Compute ROI (Region of Interest) size from ROR and boundary size
 # In principle the object of interest should be within ROI.
@@ -82,8 +82,8 @@ print('Padded ROR phantom shape = ', np.shape(phantom))
 # Generate synthetic sinogram
 ######################################################################################
 print('Generating synthetic sinogram ...')
-sino = mbircone.lamino.project_lamino(phantom, angles, theta,
-                                                             num_det_rows, num_det_channels)
+sino = mbircone.cone3D.project(phantom, angles, num_det_rows, num_det_channels, None, 1,
+                                geometry='lamino', theta=theta)
 print('Synthetic sinogram shape: (num_views, num_det_rows, num_det_channels) = ', sino.shape)
 
 
@@ -91,7 +91,7 @@ print('Synthetic sinogram shape: (num_views, num_det_rows, num_det_channels) = '
 # Perform 3D qGGMRF reconstruction
 ######################################################################################
 print('Performing 3D qGGMRF reconstruction ...')
-recon = mbircone.lamino.recon_lamino(sino, angles, theta, sharpness=sharpness, T = T, stop_threshold = stop_threshold)
+recon = mbircone.cone3D.recon(sino, angles, None, 1, geometry='lamino', theta=theta, sharpness=sharpness, T = T, stop_threshold = stop_threshold)
 print('recon shape = ', np.shape(recon))
 
 
