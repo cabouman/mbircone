@@ -83,7 +83,7 @@ print('Padded ROR phantom shape = ', np.shape(phantom))
 ######################################################################################
 print('Generating synthetic sinogram ...')
 sino = mbircone.lamino.project_lamino(phantom, angles, theta,
-															 num_det_rows, num_det_channels)
+                                                             num_det_rows, num_det_channels)
 print('Synthetic sinogram shape: (num_views, num_det_rows, num_det_channels) = ', sino.shape)
 
 
@@ -101,30 +101,30 @@ print('recon shape = ', np.shape(recon))
 ######################################################################################
 # sinogram images
 for view_idx in [0, num_views//4, num_views//2]:
-		view_angle = int(angles[view_idx]*180/np.pi)
-		plot_image(sino[view_idx, :, :], title=f'sinogram view angle {view_angle} ',
-							 filename=os.path.join(save_path, f'sino-shepp-logan-3D-view_angle{view_angle}.png'))
+        view_angle = int(angles[view_idx]*180/np.pi)
+        plot_image(sino[view_idx, :, :], title=f'sinogram view angle {view_angle} ',
+                             filename=os.path.join(save_path, f'sino-shepp-logan-3D-view_angle{view_angle}.png'))
 # Set display indexes for phantom and recon images
 display_slice = recon.shape[0] // 2
 display_x = recon.shape[1] // 2
 display_y = recon.shape[2] // 2
 # phantom images
 plot_image(phantom[display_slice], title=f'phantom, axial slice {display_slice}',
-					 filename=os.path.join(save_path, 'phantom_axial.png'), vmin=0, vmax=0.40)
+                     filename=os.path.join(save_path, 'phantom_axial.png'), vmin=0, vmax=0.40)
 plot_image(phantom[display_slice], title=f'phantom, axial slice {display_slice}',
-					 filename=os.path.join(save_path, 'phantom_axial.png'), vmin=vmin, vmax=vmax)
+                     filename=os.path.join(save_path, 'phantom_axial.png'), vmin=vmin, vmax=vmax)
 plot_image(phantom[:,display_x,:], title=f'phantom, coronal slice {display_x}',
-					 filename=os.path.join(save_path, 'phantom_coronal.png'), vmin=vmin, vmax=vmax)
+                     filename=os.path.join(save_path, 'phantom_coronal.png'), vmin=vmin, vmax=vmax)
 plot_image(phantom[:,:,display_y], title=f'phantom, sagittal slice {display_y}',
-					 filename=os.path.join(save_path, 'phantom_sagittal.png'), vmin=vmin, vmax=vmax)
+                     filename=os.path.join(save_path, 'phantom_sagittal.png'), vmin=vmin, vmax=vmax)
 # recon images
 plot_image(recon[display_slice], title=f'qGGMRF recon, axial slice {display_slice}, Θ='+str(theta_degrees)+' degrees',
-					 filename=os.path.join(save_path, 'recon_axial.png'), vmin=0, vmax=0.40)
+                     filename=os.path.join(save_path, 'recon_axial.png'), vmin=0, vmax=0.40)
 plot_image(recon[display_slice], title=f'qGGMRF recon, axial slice {display_slice}, Θ='+str(theta_degrees)+' degrees',
-					 filename=os.path.join(save_path, 'recon_axial.png'), vmin=vmin, vmax=vmax)
+                     filename=os.path.join(save_path, 'recon_axial.png'), vmin=vmin, vmax=vmax)
 plot_image(recon[:,display_x,:], title=f'qGGMRF recon, coronal slice {display_x}, Θ='+str(theta_degrees)+' degrees',
-					 filename=os.path.join(save_path, 'recon_coronal.png'), vmin=vmin, vmax=vmax)
+                     filename=os.path.join(save_path, 'recon_coronal.png'), vmin=vmin, vmax=vmax)
 plot_image(recon[:,:,display_y], title=f'qGGMRF recon, sagittal slice {display_y}, Θ='+str(theta_degrees)+' degrees',
-					 filename=os.path.join(save_path, 'recon_sagittal.png'), vmin=vmin, vmax=vmax)
+                     filename=os.path.join(save_path, 'recon_sagittal.png'), vmin=vmin, vmax=vmax)
 print(f"Images saved to {save_path}.")
 input("Press Enter")
