@@ -527,7 +527,7 @@ def compute_img_size(num_views, num_det_rows, num_det_channels,
 
         imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
     elif geometry=='lamino':
-        sinoparams = compute_sino_params_lamino(num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
+        sinoparams = compute_sino_params_lamino(num_views, num_det_rows, num_det_channels,
                                        theta,
                                        channel_offset=channel_offset,
                                        delta_pixel_detector=delta_pixel_detector)
@@ -681,7 +681,7 @@ def recon(sino, angles, dist_source_detector, magnification,
 
         imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
     elif geometry=='lamino':
-        sinoparams = compute_sino_params_lamino(num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
+        sinoparams = compute_sino_params_lamino(num_views, num_det_rows, num_det_channels,
                                        theta,
                                        channel_offset=channel_offset,
                                        delta_pixel_detector=delta_pixel_detector)
@@ -861,7 +861,7 @@ def project(image, angles,
 
         imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
     elif geometry=='lamino':
-        sinoparams = compute_sino_params_lamino(num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
+        sinoparams = compute_sino_params_lamino(num_views, num_det_rows, num_det_channels,
                                        theta,
                                        channel_offset=channel_offset,
                                        delta_pixel_detector=delta_pixel_detector)
