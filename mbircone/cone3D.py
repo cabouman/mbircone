@@ -396,89 +396,89 @@ def compute_sino_params_lamino(num_views, num_det_rows, num_det_channels,
                     channel_offset=0.0,
                     delta_pixel_detector=1.0):
   
-  # This needs to be large
-  dist_factor = 500
-  dist_source_detector = (dist_factor) * (delta_pixel_detector) * max(num_det_channels, num_det_rows)**2
+    # This needs to be large
+    dist_factor = 500
+    dist_source_detector = (dist_factor) * (delta_pixel_detector) * max(num_det_channels, num_det_rows)**2
 
-  sinoparams = dict()
-  sinoparams['N_dv'] = num_det_channels
-  sinoparams['N_dw'] = num_det_rows
-  sinoparams['N_beta'] = num_views
-  sinoparams['Delta_dv'] = delta_pixel_detector
-  sinoparams['Delta_dw'] = delta_pixel_detector / math.sin(theta)
-  sinoparams['u_s'] = - dist_source_detector
-  sinoparams['u_r'] = 0
-  sinoparams['v_r'] = 0
-  sinoparams['u_d0'] = 0
+    sinoparams = dict()
+    sinoparams['N_dv'] = num_det_channels
+    sinoparams['N_dw'] = num_det_rows
+    sinoparams['N_beta'] = num_views
+    sinoparams['Delta_dv'] = delta_pixel_detector
+    sinoparams['Delta_dw'] = delta_pixel_detector / math.sin(theta)
+    sinoparams['u_s'] = - dist_source_detector
+    sinoparams['u_r'] = 0
+    sinoparams['v_r'] = 0
+    sinoparams['u_d0'] = 0
 
-  dist_dv_to_detector_corner_from_detector_center = - sinoparams['N_dv'] * sinoparams['Delta_dv'] / 2
-  dist_dw_to_detector_corner_from_detector_center = - sinoparams['N_dw'] * sinoparams['Delta_dw'] / 2
+    dist_dv_to_detector_corner_from_detector_center = - sinoparams['N_dv'] * sinoparams['Delta_dv'] / 2
+    dist_dw_to_detector_corner_from_detector_center = - sinoparams['N_dw'] * sinoparams['Delta_dw'] / 2
 
-  dist_dv_to_detector_center_from_source_detector_line = - channel_offset
-  dist_dw_to_detector_center_from_source_detector_line = - dist_source_detector / math.tan(theta)
+    dist_dv_to_detector_center_from_source_detector_line = - channel_offset
+    dist_dw_to_detector_center_from_source_detector_line = - dist_source_detector / math.tan(theta)
 
-  # corner of detector from source-detector-line
-  sinoparams[
-      'v_d0'] = dist_dv_to_detector_corner_from_detector_center + dist_dv_to_detector_center_from_source_detector_line
-  sinoparams[
-      'w_d0'] = dist_dw_to_detector_corner_from_detector_center + dist_dw_to_detector_center_from_source_detector_line
+    # corner of detector from source-detector-line
+    sinoparams[
+        'v_d0'] = dist_dv_to_detector_corner_from_detector_center + dist_dv_to_detector_center_from_source_detector_line
+    sinoparams[
+        'w_d0'] = dist_dw_to_detector_corner_from_detector_center + dist_dw_to_detector_center_from_source_detector_line
 
-  sinoparams['weightScaler_value'] = -1
+    sinoparams['weightScaler_value'] = -1
 
-  return sinoparams
+    return sinoparams
 
 def compute_img_params_lamino(sinoparams, theta, delta_pixel_image=None, ror_radius=None):
   
-  s = delta_pixel_image
-  ell = delta_pixel_image
-  
-  imgparams = dict()
-  imgparams['Delta_xy'] = s
-  imgparams['Delta_z'] = ell
-  
-  N_C = sinoparams['N_dv']
-  T_C = sinoparams['Delta_dv']
-  N_R = sinoparams['N_dw']
-  T_R = sinoparams['Delta_dw']
-  
-  R = (N_R * T_R) / (2 * np.cos(theta))
-  H = (N_R * T_R) / (2 * np.sin(theta))
-  
-  y_0 = sinoparams['v_d0'] + (N_C * T_C / 2)
-  r_cyl_1 = (N_C * T_C / 2) - np.abs(y_0)
-  r_cyl_2 = (N_R * T_R / 2)
-  r = min(r_cyl_1,r_cyl_2)
-  
-  h = H - (r / np.tan(theta))
-  
-  imgparams['x_0'] = - R - s / 2
-  imgparams['y_0'] = imgparams['x_0']
-  imgparams['z_0'] = - H + sinoparams['w_d0'] + (N_R * T_R / 2)
-  
-  imgparams['N_x'] = int(2 * np.ceil(R / s) + 1)
-  imgparams['N_y'] = imgparams['N_x']
-  imgparams['N_z'] = int(2 * np.ceil(H / ell) + 1)
+    s = delta_pixel_image
+    ell = delta_pixel_image
 
-  imgparams['j_xstart_roi'] = int(np.ceil(R/s) - np.floor(r/s))
-  imgparams['j_ystart_roi'] = imgparams['j_xstart_roi']
-  imgparams['j_zstart_roi'] = int(np.ceil(H/ell) - np.floor(h/ell))
-  
-  imgparams['j_xstop_roi'] = int(np.ceil(R/s) + np.floor(r/s))
-  imgparams['j_ystop_roi'] = imgparams['j_xstop_roi']
-  imgparams['j_zstop_roi'] = int(np.ceil(H/ell) + np.floor(h/ell))
-  
-  imgparams['N_x_roi'] = -1
-  imgparams['N_y_roi'] = -1
-  imgparams['N_z_roi'] = -1
-  
-  return imgparams
+    imgparams = dict()
+    imgparams['Delta_xy'] = s
+    imgparams['Delta_z'] = ell
+
+    N_C = sinoparams['N_dv']
+    T_C = sinoparams['Delta_dv']
+    N_R = sinoparams['N_dw']
+    T_R = sinoparams['Delta_dw']
+
+    R = (N_R * T_R) / (2 * np.cos(theta))
+    H = (N_R * T_R) / (2 * np.sin(theta))
+
+    y_0 = sinoparams['v_d0'] + (N_C * T_C / 2)
+    r_cyl_1 = (N_C * T_C / 2) - np.abs(y_0)
+    r_cyl_2 = (N_R * T_R / 2)
+    r = min(r_cyl_1,r_cyl_2)
+
+    h = H - (r / np.tan(theta))
+
+    imgparams['x_0'] = - R - s / 2
+    imgparams['y_0'] = imgparams['x_0']
+    imgparams['z_0'] = - H + sinoparams['w_d0'] + (N_R * T_R / 2)
+
+    imgparams['N_x'] = int(2 * np.ceil(R / s) + 1)
+    imgparams['N_y'] = imgparams['N_x']
+    imgparams['N_z'] = int(2 * np.ceil(H / ell) + 1)
+
+    imgparams['j_xstart_roi'] = int(np.ceil(R/s) - np.floor(r/s))
+    imgparams['j_ystart_roi'] = imgparams['j_xstart_roi']
+    imgparams['j_zstart_roi'] = int(np.ceil(H/ell) - np.floor(h/ell))
+
+    imgparams['j_xstop_roi'] = int(np.ceil(R/s) + np.floor(r/s))
+    imgparams['j_ystop_roi'] = imgparams['j_xstop_roi']
+    imgparams['j_zstop_roi'] = int(np.ceil(H/ell) + np.floor(h/ell))
+
+    imgparams['N_x_roi'] = -1
+    imgparams['N_y_roi'] = -1
+    imgparams['N_z_roi'] = -1
+
+    return imgparams
 
 def compute_img_size(num_views, num_det_rows, num_det_channels,
                      dist_source_detector,
                      magnification,
                      channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
                      delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
-                     geometry='cone', theta=math.pi):
+                     geometry='cone', theta=math.pi/2):
     """Compute size of the reconstructed image given the geometric parameters.
 
     Args:
@@ -514,27 +514,27 @@ def compute_img_size(num_views, num_det_rows, num_det_channels,
     
     # Automatically set delta_pixel_image.
     if geometry=='lamino':
-      magnification = 1
+        magnification = 1
     if delta_pixel_image is None:
         delta_pixel_image = delta_pixel_detector / magnification
 
     if geometry=='cone':
-      sinoparams = compute_sino_params(dist_source_detector, magnification,
+        sinoparams = compute_sino_params(dist_source_detector, magnification,
                                        num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
                                        channel_offset=channel_offset, row_offset=row_offset,
                                        rotation_offset=rotation_offset,
                                        delta_pixel_detector=delta_pixel_detector)
 
-      imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
+        imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
     elif geometry=='lamino':
-      sinoparams = compute_sino_params_lamino(num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
-                                       theta=theta,
+        sinoparams = compute_sino_params_lamino(num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
+                                       theta,
                                        channel_offset=channel_offset,
                                        delta_pixel_detector=delta_pixel_detector)
 
-      imgparams = compute_img_params_lamino(sinoparams, theta, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
+        imgparams = compute_img_params_lamino(sinoparams, theta, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
     else:
-      raise Exception("geometry: undefined geometry {}".format(geometry))
+        raise Exception("geometry: undefined geometry {}".format(geometry))
 
     # Summarize Information about the image size.
     ROR = [imgparams['N_z'], imgparams['N_x'], imgparams['N_y']]
@@ -581,7 +581,7 @@ def extract_roi_from_ror(image, boundary_size):
 def recon(sino, angles, dist_source_detector, magnification,
           channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
           delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
-          geometry='cone', theta=math.pi,
+          geometry='cone', theta=math.pi/2,
           init_image=0.0, prox_image=None,
           sigma_y=None, snr_db=40.0, weights=None, weight_type='unweighted',
           positivity=True, p=1.2, q=2.0, T=1.0, num_neighbors=6,
@@ -666,29 +666,29 @@ def recon(sino, angles, dist_source_detector, magnification,
     os.environ['OMP_DYNAMIC'] = 'true'
 
     if geometry=='lamino':
-      magnification = 1
+        magnification = 1
     if delta_pixel_image is None:
         delta_pixel_image = delta_pixel_detector / magnification
 
     (num_views, num_det_rows, num_det_channels) = sino.shape
 
     if geometry=='cone':
-      sinoparams = compute_sino_params(dist_source_detector, magnification,
+        sinoparams = compute_sino_params(dist_source_detector, magnification,
                                        num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
                                        channel_offset=channel_offset, row_offset=row_offset,
                                        rotation_offset=rotation_offset,
                                        delta_pixel_detector=delta_pixel_detector)
 
-      imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
+        imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
     elif geometry=='lamino':
-      sinoparams = compute_sino_params_lamino(num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
-                                       theta=theta,
+        sinoparams = compute_sino_params_lamino(num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
+                                       theta,
                                        channel_offset=channel_offset,
                                        delta_pixel_detector=delta_pixel_detector)
 
-      imgparams = compute_img_params_lamino(sinoparams, theta, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
+        imgparams = compute_img_params_lamino(sinoparams, theta, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
     else:
-      raise Exception("geometry: undefined geometry {}".format(geometry))
+        raise Exception("geometry: undefined geometry {}".format(geometry))
 
     hash_val = hash_params(angles, sinoparams, imgparams)
     sysmatrix_fname = _gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
@@ -800,7 +800,7 @@ def project(image, angles,
             dist_source_detector, magnification,
             channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
             delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
-            geometry='cone', theta=math.pi,
+            geometry='cone', theta=math.pi/2,
             num_threads=None, verbose=1, lib_path=__lib_path):
     """Compute 3D cone beam forward-projection.
     
@@ -846,29 +846,29 @@ def project(image, angles,
     os.environ['OMP_DYNAMIC'] = 'true'
 
     if geometry=='lamino':
-      magnification = 1
+        magnification = 1
     if delta_pixel_image is None:
         delta_pixel_image = delta_pixel_detector / magnification
 
     num_views = len(angles)
 
     if geometry=='cone':
-      sinoparams = compute_sino_params(dist_source_detector, magnification,
+        sinoparams = compute_sino_params(dist_source_detector, magnification,
                                        num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
                                        channel_offset=channel_offset, row_offset=row_offset,
                                        rotation_offset=rotation_offset,
                                        delta_pixel_detector=delta_pixel_detector)
 
-      imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
+        imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
     elif geometry=='lamino':
-      sinoparams = compute_sino_params_lamino(num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
-                                       theta=theta,
+        sinoparams = compute_sino_params_lamino(num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
+                                       theta,
                                        channel_offset=channel_offset,
                                        delta_pixel_detector=delta_pixel_detector)
 
-      imgparams = compute_img_params_lamino(sinoparams, theta, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
+        imgparams = compute_img_params_lamino(sinoparams, theta, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
     else:
-      raise Exception("geometry: undefined geometry {}".format(geometry))
+        raise Exception("geometry: undefined geometry {}".format(geometry))
 
     (num_img_slices, num_img_rows, num_img_cols) = image.shape
 
