@@ -53,9 +53,10 @@ def main():
 
     clean_patches_train = np.stack(clean_patches_train, axis=0) # n x conv1 x conv2 x chan
     np.save(os.path.join(params['paths']['out_dir'], 'clean_patches_raw.npy'), clean_patches_train)
-    print("shape of clean patches after inspection = ", np.shape(clean_patches_train))
     permutation = np.random.permutation(clean_patches_train.shape[0])
     clean_patches_train = clean_patches_train[permutation]
+    clean_patches_train = clean_patches_train[:12800]
+    print("shape of clean patches after inspection (partial dataset) = ", np.shape(clean_patches_train))
     clean_patches_train = clean_patches_train / upper_range
     #np.save(os.path.join(params['paths']['out_dir'], 'clean_patches.npy'), clean_patches_train)
     with tf.Session(config=config) as sess:

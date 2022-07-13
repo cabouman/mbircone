@@ -111,11 +111,10 @@ class denoiser:
                     np.save(os.path.join(params['paths']['out_dir'], f'denoised_batch{batch_id}_epoch{epoch}.npy'), denoised_batch) 
                     np.save(os.path.join(params['paths']['out_dir'], f'residual_batch{batch_id}_epoch{epoch}.npy'), residual_batch) 
                 iter_num += 1
-
+            
             if np.mod(epoch , params['eval_every_epoch']) == 0:
                 self.save(iter_num, params['paths']['checkpoint_dir'])
                 self.save(iter_num, params['paths']['checkpoint_dir']+'_epoch_'+str(epoch))
-
 
         print("############################## Finish training.")
         np.save(os.path.join(params['paths']['out_dir'], f'train_loss.npy'), loss_arr)
