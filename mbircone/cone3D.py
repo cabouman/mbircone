@@ -395,6 +395,24 @@ def compute_sino_params_lamino(num_views, num_det_rows, num_det_channels,
                     theta,
                     channel_offset=0.0,
                     delta_pixel_detector=1.0):
+                    
+    """ Compute sinogram parameters specify coordinates and bounds relating to the sinogram
+        Function signatures are in laminogram coordinates, output corresponds to sinogram.
+        For detailed specifications of sinoparams, see cone3D.interface_cy_c
+    
+    Args:
+        num_views (int): Number of views in laminogram data
+        num_det_rows (int): Number of rows in laminogram data
+        num_det_channels (int): Number of channels in laminogram data
+        
+        theta (float): Laminographic angle; pi/2 - grazing angle
+
+        channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the "projected axis of rotation" along a row.
+        delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
+        
+    Returns:
+        Dictionary containing sino parameters as required by the Cython code
+    """
   
     # This needs to be large
     dist_factor = 500
@@ -428,6 +446,23 @@ def compute_sino_params_lamino(num_views, num_det_rows, num_det_channels,
     return sinoparams
 
 def compute_img_params_lamino(sinoparams, theta, delta_pixel_image=None, ror_radius=None):
+  
+      """ Compute image parameters that specify coordinates and bounds relating to the image.
+          For detailed specifications of imgparams, see cone3D.interface_cy_c
+      
+      Args:
+          sinoparams (dict): Dictionary containing sinogram parameters as required by the Cython code
+          theta (float): Laminographic angle; pi/2 - grazing angle
+          delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
+              If None, automatically set to delta_pixel_detector/magnification
+          ror_radius (float, optional): [Default=None] Scalar value of radius of reconstruction in :math:`ALU`.
+              If None, automatically set.
+              Pixels outside the radius ror_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
+             
+      Returns:
+          Dictionary containing image parameters as required by the Cython code
+       
+      """
   
     s = delta_pixel_image
     ell = delta_pixel_image
