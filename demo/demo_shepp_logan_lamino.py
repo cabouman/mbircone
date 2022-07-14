@@ -6,6 +6,7 @@ from demo_utils import plot_image, plot_gif, plt_cmp_3dobj
 
 # ###########################################################################
 # Set the parameters to generate the phantom, synthetic sinogram, and do the recon
+# Adapted from demo_3D_shepp_logan.py
 # ###########################################################################
 
 # Change the parameters below for your own use case.
