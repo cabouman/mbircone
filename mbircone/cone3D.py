@@ -483,6 +483,9 @@ def compute_img_params_lamino(sinoparams, theta, delta_pixel_image=None, ror_rad
     r_cyl_1 = (N_C * T_C / 2) - np.abs(y_0)
     r_cyl_2 = (N_R * T_R / 2)
     r = min(r_cyl_1,r_cyl_2)
+    
+    if ror_radius is not None:
+        r = ror_radius
 
     h = H - (r / np.tan(theta))
 
