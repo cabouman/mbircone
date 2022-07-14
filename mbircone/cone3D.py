@@ -447,22 +447,22 @@ def compute_sino_params_lamino(num_views, num_det_rows, num_det_channels,
 
 def compute_img_params_lamino(sinoparams, theta, delta_pixel_image=None, ror_radius=None):
   
-      """ Compute image parameters that specify coordinates and bounds relating to the image.
-          For detailed specifications of imgparams, see cone3D.interface_cy_c
-      
-      Args:
-          sinoparams (dict): Dictionary containing sinogram parameters as required by the Cython code
-          theta (float): Laminographic angle; pi/2 - grazing angle
-          delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
-              If None, automatically set to delta_pixel_detector/magnification
-          ror_radius (float, optional): [Default=None] Scalar value of radius of reconstruction in :math:`ALU`.
-              If None, automatically set.
-              Pixels outside the radius ror_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
-             
-      Returns:
-          Dictionary containing image parameters as required by the Cython code
-       
-      """
+    """ Compute image parameters that specify coordinates and bounds relating to the image.
+      For detailed specifications of imgparams, see cone3D.interface_cy_c
+
+    Args:
+      sinoparams (dict): Dictionary containing sinogram parameters as required by the Cython code
+      theta (float): Laminographic angle; pi/2 - grazing angle
+      delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
+          If None, automatically set to delta_pixel_detector/magnification
+      ror_radius (float, optional): [Default=None] Scalar value of radius of reconstruction in :math:`ALU`.
+          If None, automatically set.
+          Pixels outside the radius ror_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
+         
+    Returns:
+      Dictionary containing image parameters as required by the Cython code
+
+    """
   
     s = delta_pixel_image
     ell = delta_pixel_image
