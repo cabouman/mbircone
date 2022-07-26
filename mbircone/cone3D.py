@@ -6,6 +6,7 @@ import os
 import hashlib
 import mbircone.interface_cy_c as ci
 import random
+import warnings
 
 __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
 __namelen_sysmatrix = 20
