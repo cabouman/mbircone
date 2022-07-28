@@ -597,7 +597,7 @@ def blind_fixture_correction(sino, angles, dist_source_detector, magnification,
     c = np.sum(e*p) / np.sum(p*p)
     print("linear fitting constant = ", c)
     sino_corrected = sino - c*p
-    return sino_corrected, mask
+    return sino_corrected
 
 
 def background_offset_calibration(sino, background_box_info_list):

@@ -94,14 +94,15 @@ def get_cluster_ticket(job_queue_system_type,
                                n_workers=1,
                                walltime=maximum_allowable_walltime,
                                memory=maximum_memory_per_node,
-                               # env_extra=['module load anaconda', 'source activate mbircone'],
                                cores=1,
                                job_extra=[system_specific_args],
                                job_cpu=num_physical_cores_per_node,
                                local_directory=local_directory,
                                log_directory=log_directory,
-                               death_timeout=300)
+                               death_timeout=1200,
+                               silence_logs='error')
         cluster.scale(jobs=num_nodes)
+        #cluster.adapt(minimum=num_nodes//2, maximum=num_nodes)
         print(cluster.job_script())
 
     # Deploy Dask on your local machine.
@@ -189,7 +190,7 @@ def scatter_gather(cluster_ticket, func, constant_args={}, variable_args_list=[]
         return return_list
 
     cluster = cluster_ticket['cluster']
-    num_nodes = cluster_ticket['num_nodes']
+    num_nodes = int(cluster_ticket['num_nodes'])
 
     def parallel_func(t, variable_args):
         """
@@ -211,7 +212,7 @@ def scatter_gather(cluster_ticket, func, constant_args={}, variable_args_list=[]
     if min_nodes is None:
         min_nodes = num_nodes
     else:
-        min_nodes = np.min(min_nodes, num_nodes)
+        min_nodes = min(min_nodes, num_nodes)
 
     # Start submit jobs until the client gets enough workers.
     wait_times = 1
@@ -247,7 +248,7 @@ def scatter_gather(cluster_ticket, func, constant_args={}, variable_args_list=[]
     while submission_list:
         # For large input, we should distribute the dataset to cluster memory.
         # reference: `https://distributed.dask.org/en/latest/api.html#distributed.Client.scatter`
-        future_inp = client.scatter([variable_args_list[tp] for tp in submission_list])
+        future_inp = client.scatter([variable_args_list[tp] for tp in submission_list], broadcast=True)
 
         # client.map() map the function "parallel_func" to a sequence of input arguments.
         # reference: `https://distributed.dask.org/en/latest/api.html#distributed.Client.map`
