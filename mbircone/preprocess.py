@@ -259,6 +259,12 @@ def _NSI_read_str_from_config(filepath, tags_sections):
     return params
 
 
+def NSI_read_defect_pixel_loc(defect_file_path):
+    tag_section_list = [['Defect', 'Defective Pixels']]
+    defect_loc = _NSI_read_str_from_config(defect_file_path, tag_section_list)
+    defect_loc = np.array([defect_pixel_ind.split()[:2] for defect_pixel_ind in defect_loc ]).astype(int)
+    return defect_loc 
+
 def NSI_read_params(config_file_path, flip_d0=(0, 0.5), transpose=False):
     """Reads NSI system parameters from a NSI configuration file.
 
