@@ -678,7 +678,7 @@ def recon(sino, angles, dist_source_detector, magnification,
         reconparams['sigma_lambda'] = sigma_p
 
     x = ci.recon_cy(sino, weights, init_image, prox_image,
-                    sinoparams, imgparams, reconparams, sysmatrix_fname, num_threads)
+                    sinoparams, imgparams, reconparams, sysmatrix_fname, num_threads, max_resolutions)
     return x
 
 

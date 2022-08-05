@@ -5,6 +5,7 @@ cimport cython          # Import cython package
 cimport numpy as cnp    # Import specialized cython support for numpy
 cimport openmp
 from libc.string cimport memset,strcpy
+import mbircone._utils.py
 
 # Import c data structure
 cdef extern from "./src/MBIRModularUtilities3D.h":
@@ -264,9 +265,85 @@ def AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname, verbos
 
 
 def recon_cy(sino, wght, x_init, proxmap_input,
-             sinoparams, imgparams, reconparams, py_Amatrix_fname, num_threads):
+             sinoparams, imgparams, reconparams, py_Amatrix_fname, num_threads, max_resolutions = None):
     # sino, wght shape : views x slices x channels
     # recon shape: N_x N_y N_z (source-detector-line, channels, slices)
+
+    # Declare cython image array here so we can initialize in recursion block
+    cdef cnp.ndarray[float, ndim=3, mode="c"] py_image
+
+    # Determine if it the algorithm should reduce resolution further
+    go_to_lower_resolution = (max_resolutions > 0) and (min(imgparams['N_x'], imgparams['N_y']) > 16)
+    
+    imgParams_lr = dict()
+    imgParams_lr = imgparams
+
+    reconparams_lr = dict()
+    reconparams_lr = reconparams
+
+
+
+
+
+    if go_to_lower_resolution:
+        new_max_resolutions = max_resolutions-1;
+
+        # Set the pixel pitch, num_rows, and num_cols for the next lower resolution
+
+        imgParams_lr['Delta_xy'] = 2 * imgparams['Delta_xy']
+        imgParams_lr['Delta_z'] = 2 * imgparams['Delta_z']
+
+        imgParams_lr['N_x'] = int(np.ceil(imgparams['N_x'] / 2))
+        imgParams_lr['N_y'] = int(np.ceil(imgparams['N_y'] / 2))
+
+        # Rescale sigma_y for lower resolution
+
+        reconparams_lr['weightScaler_value'] = (2.0**0.5 * (reconparams['weightScaler_value']**0.5) ** 2
+
+
+
+        # Reduce resolution of initialization image if there is one
+        if isinstance(x_init, np.ndarray) and (x_init.ndim == 3):
+            lr_init_image = utils.recon_resize(x_init, (imgParams_lr['N_x'], imgParams_lr['N_y']))
+        else:
+            lr_init_image = x_init
+
+        # Reduce resolution of proximal image if there is one
+        if isinstance(proxmap_input, np.ndarray) and (proxmap_input.ndim == 3):
+            lr_prox_image = utils.recon_resize(proxmap_input, (imgParams_lr['N_x'], imgParams_lr['N_y']))
+        else:
+            lr_prox_image = proxmap_input
+
+        
+        lr_recon = recon_cy(sino, wght, x_init, proxmap_input,
+             sinoparams, imgParams_lr, reconparams_lr, py_Amatrix_fname, num_threads, max_resolutions = max_resolutions):
+
+        
+        # Interpolate resolution of reconstruction
+        new_init_image = utils.recon_resize(lr_recon, (imgparams['N_x'], imgparams['N_y']))
+        del lr_recon
+
+        # Initialize cython image array and de-allocate
+        if not new_init_image.flags["C_CONTIGUOUS"]:
+            new_init_image = np.ascontiguousarray(new_init_image, dtype=np.single)
+        else:
+            new_init_image = new_init_image.astype(np.single, copy=False)
+        py_image = new_init_image 
+
+
+    (num_views, num_det_rows, num_det_channels) = sino.shape    
+
+    if 'py_image' not in locals():
+        if np.isscalar(x_init):
+            py_image = np.zeros((num_views, num_det_rows, num_det_channels), dtype=ctypes.c_float) + x_init
+        else:
+            if not x_init.flags["C_CONTIGUOUS"]:
+                x_init = np.ascontiguousarray(x_init, dtype=np.single)
+            else:
+                x_init = x_init.astype(np.single, copy=False)
+            py_image = x_init
+
+        
     if np.isscalar(x_init):
         x_init = np.zeros((imgparams['N_x'], imgparams['N_y'], imgparams['N_z'])) + x_init
     else:
@@ -311,7 +388,7 @@ def recon_cy(sino, wght, x_init, proxmap_input,
                           &cy_NHICD_Mode[0])
 
     openmp.omp_set_num_threads(num_threads)
-    recon(&cy_x[0,0,0],
+    recon(&py_image[0,0,0],
           &cy_sino[0,0,0],
           &cy_wght[0,0,0],
           &cy_proxmap_input[0,0,0],
@@ -321,7 +398,7 @@ def recon_cy(sino, wght, x_init, proxmap_input,
 	      &c_Amatrix_fname[0])
     # print("Cython done")
     # Convert shape from Cython interface specifications to Python interface specifications
-    return np.swapaxes(cy_x, 0, 2)
+    return np.swapaxes(py_image, 0, 2)
 
 
 def project(image, settings):
