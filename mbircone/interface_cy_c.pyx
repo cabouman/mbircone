@@ -276,10 +276,10 @@ def recon_cy(sino, wght, x_init, proxmap_input,
     go_to_lower_resolution = (max_resolutions > 0) and (min(imgparams['N_x'], imgparams['N_y']) > 16)
     
     imgParams_lr = dict()
-    imgParams_lr = imgparams
+    imgParams_lr = np.copy(imgparams)
 
     reconparams_lr = dict()
-    reconparams_lr = reconparams
+    reconparams_lr = np.copy(reconparams)
 
 
 
