@@ -696,9 +696,8 @@ def NSI_process_raw_scans(radiographs_directory, NSI_system_params,
 
 def compute_sino_from_scans(obj_scan, blank_scan=None, dark_scan=None,
                             downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
-                            weight_type='unweighted',
-                            background_box_info_list=[]):
-    """Given a set of object scan, blank scan, and dark scan, compute the sinogram used for reconstruction. This function will (optionally) downsample and crop the scans, compute sinogram and weights from the scans, and finally perform background offset calibration to the sinogram. It is assumed that the object scans, blank scan and dark scan all have compatible sizes. 
+                            weight_type='unweighted'):
+    """Given a set of object scan, blank scan, and dark scan, compute the sinogram used for reconstruction. This function will (optionally) downsample and crop the scans before computing the sinogram. It is assumed that the object scans, blank scan and dark scan all have compatible sizes. 
     
     Args:
         obj_scan (ndarray, float): 3D object scan with shape (num_views, num_det_rows, num_det_channels).
@@ -714,8 +713,6 @@ def compute_sino_from_scans(obj_scan, blank_scan=None, dark_scan=None,
                 - Option "transmission" is the correct weighting for transmission CT with constant dosage;
                 - Option "transmission_root" is commonly used with transmission CT data to improve image homogeneity;
                 - Option "emission" is appropriate for emission CT data.
-        background_box_info_list ([(left,top,width,height,view_ind)]): [default=[]] A list of tuples specifying the rectangular areas used for background offset calculation.  
-            Each tuple in the list has entries of the form `(left, top, width, height, view_ind)`.  Here `(left, top)` specifies the left top corner of the rectangle in pixels (using the convention that the left top of the entire image is (0,0)), `width` and `height` are also in pixels, and `view_ind` is the index of the view associated with this rectangle.   
     Returns:
         2-element tuple containing:
         - **sino** (*ndarray, float*): Preprocessed 3D sinogram.
