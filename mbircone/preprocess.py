@@ -741,8 +741,4 @@ def compute_sino_from_scans(obj_scan, blank_scan=None, dark_scan=None,
     weights = cone3D.calc_weights(sino, weight_type=weight_type)
     # set the weights corresponding to invalid sinogram entries to 0.
     weights[weight_mask == 0] = 0.
-    # background offset calibration
-    background_offset = background_offset_calibration(sino, background_box_info_list)
-    print("background offset = ", background_offset)
-    sino = sino - background_offset
     return sino.astype(np.float32), weights.astype(np.float32)
