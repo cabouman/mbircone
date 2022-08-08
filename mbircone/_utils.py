@@ -8,14 +8,13 @@ import hashlib
 import random
 from PIL import Image
 
-__lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
 
 def hash_params(angles, sinoparams, imgparams):
     hash_input = str(sinoparams) + str(imgparams) + str(np.around(angles, decimals=6))
     hash_val = hashlib.sha512(hash_input.encode()).hexdigest()
     return hash_val
 
-def _gen_sysmatrix_fname(lib_path=__lib_path, sysmatrix_name='object'):
+def _gen_sysmatrix_fname(lib_path, sysmatrix_name='object'):
     os.makedirs(os.path.join(lib_path, 'sysmatrix'), exist_ok=True)
 
     sysmatrix_fname = os.path.join(lib_path, 'sysmatrix', sysmatrix_name + '.sysmatrix')
@@ -23,7 +22,7 @@ def _gen_sysmatrix_fname(lib_path=__lib_path, sysmatrix_name='object'):
     return sysmatrix_fname
 
 
-def _gen_sysmatrix_fname_tmp(lib_path=__lib_path, sysmatrix_name='object'):
+def _gen_sysmatrix_fname_tmp(lib_path, sysmatrix_name='object'):
     sysmatrix_fname_tmp = os.path.join(lib_path, 'sysmatrix',
                                        sysmatrix_name + '_pid' + str(os.getpid()) + '_rndnum' + str(
                                            random.randint(0, 1000)) + '.sysmatrix')

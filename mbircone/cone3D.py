@@ -11,30 +11,6 @@ import warnings
 __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
 __namelen_sysmatrix = 20
 
-def _clear_cache(mbircone_lib_path=__lib_path):
-    """Clears the cache files used by mbircone
-    
-    Args:
-        mbircone_lib_path (string): Path to mbircone cache directory. Defaults to __lib_path variable
-    """
-    shutil.rmtree(mbircone_lib_path)
-
-
-def _gen_sysmatrix_fname(lib_path=__lib_path, sysmatrix_name='object'):
-    os.makedirs(os.path.join(lib_path, 'sysmatrix'), exist_ok=True)
-
-    sysmatrix_fname = os.path.join(lib_path, 'sysmatrix', sysmatrix_name + '.sysmatrix')
-
-    return sysmatrix_fname
-
-
-def _gen_sysmatrix_fname_tmp(lib_path=__lib_path, sysmatrix_name='object'):
-    sysmatrix_fname_tmp = os.path.join(lib_path, 'sysmatrix',
-                                       sysmatrix_name + '_pid' + str(os.getpid()) + '_rndnum' + str(
-                                           random.randint(0, 1000)) + '.sysmatrix')
-
-    return sysmatrix_fname_tmp
-
 
 def _sino_indicator(sino):
     """Compute a binary function that indicates the region of sinogram support.
@@ -591,17 +567,6 @@ def recon(sino, angles, dist_source_detector, magnification,
                                      delta_pixel_detector=delta_pixel_detector)
 
     imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
-    '''
-    hash_val = hash_params(angles, sinoparams, imgparams)
-e   sysmatrix_fname = _gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
-
-    if os.path.exists(sysmatrix_fname):
-        os.utime(sysmatrix_fname)  # update file modified time
-    else:
-        sysmatrix_fname_tmp = _gen_sysmatrix_fname_tmp(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
-        ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, sysmatrix_fname_tmp, verbose=verbose)
-        os.rename(sysmatrix_fname_tmp, sysmatrix_fname)
-    '''
     # make sure that weights do not contain negative entries
     # if weights is provided, and negative entry exists, then do not use the provided weights
     if not ((weights is None) or (np.amin(weights) >= 0.0)):
