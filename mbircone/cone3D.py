@@ -117,9 +117,9 @@ def calc_weights(sino, weight_type):
     if weight_type == 'unweighted':
         weights = np.ones(sino.shape)
     elif weight_type == 'transmission':
-        weights = np.exp(-sino)
+        weights = np.exp(-np.absolute(sino))
     elif weight_type == 'transmission_root':
-        weights = np.exp(-sino / 2)
+        weights = np.exp(-np.absolute(sino) / 2)
     elif weight_type == 'emission':
         weights = 1 / (np.absolute(sino) + 0.1)
     else:

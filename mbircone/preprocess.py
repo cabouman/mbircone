@@ -147,9 +147,10 @@ def _compute_sino_and_weight_mask_from_scans(obj_scan, blank_scan, dark_scan):
     obj_scan_corrected = (obj_scan - dark_scan_mean)
     blank_scan_corrected = (blank_scan_mean - dark_scan_mean)
     sino = -np.log(obj_scan_corrected / blank_scan_corrected)
-
-    weight_mask = (obj_scan_corrected > 0) & (blank_scan_corrected > 0)
-
+    weight_mask = (obj_scan_corrected > 0) & (blank_scan_corrected > 0) 
+    print('Set sinogram weight corresponding to nan and inf pixels to 0.')
+    weight_mask[np.isnan(sino)] = False
+    weight_mask[np.isinf(sino)] = False
     return sino, weight_mask
 
 
@@ -730,6 +731,8 @@ def compute_sino_from_scans(obj_scan, blank_scan=None, dark_scan=None,
     # cropping in pixels
     obj_scan, blank_scan, dark_scan = _crop_scans(obj_scan, blank_scan, dark_scan,
                                                   crop_factor=crop_factor)
+    # should add something here to check the validity of downsampled scan pixel values?
+    
     sino, weight_mask = _compute_sino_and_weight_mask_from_scans(obj_scan, blank_scan, dark_scan)
 
     # set invalid sinogram entries to 0
