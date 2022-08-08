@@ -283,7 +283,6 @@ def recon_cy(sino, angles, wght, x_init, proxmap_input,
     reconparams_lr = reconparams.copy()
     # go to lower resolution if possible
     if go_to_lower_resolution:
-        print('Going to lower resolution ...') 
         new_max_resolutions = max_resolutions-1;
         # Set the pixel pitch, num_rows, and num_cols for the next lower resolution
         imgparams_lr['Delta_xy'] = 2 * imgparams['Delta_xy']
@@ -293,20 +292,16 @@ def recon_cy(sino, angles, wght, x_init, proxmap_input,
         imgparams_lr['N_z'] = int(np.ceil(imgparams['N_z'] / 2))
         # Rescale sigma_y for lower resolution
         reconparams_lr['weightScaler_value'] = 2.0 * reconparams['weightScaler_value']
-        print('Done rescaling imgparams and reconparams. old N_z, N_x, N_y = ', imgparams['N_z'], imgparams['N_x'], imgparams['N_y']) 
-        print('Done rescaling imgparams and reconparams. new N_z, N_x, N_y = ', imgparams_lr['N_z'], imgparams_lr['N_x'], imgparams_lr['N_y']) 
         # Reduce resolution of initialization image if there is one
         if isinstance(x_init, np.ndarray) and (x_init.ndim == 3):
             lr_init_image = _utils.recon_resize_3D(x_init, (imgparams_lr['N_z'], imgparams_lr['N_x'], imgparams_lr['N_y']))
         else:
             lr_init_image = x_init
-        print('size of init_image after resizing = ', ) 
         # Reduce resolution of proximal image if there is one
         if isinstance(proxmap_input, np.ndarray) and (proxmap_input.ndim == 3):
             lr_prox_image = _utils.recon_resize_3D(proxmap_input, (imgparams_lr['N_z'], imgparams_lr['N_x'], imgparams_lr['N_y']))
         else:
             lr_prox_image = proxmap_input
-        print('Done rescaling init and prox images') 
         
         if reconparams['verbosity'] >= 1:
             lr_num_slices, lr_num_rows, lr_num_cols = imgparams_lr['N_z'], imgparams_lr['N_x'], imgparams_lr['N_y']
@@ -318,7 +313,6 @@ def recon_cy(sino, angles, wght, x_init, proxmap_input,
         
         # Interpolate resolution of reconstruction
         x_init = _utils.recon_resize_3D(lr_recon, (imgparams['N_z'], imgparams['N_x'], imgparams['N_y']))
-        print('lower resolution recon: x_init shape = ', x_init.shape)
         del lr_recon
 
     hash_val = _utils.hash_params(angles, sinoparams, imgparams)
