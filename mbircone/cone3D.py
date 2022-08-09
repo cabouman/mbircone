@@ -7,6 +7,7 @@ import hashlib
 import mbircone.interface_cy_c as ci
 import random
 import warnings
+import mbircone._utils as _utils
 
 __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
 __namelen_sysmatrix = 20
@@ -47,14 +48,6 @@ def _distance_line_to_point(A, B, P):
     dist = abs(a * x0 + b * y0 + c) / math.sqrt(a ** 2 + b ** 2)
 
     return dist
-
-
-def hash_params(angles, sinoparams, imgparams):
-    hash_input = str(sinoparams) + str(imgparams) + str(np.around(angles, decimals=6))
-
-    hash_val = hashlib.sha512(hash_input.encode()).hexdigest()
-
-    return hash_val
 
 
 def calc_weights(sino, weight_type):
@@ -732,13 +725,13 @@ def project(image, angles,
         'Image size of %s is incorrect! With the specified geometric parameters, expected image should have shape %s, use function `cone3D.compute_img_size` to compute the correct image size.' \
         %  ((num_img_slices, num_img_rows, num_img_cols), (imgparams['N_z'], imgparams['N_x'], imgparams['N_y']))
 
-    hash_val = hash_params(angles, sinoparams, imgparams)
-    sysmatrix_fname = _gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
+    hash_val = _utils.hash_params(angles, sinoparams, imgparams)
+    sysmatrix_fname = _utils._gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
 
     if os.path.exists(sysmatrix_fname):
         os.utime(sysmatrix_fname)  # update file modified time
     else:
-        sysmatrix_fname_tmp = _gen_sysmatrix_fname_tmp(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
+        sysmatrix_fname_tmp = _utils._gen_sysmatrix_fname_tmp(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
         ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, sysmatrix_fname_tmp, verbose=verbose)
         os.rename(sysmatrix_fname_tmp, sysmatrix_fname)
 
