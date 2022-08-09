@@ -305,7 +305,7 @@ def recon_cy(sino, angles, wght, x_init, proxmap_input,
         
         if reconparams['verbosity'] >= 1:
             lr_num_slices, lr_num_rows, lr_num_cols = imgparams_lr['N_z'], imgparams_lr['N_x'], imgparams_lr['N_y']
-            print(f'Calling multires_recon for size (slices, rows, cols)=({lr_num_slices}, {lr_num_rows},{lr_num_cols}).')
+            print(f'Calling multires_recon for reconstruction size (slices, rows, cols)=({lr_num_slices}, {lr_num_rows},{lr_num_cols}).')
         
         lr_recon = recon_cy(sino, angles, wght, x_init, proxmap_input,
                             sinoparams, imgparams_lr, reconparams_lr, new_max_resolutions, 

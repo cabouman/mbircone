@@ -497,6 +497,9 @@ def recon(sino, angles, dist_source_detector, magnification,
         
         init_image (ndarray, optional): [Default=0.0] Initial value of reconstruction image, specified by either a scalar value or a 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols)
         prox_image (ndarray, optional): [Default=None] 3D proximal map input image. 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols)
+        max_resolutions (int, optional): [Default=None] Integer >=0 that specifies the maximum number of grid
+            resolutions used to solve MBIR reconstruction problem.
+            If None, automatically set with auto_max_resolutions to 0 if inital image is provided and 2 otherwise.        
         
         sigma_y (float, optional): [Default=None] Scalar value of noise standard deviation parameter.
             If None, automatically set with auto_sigma_y.
