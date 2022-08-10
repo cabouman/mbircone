@@ -290,6 +290,12 @@ def recon_cy(sino, angles, wght, x_init, proxmap_input,
         imgparams_lr['N_x'] = int(np.ceil(imgparams['N_x'] / 2))
         imgparams_lr['N_y'] = int(np.ceil(imgparams['N_y'] / 2))
         imgparams_lr['N_z'] = int(np.ceil(imgparams['N_z'] / 2))
+        imgparams_lr['j_xstart_roi'] = int(np.floor(imgparams['j_xstart_roi'] / 2))
+        imgparams_lr['j_xstop_roi'] = int(np.ceil(imgparams['j_xstop_roi'] / 2))
+        imgparams_lr['j_ystart_roi'] = int(np.floor(imgparams['j_ystart_roi'] / 2))
+        imgparams_lr['j_ystop_roi'] = int(np.ceil(imgparams['j_ystop_roi'] / 2))
+        imgparams_lr['j_zstart_roi'] = int(np.floor(imgparams['j_zstart_roi'] / 2))
+        imgparams_lr['j_zstop_roi'] = int(np.ceil(imgparams['j_zstop_roi'] / 2))
         # Rescale sigma_y for lower resolution
         reconparams_lr['weightScaler_value'] = 2.0 * reconparams['weightScaler_value']
         # Reduce resolution of initialization image if there is one
