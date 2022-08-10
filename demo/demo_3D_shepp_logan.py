@@ -100,8 +100,6 @@ display_slice = num_slices_ROR // 2
 display_x = num_rows_ROR // 2
 display_y = num_cols_ROR // 2
 # phantom images
-plot_image(phantom[display_slice], title=f'phantom, axial slice {display_slice}', 
-           filename=os.path.join(save_path, 'phantom_axial.png'), vmin=0, vmax=0.40)
 plot_image(phantom[display_slice], title=f'phantom, axial slice {display_slice}',
            filename=os.path.join(save_path, 'phantom_axial.png'), vmin=vmin, vmax=vmax)
 plot_image(phantom[:,display_x,:], title=f'phantom, coronal slice {display_x}',
@@ -109,8 +107,6 @@ plot_image(phantom[:,display_x,:], title=f'phantom, coronal slice {display_x}',
 plot_image(phantom[:,:,display_y], title=f'phantom, sagittal slice {display_y}', 
            filename=os.path.join(save_path, 'phantom_sagittal.png'), vmin=vmin, vmax=vmax)
 # recon images
-plot_image(recon[display_slice], title=f'qGGMRF recon, axial slice {display_slice}', 
-           filename=os.path.join(save_path, 'recon_axial.png'), vmin=0, vmax=0.40)
 plot_image(recon[display_slice], title=f'qGGMRF recon, axial slice {display_slice}',
            filename=os.path.join(save_path, 'recon_axial.png'), vmin=vmin, vmax=vmax)
 plot_image(recon[:,display_x,:], title=f'qGGMRF recon, coronal slice {display_x}', 

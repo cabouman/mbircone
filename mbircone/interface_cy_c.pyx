@@ -1,10 +1,14 @@
 
 import numpy as np
+import os
 import ctypes           # Import python package required to use cython
 cimport cython          # Import cython package
 cimport numpy as cnp    # Import specialized cython support for numpy
 cimport openmp
 from libc.string cimport memset,strcpy
+import mbircone._utils as _utils
+
+__namelen_sysmatrix = 20
 
 # Import c data structure
 cdef extern from "./src/MBIRModularUtilities3D.h":
@@ -114,11 +118,11 @@ cdef extern from "./src/interface.h":
         char *Amatrix_fname, char verbose);
 
     void recon(float *x, float *sino, float *wght, float *proxmap_input,
-	SinoParams c_sinoparams, ImageParams c_imgparams, ReconParams c_reconparams,
-	char *Amatrix_fname);
+    SinoParams c_sinoparams, ImageParams c_imgparams, ReconParams c_reconparams,
+    char *Amatrix_fname);
 
     void forwardProject(float *y, float *x, 
-    SinoParams sinoParams, ImageParams imgParams, 
+    SinoParams sinoParams, ImageParams imgparams, 
     char *Amatrix_fname)
 
 
@@ -263,8 +267,63 @@ def AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname, verbos
     AmatrixComputeToFile(&c_angles[0], c_sinoparams, c_imgparams, &c_Amatrix_fname[0], verbose)
 
 
-def recon_cy(sino, wght, x_init, proxmap_input,
-             sinoparams, imgparams, reconparams, py_Amatrix_fname, num_threads):
+def recon_cy(sino, angles, wght, x_init, proxmap_input,
+             sinoparams, imgparams, reconparams, max_resolutions, 
+             num_threads, lib_path):
+    # sino, wght shape : views x slices x channels
+    # recon shape: N_x N_y N_z (source-detector-line, channels, slices)
+
+    # Declare cython image array here so we can initialize in recursion block
+    cdef cnp.ndarray[float, ndim=3, mode="c"] py_image
+
+    # Determine if it the algorithm should reduce resolution further
+    go_to_lower_resolution = (max_resolutions > 0) and (min(imgparams['N_x'], imgparams['N_y'], imgparams['N_z']) > 16)
+    
+    imgparams_lr = imgparams.copy()
+    reconparams_lr = reconparams.copy()
+    # go to lower resolution if possible
+    if go_to_lower_resolution:
+        new_max_resolutions = max_resolutions-1;
+        # Set the pixel pitch, num_rows, and num_cols for the next lower resolution
+        imgparams_lr['Delta_xy'] = 2 * imgparams['Delta_xy']
+        imgparams_lr['Delta_z'] = 2 * imgparams['Delta_z']
+        imgparams_lr['N_x'] = int(np.ceil(imgparams['N_x'] / 2))
+        imgparams_lr['N_y'] = int(np.ceil(imgparams['N_y'] / 2))
+        imgparams_lr['N_z'] = int(np.ceil(imgparams['N_z'] / 2))
+        # Rescale sigma_y for lower resolution
+        reconparams_lr['weightScaler_value'] = 2.0 * reconparams['weightScaler_value']
+        # Reduce resolution of initialization image if there is one
+        if isinstance(x_init, np.ndarray) and (x_init.ndim == 3):
+            lr_init_image = _utils.recon_resize_3D(x_init, (imgparams_lr['N_z'], imgparams_lr['N_x'], imgparams_lr['N_y']))
+        else:
+            lr_init_image = x_init
+        # Reduce resolution of proximal image if there is one
+        if isinstance(proxmap_input, np.ndarray) and (proxmap_input.ndim == 3):
+            lr_prox_image = _utils.recon_resize_3D(proxmap_input, (imgparams_lr['N_z'], imgparams_lr['N_x'], imgparams_lr['N_y']))
+        else:
+            lr_prox_image = proxmap_input
+        
+        if reconparams['verbosity'] >= 1:
+            lr_num_slices, lr_num_rows, lr_num_cols = imgparams_lr['N_z'], imgparams_lr['N_x'], imgparams_lr['N_y']
+            print(f'Calling multires_recon for reconstruction size (slices, rows, cols)=({lr_num_slices}, {lr_num_rows},{lr_num_cols}).')
+        
+        lr_recon = recon_cy(sino, angles, wght, x_init, proxmap_input,
+                            sinoparams, imgparams_lr, reconparams_lr, new_max_resolutions, 
+                            num_threads, lib_path)
+        
+        # Interpolate resolution of reconstruction
+        x_init = _utils.recon_resize_3D(lr_recon, (imgparams['N_z'], imgparams['N_x'], imgparams['N_y']))
+        del lr_recon
+
+    hash_val = _utils.hash_params(angles, sinoparams, imgparams)
+    py_Amatrix_fname = _utils._gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
+
+    if os.path.exists(py_Amatrix_fname):
+        os.utime(py_Amatrix_fname)  # update file modified time
+    else:
+        py_Amatrix_fname_tmp = _utils._gen_sysmatrix_fname_tmp(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
+        AmatrixComputeToFile_cy(angles, sinoparams, imgparams, py_Amatrix_fname_tmp, verbose=reconparams['verbosity'])
+        os.rename(py_Amatrix_fname_tmp, py_Amatrix_fname)
     # sino, wght shape : views x slices x channels
     # recon shape: N_x N_y N_z (source-detector-line, channels, slices)
     if np.isscalar(x_init):
@@ -318,7 +377,7 @@ def recon_cy(sino, wght, x_init, proxmap_input,
           c_sinoparams,
           c_imgparams,
           c_reconparams,
-	      &c_Amatrix_fname[0])
+          &c_Amatrix_fname[0])
     # print("Cython done")
     # Convert shape from Cython interface specifications to Python interface specifications
     return np.swapaxes(cy_x, 0, 2)
