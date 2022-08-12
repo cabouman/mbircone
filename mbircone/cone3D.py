@@ -7,40 +7,10 @@ import hashlib
 import mbircone.interface_cy_c as ci
 import random
 import warnings
+import mbircone._utils as _utils
 
 __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
 __namelen_sysmatrix = 20
-
-
-def _mbircone_lib_path():
-    """Returns the path to the cache directory used by mbircone
-    """
-    return __lib_path
-
-
-def _clear_cache(mbircone_lib_path=__lib_path):
-    """Clears the cache files used by mbircone
-    
-    Args:
-        mbircone_lib_path (string): Path to mbircone cache directory. Defaults to __lib_path variable
-    """
-    shutil.rmtree(mbircone_lib_path)
-
-
-def _gen_sysmatrix_fname(lib_path=__lib_path, sysmatrix_name='object'):
-    os.makedirs(os.path.join(lib_path, 'sysmatrix'), exist_ok=True)
-
-    sysmatrix_fname = os.path.join(lib_path, 'sysmatrix', sysmatrix_name + '.sysmatrix')
-
-    return sysmatrix_fname
-
-
-def _gen_sysmatrix_fname_tmp(lib_path=__lib_path, sysmatrix_name='object'):
-    sysmatrix_fname_tmp = os.path.join(lib_path, 'sysmatrix',
-                                       sysmatrix_name + '_pid' + str(os.getpid()) + '_rndnum' + str(
-                                           random.randint(0, 1000)) + '.sysmatrix')
-
-    return sysmatrix_fname_tmp
 
 
 def _sino_indicator(sino):
@@ -80,14 +50,6 @@ def _distance_line_to_point(A, B, P):
     return dist
 
 
-def hash_params(angles, sinoparams, imgparams):
-    hash_input = str(sinoparams) + str(imgparams) + str(np.around(angles, decimals=6))
-
-    hash_val = hashlib.sha512(hash_input.encode()).hexdigest()
-
-    return hash_val
-
-
 def calc_weights(sino, weight_type):
     """Compute the weights used in MBIR reconstruction.
 
@@ -121,6 +83,23 @@ def calc_weights(sino, weight_type):
         raise Exception("calc_weights: undefined weight_type {}".format(weight_type))
 
     return weights
+
+
+def auto_max_resolutions(init_image) :
+    """Compute the automatic value of ``max_resolutions`` for use in MBIR reconstruction.
+
+    Args:
+        init_image (ndarray): Initial image for reconstruction.
+    Returns:
+        int: Automatic value of ``max_resolutions``.
+    """
+    # Default value of max_resolutions
+    max_resolutions = 2
+    if isinstance(init_image, np.ndarray) and (init_image.ndim == 3):
+        #print('Init image present. Setting max_resolutions = 0.')
+        max_resolutions = 0
+
+    return max_resolutions
 
 
 def auto_sigma_y(sino, magnification, weights, snr_db=40.0, delta_pixel_image=1.0, delta_pixel_detector=1.0):
@@ -484,7 +463,7 @@ def extract_roi_from_ror(image, boundary_size):
 def recon(sino, angles, dist_source_detector, magnification,
           channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
           delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
-          init_image=0.0, prox_image=None,
+          init_image=0.0, prox_image=None, max_resolutions=None,
           sigma_y=None, snr_db=40.0, weights=None, weight_type='unweighted',
           positivity=True, p=1.2, q=2.0, T=1.0, num_neighbors=6,
           sharpness=0.0, sigma_x=None, sigma_p=None, max_iterations=100, stop_threshold=0.02,
@@ -511,6 +490,9 @@ def recon(sino, angles, dist_source_detector, magnification,
         
         init_image (ndarray, optional): [Default=0.0] Initial value of reconstruction image, specified by either a scalar value or a 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols)
         prox_image (ndarray, optional): [Default=None] 3D proximal map input image. 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols)
+        max_resolutions (int, optional): [Default=None] Integer >=0 that specifies the maximum number of grid
+            resolutions used to solve MBIR reconstruction problem.
+            If None, automatically set with auto_max_resolutions to 0 if inital image is provided and 2 otherwise.        
         
         sigma_y (float, optional): [Default=None] Scalar value of noise standard deviation parameter.
             If None, automatically set with auto_sigma_y.
@@ -563,6 +545,11 @@ def recon(sino, angles, dist_source_detector, magnification,
 
     os.environ['OMP_NUM_THREADS'] = str(num_threads)
     os.environ['OMP_DYNAMIC'] = 'true'
+    
+    # Set automatic value of max_resolutions
+    if max_resolutions is None :
+        max_resolutions = auto_max_resolutions(init_image)
+    print('max_resolution = ', max_resolutions)
 
     if delta_pixel_image is None:
         delta_pixel_image = delta_pixel_detector / magnification
@@ -576,16 +563,6 @@ def recon(sino, angles, dist_source_detector, magnification,
                                      delta_pixel_detector=delta_pixel_detector)
 
     imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
-
-    hash_val = hash_params(angles, sinoparams, imgparams)
-    sysmatrix_fname = _gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
-
-    if os.path.exists(sysmatrix_fname):
-        os.utime(sysmatrix_fname)  # update file modified time
-    else:
-        sysmatrix_fname_tmp = _gen_sysmatrix_fname_tmp(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
-        ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, sysmatrix_fname_tmp, verbose=verbose)
-        os.rename(sysmatrix_fname_tmp, sysmatrix_fname)
     # make sure that weights do not contain negative entries
     # if weights is provided, and negative entry exists, then do not use the provided weights
     if not ((weights is None) or (np.amin(weights) >= 0.0)):
@@ -677,8 +654,9 @@ def recon(sino, angles, dist_source_detector, magnification,
             sigma_p = auto_sigma_p(sino, magnification, delta_pixel_detector, sharpness)
         reconparams['sigma_lambda'] = sigma_p
 
-    x = ci.recon_cy(sino, weights, init_image, prox_image,
-                    sinoparams, imgparams, reconparams, sysmatrix_fname, num_threads)
+    x = ci.recon_cy(sino, angles, weights, init_image, prox_image,
+                    sinoparams, imgparams, reconparams, max_resolutions,
+                    num_threads, lib_path)
     return x
 
 
@@ -747,13 +725,13 @@ def project(image, angles,
         'Image size of %s is incorrect! With the specified geometric parameters, expected image should have shape %s, use function `cone3D.compute_img_size` to compute the correct image size.' \
         %  ((num_img_slices, num_img_rows, num_img_cols), (imgparams['N_z'], imgparams['N_x'], imgparams['N_y']))
 
-    hash_val = hash_params(angles, sinoparams, imgparams)
-    sysmatrix_fname = _gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
+    hash_val = _utils.hash_params(angles, sinoparams, imgparams)
+    sysmatrix_fname = _utils._gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
 
     if os.path.exists(sysmatrix_fname):
         os.utime(sysmatrix_fname)  # update file modified time
     else:
-        sysmatrix_fname_tmp = _gen_sysmatrix_fname_tmp(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
+        sysmatrix_fname_tmp = _utils._gen_sysmatrix_fname_tmp(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
         ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, sysmatrix_fname_tmp, verbose=verbose)
         os.rename(sysmatrix_fname_tmp, sysmatrix_fname)
 
