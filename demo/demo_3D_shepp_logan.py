@@ -81,7 +81,7 @@ print('Synthetic sinogram shape: (num_views, num_det_rows, num_det_channels) = '
 # Perform 3D qGGMRF reconstruction
 ######################################################################################
 print('Performing 3D qGGMRF reconstruction ...')
-recon = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification, sharpness=sharpness, T = T, stop_threshold = stop_threshold)
+recon = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification, sharpness=sharpness, T=T)
 print('recon shape = ', np.shape(recon))
 
 
