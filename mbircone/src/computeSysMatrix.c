@@ -79,7 +79,7 @@ void computeAMatrixParameters(struct SinoParams *sinoParams, struct ImageParams 
                 theta = atan2(v_v, u_v - sinoParams->u_s );
                 
                 /* beta = view angle, theta = angle voxel makes with source-detector line */
-                /* see Figure 2 in Thilo's paper  */
+                /* see Figure 1 in Thilo's paper  */
                 /* alpha = pi/2 + theta - beta is technically the right value */
                 /* alpha mod pi/2 = theta - beta */
                 /* but cos is an even function so sign doesn't matter */
@@ -87,20 +87,30 @@ void computeAMatrixParameters(struct SinoParams *sinoParams, struct ImageParams 
                 alpha_xy = fmod(alpha_xy + PI/4, PI/2) - PI/4;
                 W_pv = M * imgParams->Delta_xy * cos(alpha_xy) / cos(theta);
 
+                /* compute start coordinate of voxel footprint in detector index */
+                /* M*v_v = center of voxel footprint on detector, image coords */
+                /* M*v_v - W_pv/2 = start of voxel footprint on detector, image coords */
+                /* v_d0 + Delta_dv/2 = center of first detector box */
                 i_vstart = round( (M*v_v - W_pv/2 - (sinoParams->v_d0 + sinoParams->Delta_dv/2))/ sinoParams->Delta_dv ) ;
                 i_vstart = _MAX_(0, i_vstart);
 
-                
+                /* compute end coordinate of voxel footprint in detector index */
+                /* same logic as above, with M*v_v + W_pv/2 = end of voxel footprint */
                 temp_stop =  round( (M*v_v + W_pv/2 - (sinoParams->v_d0 + sinoParams->Delta_dv/2))/ sinoParams->Delta_dv );
                 temp_stop = _MIN_(temp_stop, sinoParams->N_dv-1);
 
+                /* voxel footprint width in array indices */
                 i_vstride = _MAX_(temp_stop - i_vstart + 1, 0);
 
-                /* Fild min/max values */
+                /* update largest so-far voxel width  */
                 i_vstride_max = _MAX_(i_vstride, i_vstride_max);
+                
+                /* update min and max coordinates of possible image voxels */
                 u_0 = _MIN_((u_v-imgParams->Delta_xy/2), u_0);
                 u_1 = _MAX_((u_v-imgParams->Delta_xy/2), u_1);
 
+                /* calculate B_ij according to (6) (7) (8) (9) (10) */
+                /* but only store the max so far B_ij_max */
                 #if ISBIJCOMPRESSED == 1
                     cosine = cos(alpha_xy);
                     delta_v = 0;
