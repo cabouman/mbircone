@@ -26,6 +26,8 @@ void computeSysMatrix(struct SinoParams *sinoParams, struct ImageParams *imgPara
     ticTocDisp(ticToc, "computeSysMatrix");
 }
 
+/* Paper referenced is Balke et al "Separable Models for cone-beam MBIR Reconstruction" */
+
 void computeAMatrixParameters(struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A, struct ViewAngleList *viewAngleList)
 {
     /* Part 1: Find i_vstride_max, u_0, u_1 */
@@ -79,7 +81,7 @@ void computeAMatrixParameters(struct SinoParams *sinoParams, struct ImageParams 
                 theta = atan2(v_v, u_v - sinoParams->u_s );
                 
                 /* beta = view angle, theta = angle voxel makes with source-detector line */
-                /* see Figure 1 in Thilo et al  */
+                /* see Figure 1 in Balke et al  */
                 /* alpha = pi/2 + theta - beta is technically the right value */
                 /* alpha mod pi/2 = theta - beta */
                 /* but cos is an even function so sign doesn't matter */
@@ -254,7 +256,7 @@ void computeBMatrix(struct SinoParams *sinoParams, struct ImageParams *imgParams
                 theta = atan2(v_v, u_v - sinoParams->u_s );
                 
                 /* beta = view angle, theta = angle voxel makes with source-detector line */
-                /* see Figure 1 in Thilo et al  */
+                /* see Figure 1 in Balke et al  */
                 /* alpha = pi/2 + theta - beta is technically the right value */
                 /* alpha mod pi/2 = theta - beta */
                 /* but cos is an even function so sign doesn't matter */
