@@ -143,12 +143,12 @@ void computeAMatrixParameters(struct SinoParams *sinoParams, struct ImageParams 
         for (j_z = 0; j_z <= imgParams->N_z-1; ++j_z)
         {
             w_v = j_z * imgParams->Delta_z + (imgParams->z_0 + imgParams->Delta_z/2);
-            i_wstart = (M * w_v - (sinoParams->w_d0 + sinoParams->Delta_dw/2) - W_pw/2 ) * (1/sinoParams->Delta_dw) + 0.5; 
+            i_wstart = (M * w_v - (sinoParams->w_d0 + sinoParams->Delta_dw/2) - W_pw/2 ) * (1/sinoParams->Delta_dw) + 0.5;
             i_wstart = _MAX_(i_wstart, 0);
 
 
             temp_stop = (M * w_v - (sinoParams->w_d0 + sinoParams->Delta_dw/2) + W_pw/2 ) * (1/sinoParams->Delta_dw) + 0.5;
-            temp_stop = _MIN_(temp_stop, sinoParams->N_dw-1); 
+            temp_stop = _MIN_(temp_stop, sinoParams->N_dw-1);
 
             i_wstride = _MAX_(temp_stop - i_wstart + 1, 0);
 
@@ -324,7 +324,7 @@ void computeCMatrix( struct SinoParams *sinoParams, struct ImageParams *imgParam
                         A->C[j_u][j_z*A->i_wstride_max + i_w-A->i_wstart[j_u][j_z]] = C_ij;
                     #endif
                 }
-            } 
+            }
         }
 
 }
