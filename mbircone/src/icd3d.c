@@ -1,13 +1,12 @@
-
+/*[1] Balke, Thilo, et al. "Separable Models for cone-beam MBIR Reconstruction." Electronic Imaging 2018.15 (2018): 181-1.*/
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
 #include <omp.h>
-
 #include "icd3d.h"
 #include "allocate.h"
 
-
+/*[1]: Algorithm 1 on page 181-5*/
 void ICDStep3DCone(struct Sino *sino, struct Image *img, struct SysMatrix *A, struct ICDInfo3DCone *icdInfo, struct ReconParams *reconParams, struct ReconAux *reconAux)
 {
     /**
@@ -169,7 +168,7 @@ void extractNeighbors(struct ICDInfo3DCone *icdInfo, struct Image *img, struct R
 
 }
 
-
+/*[1]: Algorithm 2 on page 181-5*/
 void computeTheta1Theta2ForwardTerm(struct Sino *sino, struct SysMatrix *A, struct ICDInfo3DCone *icdInfo, struct ReconParams *reconParams)
 {
     /**
