@@ -49,26 +49,40 @@ void computeAMatrixParameters(struct SinoParams *sinoParams, struct ImageParams 
     float L_w;
     int temp_stop;
 
+    
     for (j_x = 0; j_x <= imgParams->N_x-1; ++j_x)
     {
         for (j_y = 0; j_y <= imgParams->N_y-1; ++j_y)
         {
-
+            /* calculate (x_v, y_v) voxel center position in image coordinates */
             x_v = j_x * imgParams->Delta_xy + (imgParams->x_0 + imgParams->Delta_xy/2);
             y_v = j_y * imgParams->Delta_xy + (imgParams->y_0 + imgParams->Delta_xy/2);
-
-
+            
+            
             for (i_beta = 0; i_beta <= sinoParams->N_beta-1 ; ++i_beta)
             {
                 beta = viewAngleList->beta[i_beta];
 
+                /* calculate (u_v, v_v) voxel center position in scanner coordinates */
+                /* accomplished by "rotating around" the position as a detector would */
+                /* for cone3D.py, u_r = 0 */
                 cosine = cos(beta);
                 sine = sin(beta);
                 u_v = cosine * x_v - sine * y_v + sinoParams->u_r;
                 v_v = sine * x_v + cosine * y_v + sinoParams->v_r;
 
+                /* calculate magnification factor as a result of projection */
+                /* M = (dist source detector) / (dist voxel detector) */
                 M = (sinoParams->u_d0 - sinoParams->u_s) / (u_v - sinoParams->u_s);
+                
+                /* triangle: (v_v, u_v) voxel center, (0, u_s) source, source-detector line */
                 theta = atan2(v_v, u_v - sinoParams->u_s );
+                
+                /* beta = view angle, theta = angle voxel makes with source-detector line */
+                /* see Figure 2 in Thilo's paper  */
+                /* alpha = pi/2 + theta - beta is technically the right value */
+                /* alpha mod pi/2 = theta - beta */
+                /* but cos is an even function so sign doesn't matter */
                 alpha_xy = beta - theta;
                 alpha_xy = fmod(alpha_xy + PI/4, PI/2) - PI/4;
                 W_pv = M * imgParams->Delta_xy * cos(alpha_xy) / cos(theta);
@@ -379,7 +393,7 @@ void writeSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImagePara
 
 
 
-/* read the System matrix to hard drive */
+/* read the System matrix from hard drive */
 /* Utility for reading the Sparse System Matrix */
 /* Returns 0 if no error occurs */
 void readSysMatrix(char *fName, struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A)
