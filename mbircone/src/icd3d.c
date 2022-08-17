@@ -168,7 +168,7 @@ void extractNeighbors(struct ICDInfo3DCone *icdInfo, struct Image *img, struct R
 
 }
 
-
+/*[1]: Algorithm 2 on page 181-5*/
 void computeTheta1Theta2ForwardTerm(struct Sino *sino, struct SysMatrix *A, struct ICDInfo3DCone *icdInfo, struct ReconParams *reconParams)
 {
     /**
