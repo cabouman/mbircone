@@ -313,14 +313,16 @@ def recon_cy(sino, angles, wght, x_init, proxmap_input,
             lr_num_slices, lr_num_rows, lr_num_cols = imgparams_lr['N_z'], imgparams_lr['N_x'], imgparams_lr['N_y']
             print(f'Calling multires_recon for reconstruction size (slices, rows, cols)=({lr_num_slices}, {lr_num_rows},{lr_num_cols}).')
         
-        lr_recon = recon_cy(sino, angles, wght, x_init, proxmap_input,
+        lr_recon = recon_cy(sino, angles, wght, lr_init_image, lr_prox_image,
                             sinoparams, imgparams_lr, reconparams_lr, new_max_resolutions, 
                             num_threads, lib_path)
         
         # Interpolate resolution of reconstruction
         x_init = _utils.recon_resize_3D(lr_recon, (imgparams['N_z'], imgparams['N_x'], imgparams['N_y']))
         del lr_recon
-
+        del lr_init_image
+        del lr_prox_image
+    
     hash_val = _utils.hash_params(angles, sinoparams, imgparams)
     py_Amatrix_fname = _utils._gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
 
