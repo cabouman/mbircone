@@ -540,14 +540,14 @@ void allocateSysMatrix(struct SysMatrix *A, long int N_x, long int N_y, long int
    /* printf("\tAllocating %e GB ...\n", totSizeGB);*/
 
 
-    A->B =          (BIJDATATYPE***)                multialloc(sizeof(BIJDATATYPE), 3, N_x, N_y, N_beta*i_vstride_max);
-    A->i_vstart =   (INDEXSTARTSTOPDATATYPE***)     multialloc(sizeof(INDEXSTARTSTOPDATATYPE), 3, N_x, N_y, N_beta);
-    A->i_vstride =    (INDEXSTRIDEDATATYPE***)      multialloc(sizeof(INDEXSTRIDEDATATYPE), 3, N_x, N_y, N_beta);
-    A->j_u =        (INDEXJUDATATYPE***)            multialloc(sizeof(INDEXJUDATATYPE), 3, N_x, N_y, N_beta);
+    A->B =          (BIJDATATYPE***)                multialloc(sizeof(BIJDATATYPE), 3, (int)N_x, (int)N_y, (int)N_beta*i_vstride_max);
+    A->i_vstart =   (INDEXSTARTSTOPDATATYPE***)     multialloc(sizeof(INDEXSTARTSTOPDATATYPE), 3, (int)N_x, (int)N_y, (int)N_beta);
+    A->i_vstride =    (INDEXSTRIDEDATATYPE***)      multialloc(sizeof(INDEXSTRIDEDATATYPE), 3, (int)N_x, (int)N_y, (int)N_beta);
+    A->j_u =        (INDEXJUDATATYPE***)            multialloc(sizeof(INDEXJUDATATYPE), 3, (int)N_x, (int)N_y, (int)N_beta);
 
-    A->C =          (CIJDATATYPE**)                multialloc(sizeof(CIJDATATYPE), 2, N_u, N_z*i_wstride_max);
-    A->i_wstart =   (INDEXSTARTSTOPDATATYPE**)      multialloc(sizeof(INDEXSTARTSTOPDATATYPE), 2, N_u, N_z);
-    A->i_wstride =    (INDEXSTRIDEDATATYPE**)       multialloc(sizeof(INDEXSTRIDEDATATYPE), 2, N_u, N_z);
+    A->C =          (CIJDATATYPE**)                multialloc(sizeof(CIJDATATYPE), 2, (int)N_u, (int)N_z*i_wstride_max);
+    A->i_wstart =   (INDEXSTARTSTOPDATATYPE**)      multialloc(sizeof(INDEXSTARTSTOPDATATYPE), 2, (int)N_u, (int)N_z);
+    A->i_wstride =    (INDEXSTRIDEDATATYPE**)       multialloc(sizeof(INDEXSTRIDEDATATYPE), 2, (int)N_u, (int)N_z);
 }
 
 void freeSysMatrix(struct SysMatrix *A)

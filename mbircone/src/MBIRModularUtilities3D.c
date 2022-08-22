@@ -411,11 +411,11 @@ void*** allocateImageData3DCone( struct ImageParams *params, int dataTypeSize, i
 
     if (isROI)
     {
-        return multialloc(dataTypeSize, 3, N_x_roi, N_y_roi, N_z_roi);
+        return multialloc(dataTypeSize, 3, (int)N_x_roi, (int)N_y_roi, (int)N_z_roi);
     }
     else
     {
-        return multialloc(dataTypeSize, 3, params->N_x, params->N_y, params->N_z);
+        return multialloc(dataTypeSize, 3, (int)params->N_x, (int)params->N_y, (int)params->N_z);
     }
 
 
@@ -445,7 +445,7 @@ void RandomZiplineAux_allocate(struct RandomZiplineAux *aux, struct ImageParams 
     /**
      *      Initialize groupIndex
      */
-    aux->groupIndex = (unsigned char***) multialloc(sizeof(unsigned char***), 3, N_x, N_y, N_z);
+    aux->groupIndex = (unsigned char***) multialloc(sizeof(unsigned char***), 3, (int)N_x, (int)N_y, (int)N_z);
 }
 
 void RandomZiplineAux_Initialize(struct RandomZiplineAux *aux, struct ImageParams *imgParams, struct ReconParams *reconParams, int N_M_max)
