@@ -818,7 +818,7 @@ void prepareParallelAux(struct ParallelAux *parallelAux, long int N_M_max)
     }
     parallelAux->N_M_max = N_M_max;
 
-    parallelAux->partialTheta = (struct PartialTheta**) multialloc(sizeof(struct PartialTheta), 2, numThreads, N_M_max);
+    parallelAux->partialTheta = (struct PartialTheta**) multialloc(sizeof(struct PartialTheta), 2, (int)numThreads, (int)N_M_max);
 
     parallelAux->j_u = mget_spc(numThreads, sizeof(long int));
     parallelAux->i_v = mget_spc(numThreads, sizeof(long int));
