@@ -697,7 +697,7 @@ def NSI_process_raw_scans(radiographs_directory, NSI_system_params,
 
 def compute_sino_from_scans(obj_scan, blank_scan=None, dark_scan=None,
                             downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
-                            weight_type='unweighted'):
+                            weight_type='unweighted', defect_pixel_loc_list=None, defect_pixel_rot=2):
     """Given a set of object scan, blank scan, and dark scan, compute the sinogram used for reconstruction. This function will (optionally) downsample and crop the scans before computing the sinogram. It is assumed that the object scans, blank scan and dark scan all have compatible sizes. 
     
     Args:
@@ -725,6 +725,8 @@ def compute_sino_from_scans(obj_scan, blank_scan=None, dark_scan=None,
         blank_scan = np.expand_dims(0 * obj_scan[0] + 1, axis=0) 
     if dark_scan is None:
         dark_scan = np.expand_dims(0 * obj_scan[0], axis=0)
+    
+
     # downsampling in pixels
     obj_scan, blank_scan, dark_scan = _downsample_scans(obj_scan, blank_scan, dark_scan,
                                                         downsample_factor=downsample_factor)
@@ -734,11 +736,25 @@ def compute_sino_from_scans(obj_scan, blank_scan=None, dark_scan=None,
     # should add something here to check the validity of downsampled scan pixel values?
     
     sino, weight_mask = _compute_sino_and_weight_mask_from_scans(obj_scan, blank_scan, dark_scan)
-
+    print('weight_mask shape = ', weight_mask.shape)
     # set invalid sinogram entries to 0
     sino[weight_mask == 0] = 0.
     # compute sinogram weights
     weights = cone3D.calc_weights(sino, weight_type=weight_type)
     # set the weights corresponding to invalid sinogram entries to 0.
     weights[weight_mask == 0] = 0.
+    # set defective pixel weights to be 0. 
+    if defect_pixel_loc_list is not None:
+        if crop_factor != [(0, 0), (1, 1)]:
+            print("Defective pixel information ignored because radiograph is cropped.")
+        else:
+            print("Setting defective sinogram pixel weight to 0 ...")
+            num_rot_forward = 4-defect_pixel_rot
+            num_rot_backward = defect_pixel_rot
+            weights = np.rot90(weights, num_rot_forward, axes=(1, 2))
+            for (r,c) in defect_pixel_loc_list:
+                r_ds = r//downsample_factor[0]
+                c_ds = c//downsample_factor[1]
+                weights[:,r_ds,c_ds]=False
+            weights = np.rot90(weights, num_rot_backward, axes=(1, 2))
     return sino.astype(np.float32), weights.astype(np.float32)

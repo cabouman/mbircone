@@ -48,6 +48,31 @@ def recon_resize_2D(recon, output_shape):
 
     return recon_resized
 
+def recon_resize_3D_simple(recon, output_shape):
+    """Resizes a reconstruction by performing 3D resizing along the horizontal and vertical dimensions.
+    Args:
+        recon (ndarray): 3D numpy array containing reconstruction with shape (num_slices_in, num_rows_in, num_cols_in)
+        output_shape (tuple): (num_slices_out, num_rows_out, num_cols_out) shape of resized output
+    Returns:
+        ndarray: 3D numpy array containing interpolated reconstruction with shape (num_slices_out, num_rows_out, num_cols_out).
+    """
+    # 2D resize in horizontal plane (num_slices unchanged)
+    input_shape = recon.shape
+    recon_resized_horizontal = np.empty((input_shape[0],output_shape[1],output_shape[2]), dtype=recon.dtype)
+    for i in range(input_shape[0]):
+        PIL_image = Image.fromarray(recon[i])
+        PIL_image_resized = PIL_image.resize((output_shape[2],output_shape[1]), resample=Image.Resampling.BILINEAR)
+        recon_resized_horizontal[i] = np.array(PIL_image_resized)
+    
+    # 2D resize in vertical plane
+    recon_resized = np.empty((output_shape[0],output_shape[1],output_shape[2]), dtype=recon.dtype)
+    for j in range(output_shape[1]):
+        PIL_image = Image.fromarray(recon_resized_horizontal[:, j, :])
+        PIL_image_resized = PIL_image.resize((output_shape[2],output_shape[0]), resample=Image.Resampling.BILINEAR) # shape: num_slices x num_cols
+        recon_resized[:,j,:] = np.array(PIL_image_resized)
+    return recon_resized
+
+
 def recon_resize_3D(recon, output_shape):
     """Resizes a reconstruction by performing 2D resizing along the slices dimension
 
