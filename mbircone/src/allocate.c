@@ -69,12 +69,16 @@ void *multialloc(size_t s, int d, ...)
         char **s1, *t, *tree;   /* base pointer to beginning of first array */
         int i;                  /* loop counter */
 
+        if(d<1) {
+           fprintf(stderr, "multialloc() error: Number of array dimensions is not positive.\n");
+           exit(-1);
+         }
+
         va_start(ap,d);
         d1 = (size_t *) mget_spc(d,sizeof(size_t));
 
         for(i=0;i<d;i++)
-          d1[i] = va_arg(ap,size_t);
-
+            d1[i] = (size_t) va_arg(ap,int);
 
         /* Take care of 1-D case separately (6/29/95) */
         if( d==1 ) {
@@ -82,7 +86,6 @@ void *multialloc(size_t s, int d, ...)
           free((void *)d1);
           return((void *)tree);              /* return base pointer */
         }
-
 
         r = &tree;
         q = d1;                /* first dimension */

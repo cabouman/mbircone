@@ -78,8 +78,8 @@ void recon(float *x, float *y, float *wght, float *proxmap_input,
     
 
     /* Allocate other image data */
-    img.lastChange = (float***) multialloc(sizeof(float), 3, img.params.N_x, img.params.N_y, reconParams.numZiplines);
-    img.timeToChange = (unsigned char***) multialloc(sizeof(unsigned char), 3, img.params.N_x, img.params.N_y, reconParams.numZiplines);
+    img.lastChange = (float***) multialloc(sizeof(float), 3, (int)img.params.N_x, (int)img.params.N_y, (int)reconParams.numZiplines);
+    img.timeToChange = (unsigned char***) multialloc(sizeof(unsigned char), 3, (int)img.params.N_x, (int)img.params.N_y, (int)reconParams.numZiplines);
 
     applyMask(img.vox, img.params.N_x, img.params.N_y, img.params.N_z);
 
