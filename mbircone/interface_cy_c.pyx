@@ -318,7 +318,7 @@ def recon_cy(sino, angles, wght, x_init, proxmap_input,
                             num_threads, lib_path)
         
         # Interpolate resolution of reconstruction
-        x_init = _utils.recon_resize_3D(lr_recon, (imgparams['N_z'], imgparams['N_x'], imgparams['N_y']))
+        x_init = _utils.recon_resize_3D_simple(lr_recon, (imgparams['N_z'], imgparams['N_x'], imgparams['N_y']))
         del lr_recon
         del lr_init_image
         del lr_prox_image
