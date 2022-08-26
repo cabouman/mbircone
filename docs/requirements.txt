@@ -9,3 +9,4 @@ psutil~=5.8.0
 Cython~=0.29.21
 dask~=2022.4.1
 dask-jobqueue~=0.7.3
+scipy
