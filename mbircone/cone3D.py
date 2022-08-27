@@ -86,7 +86,8 @@ def calc_weights(sino, weight_type):
         weights = 1 / (np.absolute(sino) + 0.1)
     else:
         raise Exception("calc_weights: undefined weight_type {}".format(weight_type))
-
+    weights[np.isnan(weights)]=0
+    weights[np.isinf(weights)]=0
     return weights
 
 
