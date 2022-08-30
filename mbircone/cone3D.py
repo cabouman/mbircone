@@ -260,7 +260,7 @@ def compute_sino_params(dist_source_detector, magnification,
     return sinoparams
 
 
-def compute_img_params(sinoparams, delta_pixel_image=None, ror_radius=None):
+def compute_img_params(sinoparams, num_rows=None, num_cols=None, num_slices=None, slice_offset=0.0, delta_pixel_image=None, ror_radius=None):
     """ Compute image parameters that specify coordinates and bounds relating to the image. 
         For detailed specifications of imgparams, see cone3D.interface_cy_c
     
@@ -276,8 +276,12 @@ def compute_img_params(sinoparams, delta_pixel_image=None, ror_radius=None):
         Dictionary containing image parameters as required by the Cython code
      
     """
-    # port code from https://github.com/cabouman/OpenMBIR-ConeBeam/blob/fbf3eddcadad1bd1cfb657f58c5b32f1204a12d1/utils/Preprocessing/Modular_PreprocessingRoutines/computeImgParams.m
+    imgparams = dict()
+    imgparams['Delta_xy'] = delta_pixel_image
+    imgparams['Delta_z'] = delta_pixel_image
 
+    # port code from https://github.com/cabouman/OpenMBIR-ConeBeam/blob/fbf3eddcadad1bd1cfb657f58c5b32f1204a12d1/utils/Preprocessing/Modular_PreprocessingRoutines/computeImgParams.m
+    # specify image size by customized ROR
     # Part 1: find radius of circle
     # lower cone point P0
     P0 = (sinoparams['u_d0'], sinoparams['v_d0'])
@@ -296,26 +300,30 @@ def compute_img_params(sinoparams, delta_pixel_image=None, ror_radius=None):
 
     # r_1 = distance{ line(P1,S), C }
     r_1 = _distance_line_to_point(P1, S, C)
+    
+    if (num_rows is not None) and (num_cols is not None):
+        imgparams['N_x'] = num_cols
+        imgparams['N_y'] = num_rows
+        imgparams['x_0'] = -(imgparams['N_x']+1)*imgparams['Delta_xy']/2.0
+        imgparams['y_0'] = -(imgparams['N_y']+1)*imgparams['Delta_xy']/2.0
+    else:
+        if ror_radius is not None:
+            r = ror_radius
+            print('customized ROR radius = ', r)
+        else:
+            r = max(r_0, r_1)
+            print('default ROR radius = ', r)
 
-    r = max(r_0, r_1)
+        # #### Part 2: assignment of parameters ####
+        ## Computation of x_0 and N_x, y_0 and N_y
 
-    if ror_radius is not None:
-        r = ror_radius
+        imgparams['x_0'] = -(r + imgparams['Delta_xy'] / 2)
+        imgparams['y_0'] = imgparams['x_0']
 
-    # #### Part 2: assignment of parameters ####
-
-    imgparams = dict()
-    imgparams['Delta_xy'] = delta_pixel_image
-    imgparams['Delta_z'] = delta_pixel_image
-
-    imgparams['x_0'] = -(r + imgparams['Delta_xy'] / 2)
-    imgparams['y_0'] = imgparams['x_0']
-
-    imgparams['N_x'] = 2 * math.ceil(r / imgparams['Delta_xy']) + 1
-    imgparams['N_y'] = imgparams['N_x']
+        imgparams['N_x'] = 2 * math.ceil(r / imgparams['Delta_xy']) + 1
+        imgparams['N_y'] = imgparams['N_x']
 
     ## Computation of z_0 and N_z
-
     x_1 = imgparams['x_0'] + imgparams['N_x'] * imgparams['Delta_xy']
     y_1 = x_1
 
@@ -326,17 +334,23 @@ def compute_img_params(sinoparams, delta_pixel_image=None, ror_radius=None):
 
     R = max(R_00, R_10, R_01, R_11)
 
-    w_1 = sinoparams['w_d0'] + sinoparams['N_dw'] * sinoparams['Delta_dw']
+    if num_slices is None:
+        w_1 = sinoparams['w_d0'] + sinoparams['N_dw'] * sinoparams['Delta_dw']
 
-    z_0 = min(sinoparams['w_d0'] * (R - sinoparams['u_s']) / (sinoparams['u_d0'] - sinoparams['u_s']),
-              sinoparams['w_d0'] * (-R - sinoparams['u_s']) / (sinoparams['u_d0'] - sinoparams['u_s']))
+        z_0 = min(sinoparams['w_d0'] * (R - sinoparams['u_s']) / (sinoparams['u_d0'] - sinoparams['u_s']),
+                  sinoparams['w_d0'] * (-R - sinoparams['u_s']) / (sinoparams['u_d0'] - sinoparams['u_s']))
 
-    z_1 = max(w_1 * (R - sinoparams['u_s']) / (sinoparams['u_d0'] - sinoparams['u_s']),
-              w_1 * (-R - sinoparams['u_s']) / (sinoparams['u_d0'] - sinoparams['u_s']))
+        z_1 = max(w_1 * (R - sinoparams['u_s']) / (sinoparams['u_d0'] - sinoparams['u_s']),
+                  w_1 * (-R - sinoparams['u_s']) / (sinoparams['u_d0'] - sinoparams['u_s']))
 
-    imgparams['z_0'] = z_0
-    imgparams['N_z'] = math.ceil((z_1 - z_0) / (imgparams['Delta_z']))
-
+        imgparams['z_0'] = z_0
+        imgparams['N_z'] = math.ceil((z_1 - z_0) / (imgparams['Delta_z']))
+        print(f"Default num_sices. Nz = {imgparams['N_z']}, z_0 = {imgparams['z_0']:.4f}")
+    else:
+        imgparams['N_z'] = num_slices
+        # do we need to consider channel offset
+        imgparams['z_0'] = -slice_offset - (imgparams['N_z']+1)*imgparams['Delta_z']/2
+        print(f"Customized num_sices. Nz = {imgparams['N_z']}, z_0 = {imgparams['z_0']:.4f}")
     ## ROI parameters
 
     R_roi = min(r_0, r_1) - imgparams['Delta_xy']
@@ -453,14 +467,14 @@ def extract_roi_from_ror(image, boundary_size):
     """
     num_img_slices, num_img_rows, num_img_cols = image.shape
     img_slices_boundary_size, img_rows_boundary_size, img_cols_boundary_size = boundary_size
-
     assert num_img_slices > 2 * img_slices_boundary_size and num_img_slices > 2 * img_slices_boundary_size and num_img_slices > 2 * img_slices_boundary_size, 'The shape of the roi image should be positive.'
     return image[img_slices_boundary_size:-img_slices_boundary_size,
-           img_rows_boundary_size:-img_rows_boundary_size,
-           img_cols_boundary_size:-img_cols_boundary_size]
+                 img_rows_boundary_size:-img_rows_boundary_size,
+                 img_cols_boundary_size:-img_cols_boundary_size]
 
 
 def recon(sino, angles, dist_source_detector, magnification,
+          num_rows=None, num_cols=None, num_slices=None, slice_offset=0.0,
           channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
           delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
           init_image=0.0, prox_image=None, max_resolutions=None,
@@ -562,7 +576,10 @@ def recon(sino, angles, dist_source_detector, magnification,
                                      rotation_offset=rotation_offset,
                                      delta_pixel_detector=delta_pixel_detector)
 
-    imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
+    imgparams = compute_img_params(sinoparams, 
+                                   num_rows=num_rows, num_cols=num_cols, num_slices=num_slices, 
+                                   slice_offset=slice_offset,
+                                   delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
     # make sure that weights do not contain negative entries
     # if weights is provided, and negative entry exists, then do not use the provided weights
     if not ((weights is None) or (np.amin(weights) >= 0.0)):
@@ -720,11 +737,9 @@ def project(image, angles,
     imgparams = compute_img_params(sinoparams, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
 
     (num_img_slices, num_img_rows, num_img_cols) = image.shape
-
     assert (num_img_slices, num_img_rows, num_img_cols) == (imgparams['N_z'], imgparams['N_x'], imgparams['N_y']), \
         'Image size of %s is incorrect! With the specified geometric parameters, expected image should have shape %s, use function `cone3D.compute_img_size` to compute the correct image size.' \
         %  ((num_img_slices, num_img_rows, num_img_cols), (imgparams['N_z'], imgparams['N_x'], imgparams['N_y']))
-
     hash_val = _utils.hash_params(angles, sinoparams, imgparams)
     sysmatrix_fname = _utils._gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
 
