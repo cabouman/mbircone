@@ -127,15 +127,6 @@ def _crop_scans(obj_scan, blank_scan, dark_scan, crop_factor=[(0, 0), (1, 1)]):
 
     return obj_scan, blank_scan, dark_scan
 
-def replace_value(sino, indices, window_size_half=(2,2)):
-    num_views, num_det_rows, num_det_channels = sino.shape
-    for (k,i,j) in indices:
-        print('old sino entry val = ', sino[k,i,j], end =" ")
-q       sino[k,i,j] = np.median(sino[k, 
-                                     max(0, i-window_size_half):min(num_det_rows, i+window_size_half+1),
-                                     max(0, j-window_size_half):min(num_det_channels, j+window_size_half+1)])
-
-        print('; replaced sino entry val = ', sino[k,i,j])
 
 def _compute_sino_and_weight_mask_from_scans(obj_scan, blank_scan, dark_scan):
     """Computes sinogram data and weights mask base on given object scan, blank scan, and dark scan. The weights mask is used to filter out negative values in the corrected object scan and blank scan. For real CT dataset weights mask should be used when calculating sinogram weights.
