@@ -38,7 +38,7 @@ vmin = 0.10
 vmax = 0.12
 
 # local path to save phantom, sinogram, and reconstruction images
-save_path = f'output/3D_shepp_logan_ROR_control_slice_offset/'
+save_path = f'output/3D_shepp_logan_num_rows_cols_140__slice_offset/'
 os.makedirs(save_path, exist_ok=True)
 
 
@@ -85,10 +85,14 @@ delta_pixel_image = 1./magnification
 #num_rows=140
 #num_cols=130
 delta_pixel_image = 1.0/magnification
-ror_radius = 70*delta_pixel_image
+#ror_radius = 70*delta_pixel_image
+num_rows = 140
+num_cols = 140
 num_slices = 190
 slice_offset = 40*delta_pixel_image
-recon = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification, sharpness=sharpness, T=T, ror_radius=ror_radius, num_slices=num_slices, slice_offset=slice_offset)
+recon = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification, sharpness=sharpness, T=T, 
+                              #ror_radius=ror_radius, 
+                              num_rows=num_rows, num_cols=num_cols, num_slices=num_slices, slice_offset=slice_offset)
 num_slices_recon, num_rows_recon, num_cols_recon = recon.shape
 print('recon shape = ', np.shape(recon))
 
