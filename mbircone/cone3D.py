@@ -304,8 +304,8 @@ def compute_img_params(sinoparams, num_rows=None, num_cols=None, num_slices=None
     if (num_rows is not None) and (num_cols is not None):
         imgparams['N_x'] = num_cols
         imgparams['N_y'] = num_rows
-        imgparams['x_0'] = -(imgparams['N_x']+1)*imgparams['Delta_xy']/2.0
-        imgparams['y_0'] = -(imgparams['N_y']+1)*imgparams['Delta_xy']/2.0
+        imgparams['x_0'] = -imgparams['N_x']*imgparams['Delta_xy']/2.0
+        imgparams['y_0'] = -imgparams['N_y']*imgparams['Delta_xy']/2.0
     else:
         if ror_radius is not None:
             r = ror_radius
@@ -349,7 +349,7 @@ def compute_img_params(sinoparams, num_rows=None, num_cols=None, num_slices=None
     else:
         imgparams['N_z'] = num_slices
         # do we need to consider channel offset
-        imgparams['z_0'] = -slice_offset - (imgparams['N_z']+1)*imgparams['Delta_z']/2
+        imgparams['z_0'] = (-slice_offset - imgparams['N_z']*imgparams['Delta_z'])/2
         print(f"Customized num_sices. Nz = {imgparams['N_z']}, z_0 = {imgparams['z_0']:.4f}")
     ## ROI parameters
 
@@ -490,6 +490,14 @@ def recon(sino, angles, dist_source_detector, magnification,
         dist_source_detector (float): Distance between the X-ray source and the detector in units of ALU
         magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
         
+        num_rows (int, optional): [Default=None] Integer number of rows in reconstructed image.
+            If None, automatically set.
+        num_cols (int, optional): [Default=None] Integer number of columns in reconstructed image.
+            If None, automatically set.
+        num_slices (int, optional): [Default=None] Integer number of slices in reconstructed image.
+            If None, automatically set.
+        slice_offset(int, optional): [Default=0.0] slice offset in :math:`ALU` from the center of ROR. 
+
         channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
         row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
         rotation_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space.
