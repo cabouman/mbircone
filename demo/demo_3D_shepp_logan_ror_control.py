@@ -89,7 +89,7 @@ delta_pixel_image = 1.0/magnification
 num_rows = 140
 num_cols = 140
 num_slices = 190
-slice_offset = 40*delta_pixel_image
+slice_offset = 20*delta_pixel_image
 recon = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification, sharpness=sharpness, T=T, 
                               #ror_radius=ror_radius, 
                               num_rows=num_rows, num_cols=num_cols, num_slices=num_slices, slice_offset=slice_offset)

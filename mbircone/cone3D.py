@@ -349,7 +349,7 @@ def compute_img_params(sinoparams, num_rows=None, num_cols=None, num_slices=None
     else:
         imgparams['N_z'] = num_slices
         # do we need to consider channel offset
-        imgparams['z_0'] = (-slice_offset - imgparams['N_z']*imgparams['Delta_z'])/2
+        imgparams['z_0'] = -slice_offset - (imgparams['N_z']*imgparams['Delta_z'])/2
         print(f"Customized num_sices. Nz = {imgparams['N_z']}, z_0 = {imgparams['z_0']:.4f}")
     ## ROI parameters
 
