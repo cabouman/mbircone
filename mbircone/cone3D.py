@@ -308,7 +308,7 @@ def compute_img_params_from_image(image, delta_pixel_image=None):
     return imgparams
 
 
-def compute_img_params_from_sinogram(sinoparams, recon_shape, delta_pixel_image=None):
+def compute_img_params_from_projector(sinoparams, recon_shape, delta_pixel_image=None):
     """ Compute image parameters that specify coordinates and bounds relating to the image, given a sinogram and a desired region of reconstruction.
         For detailed specifications of imgparams, see cone3D.interface_cy_c
     
@@ -532,7 +532,7 @@ def recon(sino, angles, dist_source_detector, magnification,
     if recon_shape.get('slice_offset') is None:
         recon_shape['slice_offset'] = 0.0
     
-    imgparams = compute_img_params_from_sinogram(sinoparams, recon_shape=recon_shape, delta_pixel_image=delta_pixel_image)
+    imgparams = compute_img_params_from_projector(sinoparams, recon_shape=recon_shape, delta_pixel_image=delta_pixel_image)
     
     # make sure that weights do not contain negative entries
     # if weights is provided, and negative entry exists, then do not use the provided weights
