@@ -207,6 +207,14 @@ def auto_sigma_p(sino, magnification, delta_pixel_detector = 1.0, sharpness = 0.
     
     return 2.0 * auto_sigma_prior(sino, magnification, delta_pixel_detector, sharpness)
 
+def auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image, magnification):
+    
+    num_rows = int(np.round( num_det_channels*( (delta_pixel_detector/delta_pixel_image)/magnification ) ))
+    num_cols = num_rows
+    num_slices = int(np.round( num_det_rows*( (delta_pixel_detector/delta_pixel_image)/magnification ) ))
+    return (num_rows, num_cols, num_slices)
+
+
 def compute_sino_params(dist_source_detector, magnification,
                         num_views, num_det_rows, num_det_channels,
                         channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
@@ -303,7 +311,6 @@ def compute_img_params_from_image(image, delta_pixel_image=None):
     imgparams['N_x_roi'] = -1
     imgparams['N_y_roi'] = -1
     imgparams['N_z_roi'] = -1
-    
     
     return imgparams
 
@@ -440,12 +447,12 @@ def recon(sino, angles, dist_source_detector, magnification,
         prox_image (ndarray, optional): [Default=None] 3D proximal map input image. 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols)
         
         num_rows (int, optional): [Default=None] Integer number of rows in reconstructed image.
-            If None, automatically set.
+            If None, automatically set by auto_image_size.
         num_cols (int, optional): [Default=None] Integer number of columns in reconstructed image.
-            If None, automatically set.
+            If None, automatically set by auto_image_size.
         num_slices (int, optional): [Default=None] Integer number of slices in reconstructed image.
-            If None, automatically set.
-        
+            If None, automatically set by auto_image_size.
+
         delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
         delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
             If None, automatically set to delta_pixel_detector/magnification
@@ -510,16 +517,16 @@ def recon(sino, angles, dist_source_detector, magnification,
     print('max_resolution = ', max_resolutions)
 
     if delta_pixel_image is None:
-        delta_pixel_image = delta_pixel_detector / magnification
+        delta_pixel_image = delta_pixel_detector/magnification
     if num_rows is None:
-        num_rows = int(np.round( num_det_channels*( (delta_pixel_detector/delta_pixel_image)/magnification ) ))
+        num_rows,_,_ = auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image, magnification)
     if num_cols is None:
-        num_cols = int(np.round( num_det_channels*( (delta_pixel_detector/delta_pixel_image)/magnification ) ))
+        _,num_cols,_ = auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image, magnification)
     if num_slices is None:
-        num_slices = int(np.round( num_det_rows*( (delta_pixel_detector/delta_pixel_image)/magnification ) ))
-
+        _,_,num_slices = auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image, magnification)
+    
     (num_views, num_det_rows, num_det_channels) = sino.shape
-
+    
     sinoparams = compute_sino_params(dist_source_detector, magnification,
                                      num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
                                      channel_offset=channel_offset, row_offset=row_offset,
