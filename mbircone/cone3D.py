@@ -12,7 +12,6 @@ import mbircone._utils as _utils
 __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
 __namelen_sysmatrix = 20
 
-
 def _sino_indicator(sino):
     """Compute a binary function that indicates the region of sinogram support.
 
@@ -28,7 +27,7 @@ def _sino_indicator(sino):
 
 
 def _distance_line_to_point(A, B, P):
-    """Compute the distance from point P to the line passing through points A and B
+    """Compute the distance from point P to the line passing through points A and B. (Depreciated method)
     
     Args:
         A (float, 2-tuple): (x,y) coordinate of point A
@@ -208,13 +207,40 @@ def auto_sigma_p(sino, magnification, delta_pixel_detector = 1.0, sharpness = 0.
     return 2.0 * auto_sigma_prior(sino, magnification, delta_pixel_detector, sharpness)
 
 def auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image, magnification):
+    """Compute the automatic image size for use in recon.
+    
+    Args:
+        num_det_rows (int): Number of rows in sinogram data
+        num_det_channels (int): Number of channels in sinogram data
+        delta_pixel_detector (float): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
+        delta_pixel_image (float): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
+            If None, automatically set to delta_pixel_detector/magnification
+        magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
+    
+    Returns:
+        (int, 3-tuple): Default values for num_rows, num_cols, num_slices for the inputted image measurements.
+        
+    """
     
     num_rows = int(np.round( num_det_channels*( (delta_pixel_detector/delta_pixel_image)/magnification ) ))
     num_cols = num_rows
     num_slices = int(np.round( num_det_rows*( (delta_pixel_detector/delta_pixel_image)/magnification ) ))
+    
     return (num_rows, num_cols, num_slices)
 
 def auto_img_params(num_rows, num_cols, num_slices, delta_pixel_image, image_slice_offset):
+    """ Allocate imageparam parameters as required by certain C methods.
+        Can be used to describe a region of projection (i.e., when an image is available in ``project'' method), or to specify a region of reconstruction.
+        For detailed specifications of sinoparams, see cone3D.interface_cy_c
+    
+    Args:
+        num_rows (int): Integer number of rows in image region.
+        num_cols (int): Integer number of columns in image region.
+        num_slices (int): Integer number of slices in image region.
+    
+    Returns:
+        Dictionary containing sino parameters as required by the Cython code
+    """
 
     imgparams = dict()
     imgparams['N_x'] = num_rows
@@ -298,8 +324,6 @@ def compute_sino_params(dist_source_detector, magnification,
     sinoparams['weightScaler_value'] = -1
 
     return sinoparams
-    
-
 
 
 def pad_roi2ror(image, boundary_size):
