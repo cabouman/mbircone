@@ -214,6 +214,38 @@ def auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_
     num_slices = int(np.round( num_det_rows*( (delta_pixel_detector/delta_pixel_image)/magnification ) ))
     return (num_rows, num_cols, num_slices)
 
+def auto_img_params(num_rows, num_cols, num_slices, delta_pixel_image, image_slice_offset):
+
+    imgparams = dict()
+    imgparams['N_x'] = num_rows
+    imgparams['N_y'] = num_cols
+    imgparams['N_z'] = num_slices
+
+    imgparams['Delta_xy'] = delta_pixel_image
+    imgparams['Delta_z'] = delta_pixel_image
+
+    imgparams['x_0'] = -imgparams['N_x']*imgparams['Delta_xy']/2.0
+    imgparams['y_0'] = -imgparams['N_y']*imgparams['Delta_xy']/2.0
+    imgparams['z_0'] = -imgparams['N_z']*imgparams['Delta_z']/2.0 - image_slice_offset
+        
+    # depreciated parameters
+        
+    imgparams['j_xstart_roi'] = -1
+    imgparams['j_ystart_roi'] = -1
+
+    imgparams['j_xstop_roi'] = -1
+    imgparams['j_ystop_roi'] = -1
+
+    imgparams['j_zstart_roi'] = -1
+    imgparams['j_zstop_roi'] = -1
+
+    # Internally set by C code
+    imgparams['N_x_roi'] = -1
+    imgparams['N_y_roi'] = -1
+    imgparams['N_z_roi'] = -1
+
+    return imgparams
+
 
 def compute_sino_params(dist_source_detector, magnification,
                         num_views, num_det_rows, num_det_channels,
@@ -266,118 +298,9 @@ def compute_sino_params(dist_source_detector, magnification,
     sinoparams['weightScaler_value'] = -1
 
     return sinoparams
-
-def compute_img_params_from_image(image, delta_pixel_image=None):
-    """ Compute image parameters that specify coordinates and bounds relating to the image, given a preexisting phantom image and a projector.
-        For detailed specifications of imgparams, see cone3D.interface_cy_c
     
-    Args:
-        sinoparams (dict): Dictionary containing sinogram parameters as required by the Cython code
-        image (ndarray):
-            3D numpy array of image being forward projected.
-            The image is a 3D array with a shape of (num_img_slices, num_img_rows, num_img_cols)
-        delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
-            If None, automatically set to delta_pixel_detector/magnification
-    
-    Returns:
-        Dictionary containing image parameters as required by the Cython code
-     
-    """
-    (num_img_slices, num_img_rows, num_img_cols) = image.shape
-
-    imgparams = dict()
-    imgparams['N_x'] = num_img_rows
-    imgparams['N_y'] = num_img_cols
-    imgparams['N_z'] = num_img_slices
-
-    imgparams['Delta_xy'] = delta_pixel_image
-    imgparams['Delta_z'] = delta_pixel_image
-
-    imgparams['x_0'] = -imgparams['N_x']*imgparams['Delta_xy']/2.0
-    imgparams['y_0'] = -imgparams['N_y']*imgparams['Delta_xy']/2.0
-    imgparams['z_0'] = -imgparams['N_z']*imgparams['Delta_z']/2.0
-    
-    # Depreciated parameters
-    imgparams['j_xstart_roi'] = -1
-    imgparams['j_ystart_roi'] = -1
-
-    imgparams['j_xstop_roi'] = -1
-    imgparams['j_ystop_roi'] = -1
-
-    imgparams['j_zstart_roi'] = -1
-    imgparams['j_zstop_roi'] = -1
-    
-    # Internally set by C code
-    imgparams['N_x_roi'] = -1
-    imgparams['N_y_roi'] = -1
-    imgparams['N_z_roi'] = -1
-    
-    return imgparams
 
 
-def compute_img_params_from_projector(sinoparams, num_rows=None, num_cols=None, num_slices=None, img_slice_offset=0.0, delta_pixel_image=None):
-    """ Compute image parameters that specify coordinates and bounds relating to the image, given a sinogram and a desired region of reconstruction.
-        For detailed specifications of imgparams, see cone3D.interface_cy_c
-    
-    Args:
-        sinoparams (dict): Dictionary containing sinogram parameters as required by the Cython code
-        
-        num_rows (int, optional): [Default=None] Integer number of rows in reconstructed image.
-            If None, automatically set.
-        num_cols (int, optional): [Default=None] Integer number of columns in reconstructed image.
-            If None, automatically set.
-        num_slices (int, optional): [Default=None] Integer number of slices in reconstructed image.
-            If None, automatically set.
-            
-        image_slice_offset (float, optional): [Default=0.0] Float that controls vertical offset of the center slice for the reconstruction in units of ALU
-            
-        delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
-            If None, automatically set to delta_pixel_detector/magnification
-    
-    Returns:
-        Dictionary containing image parameters as required by the Cython code
-    
-    """
-
-    # retrieve parameters
-    
-    # In practice these are equal
-    delta_pixel_detector_dv = sinoparams['Delta_dv']
-    delta_pixel_detector_dw = sinoparams['Delta_dw']
-    
-    num_det_channels = sinoparams['N_dv']
-    num_det_rows = sinoparams['N_dw']
-    
-    # set parameters
-    imgparams = dict()
-    imgparams['N_x'] = num_rows
-    imgparams['N_y'] = num_cols
-    imgparams['N_z'] = num_slices
-    
-    imgparams['Delta_xy'] = delta_pixel_image
-    imgparams['Delta_z'] = delta_pixel_image
-
-    imgparams['x_0'] = -imgparams['N_x']*imgparams['Delta_xy']/2.0
-    imgparams['y_0'] = -imgparams['N_y']*imgparams['Delta_xy']/2.0
-    imgparams['z_0'] = -imgparams['N_z']*imgparams['Delta_z']/2.0 - img_slice_offset
-        
-    # depreciated parameters
-        
-    imgparams['j_xstart_roi'] = -1
-    imgparams['j_ystart_roi'] = -1
-
-    imgparams['j_xstop_roi'] = -1
-    imgparams['j_ystop_roi'] = -1
-
-    imgparams['j_zstart_roi'] = -1
-    imgparams['j_zstop_roi'] = -1
-    
-    # Internally set by C code
-    imgparams['N_x_roi'] = -1
-    imgparams['N_y_roi'] = -1
-    imgparams['N_z_roi'] = -1
-
-    return imgparams
 
 def pad_roi2ror(image, boundary_size):
     """Given a 3D ROI and the boundary size, pad the ROI with 0s to form an ROR.
@@ -516,6 +439,8 @@ def recon(sino, angles, dist_source_detector, magnification,
         max_resolutions = auto_max_resolutions(init_image)
     print('max_resolution = ', max_resolutions)
 
+    (num_views, num_det_rows, num_det_channels) = sino.shape
+
     if delta_pixel_image is None:
         delta_pixel_image = delta_pixel_detector/magnification
     if num_rows is None:
@@ -525,15 +450,13 @@ def recon(sino, angles, dist_source_detector, magnification,
     if num_slices is None:
         _,_,num_slices = auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image, magnification)
     
-    (num_views, num_det_rows, num_det_channels) = sino.shape
-    
     sinoparams = compute_sino_params(dist_source_detector, magnification,
                                      num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
                                      channel_offset=channel_offset, row_offset=row_offset,
                                      rotation_offset=rotation_offset,
                                      delta_pixel_detector=delta_pixel_detector)
     
-    imgparams = compute_img_params_from_projector(sinoparams, num_rows=num_rows, num_cols=num_cols, num_slices=num_slices, delta_pixel_image=delta_pixel_image)
+    imgparams = auto_img_params(num_rows, num_cols, num_slices, delta_pixel_image, image_slice_offset)
     
     # make sure that weights do not contain negative entries
     # if weights is provided, and negative entry exists, then do not use the provided weights
@@ -690,8 +613,10 @@ def project(image, angles,
                                      rotation_offset=rotation_offset,
                                      delta_pixel_detector=delta_pixel_detector)
      
-    imgparams = compute_img_params_from_image(image, delta_pixel_image=delta_pixel_image)
-        
+    (num_slices, num_rows, num_cols) = image.shape
+    
+    imgparams = auto_img_params(num_rows, num_cols, num_slices, delta_pixel_image, 0.0)
+
     hash_val = _utils.hash_params(angles, sinoparams, imgparams)
     sysmatrix_fname = _utils._gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
 
