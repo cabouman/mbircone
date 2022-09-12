@@ -38,9 +38,9 @@ vmin = 0.10
 vmax = 0.12
 
 # Size of phantom
-num_slices_phantom = 160
-num_rows_phantom = 160
-num_cols_phantom = 160
+num_slices_phantom = 128
+num_rows_phantom = 128
+num_cols_phantom = 128
 delta_pixel_phantom = 1.0
 
 # Size of recon
@@ -77,14 +77,10 @@ print('Synthetic sinogram shape: (num_views, num_det_rows, num_det_channels) = '
 ######################################################################################
 
 print('Performing 3D qGGMRF reconstruction ...')
-recon_shape = dict()
-recon_shape['num_slices'] = num_slices_recon
-recon_shape['num_rows'] = num_rows_recon
-recon_shape['num_cols'] = num_cols_recon
-recon = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification, delta_pixel_image=delta_pixel_recon, recon_shape=recon_shape, sharpness=sharpness, T=T)
-print('recon shape = ', np.shape(recon))
 
-(num_slices_recon, num_rows_recon, num_cols_recon) = np.shape(recon)
+recon = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification, delta_pixel_image=delta_pixel_recon, num_rows=num_rows_recon, num_cols=num_cols_recon, num_slices=num_slices_recon, sharpness=sharpness, T=T)
+
+print('recon shape = ', np.shape(recon))
 
 ######################################################################################
 # Generate phantom, synthetic sinogram, and reconstruction images

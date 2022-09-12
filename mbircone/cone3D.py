@@ -308,24 +308,28 @@ def compute_img_params_from_image(image, delta_pixel_image=None):
     return imgparams
 
 
-def compute_img_params_from_projector(sinoparams, recon_shape, delta_pixel_image=None):
+def compute_img_params_from_projector(sinoparams, num_rows=None, num_cols=None, num_slices=None, img_slice_offset=0.0, delta_pixel_image=None):
     """ Compute image parameters that specify coordinates and bounds relating to the image, given a sinogram and a desired region of reconstruction.
         For detailed specifications of imgparams, see cone3D.interface_cy_c
     
     Args:
         sinoparams (dict): Dictionary containing sinogram parameters as required by the Cython code
-        recon_shape (dict, optional): [Default=None] Shape of reconstruction region in:
-            num_recon_rows - integer that controls number of rows in the reconstruction
-            num_recon_cols - integer that controls number of columns in the reconstruction
-            num_recon_slices - integer that controls number of slices in the reconstruction
-            recon_slice_offset - float that controls vertical offset of the center slice for the reconstruction in units of ALU
-            If None, default parameters are used instead in imgparams.
+        
+        num_rows (int, optional): [Default=None] Integer number of rows in reconstructed image.
+            If None, automatically set.
+        num_cols (int, optional): [Default=None] Integer number of columns in reconstructed image.
+            If None, automatically set.
+        num_slices (int, optional): [Default=None] Integer number of slices in reconstructed image.
+            If None, automatically set.
+            
+        image_slice_offset (float, optional): [Default=0.0] Float that controls vertical offset of the center slice for the reconstruction in units of ALU
+            
         delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
             If None, automatically set to delta_pixel_detector/magnification
     
     Returns:
         Dictionary containing image parameters as required by the Cython code
-     
+    
     """
 
     # retrieve parameters
@@ -336,11 +340,6 @@ def compute_img_params_from_projector(sinoparams, recon_shape, delta_pixel_image
     
     num_det_channels = sinoparams['N_dv']
     num_det_rows = sinoparams['N_dw']
-    
-    num_rows = recon_shape.get('num_rows')
-    num_cols = recon_shape.get('num_cols')
-    num_slices = recon_shape.get('num_slices')
-    slice_offset = recon_shape.get('slice_offset')
     
     # set parameters
     imgparams = dict()
@@ -353,7 +352,7 @@ def compute_img_params_from_projector(sinoparams, recon_shape, delta_pixel_image
 
     imgparams['x_0'] = -imgparams['N_x']*imgparams['Delta_xy']/2.0
     imgparams['y_0'] = -imgparams['N_y']*imgparams['Delta_xy']/2.0
-    imgparams['z_0'] = -imgparams['N_z']*imgparams['Delta_z']/2.0 - slice_offset
+    imgparams['z_0'] = -imgparams['N_z']*imgparams['Delta_z']/2.0 - img_slice_offset
         
     # depreciated parameters
         
@@ -408,13 +407,15 @@ def extract_roi_from_ror(image, boundary_size):
 
 
 def recon(sino, angles, dist_source_detector, magnification,
-          channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
-          delta_pixel_detector=1.0, delta_pixel_image=None, recon_shape=None,
-          init_image=0.0, prox_image=None, max_resolutions=None,
-          sigma_y=None, snr_db=40.0, weights=None, weight_type='unweighted',
-          positivity=True, p=1.2, q=2.0, T=1.0, num_neighbors=6,
-          sharpness=0.0, sigma_x=None, sigma_p=None, max_iterations=100, stop_threshold=0.02,
-          num_threads=None, NHICD=False, verbose=1, lib_path=__lib_path):
+          geometry='cone',
+          weights=None, weight_type='unweighted', init_image=0.0, prox_image=None,
+          num_rows=None, num_cols=None, num_slices=None,
+          delta_pixel_detector=1.0, delta_pixel_image=None,
+          channel_offset=0.0, row_offset=0.0, rotation_offset=0.0, image_slice_offset=0.0,
+          sigma_y=None, snr_db=40.0, sigma_x=None, sigma_p=None, p=1.2, q=2.0, T=1.0, num_neighbors=6,
+          sharpness=0.0, positivity=True, max_resolutions=None, stop_threshold=0.02, max_iterations=100,
+          num_threads=None, NHICD=False, lib_path=__lib_path,
+          verbose=1):
     """Compute 3D cone beam MBIR reconstruction
     
     Args:
@@ -423,40 +424,10 @@ def recon(sino, angles, dist_source_detector, magnification,
         dist_source_detector (float): Distance between the X-ray source and the detector in units of ALU
         magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
         
-        num_rows (int, optional): [Default=None] Integer number of rows in reconstructed image.
-            If None, automatically set.
-        num_cols (int, optional): [Default=None] Integer number of columns in reconstructed image.
-            If None, automatically set.
-        num_slices (int, optional): [Default=None] Integer number of slices in reconstructed image.
-            If None, automatically set.
-        slice_offset(int, optional): [Default=0.0] slice offset in :math:`ALU` from the center of ROR. 
-
-        channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
-        row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
-        rotation_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space.
-            This is normally set to zero.
+        geometry (string, optional): This can be 'cone' or 'lamino'.
+            If geometry=='cone', runs a standard cone-beam reconstruction.
+            If geometry=='lamino', runs a parallel-beam laminography reconstruction and ignores parameters dist_source_detector, magnification, row_offset, rotation_offset. (Not implemented.)
         
-        delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
-        delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
-            If None, automatically set to delta_pixel_detector/magnification
-            
-        recon_shape (dict, optional): [Default=None] Shape of reconstruction region in:
-            num_rows - integer that controls number of rows in the reconstruction
-            num_cols - integer that controls number of columns in the reconstruction
-            num_slices - integer that controls number of slices in the reconstruction
-            slice_offset - float that controls vertical offset of the center slice for the reconstruction in units of ALU
-            If None, default parameters are used instead in imgparams.
-        
-        init_image (ndarray, optional): [Default=0.0] Initial value of reconstruction image, specified by either a scalar value or a 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols)
-        prox_image (ndarray, optional): [Default=None] 3D proximal map input image. 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols)
-        max_resolutions (int, optional): [Default=None] Integer >=0 that specifies the maximum number of grid
-            resolutions used to solve MBIR reconstruction problem.
-            If None, automatically set with auto_max_resolutions to 0 if inital image is provided and 2 otherwise.        
-        
-        sigma_y (float, optional): [Default=None] Scalar value of noise standard deviation parameter.
-            If None, automatically set with auto_sigma_y.
-        snr_db (float, optional): [Default=40.0] Scalar value that controls assumed signal-to-noise ratio of the data in dB.
-            Ignored if sigma_y is not None.
         weights (ndarray, optional): [Default=None] 3D weights array with same shape as sino.
         weight_type (string, optional): [Default='unweighted'] Type of noise model used for data.
             If the ``weights`` array is not supplied, then the function ``cone3D.calc_weights`` is used to set weights using specified ``weight_type`` parameter.
@@ -465,32 +436,60 @@ def recon(sino, angles, dist_source_detector, magnification,
                 - Option "transmission" is the correct weighting for transmission CT with constant dosage;
                 - Option "transmission_root" is commonly used with transmission CT data to improve image homogeneity;
                 - Option "emission" is appropriate for emission CT data.
-
-        positivity (bool, optional): [Default=True] Boolean value that determines if positivity constraint is enforced. 
-            The positivity parameter defaults to True; however, it should be changed to False when used in applications that can generate negative image values.
-        p (float, optional): [Default=1.2] Scalar value in range :math:`[1,2]` that specifies the qGGMRF shape parameter.
-        q (float, optional): [Default=2.0] Scalar value in range :math:`[p,1]` that specifies the qGGMRF shape parameter.
-        T (float, optional): [Default=1.0] Scalar value :math:`>0` that specifies the qGGMRF threshold parameter.
-        num_neighbors (int, optional): [Default=6] Possible values are {26,18,6}.
-            Number of neightbors in the qggmrf neighborhood. Higher number of neighbors result in a better regularization but a slower reconstruction.
-        sharpness (float, optional): [Default=0.0]
-            Scalar value that controls level of sharpness in the reconstruction
-            ``sharpness=0.0`` is neutral; ``sharpness>0`` increases sharpness; ``sharpness<0`` reduces sharpness.
-            Ignored if ``sigma_x`` is not None in qGGMRF mode, or if ``sigma_p`` is not None in proximal map mode.
+        init_image (ndarray, optional): [Default=0.0] Initial value of reconstruction image, specified by either a scalar value or a 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols)
+        prox_image (ndarray, optional): [Default=None] 3D proximal map input image. 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols)
+        
+        num_rows (int, optional): [Default=None] Integer number of rows in reconstructed image.
+            If None, automatically set.
+        num_cols (int, optional): [Default=None] Integer number of columns in reconstructed image.
+            If None, automatically set.
+        num_slices (int, optional): [Default=None] Integer number of slices in reconstructed image.
+            If None, automatically set.
+        
+        delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
+        delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
+            If None, automatically set to delta_pixel_detector/magnification
+        
+        channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
+        row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
+        rotation_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space.
+            This is normally set to zero.
+        image_slice_offset (float, optional): [Default=0.0] Float that controls vertical offset of the center slice for the reconstruction in units of ALU
+        
+        sigma_y (float, optional): [Default=None] Scalar value of noise standard deviation parameter.
+            If None, automatically set with auto_sigma_y.
+        snr_db (float, optional): [Default=40.0] Scalar value that controls assumed signal-to-noise ratio of the data in dB.
+            Ignored if sigma_y is not None.
         sigma_x (float, optional): [Default=None] Scalar value :math:`>0` that specifies the qGGMRF scale parameter.
             Ignored if prox_image is not None.
             If None and prox_image is also None, automatically set with auto_sigma_x. Regularization should be controled with the ``sharpness`` parameter, but ``sigma_x`` can be set directly by expert users.
         sigma_p (float, optional): [Default=None] Scalar value :math:`>0` that specifies the proximal map parameter.
             Ignored if prox_image is None.
             If None and proximal image is not None, automatically set with auto_sigma_p. Regularization should be controled with the ``sharpness`` parameter, but ``sigma_p`` can be set directly by expert users.
-        max_iterations (int, optional): [Default=100] Integer valued specifying the maximum number of iterations.
+        p (float, optional): [Default=1.2] Scalar value in range :math:`[1,2]` that specifies the qGGMRF shape parameter.
+        q (float, optional): [Default=2.0] Scalar value in range :math:`[p,1]` that specifies the qGGMRF shape parameter.
+        T (float, optional): [Default=1.0] Scalar value :math:`>0` that specifies the qGGMRF threshold parameter.
+        num_neighbors (int, optional): [Default=6] Possible values are {26,18,6}.
+            Number of neightbors in the qggmrf neighborhood. Higher number of neighbors result in a better regularization but a slower reconstruction.
+        
+        sharpness (float, optional): [Default=0.0]
+            Scalar value that controls level of sharpness in the reconstruction
+            ``sharpness=0.0`` is neutral; ``sharpness>0`` increases sharpness; ``sharpness<0`` reduces sharpness.
+            Ignored if ``sigma_x`` is not None in qGGMRF mode, or if ``sigma_p`` is not None in proximal map mode.
+        positivity (bool, optional): [Default=True] Boolean value that determines if positivity constraint is enforced.
+            The positivity parameter defaults to True; however, it should be changed to False when used in applications that can generate negative image values.
+        max_resolutions (int, optional): [Default=None] Integer >=0 that specifies the maximum number of grid
+            resolutions used to solve MBIR reconstruction problem.
+            If None, automatically set with auto_max_resolutions to 0 if inital image is provided and 2 otherwise.
         stop_threshold (float, optional): [Default=0.02] Scalar valued stopping threshold in percent.
             If stop_threshold=0.0, then run max iterations.
+        max_iterations (int, optional): [Default=100] Integer valued specifying the maximum number of iterations.
         num_threads (int, optional): [Default=None] Number of compute threads requested when executed.
             If None, num_threads is set to the number of cores in the system
         NHICD (bool, optional): [Default=False] If true, uses Non-homogeneous ICD updates
-        verbose (int, optional): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal reconstruction progress information, and 2 prints the full information.
         lib_path (str, optional): [Default=~/.cache/mbircone] Path to directory containing library of forward projection matrices.
+        verbose (int, optional): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal reconstruction progress information, and 2 prints the full information.
+        
     Returns:
         3D numpy array: 3D reconstruction with shape (num_img_slices, num_img_rows, num_img_cols) in units of :math:`ALU^{-1}`.
     """
@@ -512,6 +511,12 @@ def recon(sino, angles, dist_source_detector, magnification,
 
     if delta_pixel_image is None:
         delta_pixel_image = delta_pixel_detector / magnification
+    if num_rows is None:
+        num_rows = int(np.round( num_det_channels*( (delta_pixel_detector/delta_pixel_image)/magnification ) ))
+    if num_cols is None:
+        num_cols = int(np.round( num_det_channels*( (delta_pixel_detector/delta_pixel_image)/magnification ) ))
+    if num_slices is None:
+        num_slices = int(np.round( num_det_rows*( (delta_pixel_detector/delta_pixel_image)/magnification ) ))
 
     (num_views, num_det_rows, num_det_channels) = sino.shape
 
@@ -521,18 +526,7 @@ def recon(sino, angles, dist_source_detector, magnification,
                                      rotation_offset=rotation_offset,
                                      delta_pixel_detector=delta_pixel_detector)
     
-    if recon_shape is None:
-        recon_shape = dict()
-    if recon_shape.get('num_rows') is None:
-        recon_shape['num_rows'] = int(np.round( num_det_channels*( (delta_pixel_detector/delta_pixel_image)/magnification ) ))
-    if recon_shape.get('num_cols') is None:
-        recon_shape['num_cols'] = int(np.round( num_det_channels*( (delta_pixel_detector/delta_pixel_image)/magnification ) ))
-    if recon_shape.get('num_slices') is None:
-        recon_shape['num_slices'] = int(np.round( num_det_rows*( (delta_pixel_detector/delta_pixel_image)/magnification ) ))
-    if recon_shape.get('slice_offset') is None:
-        recon_shape['slice_offset'] = 0.0
-    
-    imgparams = compute_img_params_from_projector(sinoparams, recon_shape=recon_shape, delta_pixel_image=delta_pixel_image)
+    imgparams = compute_img_params_from_projector(sinoparams, num_rows=num_rows, num_cols=num_cols, num_slices=num_slices, delta_pixel_image=delta_pixel_image)
     
     # make sure that weights do not contain negative entries
     # if weights is provided, and negative entry exists, then do not use the provided weights
@@ -553,7 +547,6 @@ def recon(sino, angles, dist_source_detector, magnification,
     if sigma_x is None:
         sigma_x = auto_sigma_x(sino, magnification, delta_pixel_detector=delta_pixel_detector, sharpness=sharpness)
 
-    
     reconparams = dict()
     reconparams['is_positivity_constraint'] = bool(positivity)
     reconparams['q'] = q
