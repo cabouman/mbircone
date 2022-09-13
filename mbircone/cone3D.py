@@ -364,9 +364,9 @@ def extract_roi_from_ror(image, boundary_size):
 def recon(sino, angles, dist_source_detector, magnification,
           geometry='cone',
           weights=None, weight_type='unweighted', init_image=0.0, prox_image=None,
-          num_rows=None, num_cols=None, num_slices=None,
+          num_rows=None, num_cols=None, num_slices=None,  # TODO:  change to num_image_rows, etc here and below
           delta_pixel_detector=1.0, delta_pixel_image=None,
-          channel_offset=0.0, row_offset=0.0, rotation_offset=0.0, image_slice_offset=0.0,
+          channel_offset=0.0, row_offset=0.0, rotation_offset=0.0, image_slice_offset=0.0,  # TODO:  change to det_channel_offset, det_row_offset here and below
           sigma_y=None, snr_db=40.0, sigma_x=None, sigma_p=None, p=1.2, q=2.0, T=1.0, num_neighbors=6,
           sharpness=0.0, positivity=True, max_resolutions=None, stop_threshold=0.02, max_iterations=100,
           num_threads=None, NHICD=False, lib_path=__lib_path,
@@ -606,7 +606,8 @@ def project(image, angles,
         
         delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
         delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
-            If None, automatically set to delta_pixel_detector/magnification  
+            If None, automatically set to delta_pixel_detector/magnification
+        # TODO Remove this:
         recon_shape (dict, optional): [Default=None] Shape of reconstruction region in:
             num_recon_rows - integer that controls number of rows in the reconstruction
             num_recon_cols - integer that controls number of columns in the reconstruction
