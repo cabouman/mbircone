@@ -5,14 +5,14 @@ from demo_utils import plot_image, plot_gif, plt_cmp_3dobj
 
 """
 This script is a demonstration of the 3D qGGMRF reconstruction algorithm. Demo functionality includes
- * generating a 3D Shepp Logan phantom, and zero-padding it to the size of ROR
- * generating synthetic sinogram data by forward projecting the phantom
- * performing a 3D qGGMRF reconstructions and displaying the results.
+ * generating a 3D Shepp Logan phantom, generating synthetic sinogram data by
+ * forward projecting the phantom, performing a 3D qGGMRF reconstruction,
+ * and displaying the results.
 """
 print('This script is a demonstration of the 3D qGGMRF reconstruction algorithm. Demo functionality includes \
-\n\t * generating a 3D Shepp Logan phantom, and zero-padding it to the size of ROR \
-\n\t * generating synthetic sinogram data by forward projecting the phantom \
-\n\t * performing a 3D qGGMRF reconstructions and displaying the results.')
+\n\t * generating a 3D Shepp Logan phantom, generating synthetic sinogram data by \
+\n\t * forward projecting the phantom, performing a 3D qGGMRF reconstruction, \
+\n\t * and displaying the results.')
 
 # ###########################################################################
 # Set the parameters to generate the phantom, synthetic sinogram, and do the recon

@@ -218,25 +218,25 @@ def auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_
         magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
     
     Returns:
-        (int, 3-tuple): Default values for num_rows, num_cols, num_slices for the inputted image measurements.
+        (int, 3-tuple): Default values for num_image_rows, num_image_cols, num_image_slices for the inputted image measurements.
         
     """
     
-    num_rows = int(np.round( num_det_channels*( (delta_pixel_detector/delta_pixel_image)/magnification ) ))
-    num_cols = num_rows
-    num_slices = int(np.round( num_det_rows*( (delta_pixel_detector/delta_pixel_image)/magnification ) ))
+    num_image_rows = int(np.round( num_det_channels*( (delta_pixel_detector/delta_pixel_image)/magnification ) ))
+    num_image_cols = num_image_rows
+    num_image_slices = int(np.round( num_det_rows*( (delta_pixel_detector/delta_pixel_image)/magnification ) ))
     
-    return (num_rows, num_cols, num_slices)
+    return (num_image_rows, num_image_cols, num_image_slices)
 
-def auto_img_params(num_rows, num_cols, num_slices, delta_pixel_image=1.0, image_slice_offset=0.0):
+def auto_img_params(num_image_rows, num_image_cols, num_image_slices, delta_pixel_image=1.0, image_slice_offset=0.0):
     """ Allocate imageparam parameters as required by certain C methods.
         Can be used to describe a region of projection (i.e., when an image is available in ``project'' method), or to specify a region of reconstruction.
         For detailed specifications of sinoparams, see cone3D.interface_cy_c
     
     Args:
-        num_rows (int): Integer number of rows in image region.
-        num_cols (int): Integer number of columns in image region.
-        num_slices (int): Integer number of slices in image region.
+        num_image_rows (int): Integer number of rows in image region.
+        num_image_cols (int): Integer number of columns in image region.
+        num_image_slices (int): Integer number of slices in image region.
         delta_pixel_image (float, optional): [Default=1.0] Scalar value of image pixel spacing in :math:`ALU`.
         image_slice_offset (float, optional): [Default=0.0] Float that controls vertical offset of the center slice for the reconstruction in units of ALU
     
@@ -245,9 +245,9 @@ def auto_img_params(num_rows, num_cols, num_slices, delta_pixel_image=1.0, image
     """
 
     imgparams = dict()
-    imgparams['N_x'] = num_rows
-    imgparams['N_y'] = num_cols
-    imgparams['N_z'] = num_slices
+    imgparams['N_x'] = num_image_rows
+    imgparams['N_y'] = num_image_cols
+    imgparams['N_z'] = num_image_slices
 
     imgparams['Delta_xy'] = delta_pixel_image
     imgparams['Delta_z'] = delta_pixel_image
@@ -271,12 +271,12 @@ def auto_img_params(num_rows, num_cols, num_slices, delta_pixel_image=1.0, image
     imgparams['N_y_roi'] = -1
     imgparams['N_z_roi'] = -1
 
-    return imgparams
+    return imageparams
 
 
 def compute_sino_params(dist_source_detector, magnification,
                         num_views, num_det_rows, num_det_channels,
-                        channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
+                        det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0,
                         delta_pixel_detector=1.0):
     """ Compute sinogram parameters specify coordinates and bounds relating to the sinogram
         For detailed specifications of sinoparams, see cone3D.interface_cy_c
@@ -289,8 +289,8 @@ def compute_sino_params(dist_source_detector, magnification,
         num_det_rows (int): Number of rows in sinogram data
         num_det_channels (int): Number of channels in sinogram data
 
-        channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
-        row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
+        det_channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
+        det_row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
         rotation_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space.
             This is normally set to zero.
         delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
@@ -313,8 +313,8 @@ def compute_sino_params(dist_source_detector, magnification,
     dist_dv_to_detector_corner_from_detector_center = - sinoparams['N_dv'] * sinoparams['Delta_dv'] / 2
     dist_dw_to_detector_corner_from_detector_center = - sinoparams['N_dw'] * sinoparams['Delta_dw'] / 2
 
-    dist_dv_to_detector_center_from_source_detector_line = - channel_offset
-    dist_dw_to_detector_center_from_source_detector_line = - row_offset
+    dist_dv_to_detector_center_from_source_detector_line = - det_channel_offset
+    dist_dw_to_detector_center_from_source_detector_line = - det_row_offset
 
     # corner of detector from source-detector-line
     sinoparams[
@@ -364,9 +364,9 @@ def extract_roi_from_ror(image, boundary_size):
 def recon(sino, angles, dist_source_detector, magnification,
           geometry='cone',
           weights=None, weight_type='unweighted', init_image=0.0, prox_image=None,
-          num_rows=None, num_cols=None, num_slices=None,  # TODO:  change to num_image_rows, etc here and below
+          num_image_rows=None, num_image_cols=None, num_image_slices=None,
           delta_pixel_detector=1.0, delta_pixel_image=None,
-          channel_offset=0.0, row_offset=0.0, rotation_offset=0.0, image_slice_offset=0.0,  # TODO:  change to det_channel_offset, det_row_offset here and below
+          det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0, image_slice_offset=0.0,
           sigma_y=None, snr_db=40.0, sigma_x=None, sigma_p=None, p=1.2, q=2.0, T=1.0, num_neighbors=6,
           sharpness=0.0, positivity=True, max_resolutions=None, stop_threshold=0.02, max_iterations=100,
           num_threads=None, NHICD=False, lib_path=__lib_path,
@@ -394,19 +394,19 @@ def recon(sino, angles, dist_source_detector, magnification,
         init_image (ndarray, optional): [Default=0.0] Initial value of reconstruction image, specified by either a scalar value or a 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols)
         prox_image (ndarray, optional): [Default=None] 3D proximal map input image. 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols)
         
-        num_rows (int, optional): [Default=None] Integer number of rows in reconstructed image.
+        num_image_rows (int, optional): [Default=None] Integer number of rows in reconstructed image.
             If None, automatically set by auto_image_size.
-        num_cols (int, optional): [Default=None] Integer number of columns in reconstructed image.
+        num_image_cols (int, optional): [Default=None] Integer number of columns in reconstructed image.
             If None, automatically set by auto_image_size.
-        num_slices (int, optional): [Default=None] Integer number of slices in reconstructed image.
+        num_image_slices (int, optional): [Default=None] Integer number of slices in reconstructed image.
             If None, automatically set by auto_image_size.
 
         delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
         delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
             If None, automatically set to delta_pixel_detector/magnification
         
-        channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
-        row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
+        det_channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
+        det_row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
         rotation_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space.
             This is normally set to zero.
         image_slice_offset (float, optional): [Default=0.0] Float that controls vertical offset of the center slice for the reconstruction in units of ALU
@@ -468,20 +468,20 @@ def recon(sino, angles, dist_source_detector, magnification,
 
     if delta_pixel_image is None:
         delta_pixel_image = delta_pixel_detector/magnification
-    if num_rows is None:
-        num_rows,_,_ = auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image, magnification)
-    if num_cols is None:
-        _,num_cols,_ = auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image, magnification)
-    if num_slices is None:
-        _,_,num_slices = auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image, magnification)
+    if num_image_rows is None:
+        num_image_rows,_,_ = auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image, magnification)
+    if num_image_cols is None:
+        _,num_image_cols,_ = auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image, magnification)
+    if num_image_slices is None:
+        _,_,num_image_slices = auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image, magnification)
     
     sinoparams = compute_sino_params(dist_source_detector, magnification,
                                      num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
-                                     channel_offset=channel_offset, row_offset=row_offset,
+                                     det_channel_offset=det_channel_offset, det_row_offset=det_row_offset,
                                      rotation_offset=rotation_offset,
                                      delta_pixel_detector=delta_pixel_detector)
     
-    imgparams = auto_img_params(num_rows, num_cols, num_slices, delta_pixel_image=delta_pixel_image, image_slice_offset=image_slice_offset)
+    imgparams = auto_img_params(num_image_rows, num_image_cols, num_image_slices, delta_pixel_image=delta_pixel_image, image_slice_offset=image_slice_offset)
     
     # make sure that weights do not contain negative entries
     # if weights is provided, and negative entry exists, then do not use the provided weights
@@ -582,7 +582,7 @@ def recon(sino, angles, dist_source_detector, magnification,
 def project(image, angles,
             num_det_rows, num_det_channels,
             dist_source_detector, magnification,
-            channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
+            det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0,
             delta_pixel_detector=1.0, delta_pixel_image=None,
             num_threads=None, verbose=1, lib_path=__lib_path):
     """Compute 3D cone beam forward-projection.
@@ -599,20 +599,14 @@ def project(image, angles,
         dist_source_detector (float): Distance between the X-ray source and the detector in units of ALU
         magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
         
-        channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
-        row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
+        det_channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
+        det_row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
         rotation_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space.
             This is normally set to zero.
         
         delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
         delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
             If None, automatically set to delta_pixel_detector/magnification
-        # TODO Remove this:
-        recon_shape (dict, optional): [Default=None] Shape of reconstruction region in:
-            num_recon_rows - integer that controls number of rows in the reconstruction
-            num_recon_cols - integer that controls number of columns in the reconstruction
-            num_recon_slices - integer that controls number of slices in the reconstruction
-            recon_slice_offset - float that controls vertical offset of the center slice for the reconstruction in units of ALU
         
         num_threads (int, optional): [Default=None] Number of compute threads requested when executed.
             If None, num_threads is set to the number of cores in the system
@@ -635,13 +629,13 @@ def project(image, angles,
 
     sinoparams = compute_sino_params(dist_source_detector, magnification,
                                      num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
-                                     channel_offset=channel_offset, row_offset=row_offset,
+                                     det_channel_offset=det_channel_offset, det_row_offset=det_row_offset,
                                      rotation_offset=rotation_offset,
                                      delta_pixel_detector=delta_pixel_detector)
      
-    (num_slices, num_rows, num_cols) = image.shape
+    (num_image_slices, num_image_rows, num_image_cols) = image.shape
     
-    imgparams = auto_img_params(num_rows, num_cols, num_slices, delta_pixel_image=delta_pixel_image)
+    imgparams = auto_img_params(num_image_rows, num_image_cols, num_image_slices, delta_pixel_image=delta_pixel_image)
 
     hash_val = _utils.hash_params(angles, sinoparams, imgparams)
     sysmatrix_fname = _utils._gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
