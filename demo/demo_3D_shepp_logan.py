@@ -58,7 +58,7 @@ print('Genrating 3D Shepp Logan phantom ...')
 # Generate a 3D shepp logan phantom
 ######################################################################################
 
-phantom = mbircone.phantom.gen_shepp_logan_3d(num_rows_phantom, num_cols_phantom, num_slices_phantom)
+phantom = mbircone.phantom.gen_shepp_logan_3d(num_rows_phantom, num_cols_phantom, num_slices_phantom, )
 # scale the phantom by a factor of 10.0 to make the projections physical realistic -log attenuation values
 phantom = phantom/10.0
 print('Phantom shape = ', np.shape(phantom))
@@ -67,21 +67,21 @@ print('Phantom shape = ', np.shape(phantom))
 # Generate synthetic sinogram
 ######################################################################################
 
-print('Generating synthetic sinogram ...')
-sino = mbircone.cone3D.project(phantom, angles, 
-                               num_det_rows, num_det_channels, 
-                               dist_source_detector, magnification, delta_pixel_image=delta_pixel_phantom)
-print('Synthetic sinogram shape: (num_views, num_det_rows, num_det_channels) = ', sino.shape)
+#print('Generating synthetic sinogram ...')
+#sino = mbircone.cone3D.project(phantom, angles,
+#                               num_det_rows, num_det_channels,
+#                               dist_source_detector, magnification, delta_pixel_image=delta_pixel_phantom)
+#print('Synthetic sinogram shape: (num_views, num_det_rows, num_det_channels) = ', sino.shape)
 
 ######################################################################################
 # Perform 3D qGGMRF reconstruction
 ######################################################################################
 
-print('Performing 3D qGGMRF reconstruction ...')
-
-recon = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification, delta_pixel_image=delta_pixel_recon, num_rows=num_rows_recon, num_cols=num_cols_recon, num_slices=num_slices_recon, sharpness=sharpness, T=T)
-
-print('recon shape = ', np.shape(recon))
+#print('Performing 3D qGGMRF reconstruction ...')
+#
+#recon = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification, delta_pixel_image=delta_pixel_recon, num_rows=num_rows_recon, num_cols=num_cols_recon, num_slices=num_slices_recon, sharpness=sharpness, T=T)
+#
+#print('recon shape = ', np.shape(recon))
 
 ######################################################################################
 # Generate phantom, synthetic sinogram, and reconstruction images
@@ -99,21 +99,14 @@ display_slice_recon = num_slices_recon // 2
 display_x_recon = num_rows_recon // 2
 display_y_recon = num_cols_recon // 2
 
-# phantom images
-plot_image(phantom[display_slice_phantom], title=f'phantom, axial slice {display_slice_phantom}',
-           filename=os.path.join(save_path, 'phantom_axial.png'), vmin=vmin, vmax=vmax)
-plot_image(phantom[:,display_x_phantom,:], title=f'phantom, coronal slice {display_x_phantom}',
-           filename=os.path.join(save_path, 'phantom_coronal.png'), vmin=vmin, vmax=vmax)
-plot_image(phantom[:,:,display_y_phantom], title=f'phantom, sagittal slice {display_y_phantom}',
-           filename=os.path.join(save_path, 'phantom_sagittal.png'), vmin=vmin, vmax=vmax)
-           
-# recon images
-plot_image(recon[display_slice_recon], title=f'qGGMRF recon, axial slice {display_slice_recon}',
-           filename=os.path.join(save_path, 'recon_axial.png'), vmin=vmin, vmax=vmax)
-plot_image(recon[:,display_x_recon,:], title=f'qGGMRF recon, coronal slice {display_x_recon}',
-           filename=os.path.join(save_path, 'recon_coronal.png'), vmin=vmin, vmax=vmax)
-plot_image(recon[:,:,display_y_recon], title=f'qGGMRF recon, sagittal slice {display_y_recon}',
-           filename=os.path.join(save_path, 'recon_sagittal.png'), vmin=vmin, vmax=vmax)
+x
+## recon images
+#plot_image(recon[display_slice_recon], title=f'qGGMRF recon, axial slice {display_slice_recon}',
+#           filename=os.path.join(save_path, 'recon_axial.png'), vmin=vmin, vmax=vmax)
+#plot_image(recon[:,display_x_recon,:], title=f'qGGMRF recon, coronal slice {display_x_recon}',
+#           filename=os.path.join(save_path, 'recon_coronal.png'), vmin=vmin, vmax=vmax)
+#plot_image(recon[:,:,display_y_recon], title=f'qGGMRF recon, sagittal slice {display_y_recon}',
+#           filename=os.path.join(save_path, 'recon_sagittal.png'), vmin=vmin, vmax=vmax)
            
 print(f"Images saved to {save_path}.") 
 input("Press Enter")
