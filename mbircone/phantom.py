@@ -90,9 +90,9 @@ def gen_shepp_logan_3d(num_rows, num_cols, num_slices, block_size=(2,2,2), scale
         block_size: (int, int, int): block averaging size. A larger block_size will generate a smoother Shepp Logan phantom.
         
         scale: (scalar, optional), scaling factor of phantom within the image. from 0 to 1
-        offset_x: scalar, added to x-coordinate of phantom within image
-        offset_y: scalar, added to y-coordinate of phantom within image
-        offset_z: scalar, added to z-coordinate of phantom within image
+        offset_x: scalar, proportion of x-axis that is added to x-coordinate of phantom within image
+        offset_y: scalar, proportion of y-axis that is added to y-coordinate of phantom within image
+        offset_z: scalar, proportion of z-axis that is added to z-coordinate of phantom within image
 
     Return:
         out_image: 3D array, num_slices*num_rows*num_cols
