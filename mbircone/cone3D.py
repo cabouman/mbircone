@@ -271,7 +271,7 @@ def auto_img_params(num_image_rows, num_image_cols, num_image_slices, delta_pixe
     imgparams['N_y_roi'] = -1
     imgparams['N_z_roi'] = -1
 
-    return imageparams
+    return imgparams
 
 
 def compute_sino_params(dist_source_detector, magnification,

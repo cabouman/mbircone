@@ -146,13 +146,13 @@ def gen_shepp_logan_3d_raw(num_rows, num_cols, num_slices, scale=1.0, offset_x=0
     x_grid, y_grid, z_grid = np.meshgrid(axis_x, axis_y, axis_z)
     image = x_grid * 0.0
 
-    shift_x = offset_x
-    shift_y = offset_y
-    shift_z = offset_z
+    shift_x = offset_x * 2.0
+    shift_y = offset_y * 2.0
+    shift_z = offset_z * 2.0
 
     for el_paras in sl3d_paras:
-        image += _gen_ellipsoid(x_grid=x_grid, y_grid=y_grid, z_grid=z_grid, x0=el_paras['x0']*scale + shift_x, y0=el_paras['y0']*scale + shift_y,
-                               z0=el_paras['z0']*scale + shift_z,
+        image += _gen_ellipsoid(x_grid=x_grid, y_grid=y_grid, z_grid=z_grid, x0=el_paras['x0']*scale - shift_x, y0=el_paras['y0']*scale - shift_y,
+                               z0=el_paras['z0']*scale - shift_z,
                                a=el_paras['a']*scale, b=el_paras['b']*scale, c=el_paras['c']*scale,
                                gamma=el_paras['gamma'] / 180.0 * np.pi,
                                gray_level=el_paras['gray_level'])
