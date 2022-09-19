@@ -228,7 +228,7 @@ def auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_
     
     return (num_image_rows, num_image_cols, num_image_slices)
 
-def auto_img_params(num_image_rows, num_image_cols, num_image_slices, delta_pixel_image=1.0, image_slice_offset=0.0):
+def auto_image_params(num_image_rows, num_image_cols, num_image_slices, delta_pixel_image=1.0, image_slice_offset=0.0):
     """ Allocate imageparam parameters as required by certain C methods.
         Can be used to describe a region of projection (i.e., when an image is available in ``project'' method), or to specify a region of reconstruction.
         For detailed specifications of sinoparams, see cone3D.interface_cy_c
@@ -481,7 +481,7 @@ def recon(sino, angles, dist_source_detector, magnification,
                                      rotation_offset=rotation_offset,
                                      delta_pixel_detector=delta_pixel_detector)
     
-    imgparams = auto_img_params(num_image_rows, num_image_cols, num_image_slices, delta_pixel_image=delta_pixel_image, image_slice_offset=image_slice_offset)
+    imgparams = auto_image_params(num_image_rows, num_image_cols, num_image_slices, delta_pixel_image=delta_pixel_image, image_slice_offset=image_slice_offset)
     
     # make sure that weights do not contain negative entries
     # if weights is provided, and negative entry exists, then do not use the provided weights
@@ -635,7 +635,7 @@ def project(image, angles,
      
     (num_image_slices, num_image_rows, num_image_cols) = image.shape
     
-    imgparams = auto_img_params(num_image_rows, num_image_cols, num_image_slices, delta_pixel_image=delta_pixel_image)
+    imgparams = auto_image_params(num_image_rows, num_image_cols, num_image_slices, delta_pixel_image=delta_pixel_image)
 
     hash_val = _utils.hash_params(angles, sinoparams, imgparams)
     sysmatrix_fname = _utils._gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
