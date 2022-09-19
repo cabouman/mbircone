@@ -10,7 +10,7 @@ __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
 def compute_inv_permute_vector(permute_vector):
     """ Given a permutation vector, compute its inverse permutation vector s.t. an array will have the same shape after permutation and inverse permutation. 
     """
-     
+    
     inv_permute_vector = []
     for i in range(len(permute_vector)):
         # print('i = {}'.format(i))
@@ -56,7 +56,7 @@ def mace3D(sino, angles, dist_source_detector, magnification,
            denoiser, denoiser_args=(),
            max_admm_itr=10, rho=0.5, prior_weight=0.5,
            init_image=None,
-           channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
+           det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0,
            delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
            sigma_y=None, snr_db=30.0, weights=None, weight_type='unweighted',
            positivity=True, p=1.2, q=2.0, T=1.0, num_neighbors=6,
@@ -80,10 +80,10 @@ def mace3D(sino, angles, dist_source_detector, magnification,
         - **max_admm_itr** (*int*): [Default=10] Maximum number of MACE ADMM iterations.
         - **rho** (*float*): [Default=0.5] step size of ADMM update in MACE, range (0,1). The value of ``rho`` mainly controls the convergence speed of MACE algorithm.
         - **prior_weight** (*ndarray*): [Default=0.5] weights for prior agents, specified by either a scalar value or a 1D array. If a scalar is specified, then all three prior agents use the same weight of (prior_weight/3). If an array is provided, then the array should have three elements corresponding to the weight of denoisers in XY, YZ, and XZ planes respectively. The weight for forward model proximal map agent will be calculated as 1-sum(prior_weight) so that the sum of all agent weights are equal to 1. Each entry of prior_weight should have value between 0 and 1. sum(prior_weight) needs to be no greater than 1.
-        - **init_image** (*ndarray, optional*): [Default=None] Initial value of MACE reconstruction image, specified by either a scalar value or a 3-D numpy array with shape (num_img_slices,num_img_rows,num_img_cols). If None, the inital value of MACE will be automatically determined by a qGGMRF reconstruction.
+        - **init_image** (*ndarray, optional*): [Default=None] Initial value of MACE reconstruction image, specified by a 3-D numpy array with shape (num_img_slices,num_img_rows,num_img_cols). If None, the inital value of MACE will be automatically determined by a qGGMRF reconstruction.
     Optional arguments inherited from ``cone3D.recon`` (with changing default value of ``max_iterations``): 
-        - **channel_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
-        - **row_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
+        - **det_channel_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
+        - **det_row_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
         - **rotation_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space. This is normally set to zero.
         - **delta_pixel_detector** (*float, optional*): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
         - **delta_pixel_image** (*float, optional*): [Default=None] Scalar value of image pixel spacing in :math:`ALU`. If None, automatically set to delta_pixel_detector/magnification
@@ -141,8 +141,8 @@ def mace3D(sino, angles, dist_source_detector, magnification,
             sigma_x = cone3D.auto_sigma_x(sino, magnification, delta_pixel_detector=delta_pixel_detector, sharpness=sharpness)
         # qGGMRF recon
         init_image = cone3D.recon(sino, angles, dist_source_detector, magnification,
-                                  channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
-                                  delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius,
+                                  det_channel_offset=det_channel_offset, det_row_offset=det_row_offset, rotation_offset=rotation_offset,
+                                  delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image,
                                   weights=weights, sigma_y=sigma_y, sigma_x=sigma_x,
                                   positivity=positivity, p=p, q=q, T=T, num_neighbors=num_neighbors,
                                   stop_threshold=stop_threshold,
@@ -152,15 +152,7 @@ def mace3D(sino, angles, dist_source_detector, magnification,
             elapsed_t = end-start
             print(f"Done computing qGGMRF reconstruction. Elapsed time: {elapsed_t:.2f} sec.")
        
-    if np.isscalar(init_image):
-        (num_views, num_det_rows, num_det_channels) = np.shape(sino)
-        [Nz,Nx,Ny], _ = cone3D.compute_img_size(num_views, num_det_rows, num_det_channels, 
-                                                    dist_source_detector, magnification, 
-                                                    channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset, 
-                                                    delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
-        init_image = np.zeros((Nz, Nx, Ny)) + init_image 
-    else:
-        [Nz,Nx,Ny] = np.shape(init_image)
+    [Nz,Nx,Ny] = np.shape(init_image)
     
     image_dim = np.ndim(init_image)
     # number of agents = image dimensionality + 1.
@@ -190,8 +182,8 @@ def mace3D(sino, angles, dist_source_detector, magnification,
             itr_start = time.time()
         # forward model prox map agent
         X[0] = cone3D.recon(sino, angles, dist_source_detector, magnification,
-                            channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
-                            delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius,
+                            det_channel_offset=det_channel_offset, det_row_offset=det_row_offset, rotation_offset=rotation_offset,
+                            delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image,
                             init_image=X[0], prox_image=W[0],
                             sigma_y=sigma_y, weights=weights,
                             positivity=positivity,
@@ -229,7 +221,7 @@ def mace4D(sino, angles, dist_source_detector, magnification,
            max_admm_itr=10, rho=0.5, prior_weight=0.5,
            init_image=None, 
            cluster_ticket=None,
-           channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
+           det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0,
            delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
            sigma_y=None, snr_db=30.0, weights=None, weight_type='unweighted',
            positivity=True, p=1.2, q=2.0, T=1.0, num_neighbors=6,
@@ -260,12 +252,12 @@ def mace4D(sino, angles, dist_source_detector, magnification,
         - **max_admm_itr** (*int*): [Default=10] Maximum number of MACE ADMM iterations.
         - **rho** (*float*): [Default=0.5] step size of ADMM update in MACE, range (0,1). The value of ``rho`` mainly controls the convergence speed of MACE algorithm.
         - **prior_weight** (*ndarray*): [Default=0.5] weights for prior agents, specified by either a scalar value or a 1D array. If a scalar is specified, then all three prior agents use the same weight of (prior_weight/3). If an array is provided, then the array should have three elements corresponding to the weight of denoisers in XY-t, YZ-t, and XZ-t hyperplanes respectively. The weight for forward model proximal map agent will be calculated as 1-sum(prior_weight) so that the sum of all agent weights are equal to 1. Each entry of prior_weight should have value between 0 and 1. sum(prior_weight) needs to be no greater than 1.
-        - **init_image** (*ndarray, optional*): [Default=None] Initial value of MACE reconstruction image, specified by either a scalar value, a 3-D numpy array with shape (num_img_slices,num_img_rows,num_img_cols), or a 4-D numpy array with shape (num_time_points, num_img_slices,num_img_rows,num_img_cols). If None, the inital value of MACE will be automatically determined by a stack of 3-D qGGMRF reconstructions at different time points.
+        - **init_image** (*ndarray, optional*): [Default=None] Initial value of MACE reconstruction image, specified by either a 3-D numpy array with shape (num_img_slices,num_img_rows,num_img_cols), or a 4-D numpy array with shape (num_time_points, num_img_slices,num_img_rows,num_img_cols). If None, the inital value of MACE will be automatically determined by a stack of 3-D qGGMRF reconstructions at different time points.
     Arguments specific to multi-node computation:
         - **cluster_ticket** (*Object*): [Default=None] A ticket used to access a specific cluster, that can be obtained from ``multinode.get_cluster_ticket``. If cluster_ticket is None, the process will run in serial. See `dask_jobqueue <https://jobqueue.dask.org/en/latest/api.html>`_ for more information.
     Optional arguments inherited from ``cone3D.recon`` (with changing default value of ``max_iterations``):
-        - **channel_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
-        - **row_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
+        - **det_channel_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
+        - **det_row_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
         - **rotation_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space. This is normally set to zero.
         - **delta_pixel_detector** (*float, optional*): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
         - **delta_pixel_image** (*float, optional*): [Default=None] Scalar value of image pixel spacing in :math:`ALU`. If None, automatically set to delta_pixel_detector/magnification
@@ -337,7 +329,7 @@ def mace4D(sino, angles, dist_source_detector, magnification,
     if cluster_ticket is not None:
         # Fixed args dictionary used for multi-node parallelization
         constant_args = {'dist_source_detector':dist_source_detector, 'magnification':magnification,
-                         'channel_offset':channel_offset, 'row_offset':row_offset, 'rotation_offset':rotation_offset,
+                         'det_channel_offset':det_channel_offset, 'det_row_offset':det_row_offset, 'rotation_offset':rotation_offset,
                          'delta_pixel_detector':delta_pixel_detector, 'delta_pixel_image':delta_pixel_image, 'ror_radius':ror_radius,
                          'sigma_y':sigma_y, 'sigma_p':sigma_p,
                          'positivity':positivity, 'p':p, 'q':q, 'T':T, 'num_neighbors':num_neighbors,
@@ -363,8 +355,8 @@ def mace4D(sino, angles, dist_source_detector, magnification,
                                                            verbose=qGGMRF_verbose))
         else:
             init_image = np.array([cone3D.recon(sino[t], angles[t], dist_source_detector, magnification,
-                                                channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
-                                                delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius,
+                                                det_channel_offset=det_channel_offset, det_row_offset=det_row_offset, rotation_offset=rotation_offset,
+                                                delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image,
                                                 weights=weights[t], sigma_y=sigma_y, sigma_x=sigma_x,
                                                 positivity=positivity, p=p, q=q, T=T, num_neighbors=num_neighbors,
                                                 max_iterations=20, stop_threshold=stop_threshold,
@@ -374,13 +366,7 @@ def mace4D(sino, angles, dist_source_detector, magnification,
             elapsed_t = end-start
             print(f"Done computing qGGMRF reconstruction. Elapsed time: {elapsed_t:.2f} sec.")
     
-    if np.isscalar(init_image):
-        [Nz,Nx,Ny], _ = cone3D.compute_img_size(num_views, num_det_rows, num_det_channels, 
-                                                    dist_source_detector, magnification, 
-                                                    channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset, 
-                                                    delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
-        init_image = np.zeros((Nt, Nz, Nx, Ny)) + init_image 
-    elif np.ndim(init_image) == 3:
+    if np.ndim(init_image) == 3:
         init_image = np.array([init_image for _ in range(Nt)])
     else:
         [_,Nz,Nx,Ny] = np.shape(init_image)
@@ -409,8 +395,8 @@ def mace4D(sino, angles, dist_source_detector, magnification,
                                                       verbose=qGGMRF_verbose))
         else:
             X[0] = np.array([cone3D.recon(sino[t], angles[t], dist_source_detector, magnification,
-                                          channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
-                                          delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius,
+                                          det_channel_offset=det_channel_offset, det_row_offset=det_row_offset, rotation_offset=rotation_offset,
+                                          delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image,
                                           init_image=X[0][t], prox_image=W[0][t],
                                           weights=weights, sigma_y=sigma_y, sigma_p=sigma_p,
                                           positivity=positivity,
