@@ -273,9 +273,6 @@ def recon_cy(sino, angles, wght, x_init, proxmap_input,
     # sino, wght shape : views x slices x channels
     # recon shape: N_x N_y N_z (source-detector-line, channels, slices)
 
-    # Declare cython image array here so we can initialize in recursion block
-    cdef cnp.ndarray[float, ndim=3, mode="c"] py_image
-
     # Determine if it the algorithm should reduce resolution further
     go_to_lower_resolution = (max_resolutions > 0) and (min(imgparams['N_x'], imgparams['N_y'], imgparams['N_z']) > 16)
     
