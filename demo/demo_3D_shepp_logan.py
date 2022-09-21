@@ -24,7 +24,7 @@ print('This script is a demonstration of the 3D qGGMRF reconstruction algorithm.
 num_det_rows = 128
 num_det_channels = 128
 # Geometry parameters
-magnification = 1.0                         # Ratio of (source to detector)/(source to center of rotation)
+magnification = 2.0                        # Ratio of (source to detector)/(source to center of rotation)
 dist_source_detector = 10*num_det_channels  # distance from source to detector in ALU
 # number of projection views
 num_views = 64
@@ -41,7 +41,7 @@ vmax = 0.12
 num_slices_phantom = 128
 num_rows_phantom = 128
 num_cols_phantom = 128
-delta_pixel_phantom = 1.0
+delta_pixel_phantom = 0.5
 
 # Size and proportion of phantom within image
 scale=1.0
@@ -53,7 +53,7 @@ offset_z=0.0
 num_slices_recon = 128
 num_rows_recon = 128
 num_cols_recon = 128
-delta_pixel_recon = 1.0
+delta_pixel_recon = delta_pixel_phantom
 
 # local path to save phantom, sinogram, and reconstruction images
 save_path = f'output/3D_shepp_logan/'
