@@ -231,7 +231,7 @@ def auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_
 def create_image_params_dict(num_image_rows, num_image_cols, num_image_slices, delta_pixel_image=1.0, image_slice_offset=0.0):
     """ Allocate imageparam parameters as required by certain C methods.
         Can be used to describe a region of projection (i.e., when an image is available in ``project`` method), or to specify a region of reconstruction.
-        For detailed specifications of sinoparams, see cone3D.interface_cy_c
+        For detailed specifications of imageparams, see cone3D.interface_cy_c
     
     Args:
         num_image_rows (int): Integer number of rows in image region.
