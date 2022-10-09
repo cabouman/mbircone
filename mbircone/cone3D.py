@@ -228,10 +228,10 @@ def auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_
     
     return (num_image_rows, num_image_cols, num_image_slices)
 
-def auto_image_params(num_image_rows, num_image_cols, num_image_slices, delta_pixel_image=1.0, image_slice_offset=0.0):
+def create_image_params_dict(num_image_rows, num_image_cols, num_image_slices, delta_pixel_image=1.0, image_slice_offset=0.0):
     """ Allocate imageparam parameters as required by certain C methods.
-        Can be used to describe a region of projection (i.e., when an image is available in ``project'' method), or to specify a region of reconstruction.
-        For detailed specifications of sinoparams, see cone3D.interface_cy_c
+        Can be used to describe a region of projection (i.e., when an image is available in ``project`` method), or to specify a region of reconstruction.
+        For detailed specifications of imageparams, see cone3D.interface_cy_c
     
     Args:
         num_image_rows (int): Integer number of rows in image region.
@@ -274,11 +274,11 @@ def auto_image_params(num_image_rows, num_image_cols, num_image_slices, delta_pi
     return imgparams
 
 
-def compute_sino_params(dist_source_detector, magnification,
+def create_sino_params_dict(dist_source_detector, magnification,
                         num_views, num_det_rows, num_det_channels,
                         det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0,
                         delta_pixel_detector=1.0):
-    """ Compute sinogram parameters specify coordinates and bounds relating to the sinogram
+    """ Compute sinogram parameters specify coordinates and bounds relating to the sinogram.
         For detailed specifications of sinoparams, see cone3D.interface_cy_c
     
     Args:
@@ -325,41 +325,6 @@ def compute_sino_params(dist_source_detector, magnification,
     sinoparams['weightScaler_value'] = -1
 
     return sinoparams
-
-
-def pad_roi2ror(image, boundary_size):
-    """Given a 3D ROI and the boundary size, pad the ROI with 0s to form an ROR.
-
-    Args:
-        image (ndarray): 3D numpy array with a shape of (num_img_slices, num_img_rows, num_img_cols)
-        boundary_size (list): Number of invalid pixels on each side of a 3D image. A list of 3 integer, [img_slices_boundary_size, img_rows_boundary_size, img_cols_boundary_size].
-
-    Returns:
-        padded_image: 3D padded image with shape (num_img_slices+2*boundary_size[0], num_img_rows+2*boundary_size[1], num_img_cols+2*boundary_size[2]).
-    """
-    img_slices_boundary_size, img_rows_boundary_size, img_cols_boundary_size = boundary_size
-    return np.pad(image, ((img_slices_boundary_size, img_slices_boundary_size),
-                          (img_rows_boundary_size, img_rows_boundary_size),
-                          (img_cols_boundary_size, img_cols_boundary_size)), mode='constant', constant_values=0)
-
-
-def extract_roi_from_ror(image, boundary_size):
-    """Given a 3D ROR and the boundary size, extract the ROI by removing the boundary.
-
-    Args:
-        image (ndarray): 3D numpy array with a shape of (num_img_slices, num_img_rows, num_img_cols)
-        boundary_size (list): Number of invalid pixels on each side of a 3D image. A list of 3 integer, [img_slices_boundary_size, img_rows_boundary_size, img_cols_boundary_size].
-
-    Returns:
-        roi_image: 3D padded image with shape (num_img_slices-2*boundary_size[0], num_img_rows-2*boundary_size[1], num_img_cols-2*boundary_size[2]).
-    """
-    num_img_slices, num_img_rows, num_img_cols = image.shape
-    img_slices_boundary_size, img_rows_boundary_size, img_cols_boundary_size = boundary_size
-    assert num_img_slices > 2 * img_slices_boundary_size and num_img_slices > 2 * img_slices_boundary_size and num_img_slices > 2 * img_slices_boundary_size, 'The shape of the roi image should be positive.'
-    return image[img_slices_boundary_size:-img_slices_boundary_size,
-                 img_rows_boundary_size:-img_rows_boundary_size,
-                 img_cols_boundary_size:-img_cols_boundary_size]
-
 
 def recon(sino, angles, dist_source_detector, magnification,
           geometry='cone',
@@ -475,13 +440,13 @@ def recon(sino, angles, dist_source_detector, magnification,
     if num_image_slices is None:
         _,_,num_image_slices = auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image, magnification)
     
-    sinoparams = compute_sino_params(dist_source_detector, magnification,
+    sinoparams = create_sino_params_dict(dist_source_detector, magnification,
                                      num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
                                      det_channel_offset=det_channel_offset, det_row_offset=det_row_offset,
                                      rotation_offset=rotation_offset,
                                      delta_pixel_detector=delta_pixel_detector)
     
-    imgparams = auto_image_params(num_image_rows, num_image_cols, num_image_slices, delta_pixel_image=delta_pixel_image, image_slice_offset=image_slice_offset)
+    imgparams = create_image_params_dict(num_image_rows, num_image_cols, num_image_slices, delta_pixel_image=delta_pixel_image, image_slice_offset=image_slice_offset)
     
     # make sure that weights do not contain negative entries
     # if weights is provided, and negative entry exists, then do not use the provided weights
@@ -627,7 +592,7 @@ def project(image, angles,
 
     num_views = len(angles)
 
-    sinoparams = compute_sino_params(dist_source_detector, magnification,
+    sinoparams = create_sino_params_dict(dist_source_detector, magnification,
                                      num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
                                      det_channel_offset=det_channel_offset, det_row_offset=det_row_offset,
                                      rotation_offset=rotation_offset,
@@ -635,7 +600,7 @@ def project(image, angles,
      
     (num_image_slices, num_image_rows, num_image_cols) = image.shape
     
-    imgparams = auto_image_params(num_image_rows, num_image_cols, num_image_slices, delta_pixel_image=delta_pixel_image)
+    imgparams = create_image_params_dict(num_image_rows, num_image_cols, num_image_slices, delta_pixel_image=delta_pixel_image)
 
     hash_val = _utils.hash_params(angles, sinoparams, imgparams)
     sysmatrix_fname = _utils._gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
