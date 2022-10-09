@@ -4,15 +4,20 @@ import mbircone
 from demo_utils import plot_image, plot_gif
 
 """
-This script is a demonstration of the 3D qGGMRF reconstruction algorithm. Demo functionality includes
- * generating a 3D Shepp Logan phantom, generating synthetic sinogram data by
- * forward projecting the phantom, performing a 3D qGGMRF reconstruction,
- * and displaying the results.
+This script is a demonstration of the 3D conebeam reconstruction algorithm with a qGGMRF prior. 
+Demo functionality includes:
+ * Generating a 3D Shepp Logan phantom;
+ * Forward projecting the Shepp Logan phantom to form a synthetic sinogram;
+ * Computing a 3D reconstruction from the sinogram using a qGGMRF prior model;
+ * Displaying the results.
 """
-print('This script is a demonstration of the 3D qGGMRF reconstruction algorithm. Demo functionality includes \
-\n\t * generating a 3D Shepp Logan phantom, generating synthetic sinogram data by \
-\n\t * forward projecting the phantom, performing a 3D qGGMRF reconstruction, \
-\n\t * and displaying the results.')
+print('This script is a demonstration of the 3D conebeam reconstruction algorithm with a qGGMRF prior.\
+Demo functionality includes:\
+\n\t * Generating a 3D Shepp Logan phantom; \
+\n\t * Forward projecting the Shepp Logan phantom to form a synthetic sinogram;\
+\n\t * Computing a 3D reconstruction from the sinogram using a qGGMRF prior model;\
+\n\t * Displaying the results.\n')
+
 
 # ###########################################################################
 # Set the parameters to generate the phantom, synthetic sinogram, and do the recon
@@ -20,92 +25,90 @@ print('This script is a demonstration of the 3D qGGMRF reconstruction algorithm.
 
 # Change the parameters below for your own use case.
 
-# Detector size
-num_det_rows = 128
-num_det_channels = 128
-# Geometry parameters
-magnification = 2.0                        # Ratio of (source to detector)/(source to center of rotation)
-dist_source_detector = 10*num_det_channels  # distance from source to detector in ALU
-# number of projection views
-num_views = 64
-# projection angles will be uniformly spaced within the range [0, 2*pi).
+# Detector and geometry parameters
+num_det_rows = 128                           # Number of detector rows
+num_det_channels = 128                       # Number of detector channels
+magnification = 2.0                          # Ratio of (source to detector)/(source to center of rotation)
+dist_source_detector = 3.0*num_det_channels  # Distance from source to detector in ALU
+num_views = 64                               # Number of projection views
+
+# Generate uniformly spaced view angles in the range [0, 2*pi).
 angles = np.linspace(0, 2 * np.pi, num_views, endpoint=False)
-# qGGMRF recon parameters
+
+# Set reconstruction parameters
 sharpness = 0.0                             # Controls regularization: larger => sharper; smaller => smoother
 T = 0.1                                     # Controls edginess of reconstruction
-# display parameters
-vmin = 0.10
-vmax = 0.12
+delta_pixel = 1.0/magnification             # Pixel pitch for default reconstruction resolution
 
-# Size of phantom
-num_slices_phantom = 128
-num_rows_phantom = 128
-num_cols_phantom = 128
-delta_pixel_phantom = 0.5
+# Set phantom generation parameters
+num_phantom_slices = num_det_rows           # Set number of slides = to the number of detector rows
+num_phantom_rows = num_det_channels         # Make number of rows and columns = to number of detector columns
+num_phantom_cols = num_det_channels
+scale=1.0                                   # Determines the size of the phantom within the volume
 
-# Size and proportion of phantom within image
-scale=1.0
-offset_x=0.0
-offset_y=0.0
-offset_z=0.0
+# Calculate scaling factor for Shepp Logan phantom so that projections are physically realistic -log attenuation values
+SL_phantom_density_scale = 4.0*magnification/(scale*num_phantom_rows)
 
-# Size of recon
-num_slices_recon = 128
-num_rows_recon = 128
-num_cols_recon = 128
-delta_pixel_recon = delta_pixel_phantom
+# Set reconstruction ROI to be only the region containing the phantom
+num_image_slices = int(scale*num_phantom_slices)
+num_image_rows = int(scale*num_phantom_rows)
+num_image_cols = int(scale*num_phantom_cols)
+
+# Set display parameters for Shepp Logan phantom
+vmin = SL_phantom_density_scale*1.0
+vmax = SL_phantom_density_scale*1.2
 
 # local path to save phantom, sinogram, and reconstruction images
 save_path = f'output/3D_shepp_logan/'
 os.makedirs(save_path, exist_ok=True)
 
-print('Genrating 3D Shepp Logan phantom ...')
+print('Genrating 3D Shepp Logan phantom ...\n')
 ######################################################################################
 # Generate a 3D shepp logan phantom
 ######################################################################################
-
-phantom = mbircone.phantom.gen_shepp_logan_3d(num_rows_phantom, num_cols_phantom, num_slices_phantom, scale=scale, offset_x=offset_x, offset_y=offset_y, offset_z=offset_z)
-# scale the phantom by a factor of 10.0 to make the projections physical realistic -log attenuation values
-phantom = phantom/10.0
+phantom = mbircone.phantom.gen_shepp_logan_3d(num_phantom_rows, num_phantom_cols, num_phantom_slices, scale=scale)
+phantom = SL_phantom_density_scale*phantom
 print('Phantom shape = ', np.shape(phantom))
 
 ######################################################################################
 # Generate synthetic sinogram
 ######################################################################################
-
-print('Generating synthetic sinogram ...')
+print('Generating synthetic sinogram ...\n')
 sino = mbircone.cone3D.project(phantom, angles,
                                num_det_rows, num_det_channels,
-                               dist_source_detector, magnification, delta_pixel_image=delta_pixel_phantom)
+                               dist_source_detector, magnification, delta_pixel_image=delta_pixel)
 print('Synthetic sinogram shape: (num_views, num_det_rows, num_det_channels) = ', sino.shape)
 
 ######################################################################################
-# Perform 3D qGGMRF reconstruction
+# Perform 3D MBIR reconstruction using qGGMRF prior
 ######################################################################################
-
-print('Performing 3D qGGMRF reconstruction ...')
-
-recon = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification, delta_pixel_image=delta_pixel_recon, num_image_rows=num_rows_recon, num_image_cols=num_cols_recon, num_image_slices=num_slices_recon, sharpness=sharpness, T=T)
+print('Performing 3D qGGMRF reconstruction ...\n')
+recon = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification,
+                              delta_pixel_image=delta_pixel,
+                              num_image_rows=num_image_rows, num_image_cols=num_image_cols,
+                              num_image_slices=num_image_slices,
+                              sharpness=sharpness, T=T)
 
 print('recon shape = ', np.shape(recon))
 
 ######################################################################################
-# Generate phantom, synthetic sinogram, and reconstruction images
+# Display phantom, synthetic sinogram, and reconstruction images
 ######################################################################################
+# Set display indexes for phantom and recon images
+display_slice_phantom = num_phantom_slices // 2
+display_x_phantom = num_phantom_rows // 2
+display_y_phantom = num_phantom_cols // 2
+display_slice_recon = num_image_slices // 2
+display_x_recon = num_image_rows // 2
+display_y_recon = num_image_cols // 2
+
 # sinogram images
 for view_idx in [0, num_views//4, num_views//2]:
     view_angle = int(angles[view_idx]*180/np.pi)
     plot_image(sino[view_idx, :, :], title=f'sinogram view angle {view_angle} ',
                filename=os.path.join(save_path, f'sino-shepp-logan-3D-view_angle{view_angle}.png'))
-# Set display indexes for phantom and recon images
-display_slice_phantom = num_slices_phantom // 2
-display_x_phantom = num_rows_phantom // 2
-display_y_phantom = num_cols_phantom // 2
-display_slice_recon = num_slices_recon // 2
-display_x_recon = num_rows_recon // 2
-display_y_recon = num_cols_recon // 2
 
-# phantom images
+# display phantom images
 plot_image(phantom[display_slice_phantom], title=f'phantom, axial slice {display_slice_phantom}',
            filename=os.path.join(save_path, 'phantom_axial.png'), vmin=vmin, vmax=vmax)
 plot_image(phantom[:,display_x_phantom,:], title=f'phantom, coronal slice {display_x_phantom}',
@@ -113,7 +116,7 @@ plot_image(phantom[:,display_x_phantom,:], title=f'phantom, coronal slice {displ
 plot_image(phantom[:,:,display_y_phantom], title=f'phantom, sagittal slice {display_y_phantom}',
            filename=os.path.join(save_path, 'phantom_sagittal.png'), vmin=vmin, vmax=vmax)
            
-# recon images
+# display recon images
 plot_image(recon[display_slice_recon], title=f'qGGMRF recon, axial slice {display_slice_recon}',
            filename=os.path.join(save_path, 'recon_axial.png'), vmin=vmin, vmax=vmax)
 plot_image(recon[:,display_x_recon,:], title=f'qGGMRF recon, coronal slice {display_x_recon}',
