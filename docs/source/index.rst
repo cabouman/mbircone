@@ -15,6 +15,14 @@ Indices and tables
 * :ref:`search`
 
 
+.. toctree::
+   :hidden:
+   :maxdepth: 4
+   :caption: Background
+
+   overview
+   theory
+   credits
 
 .. toctree::
    :hidden:
@@ -23,10 +31,15 @@ Indices and tables
 
    install
    api
+   examples
 
 .. toctree::
    :hidden:
    :maxdepth: 4
    :caption: Developer Guide
 
+   clean_install
+   pytest
+   release
+   pypi
    docs
