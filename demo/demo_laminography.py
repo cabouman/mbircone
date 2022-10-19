@@ -44,37 +44,34 @@ phantom = mbircone.phantom.gen_lamino_sample_3d(num_rows_phantom, num_cols_phant
 phantom = phantom/10.0
 
 # Compute ROR and ROI sizes
-(num_slices_ROR, num_rows_ROR, num_cols_ROR), boundary_size = mbircone.cone3D.compute_img_size(num_views, num_det_rows, num_det_channels, None, 1, geometry='lamino', theta=theta)
+#(num_slices_ROR, num_rows_ROR, num_cols_ROR), boundary_size = mbircone.cone3D.compute_img_size(num_views, num_det_rows, num_det_channels, None, 1, geometry='lamino', theta=theta)
 
 #num_slices_ROI = num_slices_ROR - 2 * boundary_size[0]
 #num_rows_ROI = num_rows_ROR - 2 * boundary_size[1]
 #num_cols_ROI = num_cols_ROR - 2 * boundary_size[2]
 
-print('ROR shape is:', num_slices_ROR, num_rows_ROR, num_cols_ROR)
+#print('ROR shape is:', num_slices_ROR, num_rows_ROR, num_cols_ROR)
 #print('ROI shape is:', num_slices_ROI, num_rows_ROI, num_cols_ROI)
-print('phantom shape is:', num_slices_phantom, num_rows_phantom, num_cols_phantom)
+print('Phantom shape is:', num_slices_phantom, num_rows_phantom, num_cols_phantom)
 
-#max_phantom_size =
-#if num_slices_phantom > num_slices_ROI or num_rows_phantom > num_rows_ROI or num_cols_phantom > num_cols_ROI:
-#    print('Warning, phantom size is too big for ROI shape.')
 
 # Pad phantom to ROR size:
-pad_slices = num_slices_ROR - num_slices_phantom
-pad_slices_L = pad_slices // 2
-pad_slices_R = pad_slices - pad_slices_L
+#pad_slices = num_slices_ROR - num_slices_phantom
+#pad_slices_L = pad_slices // 2
+#pad_slices_R = pad_slices - pad_slices_L
+#
+#pad_rows = num_rows_ROR - num_rows_phantom
+#pad_rows_L = pad_rows // 2
+#pad_rows_R = pad_rows - pad_rows_L
+#
+#pad_cols = num_cols_ROR - num_cols_phantom
+#pad_cols_L = pad_cols // 2
+#pad_cols_R = pad_cols - pad_cols_L
+#
+#phantom = np.pad(phantom, [(0,0),(pad_rows_L,pad_rows_R),(pad_cols_L,pad_cols_R)], mode='edge')
+#phantom = np.pad(phantom, [(pad_slices_L,pad_slices_R), (0,0), (0,0)], mode='constant', constant_values=0.0)
 
-pad_rows = num_rows_ROR - num_rows_phantom
-pad_rows_L = pad_rows // 2
-pad_rows_R = pad_rows - pad_rows_L
-
-pad_cols = num_cols_ROR - num_cols_phantom
-pad_cols_L = pad_cols // 2
-pad_cols_R = pad_cols - pad_cols_L
-
-phantom = np.pad(phantom, [(0,0),(pad_rows_L,pad_rows_R),(pad_cols_L,pad_cols_R)], mode='edge')
-phantom = np.pad(phantom, [(pad_slices_L,pad_slices_R), (0,0), (0,0)], mode='constant', constant_values=0.0)
-
-print('Padded ROR phantom shape = ', np.shape(phantom))
+#print('Padded ROR phantom shape = ', np.shape(phantom))
 
 #display_slice = phantom.shape[0] // 2
 #display_x = phantom.shape[1] // 2
@@ -117,45 +114,44 @@ for view_idx in [0, num_views//4, num_views//2]:
 display_phantom = phantom
 display_recon = recon
 
-
-#display_phantom = phantom[pad_slices_L:-pad_slices_R,pad_rows_L:-pad_rows_R,pad_cols_L:-pad_cols_R]
-#display_recon = recon[pad_slices_L:-pad_slices_R,pad_rows_L:-pad_rows_R,pad_cols_L:-pad_cols_R]
-
-display_error = np.abs(display_recon - display_phantom)
-print(f'normalized rms reconstruction error: {np.sqrt(np.mean(display_error**2))/np.sqrt(np.mean(display_phantom**2)):.3g}')
-
-
+#display_error = np.abs(display_recon - display_phantom)
+#print(f'normalized rms reconstruction error: {np.sqrt(np.mean(display_error**2))/np.sqrt(np.mean(display_phantom**2)):.3g}')
 
 # Set display indexes for phantom and recon images
-display_slice = display_recon.shape[0] // 2
-display_x = display_recon.shape[1] // 2
-display_y = display_recon.shape[2] // 2
+display_slice_image = display_phantom.shape[0] // 2
+display_x_image = display_phantom.shape[1] // 2
+display_y_image = display_phantom.shape[2] // 2
+
+display_slice_recon = display_recon.shape[0] // 2
+display_x_recon = display_recon.shape[1] // 2
+display_y_recon = display_recon.shape[2] // 2
+
 # phantom images
-plot_image(display_phantom[display_slice], title=f'phantom, axial slice {display_slice}',
+plot_image(display_phantom[display_slice_image], title=f'phantom, axial slice {display_slice_image}',
                      filename=os.path.join(save_path, 'phantom_axial.png'), vmin=vmin, vmax=vmax)
-plot_image(display_phantom[display_slice], title=f'phantom, axial slice {display_slice}',
+plot_image(display_phantom[display_slice_image], title=f'phantom, axial slice {display_slice_image}',
                      filename=os.path.join(save_path, 'phantom_axial.png'), vmin=vmin, vmax=vmax)
-plot_image(display_phantom[:,display_x,:], title=f'phantom, coronal slice {display_x}',
+plot_image(display_phantom[:,display_x_image,:], title=f'phantom, coronal slice {display_x_image}',
                      filename=os.path.join(save_path, 'phantom_coronal.png'), vmin=vmin, vmax=vmax)
-plot_image(display_phantom[:,:,display_y], title=f'phantom, sagittal slice {display_y}',
+plot_image(display_phantom[:,:,display_y_image], title=f'phantom, sagittal slice {display_y_image}',
                      filename=os.path.join(save_path, 'phantom_sagittal.png'), vmin=vmin, vmax=vmax)
 # recon images
-plot_image(display_recon[display_slice], title=f'qGGMRF recon, axial slice {display_slice}, Θ='+str(theta_degrees)+' degrees',
+plot_image(display_recon[display_slice_recon], title=f'qGGMRF recon, axial slice {display_slice_recon}, Θ='+str(theta_degrees)+' degrees',
                      filename=os.path.join(save_path, 'recon_axial.png'), vmin=0, vmax=0.40)
-plot_image(display_recon[display_slice], title=f'qGGMRF recon, axial slice {display_slice}, Θ='+str(theta_degrees)+' degrees',
+plot_image(display_recon[display_slice_recon], title=f'qGGMRF recon, axial slice {display_slice_recon}, Θ='+str(theta_degrees)+' degrees',
                      filename=os.path.join(save_path, 'recon_axial.png'), vmin=vmin, vmax=vmax)
-plot_image(display_recon[:,display_x,:], title=f'qGGMRF recon, coronal slice {display_x}, Θ='+str(theta_degrees)+' degrees',
+plot_image(display_recon[:,display_x_recon,:], title=f'qGGMRF recon, coronal slice {display_x_recon}, Θ='+str(theta_degrees)+' degrees',
                      filename=os.path.join(save_path, 'recon_coronal.png'), vmin=vmin, vmax=vmax)
-plot_image(display_recon[:,:,display_y], title=f'qGGMRF recon, sagittal slice {display_y}, Θ='+str(theta_degrees)+' degrees',
+plot_image(display_recon[:,:,display_y_recon], title=f'qGGMRF recon, sagittal slice {display_y_recon}, Θ='+str(theta_degrees)+' degrees',
                      filename=os.path.join(save_path, 'recon_sagittal.png'), vmin=vmin, vmax=vmax)
 # error images
-plot_image(display_error[display_slice], title=f'error image, axial slice {display_slice}, Θ='+str(theta_degrees)+' degrees',
-                  filename=os.path.join(save_path, 'error_axial.png'), vmin=0, vmax=0.40)
-plot_image(display_error[display_slice], title=f'error image, axial slice {display_slice}, Θ='+str(theta_degrees)+' degrees',
-                  filename=os.path.join(save_path, 'error_axial.png'), vmin=vmin, vmax=vmax)
-plot_image(display_error[:,display_x,:], title=f'error image, coronal slice {display_x}, Θ='+str(theta_degrees)+' degrees',
-                  filename=os.path.join(save_path, 'error_coronal.png'), vmin=vmin, vmax=vmax)
-plot_image(display_error[:,:,display_y], title=f'error image, sagittal slice {display_y}, Θ='+str(theta_degrees)+' degrees',
-                  filename=os.path.join(save_path, 'error_sagittal.png'), vmin=vmin, vmax=vmax)
+#plot_image(display_error[display_slice], title=f'error image, axial slice {display_slice}, Θ='+str(theta_degrees)+' degrees',
+#                  filename=os.path.join(save_path, 'error_axial.png'), vmin=0, vmax=0.40)
+#plot_image(display_error[display_slice], title=f'error image, axial slice {display_slice}, Θ='+str(theta_degrees)+' degrees',
+#                  filename=os.path.join(save_path, 'error_axial.png'), vmin=vmin, vmax=vmax)
+#plot_image(display_error[:,display_x,:], title=f'error image, coronal slice {display_x}, Θ='+str(theta_degrees)+' degrees',
+#                  filename=os.path.join(save_path, 'error_coronal.png'), vmin=vmin, vmax=vmax)
+#plot_image(display_error[:,:,display_y], title=f'error image, sagittal slice {display_y}, Θ='+str(theta_degrees)+' degrees',
+#                  filename=os.path.join(save_path, 'error_sagittal.png'), vmin=vmin, vmax=vmax)
 print(f"Images saved to {save_path}.")
 input("Press Enter")

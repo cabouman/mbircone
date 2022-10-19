@@ -381,7 +381,7 @@ def create_sino_params_dict_lamino(num_views, num_det_rows, num_det_channels,
 
   return sinoparams
 
-def create_img_params_dict_lamino(sinoparams, theta, delta_pixel_image=None):
+def create_img_params_dict_lamino(sinoparams, num_image_rows, num_image_cols, num_image_slices, theta, delta_pixel_image=1.0, image_slice_offset=0.0):
 
   """ Compute image parameters that specify coordinates and bounds relating to the image.
     For detailed specifications of imgparams, see cone3D.interface_cy_c
@@ -399,74 +399,19 @@ def create_img_params_dict_lamino(sinoparams, theta, delta_pixel_image=None):
     Dictionary containing image parameters as required by the Cython code
   """
 
-  # Step 1: Calculate ROI and ROR shape
+  dist_source_detector = -sinoparams['u_s']
 
-  # Set voxel dimensions
-  # assert delta_pixel_image != None
-  # (it is actually never None because of code structure)
-  s = delta_pixel_image
-  ell = delta_pixel_image
-
-  # Retrieve detector dimensions from sinoparams
-  N_C = sinoparams['N_dv']
-  T_C = sinoparams['Delta_dv']
-  N_R = sinoparams['N_dw']
-  T_R = sinoparams['Delta_dw']
-
-  # Calculate height of a single cone
-  # = half the height of the double-cone
-  # = half the image height
-  H = (N_R * T_R) / (2 * np.sin(theta))
-  
-  # Set radius of ROI
-  # Region with measured pixels is intersection of
-  # double-cone and a cylinder.
-  # r_cyl = Radius of cylinder
-  # max_rad prevents radius from becoming large,
-  # which might flatten the image. This code must be
-  # changed if user is given control over ROI
-  y_0 = sinoparams['v_d0'] + (N_C * T_C / 2)
-  r_cyl = (N_C * T_C / 2) - np.abs(y_0)
-  max_rad = (N_R * T_R / 2)
-  r_roi = min(r_cyl,max_rad)
-
-  # Set height of ROI
-  h = H - (r_roi / np.tan(theta))
-  
-  ROR_SHAPE = 'TIGHT'
-  
-  if ROR_SHAPE == 'TIGHT':
-      # Set to the geometrically correct radius
-      # See laminography slides for visual explanation
-      # This does not give good results and should not be used
-      R_cyl_1 = (N_C * T_C / 2) - np.abs(y_0)
-      R_cyl_2 = (N_R * T_R) / (2 * np.cos(theta))
-      R_ROR = min(R_cyl_1, R_cyl_2)
-  elif ROR_SHAPE == 'BROAD':
-      # Set to experimentally correct radius
-      # See laminography slides for visual explanation
-      r = r_roi
-      w = 2 * h
-      R_ROR = r + w * np.tan(theta)
-
-  # Step 2: Assign Parameters
-  
   imgparams = dict()
+  imgparams['N_x'] = num_image_rows
+  imgparams['N_y'] = num_image_cols
+  imgparams['N_z'] = num_image_slices
 
-  # Corner of bottom-left voxel (= coordinate of center minus 1/2 voxel width)
-  imgparams['x_0'] = - R_ROR - s / 2
-  imgparams['y_0'] = imgparams['x_0']
-  # z_0 = - H - D/tan(theta)
-  # w_d0 = - D/tan(theta) - (N_R * T_R / 2)
-  imgparams['z_0'] = - H + sinoparams['w_d0'] + (N_R * T_R / 2)
-
-  # Voxel count in x,y,z, directions
-  imgparams['N_x'] = int(2 * np.ceil(R_ROR / s) + 1)
-  imgparams['N_y'] = imgparams['N_x']
-  imgparams['N_z'] = int(2 * np.ceil(H / ell) + 1)
-
-  imgparams['Delta_xy'] = s
-  imgparams['Delta_z'] = ell
+  imgparams['Delta_xy'] = delta_pixel_image
+  imgparams['Delta_z'] = delta_pixel_image
+  
+  imgparams['x_0'] = -imgparams['N_x']*imgparams['Delta_xy']/2.0
+  imgparams['y_0'] = -imgparams['N_y']*imgparams['Delta_xy']/2.0
+  imgparams['z_0'] = -imgparams['N_z']*imgparams['Delta_z']/2.0 - image_slice_offset - (dist_source_detector / math.tan(theta))
   
   # Find coordinates of roi within the voxel image
   imgparams['j_xstart_roi'] = -1
@@ -482,74 +427,6 @@ def create_img_params_dict_lamino(sinoparams, theta, delta_pixel_image=None):
   imgparams['N_z_roi'] = -1
 
   return imgparams
-
-# TO DELETE LATER ---------------------- TO DELETE LATER
-def compute_img_size(num_views, num_det_rows, num_det_channels,
-                 dist_source_detector,
-                 magnification,
-                 channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
-                 delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
-                 geometry='cone', theta=math.pi/2):
-  """Compute size of the reconstructed image given the geometric parameters.
-  Args:
-      num_views (int): Number of views in sinogram data
-      num_det_rows (int): Number of rows in sinogram data
-      num_det_channels (int): Number of channels in sinogram data
-      dist_source_detector (float): Distance between the X-ray source and the detector in units of ALU
-      magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
-      channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
-      row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
-      rotation_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space.
-          This is normally set to zero.
-      delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
-      delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
-          If None, automatically set to delta_pixel_detector/magnification
-      ror_radius (float, optional): [Default=None] Scalar value of radius of reconstruction in :math:`ALU`.
-          If None, automatically set.
-          Pixels outside the radius ror_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
-          
-      geometry (string, optional): This can be 'cone' or 'lamino'.
-          If geometry=='cone', computes image size for a cone beam reconstruction.
-          If geometry=='lamino', computes image size for laminography reconstruction and ignores parameters dist_source_detector, magnification, row_offset, rotation_offset.
-      theta (float, optional): Laminographic angle, equal to pi/2 - grazing angle. Ignored if geometry=='cone'.
-  Returns:
-      Information about the image size.
-      - **ROR (list)**: Region of reconstruction that specifies the size of the reconstructed image. A list of 3 integer, [num_img_slices, num_img_rows, num_img_cols]. However, the valid region of interest (ROI) is a subset of ROR.
-      - **boundary_size (list)**: Number of invalid pixels on each side of a 3D image. A list of 3 integer, [img_slices_boundary_size, img_rows_boundary_size, img_cols_boundary_size]. The function `cone3D.extract_roi_from_ror` can be used to extract ROI from the full ROR.
-  """
-
-  # Automatically set delta_pixel_image.
-  if geometry=='lamino':
-      magnification = 1
-  if delta_pixel_image is None:
-      delta_pixel_image = delta_pixel_detector / magnification
-
-  if geometry=='cone':
-      # Calculate parameter dictionary with given input.
-      sinoparams = create_sino_params_dict(dist_source_detector, magnification,
-                                       num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
-                                       channel_offset=channel_offset, row_offset=row_offset,
-                                       rotation_offset=rotation_offset,
-                                       delta_pixel_detector=delta_pixel_detector)
-
-      imgparams = create_img_params_dict(sinoparams, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius)
-  elif geometry=='lamino':
-      sinoparams = create_sino_params_dict_lamino(num_views, num_det_rows, num_det_channels,
-                                     theta,
-                                     det_channel_offset=channel_offset,
-                                     delta_pixel_detector=delta_pixel_detector)
-
-      imgparams = create_img_params_dict_lamino(sinoparams, theta, delta_pixel_image=delta_pixel_image)
-  else:
-      raise Exception("geometry: undefined geometry {}".format(geometry))
-
-  # Summarize Information about the image size.
-  ROR = [imgparams['N_z'], imgparams['N_x'], imgparams['N_y']]
-  boundary_size = [max(imgparams['j_zstart_roi'], imgparams['N_z']-1-imgparams['j_zstop_roi']), imgparams['j_xstart_roi'], imgparams['j_ystart_roi']]
-
-  return ROR, boundary_size
-# TO DELETE LATER ---------------------- TO DELETE LATER
-
 
 
 def recon(sino, angles, dist_source_detector, magnification,
@@ -663,15 +540,14 @@ def recon(sino, angles, dist_source_detector, magnification,
     if delta_pixel_image is None:
         delta_pixel_image = delta_pixel_detector/magnification
         
+    if num_image_rows is None:
+        num_image_rows,_,_ = auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image, magnification)
+    if num_image_cols is None:
+        _,num_image_cols,_ = auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image, magnification)
+    if num_image_slices is None:
+        _,_,num_image_slices = auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image, magnification)
+        
     if geometry=='cone':
-    
-      if num_image_rows is None:
-          num_image_rows,_,_ = auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image, magnification)
-      if num_image_cols is None:
-          _,num_image_cols,_ = auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image, magnification)
-      if num_image_slices is None:
-          _,_,num_image_slices = auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image, magnification)
-    
       sinoparams = create_sino_params_dict(dist_source_detector, magnification,
                                        num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
                                        det_channel_offset=det_channel_offset, det_row_offset=det_row_offset,
@@ -679,15 +555,13 @@ def recon(sino, angles, dist_source_detector, magnification,
                                        delta_pixel_detector=delta_pixel_detector)
       
       imgparams = create_image_params_dict(num_image_rows, num_image_cols, num_image_slices, delta_pixel_image=delta_pixel_image, image_slice_offset=image_slice_offset)
-      
     elif geometry=='lamino':
-    
       sinoparams = create_sino_params_dict_lamino(num_views, num_det_rows, num_det_channels,
                                      theta,
                                      det_channel_offset=det_channel_offset,
                                      delta_pixel_detector=delta_pixel_detector)
-      imgparams = create_img_params_dict_lamino(sinoparams, theta, delta_pixel_image=delta_pixel_image)
-      
+                                     
+      imgparams = create_img_params_dict_lamino(sinoparams, num_image_rows, num_image_cols, num_image_slices, theta, delta_pixel_image=delta_pixel_image, image_slice_offset=image_slice_offset)
     else:
       raise Exception("geometry: undefined geometry {}".format(geometry))
     
@@ -852,8 +726,10 @@ def project(image, angles,
                                      theta,
                                      det_channel_offset=det_channel_offset,
                                      delta_pixel_detector=delta_pixel_detector)
+      
+      (num_image_slices, num_image_rows, num_image_cols) = image.shape
 
-      imgparams = create_img_params_dict_lamino(sinoparams, theta, delta_pixel_image=delta_pixel_image)
+      imgparams = create_img_params_dict_lamino(sinoparams, num_image_rows, num_image_cols, num_image_slices, theta, delta_pixel_image=delta_pixel_image)
     else:
       raise Exception("geometry: undefined geometry {}".format(geometry))
 
@@ -873,11 +749,6 @@ def project(image, angles,
     settings['sinoparams'] = sinoparams
     settings['sysmatrix_fname'] = sysmatrix_fname
     settings['num_threads'] = num_threads
-
-    print("stuff")
-    
-    print(sinoparams)
-    print(imgparams)
     
     proj = ci.project(image, settings)
     return proj
