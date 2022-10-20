@@ -261,19 +261,18 @@ float computeSinogramWeightedNormSquared(struct Sino *sino, float *arr)
 char isInsideMask(long int i_1, long int i_2, long int N1, long int N2)
 {
     /**
-     *      returns 1 iff pixel is inside the ellipse that fits in the rectangle
+     *      returns 1 iff pixel is inside the circle whose diameter corresponds to the largest dimension of the rectangle
      */
     float center_1, center_2;
-    float radius_1, radius_2;
+    float radius;
     float reldistance;
 
     center_1 = (N1-1.0)/2.0;
     center_2 = (N2-1.0)/2.0;
 
-    radius_1 = N1/2.0;
-    radius_2 = N2/2.0;
+    radius = _MAX_(N1/2.0, N2/2.0);
 
-    reldistance = pow((i_1-center_1)/radius_1, 2) + pow((i_2-center_2)/radius_2, 2);
+    reldistance = pow((i_1-center_1)/radius, 2) + pow((i_2-center_2)/radius, 2);
     return (reldistance<1 ? 1 : 0);
 
 

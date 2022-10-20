@@ -118,4 +118,3 @@ This will generate a splash screen that requests permision of OSx to execute the
 
 In addition, after OS updates, you may need to reinstall the Xcode toolkit using the command: ``xcode-select --install``
 
-
