@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def gen_shepp_logan(num_rows,num_cols):
     """
     Generate a Shepp Logan phantom
@@ -34,8 +35,8 @@ def gen_shepp_logan(num_rows,num_cols):
 
     for el_paras in sl_paras:
         image += _gen_ellipse(x_grid=x_grid, y_grid=y_grid, x0=el_paras['x0'], y0=el_paras['y0'],
-                             a=el_paras['a'], b=el_paras['b'], theta=el_paras['theta'] / 180.0 * np.pi,
-                             gray_level=el_paras['gray_level'])
+                              a=el_paras['a'], b=el_paras['b'], theta=el_paras['theta'] / 180.0 * np.pi,
+                              gray_level=el_paras['gray_level'])
 
     return image
 
@@ -71,8 +72,8 @@ def gen_microscopy_sample(num_rows, num_cols):
 
     for el_paras in ms_paras:
         image += _gen_ellipse(x_grid=x_grid, y_grid=y_grid, x0=el_paras['x0'], y0=el_paras['y0'],
-                             a=el_paras['a'], b=el_paras['b'], theta=el_paras['theta'] / 180.0 * np.pi,
-                             gray_level=el_paras['gray_level'])
+                              a=el_paras['a'], b=el_paras['b'], theta=el_paras['theta'] / 180.0 * np.pi,
+                              gray_level=el_paras['gray_level'])
 
     return image
 
@@ -153,12 +154,10 @@ def gen_shepp_logan_3d_raw(num_rows, num_cols, num_slices, scale=1.0, offset_x=0
 
     for el_paras in sl3d_paras:
         image += _gen_ellipsoid(x_grid=x_grid, y_grid=y_grid, z_grid=z_grid, x0=el_paras['x0']*scale - shift_x, y0=el_paras['y0']*scale - shift_y,
-                               z0=el_paras['z0']*scale - shift_z,
-                               a=el_paras['a']*scale, b=el_paras['b']*scale, c=el_paras['c']*scale,
-                               gamma=el_paras['gamma'] / 180.0 * np.pi,
-                               gray_level=el_paras['gray_level'])
-
-    
+                                z0=el_paras['z0']*scale - shift_z,
+                                a=el_paras['a']*scale, b=el_paras['b']*scale, c=el_paras['c']*scale,
+                                gamma=el_paras['gamma'] / 180.0 * np.pi,
+                                gray_level=el_paras['gray_level'])
 
     return np.transpose(image, (2, 0, 1))
 
@@ -197,56 +196,59 @@ def gen_microscopy_sample_3d(num_rows, num_cols, num_slices):
 
     for el_paras in ms3d_paras:
         image += _gen_ellipsoid(x_grid=x_grid, y_grid=y_grid, z_grid=z_grid, x0=el_paras['x0'], y0=el_paras['y0'],
-                               z0=el_paras['z0'],
-                               a=el_paras['a'], b=el_paras['b'], c=el_paras['c'],
-                               gamma=el_paras['gamma'] / 180.0 * np.pi,
-                               gray_level=el_paras['gray_level'])
+                                z0=el_paras['z0'],
+                                a=el_paras['a'], b=el_paras['b'], c=el_paras['c'],
+                                gamma=el_paras['gamma'] / 180.0 * np.pi,
+                                gray_level=el_paras['gray_level'])
 
     return np.transpose(image, (2, 0, 1))
 
+
 def gen_lamino_sample_3d(num_rows, num_cols, num_slices, edge_pixel_thickness=0):
-  """
-  Generate a 3D microscopy sample phantom.
-  Args:
-      num_rows: int, number of rows.
-      num_cols: int, number of cols.
-      num_slices: int, number of slices.
-      edge_pixel_thickness: int, optional, thickness of border around object
-  Return:
-      out_image: 3D array, num_slices*num_rows*num_cols
-  """
+    """
+    Generate a 3D microscopy sample phantom by extracting a window from the gen_microscopy_sample_3d phantom
 
+    Args:
+        num_rows: int, number of rows.
+        num_cols: int, number of cols.
+        num_slices: int, number of slices.
+        edge_pixel_thickness: int, optional, [Default=0] thickness of border around object
+    Return:
+        out_image: 3D array, num_slices*num_rows*num_cols
+    """
 
-  PROPORTION_OF = .54
+    # Cut out a portion of the gen_microscopy_sample_3d phantom
+    PROPORTION_OF = .54
 
-  num_slices_base = int(num_slices / PROPORTION_OF)
-  num_rows_base = int(num_rows / PROPORTION_OF)
-  num_cols_base = int(num_cols / PROPORTION_OF)
+    num_slices_base = int(num_slices / PROPORTION_OF)
+    num_rows_base = int(num_rows / PROPORTION_OF)
+    num_cols_base = int(num_cols / PROPORTION_OF)
 
-  phantom = gen_microscopy_sample_3d(num_rows_base, num_cols_base, num_slices_base)
+    phantom = gen_microscopy_sample_3d(num_rows_base, num_cols_base, num_slices_base)
 
-  slice_start = ( num_slices_base - num_slices ) // 2
-  slice_end = ( num_slices_base + num_slices ) // 2
-  row_start = ( num_rows_base - num_rows ) // 2
-  row_end = ( num_rows_base + num_rows ) // 2
-  col_start = ( num_cols_base - num_cols ) // 2
-  col_end = ( num_cols_base + num_cols ) // 2
+    slice_start = ( num_slices_base - num_slices ) // 2
+    slice_end = ( num_slices_base + num_slices ) // 2
+    row_start = ( num_rows_base - num_rows ) // 2
+    row_end = ( num_rows_base + num_rows ) // 2
+    col_start = ( num_cols_base - num_cols ) // 2
+    col_end = ( num_cols_base + num_cols ) // 2
 
-  phantom = phantom[slice_start:slice_end,row_start:row_end,col_start:col_end]
+    phantom = phantom[slice_start:slice_end,row_start:row_end,col_start:col_end]
 
-  phantom = np.clip(phantom, 0.2, 2.0)
+    phantom = np.clip(phantom, 0.2, 2.0)
 
-  if edge_pixel_thickness <= 0:
-      return phantom
+    if edge_pixel_thickness <= 0:
+        return phantom
 
-  phantom[:edge_pixel_thickness]=2.0
-  phantom[-edge_pixel_thickness:]=2.0
-  phantom[:,:edge_pixel_thickness]=2.0
-  phantom[:,-edge_pixel_thickness:]=2.0
-  phantom[:,:,:edge_pixel_thickness]=2.0
-  phantom[:,:,-edge_pixel_thickness:]=2.0
+    phantom[:edge_pixel_thickness]=2.0
+    phantom[-edge_pixel_thickness:]=2.0
+    phantom[:,:edge_pixel_thickness]=2.0
+    phantom[:,-edge_pixel_thickness:]=2.0
+    phantom[:,:,:edge_pixel_thickness]=2.0
+    phantom[:,:,-edge_pixel_thickness:]=2.0
 
-  return phantom
+    return phantom
+
 
 def nrmse(image, reference_image):
     """
