@@ -391,7 +391,7 @@ def create_sino_params_dict_lamino(num_views, num_det_rows, num_det_channels,
 
 
 def create_image_params_dict_lamino(sinoparams, num_image_rows, num_image_cols, num_image_slices, theta,
-                                  delta_pixel_image=1.0, image_slice_offset=0.0):
+                                    delta_pixel_image=1.0, image_slice_offset=0.0):
     """ Allocate imageparams parameters as required by certain C methods.
         Can be used to describe a region of projection (i.e., when an image is available in ``project`` method), or to specify a region of reconstruction.
         All geometry specifications (i.e. function arguments) are given in laminography coordinates.
@@ -462,7 +462,7 @@ def recon(sino, angles, dist_source_detector, magnification,
         
         geometry (string, optional): [Default='cone'] This can be 'cone' or 'lamino'.
             If geometry=='cone', runs a standard cone-beam reconstruction.
-            If geometry=='lamino', runs a parallel-beam laminography reconstruction and ignores parameters dist_source_detector, magnification, row_offset, rotation_offset.
+            If geometry=='lamino', runs a parallel-beam laminography reconstruction and ignores parameters dist_source_detector, magnification, det_row_offset, rotation_offset.
         
         weights (ndarray, optional): [Default=None] 3D weights array with same shape as sino.
         weight_type (string, optional): [Default='unweighted'] Type of noise model used for data.
@@ -581,8 +581,8 @@ def recon(sino, angles, dist_source_detector, magnification,
                                                     delta_pixel_detector=delta_pixel_detector)
 
         imgparams = create_image_params_dict_lamino(sinoparams, num_image_rows, num_image_cols, num_image_slices, theta,
-                                                  delta_pixel_image=delta_pixel_image,
-                                                  image_slice_offset=image_slice_offset)
+                                                    delta_pixel_image=delta_pixel_image,
+                                                    image_slice_offset=image_slice_offset)
     else:
         raise Exception("geometry: undefined geometry {}".format(geometry))
 
@@ -706,7 +706,7 @@ def project(image, angles,
 
         geometry (string, optional): [Default='cone'] This can be 'cone' or 'lamino'.
             If geometry=='cone', runs a standard cone-beam reconstruction.
-            If geometry=='lamino', runs a parallel-beam laminography reconstruction and ignores parameters dist_source_detector, magnification, row_offset, rotation_offset.
+            If geometry=='lamino', runs a parallel-beam laminography reconstruction and ignores parameters dist_source_detector, magnification, det_row_offset, rotation_offset.
 
         det_channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
         det_row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
@@ -759,7 +759,7 @@ def project(image, angles,
         (num_image_slices, num_image_rows, num_image_cols) = image.shape
 
         imgparams = create_image_params_dict_lamino(sinoparams, num_image_rows, num_image_cols, num_image_slices, theta,
-                                                  delta_pixel_image=delta_pixel_image)
+                                                    delta_pixel_image=delta_pixel_image)
     else:
         raise Exception("geometry: undefined geometry {}".format(geometry))
 
