@@ -238,7 +238,7 @@ def create_sino_params_dict(dist_source_detector, magnification,
                             det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0,
                             delta_pixel_detector=1.0):
     """ Compute sinogram parameters specify coordinates and bounds relating to the sinogram.
-        For detailed specifications of sinoparams, see cone3D.interface_cy_c
+        For detailed specifications of sinoparams, see ``cone3D.interface_cy_c``
     
     Args:
         dist_source_detector (float): Distance between the X-ray source and the detector in units of ALU
@@ -290,7 +290,7 @@ def create_image_params_dict(num_image_rows, num_image_cols, num_image_slices, d
                              image_slice_offset=0.0):
     """ Allocate imageparam parameters as required by certain C methods.
         Can be used to describe a region of projection (i.e., when an image is available in ``project`` method), or to specify a region of reconstruction.
-        For detailed specifications of imageparams, see cone3D.interface_cy_c
+        For detailed specifications of imageparams, see ``cone3D.interface_cy_c``
     
     Args:
         num_image_rows (int): Integer number of rows in image region.
@@ -338,9 +338,9 @@ def create_sino_params_dict_lamino(num_views, num_det_rows, num_det_channels,
                                    det_channel_offset=0.0,
                                    delta_pixel_detector=1.0):
     """ Compute sinogram parameters specify coordinates and bounds relating to the sinogram
-        Function signatures are in laminogram coordinates, output corresponds to sinogram.
+        Function signatures are in laminogram coordinates, output corresponds to internal C-code.
         All geometry specifications (i.e. function arguments) are given in laminography coordinates.
-        For detailed specifications of sinoparams, see cone3D.interface_cy_c
+        For detailed specifications of sinoparams, see ``cone3D.interface_cy_c``
   
     Args:
         num_views (int): Number of views in laminogram data
@@ -395,7 +395,7 @@ def create_image_params_dict_lamino(sinoparams, num_image_rows, num_image_cols, 
     """ Allocate imageparams parameters as required by certain C methods.
         Can be used to describe a region of projection (i.e., when an image is available in ``project`` method), or to specify a region of reconstruction.
         All geometry specifications (i.e. function arguments) are given in laminography coordinates.
-        For detailed specifications of imageparams, see cone3D.interface_cy_c
+        For detailed specifications of imageparams, see ``cone3D.interface_cy_c``
     
     Args:
         sinoparams (dict): Dictionary containing sinogram parameters as required by the Cython code
