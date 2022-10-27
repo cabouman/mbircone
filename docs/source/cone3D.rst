@@ -9,6 +9,8 @@ mbircone.cone3D
 
    .. autosummary::
 
+      recon
+      project
       auto_image_size
       auto_sigma_p
       auto_sigma_x
@@ -18,5 +20,3 @@ mbircone.cone3D
       create_sino_params_dict
       create_image_params_dict_lamino
       create_sino_params_dict_lamino
-      project
-      recon
