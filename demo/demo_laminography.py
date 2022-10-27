@@ -53,8 +53,8 @@ pad_cols_R = pad_cols_L
 pad_slices_L = num_slices_phantom * pad_factor
 pad_slices_R = pad_slices_L
 
-phantom = np.pad(phantom, [(0,0),(pad_rows_L,pad_rows_R),(pad_cols_L,pad_cols_R)], mode='edge')
-phantom = np.pad(phantom, [(pad_slices_L,pad_slices_R), (0,0), (0,0)], mode='constant', constant_values=0.0)
+phantom = np.pad(phantom, [(0, 0), (pad_rows_L, pad_rows_R),(pad_cols_L, pad_cols_R)], mode='edge')
+phantom = np.pad(phantom, [(pad_slices_L, pad_slices_R), (0, 0), (0, 0)], mode='constant', constant_values=0.0)
 
 ######################################################################################
 # Generate synthetic sinogram
@@ -69,7 +69,7 @@ print('Synthetic sinogram shape: (num_views, num_det_rows, num_det_channels) = '
 # Perform 3D qGGMRF reconstruction
 ######################################################################################
 print('Performing 3D qGGMRF reconstruction ...')
-recon = mbircone.cone3D.recon(sino, angles, None, 1, geometry='lamino', theta=theta, sharpness=sharpness, T=T,
+recon = mbircone.cone3D.recon(sino, angles, None, None, geometry='lamino', theta=theta, sharpness=sharpness, T=T,
                               stop_threshold=stop_threshold, max_resolutions=0, num_image_rows=384,
                               num_image_cols=384, num_image_slices=32)
 print('recon shape = ', np.shape(recon))
@@ -111,9 +111,9 @@ plot_image(display_recon[display_slice_recon], title=f'qGGMRF recon, axial slice
            filename=os.path.join(save_path, 'recon_axial.png'), vmin=0, vmax=0.40)
 plot_image(display_recon[display_slice_recon], title=f'qGGMRF recon, axial slice {display_slice_recon}, Θ='+str(theta_degrees)+' degrees',
            filename=os.path.join(save_path, 'recon_axial.png'), vmin=vmin, vmax=vmax)
-plot_image(display_recon[:,display_x_recon,:], title=f'qGGMRF recon, coronal slice {display_x_recon}, Θ='+str(theta_degrees)+' degrees',
+plot_image(display_recon[:, display_x_recon,:], title=f'qGGMRF recon, coronal slice {display_x_recon}, Θ='+str(theta_degrees)+' degrees',
            filename=os.path.join(save_path, 'recon_coronal.png'), vmin=vmin, vmax=vmax)
-plot_image(display_recon[:,:,display_y_recon], title=f'qGGMRF recon, sagittal slice {display_y_recon}, Θ='+str(theta_degrees)+' degrees',
+plot_image(display_recon[:, :, display_y_recon], title=f'qGGMRF recon, sagittal slice {display_y_recon}, Θ='+str(theta_degrees)+' degrees',
            filename=os.path.join(save_path, 'recon_sagittal.png'), vmin=vmin, vmax=vmax)
 
 print(f"Images saved to {save_path}.")
