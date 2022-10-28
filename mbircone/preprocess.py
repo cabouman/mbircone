@@ -391,8 +391,8 @@ def NSI_to_MBIRCONE_params(NSI_system_params):
 
     dist_dv_to_detector_corner_from_detector_center = - NSI_system_params['N_dv'] * NSI_system_params['delta_dv'] / 2.0
     dist_dw_to_detector_corner_from_detector_center = - NSI_system_params['N_dw'] * NSI_system_params['delta_dw'] / 2.0
-    geo_params["channel_offset"] = -(NSI_system_params['v_d0'] - dist_dv_to_detector_corner_from_detector_center)
-    geo_params["row_offset"] = - (NSI_system_params['w_d0'] - dist_dw_to_detector_corner_from_detector_center)
+    geo_params["det_channel_offset"] = -(NSI_system_params['v_d0'] - dist_dv_to_detector_corner_from_detector_center)
+    geo_params["det_row_offset"] = - (NSI_system_params['w_d0'] - dist_dw_to_detector_corner_from_detector_center)
     return geo_params
 
 
@@ -504,7 +504,7 @@ def blind_fixture_correction(sino, angles, dist_source_detector, magnification,
                              recon_init=None, 
                              gauss_sigma=2., roi_ratio=0.9, use_active_contour=True, 
                              alpha=None, beta=10., w_line=-0.5, w_edge=1.5, gamma=0.01, 
-                             channel_offset=0.0, row_offset=0.0, rotation_offset=0.0,
+                             det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0,
                              delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
                              init_image=0.0,
                              sigma_y=None, snr_db=30.0, weights=None, weight_type='unweighted',
@@ -530,8 +530,8 @@ def blind_fixture_correction(sino, angles, dist_source_detector, magnification,
         - **w_edge** (*float, optional*): [Default=1.5] Hyper-parameter for active contour detection. Controls attraction to edges. Use negative values to repel snake from edges.
         - **gamma** (*float, optional*): [Default=0.01] Hyper-parameter for active contour detection. Explicit time stepping parameter.
     Optional arguments inherited from :py:func:`cone3D.recon` and :py:func:`cone3D.project`:
-        - **channel_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
-        - **row_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
+        - **det_channel_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
+        - **det_row_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
         - **rotation_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space. This is normally set to zero.
 
         - **delta_pixel_detector** (*float, optional*): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
@@ -578,7 +578,7 @@ def blind_fixture_correction(sino, angles, dist_source_detector, magnification,
     if recon_init is None:
         print("Performing inital qGGMRF reconstruction with uncorrected sinogram ......")
         recon_init = cone3D.recon(sino, angles, dist_source_detector, magnification, 
-                         channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
+                         det_channel_offset=det_channel_offset, det_row_offset=det_row_offset, rotation_offset=rotation_offset,
                          delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius,
                          init_image=init_image,
                          sigma_y=sigma_y, snr_db=snr_db, weights=weights, weight_type=weight_type,
@@ -594,7 +594,7 @@ def blind_fixture_correction(sino, angles, dist_source_detector, magnification,
     Ax_m = cone3D.project(x_m, angles,
                           num_det_rows, num_det_channels,
                           dist_source_detector, magnification,
-                          channel_offset=channel_offset, row_offset=row_offset, rotation_offset=rotation_offset,
+                          det_channel_offset=det_channel_offset, det_row_offset=det_row_offset, rotation_offset=rotation_offset,
                           delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image, ror_radius=ror_radius,
                           num_threads=num_threads, verbose=verbose, lib_path=lib_path)
     # sinogram error
