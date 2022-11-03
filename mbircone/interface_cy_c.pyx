@@ -277,7 +277,7 @@ def recon_cy(sino, angles, wght, x_init, proxmap_input,
     cdef cnp.ndarray[float, ndim=3, mode="c"] py_image
 
     # Determine if it the algorithm should reduce resolution further
-    go_to_lower_resolution = (max_resolutions > 0) and (min(imgparams['N_x'], imgparams['N_y'], imgparams['N_z']) > 16)
+    go_to_lower_resolution = (max_resolutions > 0) and (min(imgparams['N_x'], imgparams['N_y'], imgparams['N_z']) > 8)
     
     imgparams_lr = imgparams.copy()
     reconparams_lr = reconparams.copy()
