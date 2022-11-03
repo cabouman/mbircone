@@ -5,10 +5,11 @@ from demo_utils import plot_image, plot_gif
 
 # laminographic angle
 theta_degrees = 60
+theta = theta_degrees * (np.pi/180) # Convert to radians
 
 # detector size
-num_det_rows = 128
 num_det_channels = 128
+num_det_rows = 128
 
 # number of projection views
 num_views = 128
@@ -18,33 +19,36 @@ num_slices_phantom = 16
 num_rows_phantom = 90
 num_cols_phantom = 90
 
-# begin experiment
-theta = theta_degrees * (np.pi/180)
+# Reconstruction size
+#num_image_rows=int( num_det_channels + 2 * num_slices_phantom * sin(theta) )
+num_image_rows=128
+num_image_cols=128
+num_image_slices=32
 
-# projection angles will be uniformly spaced within the range [0, 2*pi).
-angles = np.linspace(0, 2 * np.pi, num_views, endpoint=False)
 # qGGMRF recon parameters
-sharpness = 1.0                     # Controls regularization level of reconstruction by controling prior term weighting
-T = 0.1                             # Controls edginess of reconstruction
-# convergence parameters
-stop_threshold = 0.005
+sharpness = 0.0                     # Controls regularization level of reconstruction by controling prior term weighting
+snr_db = 30
+
 # display parameters
 vmin = 0.0
 vmax = 0.1
+
+
+# Compute projection angles uniformly spaced within the range [0, 2*pi).
+angles = np.linspace(0, 2 * np.pi, num_views, endpoint=False)
 
 # local path to save phantom, sinogram, and reconstruction images
 save_path = f'output/laminography_tests/'
 os.makedirs(save_path, exist_ok=True)
 
-print('Genrating 3D Shepp Logan phantom ...')
-
+print('Generating a laminography phantom ...')
 phantom = mbircone.phantom.gen_lamino_sample_3d(num_rows_phantom, num_cols_phantom, num_slices_phantom)
 
 # Scale the phantom by a factor of 10.0 to make the projections physical realistic -log attenuation values
 phantom = phantom/10.0
 print('Phantom shape is:', num_slices_phantom, num_rows_phantom, num_cols_phantom)
 
-
+# Pad phantom so that the edges are replicated
 pad_factor = 2
 pad_rows_L = num_rows_phantom * pad_factor
 pad_rows_R = pad_rows_L
@@ -55,6 +59,7 @@ pad_slices_R = pad_slices_L
 
 phantom = np.pad(phantom, [(0, 0), (pad_rows_L, pad_rows_R),(pad_cols_L, pad_cols_R)], mode='edge')
 phantom = np.pad(phantom, [(pad_slices_L, pad_slices_R), (0, 0), (0, 0)], mode='constant', constant_values=0.0)
+
 
 ######################################################################################
 # Generate synthetic sinogram
@@ -69,9 +74,8 @@ print('Synthetic sinogram shape: (num_views, num_det_rows, num_det_channels) = '
 # Perform 3D qGGMRF reconstruction
 ######################################################################################
 print('Performing 3D qGGMRF reconstruction ...')
-recon = mbircone.cone3D.recon(sino, angles, None, None, geometry='lamino', theta=theta, sharpness=sharpness, T=T,
-                              stop_threshold=stop_threshold, max_resolutions=0, num_image_rows=384,
-                              num_image_cols=384, num_image_slices=32)
+recon = mbircone.cone3D.recon(sino, angles, None, None, geometry='lamino', theta=theta, sharpness=sharpness, snr_db=snr_db,
+                              num_image_rows=num_image_rows, num_image_cols=num_image_cols, num_image_slices=num_image_slices)
 print('recon shape = ', np.shape(recon))
 
 
