@@ -12,4 +12,5 @@ mbircone.preprocess
       NSI_read_params
       NSI_adjust_sysparam
       NSI_to_MBIRCONE_params
-      obtain_sino
+      NSI_process_raw_scans
+      compute_sino_and_weight_from_scans
