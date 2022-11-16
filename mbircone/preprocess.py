@@ -151,50 +151,6 @@ def _compute_sino_and_weight_mask_from_scans(obj_scan, blank_scan, dark_scan):
     weight_mask[np.isinf(sino)] = False
     return sino, weight_mask
 
-
-def _compute_views_index_list(scan_range, num_obj_scans):
-    """Returns a list of sampled indices of views to use for reconstruction.
-
-    Args:
-        scan_range ([int, int]): Start and end index corresponding to the sampled scans.
-        num_obj_scans (int): Number of scans to be picked out of total number of scans.
-
-    Returns:
-        list[int], a list of sampled view indices.
-
-    """
-    index_original = range(scan_range[0], scan_range[1])
-    assert num_obj_scans <= len(index_original), 'num_obj_scans cannot exceed range of view index'
-    index_sampled = [scan_range[0] + int(np.floor(i * len(index_original) / num_obj_scans)) for i in range(num_obj_scans)]
-    return index_sampled
-
-
-def _select_contiguous_subset(indexList, num_time_points=1, time_point=0):
-    """Returns a contiguous subset of index list corresponding to a given time point. This is mainly used for 4D datasets with multiple time points.
-
-    Args:
-        indexList (list[int]): A list of view indices.
-        num_time_points (int): [Default=1] Total number of time points.
-        time_point (int): [Default=0] Index of the time point we want to use for 3D reconstruction.
-
-    Returns:
-        list[int], a contiguous subset of index list.
-    """
-    assert time_point < num_time_points, 'ind_chunk cannot be larger than num_chunk.'
-
-    len_ind = len(indexList)
-    num_per_set = len_ind // num_time_points
-
-    # distribute the remaining
-    remaining_index_num = len_ind % num_time_points
-
-    start_id = time_point * num_per_set + np.minimum(time_point, remaining_index_num)
-    end_id = (time_point + 1) * num_per_set + np.minimum(time_point + 1, remaining_index_num)
-
-    indexList_new = indexList[start_id:end_id]
-    return indexList_new
-
-
 def _NSI_read_str_from_config(filepath, tags_sections):
     """Returns strings about dataset information read from NSI configuration file.
 
@@ -232,7 +188,6 @@ def _NSI_read_str_from_config(filepath, tags_sections):
                     params.append(line[tag_ind:].strip('\n'))
 
     return params
-
 
 def NSI_read_params(config_file_path):
     """ Reads NSI specific geometry and sinogram parameters from an NSI configuration file.
