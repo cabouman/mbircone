@@ -189,7 +189,7 @@ def _NSI_read_str_from_config(filepath, tags_sections):
 
     return params
 
-def NSI_read_params(config_file_path):
+def NSI_load_params(config_file_path):
     """ Reads NSI specific geometry and sinogram parameters from an NSI configuration file.
     
     This function is specific to NSI datasets. 
@@ -284,9 +284,9 @@ def NSI_adjust_sysparam(NSI_system_params, downsample_factor=[1, 1], crop_factor
     
     Args:
         NSI_system_params (dict of string-int): NSI system parameters.
-        downsample_factor ([int, int]): [Default=[1,1]] Down-sample factors along the detector rows and channels respectively. See docstring of ``preprocess.NSI_process_raw_scans`` for more details.
+        downsample_factor ([int, int]): [Default=[1,1]] Down-sample factors along the detector rows and channels respectively. See docstring of ``preprocess.NSI_load_scans`` for more details.
         crop_factor ([(float, float),(float, float)] or [float, float, float, float]): [Default=[(0., 0.), (1., 1.)]].
-            Two fractional points [(r0, c0), (r1, c1)] defining the bounding box that crops the scans. See docstring of ``preprocess.NSI_process_raw_scans`` for more details.
+            Two fractional points [(r0, c0), (r1, c1)] defining the bounding box that crops the scans. See docstring of ``preprocess.NSI_load_scans`` for more details.
     Returns:
         Dictionary: Adjusted NSI system parameters.
     """
@@ -344,11 +344,11 @@ def NSI_to_MBIRCONE_params(NSI_system_params):
     return geo_params
 
 
-def NSI_process_raw_scans(obj_scan_path, blank_scan_path, dark_scan_path,
-                          NSI_system_params,
-                          downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
-                          view_id_start=0, view_angle_start=0., 
-                          view_id_end=None, subsample_view_factor=1): 
+def NSI_load_scans(obj_scan_path, blank_scan_path, dark_scan_path,
+                   NSI_system_params,
+                   downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
+                   view_id_start=0, view_angle_start=0., 
+                   view_id_end=None, subsample_view_factor=1): 
     """ This function process the blank scan, dark scan, and object scan images according to the following procedures:
         
         1. Load the blank scan, dark scan, and a subset of object scan images according to ``view_id_start``, ``view_id_end``, and ``subsample_view_factor``.
@@ -362,7 +362,7 @@ def NSI_process_raw_scans(obj_scan_path, blank_scan_path, dark_scan_path,
         obj_scan_path (string): Path to an NSI radiograph directory.
         blank_scan_path (string): [Default=None] Path to a blank scan image, e.g. 'path_to_scan/gain0.tif'
         dark_scan_path (string): [Default=None] Path to a dark scan image, e.g. 'path_to_scan/offset.tif'
-        NSI_system_params (dict): A dictionary containing NSI parameters. This can be obtained from an NSI configuration file using function ``preprocess.NSI_read_params()``.
+        NSI_system_params (dict): A dictionary containing NSI parameters. This can be obtained from an NSI configuration file using function ``preprocess.NSI_load_params()``.
 
         downsample_factor ([int, int]): [Default=[1,1]] Down-sample factors along the detector rows and channels respectively.
             In case where the scan size is not divisible by `downsample_factor`, the scans will be first truncated to a size that is divisible by `downsample_factor`, and then downsampled.
@@ -442,8 +442,19 @@ def NSI_process_raw_scans(obj_scan_path, blank_scan_path, dark_scan_path,
     return obj_scan, blank_scan, dark_scan, angles
 
 
-def compute_sino_and_weight_from_scans(obj_scan, blank_scan, dark_scan,
-                                       weight_type='unweighted'):
+def transmission_CT_calc_weight(obj_scan, blank_scan, beta=0.5, weight_type_ct='square_root_weighting'):
+    """ Compute the sinogram weights used in MBIR reconstruction. This is specific to transmission CT reconstruction.
+    """
+    if weight_type_ct == 'square_root_weighting':
+        weights = np.sqrt(obj_scan / np.mean(blank_scan))
+    elif weight_type_ct == 'regular_weighting':
+        weights = np.power(obj_scan / np.mean(blank_scan), beta)
+    else:
+        raise Exception("calc_weights: undefined weight_type {}".format(weight_type))
+    return weights
+
+def transmission_CT_preprocess(obj_scan, blank_scan, dark_scan,
+                               weight_type_ct='square_root_weighting', beta=0.5):
     """Given a set of object scans, blank scan, and dark scan, compute the sinogram data and weights. It is assumed that the object scans, blank scan and dark scan all have compatible sizes. 
     
     The sinogram values and weights corresponding to invalid sinogram entries will be set to 0.
@@ -452,11 +463,13 @@ def compute_sino_and_weight_from_scans(obj_scan, blank_scan, dark_scan,
         obj_scan (ndarray, float): 3D object scan with shape (num_views, num_det_rows, num_det_channels).
         blank_scan (ndarray, float): [Default=None] 3D blank scan with shape (num_blank_scans, num_det_rows, num_det_channels).
         dark_scan (ndarray, float): [Default=None] 3D dark scan with shape (num_dark_scans, num_det_rows, num_det_channels)
-        weight_type (string, optional): [Default='unweighted'] Type of noise model used for data. The function ``cone3D.calc_weights`` is used to set weights using specified ``weight_type`` parameter.
-            - Option "unweighted" corresponds to unweighted reconstruction;
-            - Option "transmission" is the correct weighting for transmission CT with constant dosage;
-            - Option "transmission_root" is commonly used with transmission CT data to improve image homogeneity;
-            - Option "emission" is appropriate for emission CT data.
+        weight_type_ct (string, optional): [Default='square_root_weighting'] Type of CT noise model used for the sinogram data.
+            
+            - Option "square_root_weighting": :math:`w_i=\sqrt{\\frac{I_i}{\\bar{I}_0}}`
+            
+            - Option "regular_weighting": :math:`w_i=(\\frac{I_i}{\\bar{I}_0})^{\\beta}`
+    
+            where :math:`I_i` is the value of the object scan at i\ :sup:`th` entry. :math:`\\bar{I}_0` is the average value of the blank scan over all detector pixels.
     Returns:
         2-element tuple containing:
         - **sino** (*ndarray, float*): Preprocessed sinogram data with shape (num_views, num_det_rows, num_det_channels).
@@ -467,7 +480,7 @@ def compute_sino_and_weight_from_scans(obj_scan, blank_scan, dark_scan,
     sino, weight_mask = _compute_sino_and_weight_mask_from_scans(obj_scan, blank_scan, dark_scan)
     print('weight_mask shape = ', weight_mask.shape)
     # compute sinogram weights
-    weights = cone3D.calc_weights(sino, weight_type=weight_type)
+    weights = transmission_CT_calc_weight(obj_scan, blank_scan, beta=beta, weight_type=weight_type)
     # set the sino and weights corresponding to invalid sinogram entries to 0.
     weights[weight_mask == 0] = 0.
     sino[weight_mask == 0] = 0.
