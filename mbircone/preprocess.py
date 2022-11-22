@@ -480,7 +480,7 @@ def transmission_CT_preprocess(obj_scan, blank_scan, dark_scan,
     sino, weight_mask = _compute_sino_and_weight_mask_from_scans(obj_scan, blank_scan, dark_scan)
     print('weight_mask shape = ', weight_mask.shape)
     # compute sinogram weights
-    weights = transmission_CT_calc_weight(obj_scan, blank_scan, beta=beta, weight_type=weight_type)
+    weights = transmission_CT_calc_weight(obj_scan, blank_scan, beta=beta, weight_type_ct=weight_type_ct)
     # set the sino and weights corresponding to invalid sinogram entries to 0.
     weights[weight_mask == 0] = 0.
     sino[weight_mask == 0] = 0.
