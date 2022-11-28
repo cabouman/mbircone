@@ -26,8 +26,8 @@ Demo functionality includes:\
 # Change the parameters below for your own use case.
 
 # Detector and geometry parameters
-num_det_rows = 256                           # Number of detector rows
-num_det_channels = 256                       # Number of detector channels
+num_det_rows = 128                           # Number of detector rows
+num_det_channels = 128                       # Number of detector channels
 magnification = 2.0                          # Ratio of (source to detector)/(source to center of rotation)
 dist_source_detector = 3.0*num_det_channels  # Distance from source to detector in ALU
 num_views = 64                               # Number of projection views

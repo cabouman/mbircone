@@ -322,7 +322,6 @@ def recon_cy(sino, angles, wght, x_init, proxmap_input,
                                 num_threads, lib_path)
             
             # Interpolate resolution of reconstruction
-            print("interpolating the low res image ...")
             x_init = zoom(lr_recon, 2.0)
             del lr_recon
             del lr_init_image
