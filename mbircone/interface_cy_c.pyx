@@ -278,50 +278,57 @@ def recon_cy(sino, angles, wght, x_init, proxmap_input,
 
     # Determine if it the algorithm should reduce resolution further
     go_to_lower_resolution = (max_resolutions > 0) and (min(imgparams['N_x'], imgparams['N_y'], imgparams['N_z']) > 16)
-    
-    imgparams_lr = imgparams.copy()
-    reconparams_lr = reconparams.copy()
+    is_img_size_even = (imgparams['N_x']%2==0) and (imgparams['N_y']%2==0) and (imgparams['N_z']%2==0)
     # go to lower resolution if possible
     if go_to_lower_resolution:
-        new_max_resolutions = max_resolutions-1;
-        # Set the pixel pitch, num_rows, and num_cols for the next lower resolution
-        imgparams_lr['Delta_xy'] = 2 * imgparams['Delta_xy']
-        imgparams_lr['Delta_z'] = 2 * imgparams['Delta_z']
-        imgparams_lr['N_x'] = int(np.ceil(imgparams['N_x'] / 2))
-        imgparams_lr['N_y'] = int(np.ceil(imgparams['N_y'] / 2))
-        imgparams_lr['N_z'] = int(np.ceil(imgparams['N_z'] / 2))
-        imgparams_lr['j_xstart_roi'] = int(np.floor(imgparams['j_xstart_roi'] / 2))
-        imgparams_lr['j_xstop_roi'] = int(np.ceil(imgparams['j_xstop_roi'] / 2))
-        imgparams_lr['j_ystart_roi'] = int(np.floor(imgparams['j_ystart_roi'] / 2))
-        imgparams_lr['j_ystop_roi'] = int(np.ceil(imgparams['j_ystop_roi'] / 2))
-        imgparams_lr['j_zstart_roi'] = int(np.floor(imgparams['j_zstart_roi'] / 2))
-        imgparams_lr['j_zstop_roi'] = int(np.ceil(imgparams['j_zstop_roi'] / 2))
-        # Rescale sigma_y for lower resolution
-        reconparams_lr['weightScaler_value'] = 2.0 * reconparams['weightScaler_value']
-        # Reduce resolution of initialization image if there is one
-        if isinstance(x_init, np.ndarray) and (x_init.ndim == 3):
-            lr_init_image = _utils.recon_resize_3D(x_init, (imgparams_lr['N_z'], imgparams_lr['N_x'], imgparams_lr['N_y']))
+        if not is_img_size_even:
+            warnings.warn('Stop going to lower resolution space because reconstruction size is not even in all dimensions!\ 
+                           \n\t Current recon size (slices, rows, cols)=({imgparams['N_z']}, {imgparams['N_x']}, {imgparams['N_y']}).') 
         else:
-            lr_init_image = x_init
-        # Reduce resolution of proximal image if there is one
-        if isinstance(proxmap_input, np.ndarray) and (proxmap_input.ndim == 3):
-            lr_prox_image = _utils.recon_resize_3D(proxmap_input, (imgparams_lr['N_z'], imgparams_lr['N_x'], imgparams_lr['N_y']))
-        else:
-            lr_prox_image = proxmap_input
-        
-        if reconparams['verbosity'] >= 1:
-            lr_num_slices, lr_num_rows, lr_num_cols = imgparams_lr['N_z'], imgparams_lr['N_x'], imgparams_lr['N_y']
             print(f'Calling multires_recon for reconstruction size (slices, rows, cols)=({lr_num_slices}, {lr_num_rows},{lr_num_cols}).')
-        
-        lr_recon = recon_cy(sino, angles, wght, lr_init_image, lr_prox_image,
-                            sinoparams, imgparams_lr, reconparams_lr, new_max_resolutions, 
-                            num_threads, lib_path)
-        
-        # Interpolate resolution of reconstruction
-        x_init = _utils.recon_resize_3D(lr_recon, (imgparams['N_z'], imgparams['N_x'], imgparams['N_y']))
-        del lr_recon
-        del lr_init_image
-        del lr_prox_image
+            # go to lower resolution
+            new_max_resolutions = max_resolutions-1;
+            # make a copy of the image and recon param dictionaries
+            imgparams_lr = imgparams.copy()
+            reconparams_lr = reconparams.copy()
+            # Set the pixel pitch, num_rows, and num_cols for the next lower resolution
+            imgparams_lr['Delta_xy'] = 2 * imgparams['Delta_xy']
+            imgparams_lr['Delta_z'] = 2 * imgparams['Delta_z']
+            imgparams_lr['N_x'] = int(np.ceil(imgparams['N_x'] / 2))
+            imgparams_lr['N_y'] = int(np.ceil(imgparams['N_y'] / 2))
+            imgparams_lr['N_z'] = int(np.ceil(imgparams['N_z'] / 2))
+            imgparams_lr['j_xstart_roi'] = int(np.floor(imgparams['j_xstart_roi'] / 2))
+            imgparams_lr['j_xstop_roi'] = int(np.ceil(imgparams['j_xstop_roi'] / 2))
+            imgparams_lr['j_ystart_roi'] = int(np.floor(imgparams['j_ystart_roi'] / 2))
+            imgparams_lr['j_ystop_roi'] = int(np.ceil(imgparams['j_ystop_roi'] / 2))
+            imgparams_lr['j_zstart_roi'] = int(np.floor(imgparams['j_zstart_roi'] / 2))
+            imgparams_lr['j_zstop_roi'] = int(np.ceil(imgparams['j_zstop_roi'] / 2))
+            # Rescale sigma_y for lower resolution
+            reconparams_lr['weightScaler_value'] = 2.0 * reconparams['weightScaler_value']
+            # Reduce resolution of initialization image if there is one
+            if isinstance(x_init, np.ndarray) and (x_init.ndim == 3):
+                lr_init_image = _utils.recon_resize_3D(x_init, (imgparams_lr['N_z'], imgparams_lr['N_x'], imgparams_lr['N_y']))
+            else:
+                lr_init_image = x_init
+            # Reduce resolution of proximal image if there is one
+            if isinstance(proxmap_input, np.ndarray) and (proxmap_input.ndim == 3):
+                lr_prox_image = _utils.recon_resize_3D(proxmap_input, (imgparams_lr['N_z'], imgparams_lr['N_x'], imgparams_lr['N_y']))
+            else:
+                lr_prox_image = proxmap_input
+            
+            if reconparams['verbosity'] >= 1:
+                lr_num_slices, lr_num_rows, lr_num_cols = imgparams_lr['N_z'], imgparams_lr['N_x'], imgparams_lr['N_y']
+            
+            lr_recon = recon_cy(sino, angles, wght, lr_init_image, lr_prox_image,
+                                sinoparams, imgparams_lr, reconparams_lr, new_max_resolutions, 
+                                num_threads, lib_path)
+            
+            # Interpolate resolution of reconstruction
+            x_init = _utils.recon_resize_3D(lr_recon, (imgparams['N_z'], imgparams['N_x'], imgparams['N_y']))
+            del lr_recon
+            del lr_init_image
+            del lr_prox_image
+            # END go to lower resolution
     
     hash_val = _utils.hash_params(angles, sinoparams, imgparams)
     py_Amatrix_fname = _utils._gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
