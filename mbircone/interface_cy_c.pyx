@@ -281,7 +281,7 @@ def recon_cy(sino, angles, wght, x_init, proxmap_input,
     if go_to_lower_resolution:
         if not is_img_size_even:
             print(f"Current recon size (slices, rows, cols)=({imgparams['N_z']}, {imgparams['N_x']}, {imgparams['N_y']}).") 
-            warnings.warn("Stop going to lower resolution space because reconstruction size is not even in all dimensions!")
+            warnings.warn("\n*** Stopped going to lower resolution space because reconstruction size is not even in all dimensions! ***\n")
         else:
             # go to lower resolution
             new_max_resolutions = max_resolutions-1;
