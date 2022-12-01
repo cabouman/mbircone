@@ -277,7 +277,7 @@ def create_image_params_dict(num_image_rows, num_image_cols, num_image_slices, d
 def create_sino_params_dict(dist_source_detector, magnification,
                         num_views, num_det_rows, num_det_channels,
                         det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0,
-                        delta_pixel_detector=1.0):
+                        delta_det_channel=1.0, delta_det_row=1.0):
     """ Compute sinogram parameters specify coordinates and bounds relating to the sinogram.
         For detailed specifications of sinoparams, see cone3D.interface_cy_c
     
@@ -293,7 +293,8 @@ def create_sino_params_dict(dist_source_detector, magnification,
         det_row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
         rotation_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space.
             This is normally set to zero.
-        delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
+        delta_det_channel (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU` along channels (i.e., the width of a single channel).
+        delta_det_row (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU` along rows (i.e., the width of a single row). In almost all cases should be equal to delta_det_channel.
     
     Returns:
         Dictionary containing sino parameters as required by the Cython code
@@ -303,8 +304,8 @@ def create_sino_params_dict(dist_source_detector, magnification,
     sinoparams['N_dv'] = num_det_channels
     sinoparams['N_dw'] = num_det_rows
     sinoparams['N_beta'] = num_views
-    sinoparams['Delta_dv'] = delta_pixel_detector
-    sinoparams['Delta_dw'] = delta_pixel_detector
+    sinoparams['Delta_dv'] = delta_det_channel
+    sinoparams['Delta_dw'] = delta_det_row
     sinoparams['u_s'] = - dist_source_detector / magnification
     sinoparams['u_r'] = 0
     sinoparams['v_r'] = rotation_offset
@@ -327,10 +328,9 @@ def create_sino_params_dict(dist_source_detector, magnification,
     return sinoparams
 
 def recon(sino, angles, dist_source_detector, magnification,
-          geometry='cone',
           weights=None, weight_type='unweighted', init_image=0.0, prox_image=None,
           num_image_rows=None, num_image_cols=None, num_image_slices=None,
-          delta_pixel_detector=1.0, delta_pixel_image=None,
+          delta_det_channel=1.0, delta_det_row=1.0, delta_pixel_image=None,
           det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0, image_slice_offset=0.0,
           sigma_y=None, snr_db=40.0, sigma_x=None, sigma_p=None, p=1.2, q=2.0, T=1.0, num_neighbors=6,
           sharpness=0.0, positivity=True, max_resolutions=None, stop_threshold=0.02, max_iterations=100,
@@ -366,7 +366,8 @@ def recon(sino, angles, dist_source_detector, magnification,
         num_image_slices (int, optional): [Default=None] Integer number of slices in reconstructed image.
             If None, automatically set by auto_image_size.
 
-        delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
+        delta_det_channel (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU` along channels (i.e., the width of a single channel).
+        delta_det_row (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU` along rows (i.e., the width of a single row). In almost all cases should be equal to delta_det_channel.
         delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
             If None, automatically set to delta_pixel_detector/magnification
         
@@ -374,7 +375,7 @@ def recon(sino, angles, dist_source_detector, magnification,
         det_row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
         rotation_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space.
             This is normally set to zero.
-        image_slice_offset (float, optional): [Default=0.0] Float that controls vertical offset of the center slice for the reconstruction in units of ALU
+        image_slice_offset (float, optional): [Default=0.0] Vertical offset of the center slice for the reconstruction in units of ALU. A positive value corresponds to a negative translation along the z-axis.
         
         sigma_y (float, optional): [Default=None] Scalar value of noise standard deviation parameter.
             If None, automatically set with auto_sigma_y.
@@ -444,7 +445,7 @@ def recon(sino, angles, dist_source_detector, magnification,
                                      num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
                                      det_channel_offset=det_channel_offset, det_row_offset=det_row_offset,
                                      rotation_offset=rotation_offset,
-                                     delta_pixel_detector=delta_pixel_detector)
+                                     delta_det_channel=delta_det_channel, delta_det_row=delta_det_row)
     
     imgparams = create_image_params_dict(num_image_rows, num_image_cols, num_image_slices, delta_pixel_image=delta_pixel_image, image_slice_offset=image_slice_offset)
     
@@ -547,8 +548,8 @@ def recon(sino, angles, dist_source_detector, magnification,
 def project(image, angles,
             num_det_rows, num_det_channels,
             dist_source_detector, magnification,
-            det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0,
-            delta_pixel_detector=1.0, delta_pixel_image=None,
+            delta_det_channel=1.0, delta_det_row=1.0, delta_pixel_image=None,
+            det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0, image_slice_offset=0.0,
             num_threads=None, verbose=1, lib_path=__lib_path):
     """Compute 3D cone beam forward-projection.
     
@@ -564,14 +565,16 @@ def project(image, angles,
         dist_source_detector (float): Distance between the X-ray source and the detector in units of ALU
         magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
         
+        delta_det_channel (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU` along channels (i.e., the width of a single channel).
+        delta_det_row (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU` along rows (i.e., the width of a single row). In almost all cases should be equal to delta_det_channel.
+        delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
+            If None, automatically set to delta_pixel_detector/magnification
+        
         det_channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
         det_row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
         rotation_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space.
             This is normally set to zero.
-        
-        delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
-        delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
-            If None, automatically set to delta_pixel_detector/magnification
+        image_slice_offset (float, optional): Vertical offset of the center slice for the given image in units of ALU. A positive value corresponds to a negative translation along the z-axis.
         
         num_threads (int, optional): [Default=None] Number of compute threads requested when executed.
             If None, num_threads is set to the number of cores in the system
@@ -588,7 +591,7 @@ def project(image, angles,
     os.environ['OMP_DYNAMIC'] = 'true'
 
     if delta_pixel_image is None:
-        delta_pixel_image = delta_pixel_detector / magnification
+        delta_pixel_image = np.min(delta_det_channel, delta_det_row) / magnification
 
     num_views = len(angles)
 
@@ -600,7 +603,7 @@ def project(image, angles,
      
     (num_image_slices, num_image_rows, num_image_cols) = image.shape
     
-    imgparams = create_image_params_dict(num_image_rows, num_image_cols, num_image_slices, delta_pixel_image=delta_pixel_image)
+    imgparams = create_image_params_dict(num_image_rows, num_image_cols, num_image_slices, delta_pixel_image=delta_pixel_image, image_slice_offset=image_slice_offset)
 
     hash_val = _utils.hash_params(angles, sinoparams, imgparams)
     sysmatrix_fname = _utils._gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
