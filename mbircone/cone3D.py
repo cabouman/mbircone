@@ -246,21 +246,20 @@ def auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_
 
 
 def create_image_params_dict(num_image_rows, num_image_cols, num_image_slices, delta_pixel_image=1.0, image_slice_offset=0.0):
-    """ Allocate imageparam parameters as required by certain C methods.
-        Can be used to describe a region of projection (i.e., when an image is available in ``project`` method),
-            or to specify a region of reconstruction.
-        For detailed specifications of imageparams, see cone3D.interface_cy_c
+    """ Allocate ``imgparams`` parameters as required by ``recon`` and ``project``.
     
     Args:
-        num_image_rows (int): Integer number of rows in image region.
-        num_image_cols (int): Integer number of columns in image region.
-        num_image_slices (int): Integer number of slices in image region.
-        delta_pixel_image (float, optional): [Default=1.0] Scalar value of image pixel spacing in :math:`ALU`.
-        image_slice_offset (float, optional): [Default=0.0] Float that controls vertical offset of the center slice
-            for the reconstruction in units of ALU
+        num_image_rows (int): Number of rows in image region.
+        num_image_cols (int): Number of columns in image region.
+        num_image_slices (int): Number of slices in image region.
+
+        delta_pixel_image (float, optional): [Default=1.0] Image pixel spacing in :math:`ALU`.
+        image_slice_offset (float, optional): [Default=0.0] Vertical offset of the image in units of :math:`ALU`.
+            (The image center along the vertical axis is at ``-image_slice_offsest``.)
     
     Returns:
-        Dictionary containing sino parameters as required by the Cython code
+        (dict): Parameters specifying the location and dimensions of a 3D density image within the cone-beam geometry.
+
     """
 
     imgparams = dict()
@@ -275,7 +274,7 @@ def create_image_params_dict(num_image_rows, num_image_cols, num_image_slices, d
     imgparams['y_0'] = -imgparams['N_y']*imgparams['Delta_xy']/2.0
     imgparams['z_0'] = -imgparams['N_z']*imgparams['Delta_z']/2.0 - image_slice_offset
         
-    # depreciated parameters
+    # Deprecated parameters
         
     imgparams['j_xstart_roi'] = -1
     imgparams['j_ystart_roi'] = -1
