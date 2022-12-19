@@ -56,26 +56,28 @@ def _distance_line_to_point(A, B, P):
 
 
 def calc_weights(sino, weight_type):
-    """Compute the weights used in MBIR reconstruction.
+    """ Compute the weights used in MBIR reconstruction.
 
     Args:
-        sino (ndarray): numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels)
-        or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
-        weight_type (string):[Default=0] Type of noise model used for data.
+        sino (float, ndarray): numpy array of sinogram data with
+            either 3D shape ``(num_views, num_det_rows, num_det_channels)``
+            or 4D shape ``(num_time_points, num_views, num_det_rows, num_det_channels)``.
 
-            If weight_type="unweighted"        => weights = numpy.ones_like(sino)
+        weight_type (string): Type of noise model used for data:
 
-            If weight_type="transmission"      => weights = numpy.exp(-sino)
+            If ``weight_type = 'unweighted'`` return ``numpy.ones(sino.shape)``.
 
-            If weight_type="transmission_root" => weights = numpy.exp(-sino/2)
+            If ``weight_type = 'transmission'`` return ``numpy.exp(-sino)``.
 
-            If weight_type="emission"         => weights = 1/(sino + 0.1)
+            If ``weight_type = 'transmission_root'`` return ``numpy.exp(-sino/2)``.
+
+            If ``weight_type = 'emission'`` return ``1/(numpy.absolute(sino) + 0.1)``.
 
     Returns:
-        ndarray: numpy array of weights with same shape as sino.
+        (float, ndarray): numpy array of weights with the same shape as ``sino``.
 
     Raises:
-        Exception: Description
+        Exception: Raised if ``weight_type`` is not one of the above options.
     """
     if weight_type == 'unweighted':
         weights = np.ones(sino.shape)
