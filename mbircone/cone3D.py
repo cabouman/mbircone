@@ -327,7 +327,6 @@ def create_sino_params_dict(dist_source_detector, magnification,
     return sinoparams
 
 def recon(sino, angles, dist_source_detector, magnification,
-          geometry='cone',
           weights=None, weight_type='unweighted', init_image=0.0, prox_image=None,
           num_image_rows=None, num_image_cols=None, num_image_slices=None,
           delta_pixel_detector=1.0, delta_pixel_image=None,
