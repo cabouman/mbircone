@@ -30,12 +30,15 @@ def _sino_indicator(sino):
 
 
 def _distance_line_to_point(A, B, P):
-    """Compute the distance from point P to the line passing through points A and B. (Depreciated method)
+    """ Compute the distance from point P to the line passing through points A and B. (Deprecated method)
     
     Args:
         A (float, 2-tuple): (x,y) coordinate of point A
         B (float, 2-tuple): (x,y) coordinate of point B
         P (float, 2-tuple): (x,y) coordinate of point P
+
+    Returns:
+        (float): Distance from point P to the line passing through points A and B.
     """
 
     (x1, y1) = A
