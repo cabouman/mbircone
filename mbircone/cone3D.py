@@ -97,11 +97,12 @@ def auto_max_resolutions(init_image) :
     """ Compute the automatic value of ``max_resolutions`` for use in MBIR reconstruction.
 
     Args:
-        init_image (ndarray): Initial value of reconstruction image, specified by either a
+        init_image (float, ndarray): Initial value of reconstruction image, specified by either a
             scalar value or a 3D numpy array with shape ``(num_img_slices, num_img_rows, num_img_cols)``.
 
     Returns:
-        (int): Return ``0`` if ``init_image`` is a 3D numpy array, otherwise return ``2``.
+        (int): Automatic value of ``max_resolutions``. Return ``0`` if ``init_image`` is a 3D numpy array,
+            otherwise return ``2``.
     """
     # Default value of max_resolutions
     max_resolutions = 2
@@ -113,26 +114,21 @@ def auto_max_resolutions(init_image) :
 
 
 def auto_sigma_y(sino, magnification, weights, snr_db=40.0, delta_pixel_image=1.0, delta_pixel_detector=1.0):
-    """Compute the automatic value of ``sigma_y`` for use in MBIR reconstruction.
+    """ Compute the automatic value of ``sigma_y`` for use in MBIR reconstruction.
 
     Args:
-        sino (ndarray): numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels)
-            or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
+        sino (float, ndarray): Sinogram data with either 3D shape ``(num_views, num_det_rows, num_det_channels)``
+            or 4D shape ``(num_time_points, num_views, num_det_rows, num_det_channels)``.
         magnification (float): Magnification of the cone-beam geometry defined as
             (source to detector distance)/(source to center-of-rotation distance).
-        weights (ndarray):
-            numpy array of weights with same shape as sino.
-            The parameters weights should be the same values as used in mbircone reconstruction.
-        snr_db (float, optional):
-            [Default=40.0] Scalar value that controls assumed signal-to-noise ratio of the data in dB.
-        delta_pixel_image (float, optional):
-            [Default=1.0] Scalar value of pixel spacing in :math:`ALU`.
-        delta_pixel_detector (float, optional):
-            [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
+        weights (float, ndarray): Weights used in mbircone reconstruction, with the same array shape as ``sino``.
 
+        snr_db (float, optional): [Default=40.0] Assumed signal-to-noise ratio of the data in :math:`dB`.
+        delta_pixel_image (float, optional): [Default=1.0] Image pixel spacing in :math:`ALU`.
+        delta_pixel_detector (float, optional): [Default=1.0] Detector pixel spacing in :math:`ALU`.
 
     Returns:
-        float: Automatic values of regularization parameter.
+        (float): Automatic value of forward model regularization parameter ``sigma_y``.
     """
 
     # Compute indicator function for sinogram support
