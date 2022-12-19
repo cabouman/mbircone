@@ -14,15 +14,16 @@ __namelen_sysmatrix = 20
 
 
 def _sino_indicator(sino):
-    """Compute a binary function that indicates the region of sinogram support.
+    """ Compute a binary function that indicates the region of sinogram support.
 
     Args:
-        sino (ndarray):
-            numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels)
-            or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
+        sino (float, ndarray): numpy array of sinogram data with
+            either 3D shape (num_views, num_det_rows, num_det_channels)
+            or 4D shape (num_time_points, num_views, num_det_rows, num_det_channels)
 
     Returns:
-        int8: A binary value: =1 within sinogram support; =0 outside sinogram support.
+        (int8, ndarray): numpy array of binary values with the same shape as sino.
+            =1 within sinogram support; =0 outside sinogram support.
     """
     indicator = np.int8(sino > 0.05 * np.mean(np.fabs(sino)))  # for excluding empty space from average
     return indicator
