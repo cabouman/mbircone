@@ -17,12 +17,11 @@ def _sino_indicator(sino):
     """ Compute a binary function that indicates the region of sinogram support.
 
     Args:
-        sino (float, ndarray): numpy array of sinogram data with
-            either 3D shape (num_views, num_det_rows, num_det_channels)
-            or 4D shape (num_time_points, num_views, num_det_rows, num_det_channels)
+        sino (float, ndarray): Sinogram data with either 3D shape ``(num_views, num_det_rows, num_det_channels)``
+            or 4D shape ``(num_time_points, num_views, num_det_rows, num_det_channels)``.
 
     Returns:
-        (int8, ndarray): numpy array of binary values with the same shape as sino.
+        (int8, ndarray): Binary values corresponding to the support of ``sino``, with the same array shape as ``sino``.
             =1 within sinogram support; =0 outside sinogram support.
     """
     indicator = np.int8(sino > 0.05 * np.mean(np.fabs(sino)))  # for excluding empty space from average
@@ -59,22 +58,21 @@ def calc_weights(sino, weight_type):
     """ Compute the weights used in MBIR reconstruction.
 
     Args:
-        sino (float, ndarray): numpy array of sinogram data with
-            either 3D shape ``(num_views, num_det_rows, num_det_channels)``
+        sino (float, ndarray): Sinogram data with either 3D shape ``(num_views, num_det_rows, num_det_channels)``
             or 4D shape ``(num_time_points, num_views, num_det_rows, num_det_channels)``.
 
         weight_type (string): Type of noise model used for data:
 
-            If ``weight_type = 'unweighted'`` return ``numpy.ones(sino.shape)``.
+            weight_type = 'unweighted' => numpy.ones(sino.shape).
 
-            If ``weight_type = 'transmission'`` return ``numpy.exp(-sino)``.
+            weight_type = 'transmission' => numpy.exp(-sino).
 
-            If ``weight_type = 'transmission_root'`` return ``numpy.exp(-sino/2)``.
+            weight_type = 'transmission_root' => numpy.exp(-sino/2).
 
-            If ``weight_type = 'emission'`` return ``1/(numpy.absolute(sino) + 0.1)``.
+            weight_type = 'emission' => 1/(numpy.absolute(sino) + 0.1).
 
     Returns:
-        (float, ndarray): numpy array of weights with the same shape as ``sino``.
+        (float, ndarray): Weights used in mbircone reconstruction, with the same array shape as ``sino``.
 
     Raises:
         Exception: Raised if ``weight_type`` is not one of the above options.
