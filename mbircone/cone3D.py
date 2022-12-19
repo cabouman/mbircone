@@ -432,10 +432,10 @@ def recon(sino, angles, dist_source_detector, magnification,
             forward projection matrices.
 
         verbose (int, optional): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal
-            reconstruction progress information, and 2 prints the full information.s
+            reconstruction progress information, and 2 prints the full information.
         
     Returns:
-        3D numpy array: 3D reconstruction with shape ``(num_img_slices, num_img_rows, num_img_cols)`` in units of
+        (int, ndarray): 3D reconstruction image with shape ``(num_img_slices, num_img_rows, num_img_cols)`` in units of
         :math:`ALU^{-1}`.
     """
 
@@ -579,18 +579,16 @@ def project(image, angles,
             det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0,
             delta_pixel_detector=1.0, delta_pixel_image=None,
             num_threads=None, verbose=1, lib_path=__lib_path):
-    """Compute 3D cone beam forward-projection.
+    """ Compute 3D cone beam forward projection.
     
     Args:
-        image (ndarray):
-            3D numpy array of image being forward projected.
-            The image is a 3D array with a shape of (num_img_slices, num_img_rows, num_img_cols)
-        angles (ndarray): 1D view angles array in radians.
+        image (float, ndarray): 3D image to be projected, with shape ``(num_img_slices, num_img_rows, num_img_cols)``.
+        angles (float, ndarray): 1D array of view angles in radians.
 
-        num_det_rows (int): Number of rows in sinogram data
-        num_det_channels (int): Number of channels in sinogram data
+        num_det_rows (int): Number of rows in sinogram data.
+        num_det_channels (int): Number of channels in sinogram data.
 
-        dist_source_detector (float): Distance between the X-ray source and the detector in units of ALU
+        dist_source_detector (float): Distance between the X-ray source and the detector in units of :math:`ALU`.
         magnification (float): Magnification of the cone-beam geometry defined as
             (source to detector distance)/(source to center-of-rotation distance).
         
@@ -602,18 +600,19 @@ def project(image, angles,
             to axis of rotation in the object space.
             This is normally set to zero.
         
-        delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
-        delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
-            If None, automatically set to delta_pixel_detector/magnification
+        delta_pixel_detector (float, optional): [Default=1.0] Detector pixel spacing in :math:`ALU`.
+        delta_pixel_image (float, optional): [Default=None] Image pixel spacing in :math:`ALU`.
+            If None, automatically set to ``delta_pixel_detector/magnification``.
         
         num_threads (int, optional): [Default=None] Number of compute threads requested when executed.
-            If None, num_threads is set to the number of cores in the system
+            If None, ``num_threads`` is set to the number of cores in the system.
         verbose (int, optional): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal
             reconstruction progress information, and 2 prints the full information.
         lib_path (str, optional): [Default=~/.cache/mbircone] Path to directory containing library of
             forward projection matrices.
+
     Returns:
-        ndarray: 3D numpy array containing sinogram with shape (num_views, num_det_rows, num_det_channels).
+        (int, ndarray): 3D sinogram with shape ``(num_views, num_det_rows, num_det_channels)``.
     """
 
     if num_threads is None:
