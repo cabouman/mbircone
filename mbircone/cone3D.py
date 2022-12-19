@@ -183,64 +183,64 @@ def auto_sigma_prior(sino, magnification, delta_pixel_detector=1.0, sharpness=0.
 
 
 def auto_sigma_x(sino, magnification, delta_pixel_detector=1.0, sharpness=0.0):
-    """Compute the automatic value of ``sigma_x`` for use in MBIR reconstruction.
+    """ Compute the automatic value of ``sigma_x`` for use in MBIR reconstruction with qGGMRF prior.
 
     Args:
-        sino (ndarray): numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels)
-            or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
+        sino (float, ndarray): Sinogram data with either 3D shape ``(num_views, num_det_rows, num_det_channels)``
+            or 4D shape ``(num_time_points, num_views, num_det_rows, num_det_channels)``.
         magnification (float): Magnification of the cone-beam geometry defined as
             (source to detector distance)/(source to center-of-rotation distance).
-        delta_pixel_detector (float, optional):
-            [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
-        sharpness (float, optional):
-            [Default=0.0] Scalar value that controls level of sharpness.
+
+        delta_pixel_detector (float, optional): [Default=1.0] Detector pixel spacing in :math:`ALU`.
+        sharpness (float, optional): [Default=0.0] Controls level of sharpness.
             ``sharpness=0.0`` is neutral; ``sharpness>0`` increases sharpness; ``sharpness<0`` reduces sharpness
 
     Returns:
-        float: Automatic value of regularization parameter.
+        (float): Automatic value of qGGMRF prior model regularization parameter.
     """
     return 0.2 * auto_sigma_prior(sino, magnification, delta_pixel_detector, sharpness)
 
 
 def auto_sigma_p(sino, magnification, delta_pixel_detector = 1.0, sharpness = 0.0 ):
-    """Compute the automatic value of ``sigma_p`` for use in proximal map estimation.
+    """ Compute the automatic value of ``sigma_p`` for use in MBIR reconstruction with proximal map prior.
 
     Args:
-        sino (ndarray): numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels)
-            or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
+        sino (float, ndarray): Sinogram data with either 3D shape ``(num_views, num_det_rows, num_det_channels)``
+            or 4D shape ``(num_time_points, num_views, num_det_rows, num_det_channels)``.
         magnification (float): Magnification of the cone-beam geometry defined as
             (source to detector distance)/(source to center-of-rotation distance).
-        delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
-        sharpness (float, optional): [Default=0.0] Scalar value that controls level of sharpness.
+
+        delta_pixel_detector (float, optional): [Default=1.0] Detector pixel spacing in :math:`ALU`.
+        sharpness (float, optional): [Default=0.0] Controls level of sharpness.
             ``sharpness=0.0`` is neutral; ``sharpness>0`` increases sharpness; ``sharpness<0`` reduces sharpness
 
     Returns:
-        float: Automatic value of regularization parameter.
+        (float): Automatic value of proximal map prior model regularization parameter.
     """
     
     return 2.0 * auto_sigma_prior(sino, magnification, delta_pixel_detector, sharpness)
 
 
 def auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image, magnification):
-    """Compute the automatic image size for use in recon.
+    """ Compute the automatic image array size for use in MBIR reconstruction.
     
     Args:
-        num_det_rows (int): Number of rows in sinogram data
-        num_det_channels (int): Number of channels in sinogram data
-        delta_pixel_detector (float): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
-        delta_pixel_image (float): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
-            If None, automatically set to delta_pixel_detector/magnification
+        num_det_rows (int): Number of rows in sinogram data.
+        num_det_channels (int): Number of channels in sinogram data.
+        delta_pixel_detector (float): Detector pixel spacing in :math:`ALU`.
+        delta_pixel_image (float): Image pixel spacing in :math:`ALU`.
         magnification (float): Magnification of the cone-beam geometry defined as
             (source to detector distance)/(source to center-of-rotation distance).
     
     Returns:
-        (int, 3-tuple): Default values for num_image_rows, num_image_cols, num_image_slices for the inputted image measurements.
+        (int, 3-tuple): Default values for ``num_image_rows``, ``num_image_cols``, ``num_image_slices`` for the
+            inputted image measurements.
         
     """
     
-    num_image_rows = int(np.round( num_det_channels*( (delta_pixel_detector/delta_pixel_image)/magnification ) ))
+    num_image_rows = int(np.round(num_det_channels*((delta_pixel_detector/delta_pixel_image)/magnification)))
     num_image_cols = num_image_rows
-    num_image_slices = int(np.round( num_det_rows*( (delta_pixel_detector/delta_pixel_image)/magnification ) ))
+    num_image_slices = int(np.round(num_det_rows*((delta_pixel_detector/delta_pixel_image)/magnification)))
     
     return (num_image_rows, num_image_cols, num_image_slices)
 
