@@ -61,15 +61,12 @@ def calc_weights(sino, weight_type):
         sino (float, ndarray): Sinogram data with either 3D shape (num_views, num_det_rows, num_det_channels)
             or 4D shape (num_time_points, num_views, num_det_rows, num_det_channels).
 
-        weight_type (string): Type of noise model used for data:
+        weight_type (string): Type of noise model used for data
 
-            - weight_type = 'unweighted' => return numpy.ones(sino.shape).
-
-            - weight_type = 'transmission' => return numpy.exp(-sino).
-
-            - weight_type = 'transmission_root' => return numpy.exp(-sino/2).
-
-            - weight_type = 'emission' => return 1/(numpy.absolute(sino) + 0.1).
+                - weight_type = 'unweighted' => return numpy.ones(sino.shape).
+                - weight_type = 'transmission' => return numpy.exp(-sino).
+                - weight_type = 'transmission_root' => return numpy.exp(-sino/2).
+                - weight_type = 'emission' => return 1/(numpy.absolute(sino) + 0.1).
 
     Returns:
         (float, ndarray): Weights used in mbircone reconstruction, with the same array shape as ``sino``.
@@ -367,8 +364,8 @@ def recon(sino, angles, dist_source_detector, magnification,
         
         weights (float, ndarray, optional): [Default=None] 3D weights array with same shape as ``sino``.
             If ``weights`` is not supplied, then ``cone3D.calc_weights`` is used to set weights using ``weight_type``.
-        weight_type (string, optional): [Default='unweighted']
-            Type of noise model used for data.
+        weight_type (string, optional): [Default='unweighted'] Type of noise model used for data.
+
                 - ``'unweighted'`` corresponds to unweighted reconstruction;
                 - ``'transmission'`` is the correct weighting for transmission CT with constant dosage;
                 - ``'transmission_root'`` is commonly used with transmission CT data to improve image homogeneity;
