@@ -362,11 +362,6 @@ def recon(sino, angles, dist_source_detector, magnification,
         magnification (float): Magnification of the cone-beam geometry defined as
             (source to detector distance)/(source to center-of-rotation distance).
         
-        geometry (string, optional): This can be 'cone' or 'lamino'.
-            If geometry=='cone', runs a standard cone-beam reconstruction.
-            If geometry=='lamino', runs a parallel-beam laminography reconstruction and ignores parameters
-                dist_source_detector, magnification, row_offset, rotation_offset. (Not implemented.)
-        
         weights (ndarray, optional): [Default=None] 3D weights array with same shape as sino.
         weight_type (string, optional): [Default='unweighted'] Type of noise model used for data.
             If the ``weights`` array is not supplied, then the function ``cone3D.calc_weights`` is used to set weights
