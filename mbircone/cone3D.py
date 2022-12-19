@@ -179,6 +179,7 @@ def auto_sigma_prior(sino, magnification, delta_pixel_detector=1.0, sharpness=0.
     sigma_prior = (2 ** sharpness) * typical_img_value
     return sigma_prior
 
+
 def auto_sigma_x(sino, magnification, delta_pixel_detector=1.0, sharpness=0.0):
     """Compute the automatic value of ``sigma_x`` for use in MBIR reconstruction.
 
@@ -217,6 +218,7 @@ def auto_sigma_p(sino, magnification, delta_pixel_detector = 1.0, sharpness = 0.
     
     return 2.0 * auto_sigma_prior(sino, magnification, delta_pixel_detector, sharpness)
 
+
 def auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image, magnification):
     """Compute the automatic image size for use in recon.
     
@@ -239,6 +241,7 @@ def auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_
     num_image_slices = int(np.round( num_det_rows*( (delta_pixel_detector/delta_pixel_image)/magnification ) ))
     
     return (num_image_rows, num_image_cols, num_image_slices)
+
 
 def create_image_params_dict(num_image_rows, num_image_cols, num_image_slices, delta_pixel_image=1.0, image_slice_offset=0.0):
     """ Allocate imageparam parameters as required by certain C methods.
@@ -343,6 +346,7 @@ def create_sino_params_dict(dist_source_detector, magnification,
     sinoparams['weightScaler_value'] = -1
 
     return sinoparams
+
 
 def recon(sino, angles, dist_source_detector, magnification,
           weights=None, weight_type='unweighted', init_image=0.0, prox_image=None,
@@ -462,11 +466,14 @@ def recon(sino, angles, dist_source_detector, magnification,
     if delta_pixel_image is None:
         delta_pixel_image = delta_pixel_detector/magnification
     if num_image_rows is None:
-        num_image_rows,_,_ = auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image, magnification)
+        num_image_rows, _, _ = auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image,
+                                             magnification)
     if num_image_cols is None:
-        _,num_image_cols,_ = auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image, magnification)
+        _, num_image_cols, _ = auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image,
+                                             magnification)
     if num_image_slices is None:
-        _,_,num_image_slices = auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image, magnification)
+        _, _, num_image_slices = auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image,
+                                               magnification)
     
     sinoparams = create_sino_params_dict(dist_source_detector, magnification,
                                      num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
@@ -474,7 +481,8 @@ def recon(sino, angles, dist_source_detector, magnification,
                                      rotation_offset=rotation_offset,
                                      delta_pixel_detector=delta_pixel_detector)
     
-    imgparams = create_image_params_dict(num_image_rows, num_image_cols, num_image_slices, delta_pixel_image=delta_pixel_image, image_slice_offset=image_slice_offset)
+    imgparams = create_image_params_dict(num_image_rows, num_image_cols, num_image_slices,
+                                         delta_pixel_image=delta_pixel_image, image_slice_offset=image_slice_offset)
     
     # make sure that weights do not contain negative entries
     # if weights is provided, and negative entry exists, then do not use the provided weights
@@ -627,10 +635,10 @@ def project(image, angles,
     num_views = len(angles)
 
     sinoparams = create_sino_params_dict(dist_source_detector, magnification,
-                                     num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
-                                     det_channel_offset=det_channel_offset, det_row_offset=det_row_offset,
-                                     rotation_offset=rotation_offset,
-                                     delta_pixel_detector=delta_pixel_detector)
+                                         num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
+                                         det_channel_offset=det_channel_offset, det_row_offset=det_row_offset,
+                                         rotation_offset=rotation_offset,
+                                         delta_pixel_detector=delta_pixel_detector)
      
     (num_image_slices, num_image_rows, num_image_cols) = image.shape
     
