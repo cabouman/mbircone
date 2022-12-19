@@ -12,12 +12,14 @@ import mbircone._utils as _utils
 __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
 __namelen_sysmatrix = 20
 
+
 def _sino_indicator(sino):
     """Compute a binary function that indicates the region of sinogram support.
 
     Args:
         sino (ndarray):
-            numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels) or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
+            numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels)
+            or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
 
     Returns:
         int8: A binary value: =1 within sinogram support; =0 outside sinogram support.
@@ -53,7 +55,8 @@ def calc_weights(sino, weight_type):
     """Compute the weights used in MBIR reconstruction.
 
     Args:
-        sino (ndarray): numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels) or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
+        sino (ndarray): numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels)
+        or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
         weight_type (string):[Default=0] Type of noise model used for data.
 
             If weight_type="unweighted"        => weights = numpy.ones_like(sino)
@@ -105,8 +108,10 @@ def auto_sigma_y(sino, magnification, weights, snr_db=40.0, delta_pixel_image=1.
     """Compute the automatic value of ``sigma_y`` for use in MBIR reconstruction.
 
     Args:
-        sino (ndarray): numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels) or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
-        magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
+        sino (ndarray): numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels)
+            or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
+        magnification (float): Magnification of the cone-beam geometry defined as
+            (source to detector distance)/(source to center-of-rotation distance).
         weights (ndarray):
             numpy array of weights with same shape as sino.
             The parameters weights should be the same values as used in mbircone reconstruction.
@@ -149,8 +154,10 @@ def auto_sigma_prior(sino, magnification, delta_pixel_detector=1.0, sharpness=0.
     """Compute the automatic value of prior model regularization for use in MBIR reconstruction.
     
     Args:
-        sino (ndarray): numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels) or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
-        magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
+        sino (ndarray): numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels)
+            or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
+        magnification (float): Magnification of the cone-beam geometry defined as
+            (source to detector distance)/(source to center-of-rotation distance).
         delta_pixel_detector (float, optional):
             [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
         sharpness (float, optional):
@@ -176,8 +183,10 @@ def auto_sigma_x(sino, magnification, delta_pixel_detector=1.0, sharpness=0.0):
     """Compute the automatic value of ``sigma_x`` for use in MBIR reconstruction.
 
     Args:
-        sino (ndarray): numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels) or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
-        magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
+        sino (ndarray): numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels)
+            or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
+        magnification (float): Magnification of the cone-beam geometry defined as
+            (source to detector distance)/(source to center-of-rotation distance).
         delta_pixel_detector (float, optional):
             [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
         sharpness (float, optional):
@@ -194,8 +203,10 @@ def auto_sigma_p(sino, magnification, delta_pixel_detector = 1.0, sharpness = 0.
     """Compute the automatic value of ``sigma_p`` for use in proximal map estimation.
 
     Args:
-        sino (ndarray): numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels) or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
-        magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
+        sino (ndarray): numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels)
+            or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
+        magnification (float): Magnification of the cone-beam geometry defined as
+            (source to detector distance)/(source to center-of-rotation distance).
         delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
         sharpness (float, optional): [Default=0.0] Scalar value that controls level of sharpness.
             ``sharpness=0.0`` is neutral; ``sharpness>0`` increases sharpness; ``sharpness<0`` reduces sharpness
@@ -215,7 +226,8 @@ def auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_
         delta_pixel_detector (float): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
         delta_pixel_image (float): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
             If None, automatically set to delta_pixel_detector/magnification
-        magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
+        magnification (float): Magnification of the cone-beam geometry defined as
+            (source to detector distance)/(source to center-of-rotation distance).
     
     Returns:
         (int, 3-tuple): Default values for num_image_rows, num_image_cols, num_image_slices for the inputted image measurements.
@@ -230,7 +242,8 @@ def auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_
 
 def create_image_params_dict(num_image_rows, num_image_cols, num_image_slices, delta_pixel_image=1.0, image_slice_offset=0.0):
     """ Allocate imageparam parameters as required by certain C methods.
-        Can be used to describe a region of projection (i.e., when an image is available in ``project`` method), or to specify a region of reconstruction.
+        Can be used to describe a region of projection (i.e., when an image is available in ``project`` method),
+            or to specify a region of reconstruction.
         For detailed specifications of imageparams, see cone3D.interface_cy_c
     
     Args:
@@ -238,7 +251,8 @@ def create_image_params_dict(num_image_rows, num_image_cols, num_image_slices, d
         num_image_cols (int): Integer number of columns in image region.
         num_image_slices (int): Integer number of slices in image region.
         delta_pixel_image (float, optional): [Default=1.0] Scalar value of image pixel spacing in :math:`ALU`.
-        image_slice_offset (float, optional): [Default=0.0] Float that controls vertical offset of the center slice for the reconstruction in units of ALU
+        image_slice_offset (float, optional): [Default=0.0] Float that controls vertical offset of the center slice
+            for the reconstruction in units of ALU
     
     Returns:
         Dictionary containing sino parameters as required by the Cython code
@@ -283,15 +297,19 @@ def create_sino_params_dict(dist_source_detector, magnification,
     
     Args:
         dist_source_detector (float): Distance between the X-ray source and the detector in units of ALU
-        magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
+        magnification (float): Magnification of the cone-beam geometry defined as
+            (source to detector distance)/(source to center-of-rotation distance).
         
         num_views (int): Number of views in sinogram data
         num_det_rows (int): Number of rows in sinogram data
         num_det_channels (int): Number of channels in sinogram data
 
-        det_channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
-        det_row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
-        rotation_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space.
+        det_channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector
+            to the source-detector line along a row.
+        det_row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector
+            to the source-detector line along a column.
+        rotation_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from source-detector line
+            to axis of rotation in the object space.
             This is normally set to zero.
         delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
     
@@ -341,22 +359,27 @@ def recon(sino, angles, dist_source_detector, magnification,
         sino (ndarray): 3D sinogram array with shape (num_views, num_det_rows, num_det_channels)
         angles (ndarray): 1D view angles array in radians.
         dist_source_detector (float): Distance between the X-ray source and the detector in units of ALU
-        magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
+        magnification (float): Magnification of the cone-beam geometry defined as
+            (source to detector distance)/(source to center-of-rotation distance).
         
         geometry (string, optional): This can be 'cone' or 'lamino'.
             If geometry=='cone', runs a standard cone-beam reconstruction.
-            If geometry=='lamino', runs a parallel-beam laminography reconstruction and ignores parameters dist_source_detector, magnification, row_offset, rotation_offset. (Not implemented.)
+            If geometry=='lamino', runs a parallel-beam laminography reconstruction and ignores parameters
+                dist_source_detector, magnification, row_offset, rotation_offset. (Not implemented.)
         
         weights (ndarray, optional): [Default=None] 3D weights array with same shape as sino.
         weight_type (string, optional): [Default='unweighted'] Type of noise model used for data.
-            If the ``weights`` array is not supplied, then the function ``cone3D.calc_weights`` is used to set weights using specified ``weight_type`` parameter.
+            If the ``weights`` array is not supplied, then the function ``cone3D.calc_weights`` is used to set weights
+                using specified ``weight_type`` parameter.
             
                 - Option "unweighted" corresponds to unweighted reconstruction;
                 - Option "transmission" is the correct weighting for transmission CT with constant dosage;
                 - Option "transmission_root" is commonly used with transmission CT data to improve image homogeneity;
                 - Option "emission" is appropriate for emission CT data.
-        init_image (ndarray, optional): [Default=0.0] Initial value of reconstruction image, specified by either a scalar value or a 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols)
-        prox_image (ndarray, optional): [Default=None] 3D proximal map input image. 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols)
+        init_image (ndarray, optional): [Default=0.0] Initial value of reconstruction image, specified by either a
+            scalar value or a 3D numpy array with shape (num_img_slices,num_img_rows,num_img_cols)
+        prox_image (ndarray, optional): [Default=None] 3D proximal map input image. 3D numpy array with shape
+            (num_img_slices,num_img_rows,num_img_cols)
         
         num_image_rows (int, optional): [Default=None] Integer number of rows in reconstructed image.
             If None, automatically set by auto_image_size.
@@ -369,34 +392,42 @@ def recon(sino, angles, dist_source_detector, magnification,
         delta_pixel_image (float, optional): [Default=None] Scalar value of image pixel spacing in :math:`ALU`.
             If None, automatically set to delta_pixel_detector/magnification
         
-        det_channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
-        det_row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
-        rotation_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space.
+        det_channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector
+            to the source-detector line along a row.
+        det_row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector
+            to the source-detector line along a column.
+        rotation_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from source-detector line
+            to axis of rotation in the object space.
             This is normally set to zero.
-        image_slice_offset (float, optional): [Default=0.0] Float that controls vertical offset of the center slice for the reconstruction in units of ALU
+        image_slice_offset (float, optional): [Default=0.0] Float that controls vertical offset of the center slice
+            for the reconstruction in units of ALU
         
         sigma_y (float, optional): [Default=None] Scalar value of noise standard deviation parameter.
             If None, automatically set with auto_sigma_y.
-        snr_db (float, optional): [Default=40.0] Scalar value that controls assumed signal-to-noise ratio of the data in dB.
-            Ignored if sigma_y is not None.
+        snr_db (float, optional): [Default=40.0] Scalar value that controls assumed signal-to-noise ratio of the data
+            in dB. Ignored if sigma_y is not None.
         sigma_x (float, optional): [Default=None] Scalar value :math:`>0` that specifies the qGGMRF scale parameter.
             Ignored if prox_image is not None.
-            If None and prox_image is also None, automatically set with auto_sigma_x. Regularization should be controled with the ``sharpness`` parameter, but ``sigma_x`` can be set directly by expert users.
+            If None and prox_image is also None, automatically set with auto_sigma_x. Regularization should be
+            controlled with the ``sharpness`` parameter, but ``sigma_x`` can be set directly by expert users.
         sigma_p (float, optional): [Default=None] Scalar value :math:`>0` that specifies the proximal map parameter.
             Ignored if prox_image is None.
-            If None and proximal image is not None, automatically set with auto_sigma_p. Regularization should be controled with the ``sharpness`` parameter, but ``sigma_p`` can be set directly by expert users.
-        p (float, optional): [Default=1.2] Scalar value in range :math:`[1,2]` that specifies the qGGMRF shape parameter.
-        q (float, optional): [Default=2.0] Scalar value in range :math:`[p,1]` that specifies the qGGMRF shape parameter.
+            If None and proximal image is not None, automatically set with auto_sigma_p. Regularization should be
+            controlled with the ``sharpness`` parameter, but ``sigma_p`` can be set directly by expert users.
+        p (float, optional): [Default=1.2] Scalar value in range :math:`[1,2]` that specifies qGGMRF shape parameter.
+        q (float, optional): [Default=2.0] Scalar value in range :math:`[p,1]` that specifies qGGMRF shape parameter.
         T (float, optional): [Default=1.0] Scalar value :math:`>0` that specifies the qGGMRF threshold parameter.
         num_neighbors (int, optional): [Default=6] Possible values are {26,18,6}.
-            Number of neightbors in the qggmrf neighborhood. Higher number of neighbors result in a better regularization but a slower reconstruction.
+            Number of neightbors in the qggmrf neighborhood. Higher number of neighbors result in a better
+            regularization but a slower reconstruction.
         
         sharpness (float, optional): [Default=0.0]
             Scalar value that controls level of sharpness in the reconstruction
             ``sharpness=0.0`` is neutral; ``sharpness>0`` increases sharpness; ``sharpness<0`` reduces sharpness.
             Ignored if ``sigma_x`` is not None in qGGMRF mode, or if ``sigma_p`` is not None in proximal map mode.
         positivity (bool, optional): [Default=True] Boolean value that determines if positivity constraint is enforced.
-            The positivity parameter defaults to True; however, it should be changed to False when used in applications that can generate negative image values.
+            The positivity parameter defaults to True; however, it should be changed to False when used in applications
+            that can generate negative image values.
         max_resolutions (int, optional): [Default=None] Integer >=0 that specifies the maximum number of grid
             resolutions used to solve MBIR reconstruction problem.
             If None, automatically set with auto_max_resolutions to 0 if inital image is provided and 2 otherwise.
@@ -406,11 +437,14 @@ def recon(sino, angles, dist_source_detector, magnification,
         num_threads (int, optional): [Default=None] Number of compute threads requested when executed.
             If None, num_threads is set to the number of cores in the system
         NHICD (bool, optional): [Default=False] If true, uses Non-homogeneous ICD updates
-        lib_path (str, optional): [Default=~/.cache/mbircone] Path to directory containing library of forward projection matrices.
-        verbose (int, optional): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal reconstruction progress information, and 2 prints the full information.
+        lib_path (str, optional): [Default=~/.cache/mbircone] Path to directory containing library of
+            forward projection matrices.
+        verbose (int, optional): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal
+            reconstruction progress information, and 2 prints the full information.
         
     Returns:
-        3D numpy array: 3D reconstruction with shape (num_img_slices, num_img_rows, num_img_cols) in units of :math:`ALU^{-1}`.
+        3D numpy array: 3D reconstruction with shape (num_img_slices, num_img_rows, num_img_cols) in units of
+        :math:`ALU^{-1}`.
     """
 
     # Internally set
@@ -561,11 +595,15 @@ def project(image, angles,
         num_det_channels (int): Number of channels in sinogram data
 
         dist_source_detector (float): Distance between the X-ray source and the detector in units of ALU
-        magnification (float): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
+        magnification (float): Magnification of the cone-beam geometry defined as
+            (source to detector distance)/(source to center-of-rotation distance).
         
-        det_channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
-        det_row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
-        rotation_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space.
+        det_channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector
+            to the source-detector line along a row.
+        det_row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector
+            to the source-detector line along a column.
+        rotation_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from source-detector line
+            to axis of rotation in the object space.
             This is normally set to zero.
         
         delta_pixel_detector (float, optional): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
@@ -574,8 +612,10 @@ def project(image, angles,
         
         num_threads (int, optional): [Default=None] Number of compute threads requested when executed.
             If None, num_threads is set to the number of cores in the system
-        verbose (int, optional): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal reconstruction progress information, and 2 prints the full information.
-        lib_path (str, optional): [Default=~/.cache/mbircone] Path to directory containing library of forward projection matrices.
+        verbose (int, optional): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal
+            reconstruction progress information, and 2 prints the full information.
+        lib_path (str, optional): [Default=~/.cache/mbircone] Path to directory containing library of
+            forward projection matrices.
     Returns:
         ndarray: 3D numpy array containing sinogram with shape (num_views, num_det_rows, num_det_channels).
     """
