@@ -153,20 +153,20 @@ def auto_sigma_y(sino, magnification, weights, snr_db=40.0, delta_pixel_image=1.
 
 
 def auto_sigma_prior(sino, magnification, delta_pixel_detector=1.0, sharpness=0.0):
-    """Compute the automatic value of prior model regularization for use in MBIR reconstruction.
+    """ Compute the automatic prior model regularization parameter for use in MBIR reconstruction.
     
     Args:
-        sino (ndarray): numpy array of sinogram data with either 3D shape (num_views,num_det_rows,num_det_channels)
-            or 4D shape (num_time_points,num_views,num_det_rows,num_det_channels)
+        sino (float, ndarray): Sinogram data with either 3D shape ``(num_views, num_det_rows, num_det_channels)``
+            or 4D shape ``(num_time_points, num_views, num_det_rows, num_det_channels)``.
         magnification (float): Magnification of the cone-beam geometry defined as
             (source to detector distance)/(source to center-of-rotation distance).
-        delta_pixel_detector (float, optional):
-            [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
-        sharpness (float, optional):
-            [Default=0.0] Scalar value that controls level of sharpness.
-            ``sharpness=0.0`` is neutral; ``sharpness>0`` increases sharpness; ``sharpness<0`` reduces sharpness
+
+        delta_pixel_detector (float, optional): [Default=1.0] Detector pixel spacing in :math:`ALU`.
+        sharpness (float, optional): [Default=0.0] Controls level of sharpness.
+            ``sharpness=0.0`` is neutral; ``sharpness>0`` increases sharpness; ``sharpness<0`` reduces sharpness.
+
     Returns:
-        float: Automatic value of regularization parameter.
+        (float): Automatic value of prior model regularization parameter.
     """
     
     num_det_channels = sino.shape[-1]
