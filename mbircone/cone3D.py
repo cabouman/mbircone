@@ -94,12 +94,14 @@ def calc_weights(sino, weight_type):
 
 
 def auto_max_resolutions(init_image) :
-    """Compute the automatic value of ``max_resolutions`` for use in MBIR reconstruction.
+    """ Compute the automatic value of ``max_resolutions`` for use in MBIR reconstruction.
 
     Args:
-        init_image (ndarray): Initial image for reconstruction.
+        init_image (ndarray): Initial value of reconstruction image, specified by either a
+            scalar value or a 3D numpy array with shape ``(num_img_slices, num_img_rows, num_img_cols)``.
+
     Returns:
-        int: Automatic value of ``max_resolutions``.
+        (int): Return ``0`` if ``init_image`` is a 3D numpy array, otherwise return ``2``.
     """
     # Default value of max_resolutions
     max_resolutions = 2
