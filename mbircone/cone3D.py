@@ -129,18 +129,18 @@ def auto_sigma_y(sino, magnification, weights, snr_db=40.0, delta_pixel_image=1.
     # Compute indicator function for sinogram support
     sino_indicator = _sino_indicator(sino)
 
-    # compute RMS value of sinogram excluding empty space
+    # Compute RMS value of sinogram excluding empty space
     signal_rms = np.average(weights * sino ** 2, None, sino_indicator) ** 0.5
 
-    # convert snr to relative noise standard deviation
+    # Convert snr to relative noise standard deviation
     rel_noise_std = 10 ** (-snr_db / 20)
     # compute the default_pixel_pitch = the detector pixel pitch in the image plane given the magnification
     default_pixel_pitch = delta_pixel_detector / magnification
 
-    # compute the image pixel pitch relative to the default.
+    # Compute the image pixel pitch relative to the default.
     pixel_pitch_relative_to_default = delta_pixel_image / default_pixel_pitch
 
-    # compute sigma_y and scale by relative pixel pitch
+    # Compute sigma_y and scale by relative pixel pitch
     sigma_y = rel_noise_std * signal_rms * (pixel_pitch_relative_to_default ** 0.5)
 
     if sigma_y > 0:
@@ -333,7 +333,7 @@ def create_sino_params_dict(dist_source_detector, magnification,
     dist_dv_to_detector_center_from_source_detector_line = - det_channel_offset
     dist_dw_to_detector_center_from_source_detector_line = - det_row_offset
 
-    # corner of detector from source-detector-line
+    # Corner of detector from source-detector-line
     sinoparams[
         'v_d0'] = dist_dv_to_detector_corner_from_detector_center + dist_dv_to_detector_center_from_source_detector_line
     sinoparams[
@@ -433,7 +433,7 @@ def recon(sino, angles, dist_source_detector, magnification,
             reconstruction progress information, and 2 prints the full information.
         
     Returns:
-        (int, ndarray): 3D reconstruction image with shape (num_img_slices, num_img_rows, num_img_cols) in units of
+        (float, ndarray): 3D reconstruction image with shape (num_img_slices, num_img_rows, num_img_cols) in units of
         :math:`ALU^{-1}`.
     """
 
@@ -475,8 +475,8 @@ def recon(sino, angles, dist_source_detector, magnification,
     imgparams = create_image_params_dict(num_image_rows, num_image_cols, num_image_slices,
                                          delta_pixel_image=delta_pixel_image, image_slice_offset=image_slice_offset)
     
-    # make sure that weights do not contain negative entries
-    # if weights is provided, and negative entry exists, then do not use the provided weights
+    # Make sure that weights do not contain negative entries
+    # If weights is provided, and negative entry exists, then do not use the provided weights
     if not ((weights is None) or (np.amin(weights) >= 0.0)):
         warnings.warn("Parameter weights contains negative values; Setting weights = None.")
         weights = None
@@ -610,7 +610,7 @@ def project(image, angles,
             forward projection matrices.
 
     Returns:
-        (int, ndarray): 3D sinogram with shape (num_views, num_det_rows, num_det_channels).
+        (float, ndarray): 3D sinogram with shape (num_views, num_det_rows, num_det_channels).
     """
 
     if num_threads is None:
@@ -638,7 +638,7 @@ def project(image, angles,
     sysmatrix_fname = _utils._gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
 
     if os.path.exists(sysmatrix_fname):
-        os.utime(sysmatrix_fname)  # update file modified time
+        os.utime(sysmatrix_fname)  # Update file modified time
     else:
         sysmatrix_fname_tmp = _utils._gen_sysmatrix_fname_tmp(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
         ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, sysmatrix_fname_tmp, verbose=verbose)
