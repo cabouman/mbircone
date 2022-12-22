@@ -351,8 +351,7 @@ def recon(sino, angles, dist_source_detector, magnification,
           det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0, image_slice_offset=0.0,
           sigma_y=None, snr_db=40.0, sigma_x=None, sigma_p=None, p=1.2, q=2.0, T=1.0, num_neighbors=6,
           sharpness=0.0, positivity=True, max_resolutions=None, stop_threshold=0.02, max_iterations=100,
-          num_threads=None, NHICD=False, lib_path=__lib_path,
-          verbose=1):
+          NHICD=False, num_threads=None, verbose=1, lib_path=__lib_path):
     """ Compute 3D cone beam MBIR reconstruction
     
     Args:
@@ -424,15 +423,15 @@ def recon(sino, angles, dist_source_detector, magnification,
             update is given by (average value change) / (average voxel value).
         max_iterations (int, optional): [Default=100] Maximum number of iterations before stopping.
 
+        NHICD (bool, optional): [Default=False] If True, uses non-homogeneous ICD updates.
         num_threads (int, optional): [Default=None] Number of compute threads requested when executed.
             If None, this is set to the number of cores in the system.
-        NHICD (bool, optional): [Default=False] If True, uses non-homogeneous ICD updates.
+        verbose (int, optional): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal
+            reconstruction progress information, and 2 prints the full information.
         lib_path (str, optional): [Default=~/.cache/mbircone] Path to directory containing library of
             forward projection matrices.
 
-        verbose (int, optional): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal
-            reconstruction progress information, and 2 prints the full information.
-        
+
     Returns:
         (float, ndarray): 3D reconstruction image with shape (num_img_slices, num_img_rows, num_img_cols) in units of
         :math:`ALU^{-1}`.
