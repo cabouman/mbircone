@@ -415,6 +415,7 @@ def recon(sino, angles, dist_source_detector, magnification,
         sharpness (float, optional): [Default=0.0] Sharpness of reconstruction.
             ``sharpness=0.0`` is neutral; ``sharpness>0`` increases sharpness; ``sharpness<0`` reduces sharpness.
             Used to calculate ``sigma_x`` and ``sigma_p``.
+            Ignored if ``sigma_x`` is not None in qGGMRF mode, or if ``sigma_p`` is not None in proximal map mode.
         positivity (bool, optional): [Default=True] Determines if positivity constraint will be enforced.
         max_resolutions (int, optional): [Default=None] Integer :math:`\geq 0` that specifies the maximum number of grid
             resolutions used to solve MBIR reconstruction problem.
