@@ -575,8 +575,8 @@ def recon(sino, angles, dist_source_detector, magnification,
 def project(image, angles,
             num_det_rows, num_det_channels,
             dist_source_detector, magnification,
-            det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0,
             delta_pixel_detector=1.0, delta_pixel_image=None,
+            det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0,
             num_threads=None, verbose=1, lib_path=__lib_path):
     """ Compute 3D cone beam forward projection.
     
@@ -590,7 +590,11 @@ def project(image, angles,
         dist_source_detector (float): Distance between the X-ray source and the detector in units of :math:`ALU`.
         magnification (float): Magnification of the cone-beam geometry defined as
             (source to detector distance)/(source to center-of-rotation distance).
-        
+
+        delta_pixel_detector (float, optional): [Default=1.0] Detector pixel spacing in :math:`ALU`.
+        delta_pixel_image (float, optional): [Default=None] Image pixel spacing in :math:`ALU`.
+            If None, automatically set to ``delta_pixel_detector/magnification``.
+
         det_channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector
             to the source-detector line along a row.
         det_row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector
@@ -598,11 +602,7 @@ def project(image, angles,
         rotation_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from source-detector line
             to axis of rotation in the object space.
             This is normally set to zero.
-        
-        delta_pixel_detector (float, optional): [Default=1.0] Detector pixel spacing in :math:`ALU`.
-        delta_pixel_image (float, optional): [Default=None] Image pixel spacing in :math:`ALU`.
-            If None, automatically set to ``delta_pixel_detector/magnification``.
-        
+
         num_threads (int, optional): [Default=None] Number of compute threads requested when executed.
             If None, ``num_threads`` is set to the number of cores in the system.
         verbose (int, optional): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal
