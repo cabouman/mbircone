@@ -225,7 +225,8 @@ def auto_image_size(num_det_rows, num_det_channels,
     Args:
         num_det_rows (int): Number of rows in sinogram data.
         num_det_channels (int): Number of channels in sinogram data.
-        delta_pixel_detector (float): Detector pixel spacing in :math:`ALU`.
+        delta_det_channel (float, optional): [Default=1.0] Detector channel spacing in :math:`ALU`.
+        delta_det_row (float, optional): [Default=1.0] Detector row spacing in :math:`ALU`.
         delta_pixel_image (float): Image pixel spacing in :math:`ALU`.
         magnification (float): Magnification of the cone-beam geometry defined as
             (source to detector distance)/(source to center-of-rotation distance).
@@ -311,7 +312,8 @@ def create_sino_params_dict(dist_source_detector, magnification,
         rotation_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from source-detector line
             to axis of rotation in the object space.
             This is normally set to zero.
-        delta_pixel_detector (float, optional): [Default=1.0] Detector pixel spacing in :math:`ALU`.
+        delta_det_channel (float, optional): [Default=1.0] Detector channel spacing in :math:`ALU`.
+        delta_det_row (float, optional): [Default=1.0] Detector row spacing in :math:`ALU`.
     
     Returns:
         (dict): Parameters specifying the location and dimensions of the X-ray source and detector.
@@ -382,7 +384,8 @@ def recon(sino, angles, dist_source_detector, magnification,
         num_image_slices (int, optional): [Default=None] Number of slices in reconstructed image.
             If None, automatically set by ``cone3D.auto_image_size``.
 
-        delta_pixel_detector (float, optional): [Default=1.0] Detector pixel spacing in :math:`ALU`.
+        delta_det_channel (float, optional): [Default=1.0] Detector channel spacing in :math:`ALU`.
+        delta_det_row (float, optional): [Default=1.0] Detector row spacing in :math:`ALU`.
         delta_pixel_image (float, optional): [Default=None] Image pixel spacing in :math:`ALU`.
             If None, automatically set to ``delta_pixel_detector/magnification``.
         
@@ -591,7 +594,8 @@ def project(image, angles,
         magnification (float): Magnification of the cone-beam geometry defined as
             (source to detector distance)/(source to center-of-rotation distance).
 
-        delta_pixel_detector (float, optional): [Default=1.0] Detector pixel spacing in :math:`ALU`.
+        delta_det_channel (float, optional): [Default=1.0] Detector channel spacing in :math:`ALU`.
+        delta_det_row (float, optional): [Default=1.0] Detector row spacing in :math:`ALU`.
         delta_pixel_image (float, optional): [Default=None] Image pixel spacing in :math:`ALU`.
             If None, automatically set to ``delta_pixel_detector/magnification``.
 
@@ -602,6 +606,7 @@ def project(image, angles,
         rotation_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from source-detector line
             to axis of rotation in the object space.
             This is normally set to zero.
+        image_slice_offset (float, optional): [Default=0.0] Vertical offset of the image in units of :math:`ALU`.
 
         num_threads (int, optional): [Default=None] Number of compute threads requested when executed.
             If None, ``num_threads`` is set to the number of cores in the system.
