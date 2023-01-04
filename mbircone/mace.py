@@ -330,7 +330,7 @@ def mace4D(sino, angles, dist_source_detector, magnification,
         # Fixed args dictionary used for multi-node parallelization
         constant_args = {'dist_source_detector':dist_source_detector, 'magnification':magnification,
                          'det_channel_offset':det_channel_offset, 'det_row_offset':det_row_offset, 'rotation_offset':rotation_offset,
-                         'delta_pixel_detector':delta_pixel_detector, 'delta_pixel_image':delta_pixel_image, 'ror_radius':ror_radius,
+                         'delta_pixel_detector':delta_pixel_detector, 'delta_pixel_image':delta_pixel_image,
                          'sigma_y':sigma_y, 'sigma_p':sigma_p,
                          'positivity':positivity, 'p':p, 'q':q, 'T':T, 'num_neighbors':num_neighbors,
                          'max_iterations':20, 'stop_threshold':stop_threshold,
