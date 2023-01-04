@@ -218,7 +218,8 @@ def auto_sigma_p(sino, magnification, delta_pixel_detector = 1.0, sharpness = 0.
     return 2.0 * auto_sigma_prior(sino, magnification, delta_pixel_detector, sharpness)
 
 
-def auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image, magnification):
+def auto_image_size(num_det_rows, num_det_channels,
+                    delta_det_channel, delta_det_row, delta_pixel_image, magnification):
     """ Compute the automatic image array size for use in MBIR reconstruction.
     
     Args:
@@ -235,9 +236,9 @@ def auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_
         
     """
     
-    num_image_rows = int(np.round(num_det_channels*((delta_pixel_detector/delta_pixel_image)/magnification)))
+    num_image_rows = int(np.round(num_det_channels*((delta_det_channel/delta_pixel_image)/magnification)))
     num_image_cols = num_image_rows
-    num_image_slices = int(np.round(num_det_rows*((delta_pixel_detector/delta_pixel_image)/magnification)))
+    num_image_slices = int(np.round(num_det_rows*((delta_det_row/delta_pixel_image)/magnification)))
     
     return (num_image_rows, num_image_cols, num_image_slices)
 
@@ -291,7 +292,7 @@ def create_image_params_dict(num_image_rows, num_image_cols, num_image_slices, d
 def create_sino_params_dict(dist_source_detector, magnification,
                         num_views, num_det_rows, num_det_channels,
                         det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0,
-                        delta_pixel_detector=1.0):
+                        delta_det_channel=1.0, delta_det_row=1.0):
     """ Allocate sinogram parameters as required by ``cone3D.recon`` and ``cone3D.project``.
     
     Args:
@@ -320,8 +321,8 @@ def create_sino_params_dict(dist_source_detector, magnification,
     sinoparams['N_dv'] = num_det_channels
     sinoparams['N_dw'] = num_det_rows
     sinoparams['N_beta'] = num_views
-    sinoparams['Delta_dv'] = delta_pixel_detector
-    sinoparams['Delta_dw'] = delta_pixel_detector
+    sinoparams['Delta_dv'] = delta_det_channel
+    sinoparams['Delta_dw'] = delta_det_row
     sinoparams['u_s'] = - dist_source_detector / magnification
     sinoparams['u_r'] = 0
     sinoparams['v_r'] = rotation_offset
@@ -347,7 +348,7 @@ def create_sino_params_dict(dist_source_detector, magnification,
 def recon(sino, angles, dist_source_detector, magnification,
           weights=None, weight_type='unweighted', init_image=0.0, prox_image=None,
           num_image_rows=None, num_image_cols=None, num_image_slices=None,
-          delta_pixel_detector=1.0, delta_pixel_image=None,
+          delta_det_channel=1.0, delta_det_row=1.0, delta_pixel_image=None,
           det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0, image_slice_offset=0.0,
           sigma_y=None, snr_db=40.0, sigma_x=None, sigma_p=None, p=1.2, q=2.0, T=1.0, num_neighbors=6,
           sharpness=0.0, positivity=True, max_resolutions=None, stop_threshold=0.02, max_iterations=100,
@@ -455,22 +456,22 @@ def recon(sino, angles, dist_source_detector, magnification,
     (num_views, num_det_rows, num_det_channels) = sino.shape
 
     if delta_pixel_image is None:
-        delta_pixel_image = delta_pixel_detector/magnification
+        delta_pixel_image = delta_det_channel/magnification
     if num_image_rows is None:
-        num_image_rows, _, _ = auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image,
+        num_image_rows, _, _ = auto_image_size(num_det_rows, num_det_channels, delta_det_channel, delta_pixel_image,
                                              magnification)
     if num_image_cols is None:
-        _, num_image_cols, _ = auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image,
+        _, num_image_cols, _ = auto_image_size(num_det_rows, num_det_channels, delta_det_channel, delta_pixel_image,
                                              magnification)
     if num_image_slices is None:
-        _, _, num_image_slices = auto_image_size(num_det_rows, num_det_channels, delta_pixel_detector, delta_pixel_image,
+        _, _, num_image_slices = auto_image_size(num_det_rows, num_det_channels, delta_det_channel, delta_pixel_image,
                                                magnification)
     
     sinoparams = create_sino_params_dict(dist_source_detector, magnification,
                                      num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
                                      det_channel_offset=det_channel_offset, det_row_offset=det_row_offset,
                                      rotation_offset=rotation_offset,
-                                     delta_pixel_detector=delta_pixel_detector)
+                                     delta_det_channel=delta_det_channel, delta_det_row=delta_det_row)
     
     imgparams = create_image_params_dict(num_image_rows, num_image_cols, num_image_slices,
                                          delta_pixel_image=delta_pixel_image, image_slice_offset=image_slice_offset)
@@ -488,11 +489,11 @@ def recon(sino, angles, dist_source_detector, magnification,
     if sigma_y is None:
         sigma_y = auto_sigma_y(sino, magnification, weights, snr_db, 
                                delta_pixel_image=delta_pixel_image,
-                               delta_pixel_detector=delta_pixel_detector)
+                               delta_pixel_detector=delta_det_channel)
 
     # Set automatic value of sigma_x
     if sigma_x is None:
-        sigma_x = auto_sigma_x(sino, magnification, delta_pixel_detector=delta_pixel_detector, sharpness=sharpness)
+        sigma_x = auto_sigma_x(sino, magnification, delta_pixel_detector=delta_det_channel, sharpness=sharpness)
 
     reconparams = dict()
     reconparams['is_positivity_constraint'] = bool(positivity)
@@ -562,7 +563,7 @@ def recon(sino, angles, dist_source_detector, magnification,
     else:
         reconparams['prox_mode'] = True
         if sigma_p is None:
-            sigma_p = auto_sigma_p(sino, magnification, delta_pixel_detector, sharpness)
+            sigma_p = auto_sigma_p(sino, magnification, delta_det_channel, sharpness)
         reconparams['sigma_lambda'] = sigma_p
 
     x = ci.recon_cy(sino, angles, weights, init_image, prox_image,
@@ -574,8 +575,8 @@ def recon(sino, angles, dist_source_detector, magnification,
 def project(image, angles,
             num_det_rows, num_det_channels,
             dist_source_detector, magnification,
-            delta_pixel_detector=1.0, delta_pixel_image=None,
-            det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0,
+            delta_det_channel=1.0, delta_det_row=1.0, delta_pixel_image=None,
+            det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0, image_slice_offset=0.0,
             num_threads=None, verbose=1, lib_path=__lib_path):
     """ Compute 3D cone beam forward projection.
     
@@ -620,7 +621,7 @@ def project(image, angles,
     os.environ['OMP_DYNAMIC'] = 'true'
 
     if delta_pixel_image is None:
-        delta_pixel_image = delta_pixel_detector / magnification
+        delta_pixel_image = delta_det_channel / magnification
 
     num_views = len(angles)
 
@@ -628,7 +629,7 @@ def project(image, angles,
                                          num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
                                          det_channel_offset=det_channel_offset, det_row_offset=det_row_offset,
                                          rotation_offset=rotation_offset,
-                                         delta_pixel_detector=delta_pixel_detector)
+                                         delta_det_channel=delta_det_channel, delta_det_row=delta_det_row)
      
     (num_image_slices, num_image_rows, num_image_cols) = image.shape
     
