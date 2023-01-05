@@ -255,8 +255,7 @@ if __name__=='__main__':
                                       cluster_ticket=cluster_ticket,                                      
                                       delta_pixel_detector=delta_pixel_detector,
                                       weight_type='transmission',
-                                      sharpness=sharpness,
-                                      save_path=save_path)
+                                      sharpness=sharpness)
     recon_shape = recon_mace.shape
     print("Reconstruction shape = ", recon_shape)
 
