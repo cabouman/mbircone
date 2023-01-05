@@ -461,14 +461,14 @@ def recon(sino, angles, dist_source_detector, magnification,
     if delta_pixel_image is None:
         delta_pixel_image = delta_det_channel/magnification
     if num_image_rows is None:
-        num_image_rows, _, _ = auto_image_size(num_det_rows, num_det_channels, delta_det_channel, delta_pixel_image,
-                                             magnification)
+        num_image_rows, _, _ = auto_image_size(num_det_rows, num_det_channels, delta_det_channel, delta_det_row,
+                                               delta_pixel_image, magnification)
     if num_image_cols is None:
-        _, num_image_cols, _ = auto_image_size(num_det_rows, num_det_channels, delta_det_channel, delta_pixel_image,
-                                             magnification)
+        _, num_image_cols, _ = auto_image_size(num_det_rows, num_det_channels, delta_det_channel, delta_det_row,
+                                               delta_pixel_image, magnification)
     if num_image_slices is None:
-        _, _, num_image_slices = auto_image_size(num_det_rows, num_det_channels, delta_det_channel, delta_pixel_image,
-                                               magnification)
+        _, _, num_image_slices = auto_image_size(num_det_rows, num_det_channels, delta_det_channel, delta_det_row,
+                                               delta_pixel_image, magnification)
     
     sinoparams = create_sino_params_dict(dist_source_detector, magnification,
                                      num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
