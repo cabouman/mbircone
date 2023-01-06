@@ -26,6 +26,7 @@ compiler_str = os.environ.get('CC')
 # Set default to gcc in case CC is not set
 if not compiler_str:
   compiler_str = 'gcc'
+  os.environ['CC']='gcc'
   print("\n*** CC is not set. Using GCC as default compiler. ***\n")
 
 # Single threaded clang compile
