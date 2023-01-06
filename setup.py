@@ -26,10 +26,12 @@ compiler_str = os.environ.get('CC')
 # Set default to gcc in case CC is not set
 if not compiler_str:
   compiler_str = 'gcc'
-
+  os.environ['CC']='gcc'
+  print("\n*** CC is not set. Using GCC as default compiler. ***\n")
 
 # Single threaded clang compile
 if compiler_str == 'clang':
+    print("\n*** Using CLANG as compiler. ***\n")
     c_extension = Extension(PACKAGE_DIR+'.interface_cy_c', SRC_FILES,
                     libraries=[],
                     language='c',
@@ -38,6 +40,7 @@ if compiler_str == 'clang':
 
 # OpenMP gcc compile
 if compiler_str =='gcc':
+    print("\n*** Using GCC as compiler. ***\n")
     c_extension = Extension(PACKAGE_DIR+'.interface_cy_c', SRC_FILES,
                     libraries=[],
                     language='c',
@@ -49,6 +52,7 @@ if compiler_str =='gcc':
 
 # OpenMP icc compile
 if compiler_str =='icc':
+    print("\n*** Using ICC as compiler. ***\n")
     if sys.platform == 'linux':
             os.environ['LDSHARED'] = 'icc -shared'
     c_extension = Extension(PACKAGE_DIR+'.interface_cy_c', SRC_FILES,
