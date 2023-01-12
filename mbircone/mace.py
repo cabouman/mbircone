@@ -166,9 +166,7 @@ def mace3D(sino, angles, dist_source_detector, magnification,
             - 1 prints minimal reconstruction progress information, and 
             - 2 prints the full information.
         
-        - **lib_path** (*str, optional*): [Default=~/.cache/mbircone] Path to directory containing library of
-            
-            forward projection matrices.       
+        - **lib_path** (*str, optional*): [Default=~/.cache/mbircone] Path to directory containing library of forward projection matrices.       
     
     Returns:
         3-D numpy array: 3-D reconstruction with shape (num_img_slices, num_img_rows, num_img_cols) in units of :math:`ALU^{-1}`.        
@@ -211,8 +209,6 @@ def mace3D(sino, angles, dist_source_detector, magnification,
             elapsed_t = end-start
             print(f"Done computing qGGMRF reconstruction. Elapsed time: {elapsed_t:.2f} sec.")
        
-    [Nz,Nx,Ny] = np.shape(init_image)
-    
     image_dim = np.ndim(init_image)
     # number of agents = image dimensionality + 1.
     W = [np.copy(init_image) for _ in range(image_dim+1)]
@@ -428,8 +424,6 @@ def mace4D(sino, angles, dist_source_detector, magnification,
     
     if np.ndim(init_image) == 3:
         init_image = np.array([init_image for _ in range(Nt)])
-    else:
-        [_,Nz,Nx,Ny] = np.shape(init_image)
     
     # number of agents = image dimensionality.
     W = [np.copy(init_image) for _ in range(4)]
