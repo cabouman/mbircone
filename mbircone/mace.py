@@ -51,18 +51,16 @@ def denoiser_wrapper(image_noisy, denoiser, denoiser_args, permute_vector, posit
     image_denoised = np.transpose(image_denoised, inv_permute_vector)
     return image_denoised
 
-
 def mace3D(sino, angles, dist_source_detector, magnification,
            denoiser, denoiser_args=(),
            max_admm_itr=10, rho=0.5, prior_weight=0.5,
-           init_image=None,
-           det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0,
-           delta_pixel_detector=1.0, delta_pixel_image=None, ror_radius=None,
-           sigma_y=None, snr_db=30.0, weights=None, weight_type='unweighted',
-           positivity=True, p=1.2, q=2.0, T=1.0, num_neighbors=6,
-           sharpness=0.0, sigma_x=None, sigma_p=None, max_iterations=3, stop_threshold=0.02,
-           num_threads=None, NHICD=False, verbose=1, 
-           lib_path=__lib_path):
+           weights=None, weight_type='unweighted', init_image=None,
+           num_image_rows=None, num_image_cols=None, num_image_slices=None,
+           delta_pixel_detector=1.0, delta_pixel_image=None,
+           det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0, image_slice_offset=0.0,
+           sigma_y=None, snr_db=40.0, sigma_x=None, sigma_p=None, p=1.2, q=2.0, T=1.0, num_neighbors=6,
+           sharpness=0.0, positivity=True, max_resolutions=None, stop_threshold=0.02, max_iterations=3,
+           NHICD=False, num_threads=None, verbose=1, lib_path=__lib_path):
     """Computes 3-D conebeam beam reconstruction with multi-slice MACE alogorithm by fusing forward model proximal map with 2D denoisers across xy, xz, and yz planes.
     
     Required arguments: 
@@ -81,36 +79,94 @@ def mace3D(sino, angles, dist_source_detector, magnification,
         - **rho** (*float*): [Default=0.5] step size of ADMM update in MACE, range (0,1). The value of ``rho`` mainly controls the convergence speed of MACE algorithm.
         - **prior_weight** (*ndarray*): [Default=0.5] weights for prior agents, specified by either a scalar value or a 1D array. If a scalar is specified, then all three prior agents use the same weight of (prior_weight/3). If an array is provided, then the array should have three elements corresponding to the weight of denoisers in XY, YZ, and XZ planes respectively. The weight for forward model proximal map agent will be calculated as 1-sum(prior_weight) so that the sum of all agent weights are equal to 1. Each entry of prior_weight should have value between 0 and 1. sum(prior_weight) needs to be no greater than 1.
         - **init_image** (*ndarray, optional*): [Default=None] Initial value of MACE reconstruction image, specified by a 3-D numpy array with shape (num_img_slices,num_img_rows,num_img_cols). If None, the inital value of MACE will be automatically determined by a qGGMRF reconstruction.
-    Optional arguments inherited from ``cone3D.recon`` (with changing default value of ``max_iterations``): 
+    Optional arguments inherited from ``cone3D.recon`` (with changing default value of ``max_iterations``):
+        - **weights** (*float, ndarray, optional*): [Default=None] 3D weights array with same shape as ``sino``. 
+            
+            If ``weights`` is not supplied, then ``cone3D.calc_weights`` is used to set weights using ``weight_type``.
+        
+        - **weight_type** (*string, optional*): [Default='unweighted'] Type of noise model used for data.
+            
+            - ``'unweighted'`` corresponds to unweighted reconstruction;
+            - ``'transmission'`` is the correct weighting for transmission CT with constant dosage;
+            - ``'transmission_root'`` is commonly used with transmission CT data to improve image homogeneity;
+            - ``'emission'`` is appropriate for emission CT data.
+        
+        - **init_image** (*float, ndarray, optional*): [Default=0.0] Initial value of reconstruction image. Specified by either a scalar value or a 3D numpy array with shape (num_images_slices, num_image_rows, num_image_cols).
+        - **prox_image** (*float, ndarray, optional*): [Default=None] 3D proximal map input image with shape (num_images_slices, num_image_rows, num_image_cols).
+        
+        - **num_image_rows** (*int, optional*): [Default=None] Number of rows in reconstructed image. 
+            
+            If None, automatically set by ``cone3D.auto_image_size``.
+        
+        - **num_image_cols** (*int, optional*): [Default=None] Number of columns in reconstructed image. 
+            
+            If None, automatically set by ``cone3D.auto_image_size``.
+        
+        - **num_image_slices** (*int, optional*): [Default=None] Number of slices in reconstructed image. 
+            
+            If None, automatically set by ``cone3D.auto_image_size``.
+        
+        - **delta_pixel_detector** (*float, optional*): [Default=1.0] Detector pixel spacing in :math:`ALU`.
+        - **delta_pixel_image** (*float, optional*): [Default=None] Image pixel spacing in :math:`ALU`. 
+            
+            If None, automatically set to ``delta_pixel_detector/magnification``.
+        
         - **det_channel_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
         - **det_row_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
-        - **rotation_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space. This is normally set to zero.
-        - **delta_pixel_detector** (*float, optional*): [Default=1.0] Scalar value of detector pixel spacing in :math:`ALU`.
-        - **delta_pixel_image** (*float, optional*): [Default=None] Scalar value of image pixel spacing in :math:`ALU`. If None, automatically set to delta_pixel_detector/magnification
-        - **ror_radius** (*float, optional*): [Default=None] Scalar value of radius of reconstruction in :math:`ALU`. If None, automatically set with compute_img_params. Pixels outside the radius ror_radius in the :math:`(x,y)` plane are disregarded in the reconstruction.
-        - **sigma_y** (*float, optional*): [Default=None] Scalar value of noise standard deviation parameter. If None, automatically set with auto_sigma_y.
-        - **snr_db** (*float, optional*): [Default=30.0] Scalar value that controls assumed signal-to-noise ratio of the data in dB. Ignored if sigma_y is not None.
-        - **weights** (*ndarray, optional*): [Default=None] 3-D weights array with same shape as sino.
-        - **weight_type** (*string, optional*): [Default='unweighted'] Type of noise model used for data. If the ``weights`` array is not supplied, then the function ``cone3D.calc_weights`` is used to set weights using specified ``weight_type`` parameter.
-                
-                - Option "unweighted" corresponds to unweighted reconstruction;
-                - Option "transmission" is the correct weighting for transmission CT with constant dosage;
-                - Option "transmission_root" is commonly used with transmission CT data to improve image homogeneity;
-                - Option "emission" is appropriate for emission CT data.
-        - **positivity** (*bool, optional*): [Default=True] Boolean value that determines if positivity constraint is enforced. The positivity parameter defaults to True; however, it should be changed to False when used in applications that can generate negative image values.
-        - **p** (*float, optional*): [Default=1.2] Scalar value in range :math:`[1,2]` that specifies the qGGMRF shape parameter.
-        - **q** (*float, optional*): [Default=2.0] Scalar value in range :math:`[p,1]` that specifies the qGGMRF shape parameter.
-        - **T** (*float, optional*): [Default=1.0] Scalar value :math:`>0` that specifies the qGGMRF threshold parameter.
-        - **num_neighbors** (*int, optional*): [Default=6] Possible values are {26,18,6}. Number of neightbors in the qggmrf neighborhood. Higher number of neighbors result in a better regularization but a slower reconstruction.
-        - **sharpness** (*float, optional*): [Default=0.0] Scalar value that controls level of sharpness in the reconstruction. ``sharpness=0.0`` is neutral; ``sharpness>0`` increases sharpness; ``sharpness<0`` reduces sharpness. Ignored in qGGMRF reconstruction if ``sigma_x`` is not None, or in proximal map estimation if ``sigma_p`` is not None.
-        - **sigma_x** (*float, optional*): [Default=None] Scalar value :math:`>0` that specifies the qGGMRF scale parameter. If None, automatically set with auto_sigma_x. Regularization should be controled with the ``sharpness`` parameter, but ``sigma_x`` can be set directly by expert users.
-        - **sigma_p** (*float, optional*): [Default=None] Scalar value :math:`>0` that specifies the proximal map parameter. If None, automatically set with auto_sigma_p. Regularization should be controled with the ``sharpness`` parameter, but ``sigma_p`` can be set directly by expert users.
-        - **max_iterations** (*int, optional*): [Default=3] Integer valued specifying the maximum number of iterations for proximal map estimation.
-        - **stop_threshold** (*float, optional*): [Default=0.02] Scalar valued stopping threshold in percent. If stop_threshold=0.0, then run max iterations.
-        - **num_threads** (*int, optional*): [Default=None] Number of compute threads requested when executed. If None, num_threads is set to the number of cores in the system
-        - **NHICD** (*bool, optional*): [Default=False] If true, uses Non-homogeneous ICD updates
-        - **verbose** (*int, optional*): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints MACE reconstruction progress information, and 2 prints the MACE reconstruction as well as qGGMRF/proximal-map reconstruction progress information.
-        - **lib_path** (*str, optional*): [Default=~/.cache/mbircone] Path to directory containing library of forward projection matrices.
+        - **rotation_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space. 
+            
+            This is normally set to zero.
+
+        - **image_slice_offset** (*float, optional*): [Default=0.0] Vertical offset of the image in units of :math:`ALU`.
+        - **sigma_y** (*float, optional*): [Default=None] Forward model regularization parameter.
+            
+            If None, automatically set with ``cone3D.auto_sigma_y``.
+        
+        - **snr_db** (*float, optional*): [Default=40.0] Assumed signal-to-noise ratio of the data in :math:`dB`. Ignored if ``sigma_y`` is not None.
+       
+        - **sigma_x** (*float, optional*): [Default=None] qGGMRF prior model regularization parameter.
+            
+            If None, automatically set with ``cone3D.auto_sigma_x`` as a function of ``sharpness``.
+            
+            If ``prox_image`` is given, ``sigma_p`` is used instead of ``sigma_x`` in the reconstruction.
+        
+        - **sigma_p** (*float, optional*): [Default=None] Proximal map regularization parameter. Ignored if ``prox_image`` is None.
+            
+            If None, automatically set with ``cone3D.auto_sigma_p`` as a function of ``sharpness``.
+        
+        - **p** (*float, optional*): [Default=1.2] Scalar value in range :math:`[1,2]` that specifies qGGMRF shape parameter. Ignored if ``init_image`` is not None.
+        - **q** (*float, optional*): [Default=2.0] Scalar value in range :math:`[p,1]` that specifies qGGMRF shape parameter. Ignored if ``init_image`` is not None.
+        - **T** (*float, optional*): [Default=1.0] Scalar value :math:`>0` that specifies the qGGMRF threshold parameter. Ignored if ``init_image`` is not None.
+        - **num_neighbors** (int, optional): [Default=6] Possible values are :math:`{26,18,6}`. Ignored if ``init_image`` is not None.
+            
+            Number of neighbors in the qGGMRF neighborhood. More neighbors results in a better regularization but a slower reconstruction.
+        - **sharpness** (*float, optional*): [Default=0.0] Sharpness of reconstruction.
+            
+            ``sharpness=0.0`` is neutral; ``sharpness>0`` increases sharpness; ``sharpness<0`` reduces sharpness.
+            Used to calculate ``sigma_x`` and ``sigma_p``.
+            
+            Ignored if ``sigma_x`` is not None in qGGMRF mode, or if ``sigma_p`` is not None in proximal map mode.
+        
+        - **positivity** (*bool, optional*): [Default=True] Determines if positivity constraint will be enforced.
+        - **max_resolutions** (int, optional): [Default=None] Integer :math:`\geq 0` that specifies the maximum number of grid resolutions used for initial MBIR reconstruction. Ignored if ``init_image`` is not None.
+            
+            If None, automatically set by ``cone3D.auto_max_resolutions``.
+            
+        - **stop_threshold** (*float, optional*): [Default=0.02] Relative update stopping threshold, in percent, where relative update is given by (average value change) / (average voxel value).
+        
+        - **max_iterations** (*int, optional*): [Default=3] Maximum number of proximal map iterations before stopping.
+        - **NHICD** (*bool, optional*): [Default=False] If True, uses non-homogeneous ICD updates.
+        - **num_threads** (*int, optional*): [Default=None] Number of compute threads requested when executed.
+            
+            If None, this is set to the number of cores in the system.
+        
+        - **verbose** (*int, optional*): [Default=1] Possible values are {0,1,2}, where 
+            
+            - 0 is quiet, 
+            - 1 prints minimal reconstruction progress information, and 
+            - 2 prints the full information.
+        
+        - **lib_path** (*str, optional*): [Default=~/.cache/mbircone] Path to directory containing library of forward projection matrices.       
     
     Returns:
         3-D numpy array: 3-D reconstruction with shape (num_img_slices, num_img_rows, num_img_cols) in units of :math:`ALU^{-1}`.        
@@ -141,19 +197,18 @@ def mace3D(sino, angles, dist_source_detector, magnification,
             sigma_x = cone3D.auto_sigma_x(sino, magnification, delta_pixel_detector=delta_pixel_detector, sharpness=sharpness)
         # qGGMRF recon
         init_image = cone3D.recon(sino, angles, dist_source_detector, magnification,
-                                  det_channel_offset=det_channel_offset, det_row_offset=det_row_offset, rotation_offset=rotation_offset,
+                                  weights=weights,
+                                  num_image_rows=num_image_rows, num_image_cols=num_image_cols, num_image_slices=num_image_slices,
                                   delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image,
-                                  weights=weights, sigma_y=sigma_y, sigma_x=sigma_x,
-                                  positivity=positivity, p=p, q=q, T=T, num_neighbors=num_neighbors,
-                                  stop_threshold=stop_threshold,
-                                  num_threads=num_threads, NHICD=NHICD, verbose=qGGMRF_verbose, lib_path=lib_path)
+                                  det_channel_offset=det_channel_offset, det_row_offset=det_row_offset, rotation_offset=rotation_offset, image_slice_offset=image_slice_offset,
+                                  sigma_y=sigma_y, snr_db=snr_db, sigma_x=sigma_x, p=p, q=q, T=T, num_neighbors=num_neighbors,
+                                  sharpness=sharpness, positivity=positivity, max_resolutions=max_resolutions, stop_threshold=stop_threshold,
+                                  NHICD=NHICD, num_threads=num_threads, verbose=qGGMRF_verbose, lib_path=lib_path)         
         if verbose:
             end = time.time()
             elapsed_t = end-start
             print(f"Done computing qGGMRF reconstruction. Elapsed time: {elapsed_t:.2f} sec.")
        
-    [Nz,Nx,Ny] = np.shape(init_image)
-    
     image_dim = np.ndim(init_image)
     # number of agents = image dimensionality + 1.
     W = [np.copy(init_image) for _ in range(image_dim+1)]
@@ -182,13 +237,14 @@ def mace3D(sino, angles, dist_source_detector, magnification,
             itr_start = time.time()
         # forward model prox map agent
         X[0] = cone3D.recon(sino, angles, dist_source_detector, magnification,
-                            det_channel_offset=det_channel_offset, det_row_offset=det_row_offset, rotation_offset=rotation_offset,
-                            delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image,
                             init_image=X[0], prox_image=W[0],
-                            sigma_y=sigma_y, weights=weights,
-                            positivity=positivity,
-                            sigma_p=sigma_p, max_iterations=max_iterations, stop_threshold=stop_threshold,
-                            num_threads=num_threads, NHICD=NHICD, verbose=qGGMRF_verbose, lib_path=lib_path)
+                            weights=weights,
+                            num_image_rows=num_image_rows, num_image_cols=num_image_cols, num_image_slices=num_image_slices,
+                            delta_pixel_detector=delta_pixel_detector, delta_pixel_image=delta_pixel_image,
+                            det_channel_offset=det_channel_offset, det_row_offset=det_row_offset, rotation_offset=rotation_offset, image_slice_offset=image_slice_offset,
+                            sigma_y=sigma_y, sigma_p=sigma_p,
+                            positivity=positivity, max_resolutions=max_resolutions, stop_threshold=stop_threshold, max_iterations=max_iterations,
+                            NHICD=NHICD, num_threads=num_threads, verbose=qGGMRF_verbose, lib_path=lib_path)
         if verbose:
             print("Done forward model proximal map estimation.")
         # prior model denoiser agents
@@ -330,7 +386,7 @@ def mace4D(sino, angles, dist_source_detector, magnification,
         # Fixed args dictionary used for multi-node parallelization
         constant_args = {'dist_source_detector':dist_source_detector, 'magnification':magnification,
                          'det_channel_offset':det_channel_offset, 'det_row_offset':det_row_offset, 'rotation_offset':rotation_offset,
-                         'delta_pixel_detector':delta_pixel_detector, 'delta_pixel_image':delta_pixel_image, 'ror_radius':ror_radius,
+                         'delta_pixel_detector':delta_pixel_detector, 'delta_pixel_image':delta_pixel_image,
                          'sigma_y':sigma_y, 'sigma_p':sigma_p,
                          'positivity':positivity, 'p':p, 'q':q, 'T':T, 'num_neighbors':num_neighbors,
                          'max_iterations':20, 'stop_threshold':stop_threshold,
@@ -368,8 +424,6 @@ def mace4D(sino, angles, dist_source_detector, magnification,
     
     if np.ndim(init_image) == 3:
         init_image = np.array([init_image for _ in range(Nt)])
-    else:
-        [_,Nz,Nx,Ny] = np.shape(init_image)
     
     # number of agents = image dimensionality.
     W = [np.copy(init_image) for _ in range(4)]

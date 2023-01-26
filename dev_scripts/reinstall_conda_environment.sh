@@ -4,8 +4,9 @@
 # Create and activate new conda environment
 cd ..
 conda deactivate
-conda remove env --name mbircone_dev --all
-conda create --name mbircone_dev python=3.8
-conda activate mbircone_dev
+conda deactivate
+conda remove env --name mbircone --all
+conda create --name mbircone python=3.8
+conda activate mbircone
 cd dev_scripts
 
