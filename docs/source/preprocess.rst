@@ -9,8 +9,5 @@ mbircone.preprocess
 
    .. autosummary::
 
-      NSI_load_params
-      NSI_adjust_sysparam
-      NSI_to_MBIRCONE_params
-      NSI_load_scans
+      NSI_load_scans_and_params
       transmission_CT_preprocess
