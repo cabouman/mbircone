@@ -328,7 +328,7 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
         flipV = False
     
     # Detector rotation angle step (degree)
-    angleStep = np.single(NSI_params[10])
+    angle_step = np.single(NSI_params[10])
     
     # Detector rotation direction
     if NSI_params[11] == "True":
@@ -336,7 +336,7 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
     else:
         print("counter-clockwise rotation.")
         # counter-clockwise rotation
-        angleStep = -angleStep
+        angle_step = -angle_step
     v_d0 = - v_d1
     w_d0 = - geo_params['num_det_rows'] * geo_params['delta_det_row'] / 2.0
     geo_params['rotation_offset'] = 0.0
@@ -411,7 +411,7 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
     obj_scan, blank_scan, dark_scan = _crop_scans(obj_scan, blank_scan, dark_scan,
                                                   crop_factor=crop_factor)
    
-    # compute projection angles based on angleStep and rotation direction
+    # compute projection angles based on angle_step and rotation direction
     view_angle_start_deg = np.rad2deg(view_angle_start)
     angle_step *= subsample_view_factor
     angles = np.deg2rad(np.array([(view_angle_start_deg+n*angle_step) % 360.0 for n in range(len(view_ids))]))
