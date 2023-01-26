@@ -189,16 +189,28 @@ def _NSI_read_str_from_config(filepath, tags_sections):
 
     return params
 
-def NSI_load_params(config_file_path):
-    """ Reads NSI specific geometry and sinogram parameters from an NSI configuration file.
-    
+
+def NSI_load_geometry_params(config_file_path, downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)]):
+    """Load MBIRCONE format geometric parameters from an NSI configuration file.
+
     This function is specific to NSI datasets. 
     
     Args:
         config_file_path (string): Path to NSI configuration file. The filename extension is '.nsipro'.
+        downsample_factor ([int, int]): [Default=[1,1]] Down-sample factors along the detector rows and channels respectively. See docstring of ``preprocess.NSI_load_scans`` for more details.
+        crop_factor ([(float, float),(float, float)] or [float, float, float, float]): [Default=[(0., 0.), (1., 1.)]].
+            Two fractional points [(r0, c0), (r1, c1)] defining the bounding box that crops the scans. See docstring of ``preprocess.NSI_load_scans`` for more details.
+
     Returns:
-        Dictionary containing NSI system parameters.
+        Dictionary: MBIRCONE format geometric parameters containing the following information:
+            
+            - 
+
     """
+    # MBIR geometry parameter dictionary
+    geo_params = dict()
+    
+    ############### load NSI parameters from the given config file path
     tag_section_list = [['source', 'Result'],
                         ['reference', 'Result'],
                         ['pitch', 'Object Radiograph'],
@@ -212,140 +224,105 @@ def NSI_load_params(config_file_path):
                         ['angleStep', 'Object Radiograph'],
                         ['clockwise', 'Processed']
                        ]
-    params = _NSI_read_str_from_config(config_file_path, tag_section_list)
-    NSI_system_params = dict()
+    NSI_params = _NSI_read_str_from_config(config_file_path, tag_section_list)
 
     # coordinate of source
-    NSI_system_params['u_s'] = np.single(params[0].split(' ')[-1])
+    geo_params['u_s'] = np.single(NSI_params[0].split(' ')[-1])
 
     # coordinate of reference
-    vals = params[1].split(' ')
-    NSI_system_params['u_d1'] = np.single(vals[2])
-    NSI_system_params['v_d1'] = np.single(vals[0])
-    NSI_system_params['w_d1'] = np.single(vals[1])
+    coordinate_ref = NSI_params[1].split(' ')
+    geo_params['u_d1'] = np.single(coordinate_ref[2])
+    geo_params['v_d1'] = np.single(coordinate_ref[0])
+    geo_params['w_d1'] = np.single(coordinate_ref[1])
     
     # detector pixel pitch
-    vals = params[2].split(' ')
-    NSI_system_params['delta_dv'] = np.single(vals[0])
-    NSI_system_params['delta_dw'] = np.single(vals[1])
+    pixel_pitch_det = params[2].split(' ')
+    geo_params['delta_pixel_detector'] = np.single(pixel_pitch_det[0])
+    geo_params['delta_dw'] = np.single(pixel_pitch_det[1])
     
     # dimension of radiograph
-    NSI_system_params['N_dv'] = int(params[3])
-    NSI_system_params['N_dw'] = int(params[4])
+    geo_params['num_channels'] = int(params[3])
+    geo_params['num_slices'] = int(params[4])
     
     # total number of radiograph scans
-    NSI_system_params['num_acquired_scans'] = int(params[5])
+    geo_params['num_acquired_scans'] = int(params[5])
     
     # total angles (usually 360 for 3D data, and (360*number_of_full_rotations) for 4D data
-    NSI_system_params['total_angles'] = int(params[6])
+    geo_params['total_angles'] = int(params[6])
     
     # Radiograph rotation (degree)
-    NSI_system_params['rotate'] = int(params[7])
-    if (NSI_system_params['rotate'] == 180) or (NSI_system_params['rotate'] == 0):
+    geo_params['rotate'] = int(params[7])
+    if (geo_params['rotate'] == 180) or (geo_params['rotate'] == 0):
         print('scans are in portrait mode!')
-    elif (NSI_system_params['rotate'] == 270) or (NSI_system_params['rotate'] == 90):
+    elif (geo_params['rotate'] == 270) or (geo_params['rotate'] == 90):
         print('scans are in landscape mode!')
-        NSI_system_params['N_dv'], NSI_system_params['N_dw'] = NSI_system_params['N_dw'], NSI_system_params['N_dv']
+        geo_params['num_channels'], geo_params['num_slices'] = geo_params['num_slices'], geo_params['num_channels']
     else:        
         warnings.warn("Picture mode unknown! Should be either portrait (0 or 180 deg rotation) or landscape (90 or 270 deg rotation). Automatically setting picture mode to portrait.")
-        NSI_system_params['rotate'] = 180 
+        geo_params['rotate'] = 180 
     
     # Radiograph horizontal & vertical flip
     if params[8] == "True":
-        NSI_system_params['flipH'] = True
+        geo_params['flipH'] = True
     else: 
-        NSI_system_params['flipH'] = False
+        geo_params['flipH'] = False
     if params[9] == "True":
-        NSI_system_params['flipV'] = True
+        geo_params['flipV'] = True
     else: 
-        NSI_system_params['flipV'] = False
+        geo_params['flipV'] = False
     
     # Detector rotation angle step (degree)
-    NSI_system_params['angleStep'] = np.single(params[10])
+    geo_params['angleStep'] = np.single(params[10])
     
     # Detector rotation direction
     if params[11] == "True":
         print("clockwise rotation.")
-        NSI_system_params['rotation_direction'] = "positive"
+        geo_params['rotation_direction'] = "positive"
     else:
         print("counter-clockwise rotation.")
         # counter-clockwise rotation
-        NSI_system_params['rotation_direction'] = "negative"
-    NSI_system_params['v_d0'] = - NSI_system_params['v_d1']
-    NSI_system_params['w_d0'] = - NSI_system_params['N_dw'] * NSI_system_params['delta_dw'] / 2.0
-    NSI_system_params['v_r'] = 0.0
-    return NSI_system_params
+        geo_params['rotation_direction'] = "negative"
+    geo_params['v_d0'] = - geo_params['v_d1']
+    geo_params['w_d0'] = - geo_params['num_slices'] * geo_params['delta_dw'] / 2.0
+    geo_params['rotattion_offset'] = 0.0
 
-
-def NSI_adjust_sysparam(NSI_system_params, downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)]):
-    """Returns adjusted NSI system parameters given downsampling factor and cropping factor.
-
-    This function is specific to NSI datasets. 
-    
-    Args:
-        NSI_system_params (dict of string-int): NSI system parameters.
-        downsample_factor ([int, int]): [Default=[1,1]] Down-sample factors along the detector rows and channels respectively. See docstring of ``preprocess.NSI_load_scans`` for more details.
-        crop_factor ([(float, float),(float, float)] or [float, float, float, float]): [Default=[(0., 0.), (1., 1.)]].
-            Two fractional points [(r0, c0), (r1, c1)] defining the bounding box that crops the scans. See docstring of ``preprocess.NSI_load_scans`` for more details.
-    Returns:
-        Dictionary: Adjusted NSI system parameters.
-    """
+    ############### Adjust geometry params according to crop_factor and downsample_factor
     if isinstance(crop_factor[0], (list, tuple)):
         (r0, c0), (r1, c1) = crop_factor
     else:
         r0, c0, r1, c1 = crop_factor
 
     # Adjust parameters after downsampling
-    NSI_system_params['N_dw'] = (NSI_system_params['N_dw'] // downsample_factor[0])
-    NSI_system_params['N_dv'] = (NSI_system_params['N_dv'] // downsample_factor[1])
+    geo_params['num_slices'] = (geo_params['num_slices'] // downsample_factor[0])
+    geo_params['num_channels'] = (geo_params['num_channels'] // downsample_factor[1])
 
-    NSI_system_params['delta_dw'] = NSI_system_params['delta_dw'] * downsample_factor[0]
-    NSI_system_params['delta_dv'] = NSI_system_params['delta_dv'] * downsample_factor[1]
+    geo_params['delta_dw'] = geo_params['delta_dw'] * downsample_factor[0]
+    geo_params['delta_pixel_detector'] = geo_params['delta_pixel_detector'] * downsample_factor[1]
 
     # Adjust parameters after cropping
+    num_slices_shift0 = np.round(geo_params['num_slices'] * r0)
+    num_slices_shift1 = np.round(geo_params['num_slices'] * (1 - r1))
+    geo_params['w_d0'] = geo_params['w_d0'] + num_slices_shift0 * geo_params['delta_dw']
+    geo_params['num_slices'] = geo_params['num_slices'] - (num_slices_shift0 + num_slices_shift1)
 
-    N_dwshift0 = np.round(NSI_system_params['N_dw'] * r0)
-    N_dwshift1 = np.round(NSI_system_params['N_dw'] * (1 - r1))
-    NSI_system_params['w_d0'] = NSI_system_params['w_d0'] + N_dwshift0 * NSI_system_params['delta_dw']
-    NSI_system_params['N_dw'] = NSI_system_params['N_dw'] - (N_dwshift0 + N_dwshift1)
+    num_channels_shift0 = np.round(geo_params['num_channels'] * c0)
+    num_channels_shift1 = np.round(geo_params['num_channels'] * (1 - c1))
+    geo_params['v_d0'] = geo_params['v_d0'] + num_channels_shift0 * geo_params['delta_pixel_detector']
+    geo_params['num_channels'] = geo_params['num_channels'] - (num_channels_shift0 + num_channels_shift1)
 
-    N_dvshift0 = np.round(NSI_system_params['N_dv'] * c0)
-    N_dvshift1 = np.round(NSI_system_params['N_dv'] * (1 - c1))
-    NSI_system_params['v_d0'] = NSI_system_params['v_d0'] + N_dvshift0 * NSI_system_params['delta_dv']
-    NSI_system_params['N_dv'] = NSI_system_params['N_dv'] - (N_dvshift0 + N_dvshift1)
+    ############### calculate MBIRCONE params from NSI params
+    geo_params["dist_source_detector"] = geo_params['u_d1'] - geo_params['u_s']
+    geo_params["magnification"] = -geo_params["dist_source_detector"] / geo_params['u_s']
 
-    return NSI_system_params
-
-
-def NSI_to_MBIRCONE_params(NSI_system_params):
-    """Returns MBIRCONE format geometric parameters from adjusted NSI system parameters.
-
-    This function is specific to NSI datasets. 
-    
-    Args:
-        NSI_system_params (dict of string-int): Adjusted NSI system parameters.
-    Returns:
-        Dictionary: MBIRCONE format geometric parameters
-
-    """
-    geo_params = dict()
-    geo_params["num_channels"] = NSI_system_params['N_dv']
-    geo_params["num_slices"] = NSI_system_params['N_dw']
-    geo_params["delta_pixel_detector"] = NSI_system_params['delta_dv']
-    geo_params["rotation_offset"] = NSI_system_params['v_r']
-
-    geo_params["dist_source_detector"] = NSI_system_params['u_d1'] - NSI_system_params['u_s']
-    geo_params["magnification"] = -geo_params["dist_source_detector"] / NSI_system_params['u_s']
-
-    dist_dv_to_detector_corner_from_detector_center = - NSI_system_params['N_dv'] * NSI_system_params['delta_dv'] / 2.0
-    dist_dw_to_detector_corner_from_detector_center = - NSI_system_params['N_dw'] * NSI_system_params['delta_dw'] / 2.0
-    geo_params["det_channel_offset"] = -(NSI_system_params['v_d0'] - dist_dv_to_detector_corner_from_detector_center)
-    geo_params["det_row_offset"] = - (NSI_system_params['w_d0'] - dist_dw_to_detector_corner_from_detector_center)
+    dist_dv_to_detector_corner_from_detector_center = - geo_params['num_channels'] * geo_params['delta_pixel_detector'] / 2.0
+    dist_dw_to_detector_corner_from_detector_center = - geo_params['num_slices'] * geo_params['delta_dw'] / 2.0
+    geo_params["det_channel_offset"] = -(geo_params['v_d0'] - dist_dv_to_detector_corner_from_detector_center)
+    geo_params["det_row_offset"] = - (geo_params['w_d0'] - dist_dw_to_detector_corner_from_detector_center)
     return geo_params
 
 
 def NSI_load_scans(obj_scan_path, blank_scan_path, dark_scan_path,
-                   NSI_system_params,
+                   geo_params,
                    downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
                    view_id_start=0, view_angle_start=0., 
                    view_id_end=None, subsample_view_factor=1): 
@@ -362,7 +339,7 @@ def NSI_load_scans(obj_scan_path, blank_scan_path, dark_scan_path,
         obj_scan_path (string): Path to an NSI radiograph directory.
         blank_scan_path (string): [Default=None] Path to a blank scan image, e.g. 'path_to_scan/gain0.tif'
         dark_scan_path (string): [Default=None] Path to a dark scan image, e.g. 'path_to_scan/offset.tif'
-        NSI_system_params (dict): A dictionary containing NSI parameters. This can be obtained from an NSI configuration file using function ``preprocess.NSI_load_params()``.
+        geo_params (dict): A dictionary containing conebeam geometry parameters. This can be obtained from an NSI configuration file using function ``preprocess.NSI_calculate_MBIRCONE_params()``.
 
         downsample_factor ([int, int]): [Default=[1,1]] Down-sample factors along the detector rows and channels respectively.
             In case where the scan size is not divisible by `downsample_factor`, the scans will be first truncated to a size that is divisible by `downsample_factor`, and then downsampled.
@@ -403,24 +380,24 @@ def NSI_load_scans(obj_scan_path, blank_scan_path, dark_scan_path,
     dark_scan = np.expand_dims(_read_scan_img(dark_scan_path), axis=0)
 
     if view_id_end is None:
-        view_id_end = NSI_system_params["num_acquired_scans"]
+        view_id_end = geo_params["num_acquired_scans"]
     view_ids = list(range(view_id_start, view_id_end, subsample_view_factor)) 
     obj_scan = _read_scan_dir(obj_scan_path, view_ids)
     
     # flip the scans according to flipH and flipV params 
-    if NSI_system_params['flipV']:
+    if geo_params['flipV']:
         print("Flip scans vertically!")
         obj_scan = np.flip(obj_scan, axis=1)
         blank_scan = np.flip(blank_scan, axis=1)
         dark_scan = np.flip(dark_scan, axis=1)
-    if NSI_system_params['flipH']:
+    if geo_params['flipH']:
         print("Flip scans horizontally!")
         obj_scan = np.flip(obj_scan, axis=2)
         blank_scan = np.flip(blank_scan, axis=2)
         dark_scan = np.flip(dark_scan, axis=2)
 
     # rotate the scans according to rotate param
-    rot_count = NSI_system_params['rotate'] // 90
+    rot_count = geo_params['rotate'] // 90
     obj_scan = np.rot90(obj_scan, rot_count, axes=(2,1))    
     blank_scan = np.rot90(blank_scan, rot_count, axes=(2,1))    
     dark_scan = np.rot90(dark_scan, rot_count, axes=(2,1))    
@@ -434,8 +411,8 @@ def NSI_load_scans(obj_scan_path, blank_scan_path, dark_scan_path,
    
     # compute projection angles based on angleStep and rotation direction
     view_angle_start_deg = np.rad2deg(view_angle_start)
-    angle_step = NSI_system_params['angleStep'] * subsample_view_factor
-    if NSI_system_params['rotation_direction'] == "negative":
+    angle_step = geo_params['angleStep'] * subsample_view_factor
+    if geo_params['rotation_direction'] == "negative":
         angles = np.deg2rad(np.array([(view_angle_start_deg-n*angle_step) % 360.0 for n in range(len(view_ids))]))
     else:
         angles = np.deg2rad(np.array([(view_angle_start_deg+n*angle_step) % 360.0 for n in range(len(view_ids))]))
