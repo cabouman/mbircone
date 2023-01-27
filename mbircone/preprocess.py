@@ -442,10 +442,10 @@ def transmission_CT_preprocess(obj_scan, blank_scan, dark_scan,
 
     # should add something here to check the validity of downsampled scan pixel values?
     sino, weight_mask = _compute_sino_and_weight_mask_from_scans(obj_scan, blank_scan, dark_scan)
-    print('weight_mask shape = ', weight_mask.shape)
-    # compute sinogram weights
-    weights = transmission_CT_calc_weight(obj_scan, blank_scan, beta=beta, weight_type_ct=weight_type_ct)
-    # set the sino and weights corresponding to invalid sinogram entries to 0.
-    weights[weight_mask == 0] = 0.
+    # set the sino corresponding to invalid entries to 0.
     sino[weight_mask == 0] = 0.
+    # compute sinogram weights
+    weights = cone3D.calc_weights(sino, weight_type=weight_type)
+    # set the sino weights corresponding to invalid entries to 0.
+    weights[weight_mask == 0] = 0.
     return sino.astype(np.float32), weights.astype(np.float32)
