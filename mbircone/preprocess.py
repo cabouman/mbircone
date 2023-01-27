@@ -425,15 +425,15 @@ def transmission_CT_preprocess(obj_scan, blank_scan, dark_scan,
     The sinogram values and weights corresponding to invalid sinogram entries will be set to 0.
  
     Args:
-        obj_scan (ndarray, float): 3D object scan with shape (num_views, num_det_rows, num_det_channels).
-        blank_scan (ndarray, float): [Default=None] 3D blank scan with shape (num_blank_scans, num_det_rows, num_det_channels).
-        dark_scan (ndarray, float): [Default=None] 3D dark scan with shape (num_dark_scans, num_det_rows, num_det_channels)
+        obj_scan (ndarray, float): 3D object scan with shape (num_views, num_det_rows, num_det_channels). 
+        blank_scan (ndarray, float): [Default=None] 3D blank scan with shape (num_blank_scans, num_det_rows, num_det_channels). When num_blank_scans>1, the pixel-wise mean will be used as the blank scan.
+        dark_scan (ndarray, float): [Default=None] 3D dark scan with shape (num_dark_scans, num_det_rows, num_det_channels). When num_dark_scans>1, the pixel-wise mean will be used as the dark scan.
         weight_type (string, optional): [Default='unweighted'] Type of noise model used for data.
 
                 - ``'unweighted'`` corresponds to unweighted reconstruction;
                 - ``'transmission'`` is the correct weighting for transmission CT with constant dosage;
                 - ``'transmission_root'`` is commonly used with transmission CT data to improve image homogeneity;
-                - ``'MAR'`` is appropriate for objects containing metal components;
+                - ``'MAR'`` is appropriate for objects containing metal components. This is temporarily a placeholder for future development.
     Returns:
         2-element tuple containing:
         - **sino** (*ndarray, float*): Preprocessed sinogram data with shape (num_views, num_det_rows, num_det_channels).
