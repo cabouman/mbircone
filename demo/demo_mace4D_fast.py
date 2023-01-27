@@ -200,7 +200,8 @@ if __name__=='__main__':
                      'num_det_channels': num_det_channels,
                      'dist_source_detector': dist_source_detector,
                      'magnification': magnification,
-                     'delta_pixel_detector': delta_pixel_detector}
+                     'delta_det_channel': delta_pixel_detector,
+                     'delta_det_row': delta_pixel_detector}
     sino_list = mbircone.multinode.scatter_gather(cluster_ticket,
                                                   mbircone.cone3D.project,
                                                   constant_args=constant_args,
