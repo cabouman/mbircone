@@ -114,22 +114,16 @@ recon_mbir = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnifica
 print("MBIR recon finished. recon shape = ", np.shape(recon_mbir))
 
 print("\n*******************************************************",
-      "\n** Plotting scan images, sino view, and recon slices **",
+      "\n******** Plotting sinogram view and recon slices ******",
       "\n*******************************************************")
 view_angle_display = np.rad2deg(angles[0])
-demo_utils.plot_image(obj_scan[0], title=f'Object scan, view angle {view_angle_display:.1f} deg',
-                      filename=os.path.join(savepath, 'obj_scan_view0.png'), vmin=0, vmax=1.0)
-demo_utils.plot_image(blank_scan[0], title=f'Blank scan',
-                      filename=os.path.join(savepath, 'blank_scan_view0.png'), vmin=0, vmax=1.0)
-demo_utils.plot_image(dark_scan[0], title=f'Dark scan',
-                      filename=os.path.join(savepath, 'dark_scan_view0.png'), vmin=0, vmax=1.0)
 demo_utils.plot_image(sino[0], title=f'Sinogram, view angle {view_angle_display:.1f} deg',
-                      filename=os.path.join(savepath, 'sino_view0.png'), vmin=0, vmax=1.0)
+                      filename=os.path.join(save_path, 'sino_view0.png'), vmin=0, vmax=1.0)
 demo_utils.plot_image(recon_mbir[210,:,:], title=f'MBIR recon, axial slice 210',
-                      filename=os.path.join(savepath, 'recon_axial210.png'), vmin=0, vmax=0.055)
+                      filename=os.path.join(save_path, 'recon_axial210.png'), vmin=0, vmax=0.055)
 demo_utils.plot_image(recon_mbir[:,187,:], title=f'MBIR recon, coronal slice 187',
-                      filename=os.path.join(savepath, 'recon_coronal187.png'), vmin=0, vmax=0.055)
+                      filename=os.path.join(save_path, 'recon_coronal187.png'), vmin=0, vmax=0.055)
 demo_utils.plot_image(recon_mbir[:,:,198], title=f'MBIR recon, sagittal slice 198',
-                      filename=os.path.join(savepath, 'recon_sagittal198.png'), vmin=0, vmax=0.055)
+                      filename=os.path.join(save_path, 'recon_sagittal198.png'), vmin=0, vmax=0.055)
 
 input("press Enter")
