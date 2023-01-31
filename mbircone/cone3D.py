@@ -750,7 +750,7 @@ def recon_lamino(sino, angles, theta,
         in units of :math:`ALU^{-1}`.
     """
 
-    (num_views, num_det_rows, num_det_channels) = sino.shape
+    (_, num_det_rows, num_det_channels) = sino.shape
 
     # Determine artificial source-detector distance to approximate parallel beams
     # Beams should spread by less than epsilon * max(delta_det_channel,delta_det_row) as they pass through the phantom
@@ -782,7 +782,7 @@ def project_lamino(image, angles, theta,
         image (float, ndarray): 3D image to be projected, with shape (num_img_slices, num_img_rows, num_img_cols).
         angles (float, ndarray): 1D array of view angles in radians.
         theta (float): Angle that source-detector line makes with the object vertical axis.
-            Equal to pi/2 - grazing angle. When theta=pi/2, this is a parallel beam reconstruction.
+            Equal to pi/2 - grazing angle. When theta=pi/2, this is a parallel beam projection.
 
         num_det_rows (int): Number of rows in laminography sinogram data.
         num_det_channels (int): Number of channels in laminography sinogram data.
@@ -823,4 +823,3 @@ def project_lamino(image, angles, theta,
                    rotation_offset=0.0,
                    image_slice_offset=image_slice_offset+D/np.tan(theta),
                    num_threads=num_threads, verbose=verbose, lib_path=lib_path)
-
