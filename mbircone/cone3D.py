@@ -579,7 +579,7 @@ def project(image, angles,
             num_det_rows, num_det_channels,
             dist_source_detector, magnification,
             delta_det_channel=1.0, delta_det_row=1.0, delta_pixel_image=None,
-            det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0,
+            det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0, image_slice_offset=0.0,
             num_threads=None, verbose=1, lib_path=__lib_path):
     """ Compute 3D cone beam forward projection.
     
@@ -638,7 +638,8 @@ def project(image, angles,
      
     (num_image_slices, num_image_rows, num_image_cols) = image.shape
     
-    imgparams = create_image_params_dict(num_image_rows, num_image_cols, num_image_slices, delta_pixel_image=delta_pixel_image)
+    imgparams = create_image_params_dict(num_image_rows, num_image_cols, num_image_slices,
+                                         delta_pixel_image=delta_pixel_image, image_slice_offset=image_slice_offset)
 
     hash_val = _utils.hash_params(angles, sinoparams, imgparams)
     sysmatrix_fname = _utils._gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
