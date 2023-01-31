@@ -169,7 +169,7 @@ def download_and_extract(download_url, save_dir):
     else:
         print("Skipped data download and extraction step.")
     # Extract the downloaded file if it is tarball
-    if save_path.endswith(('.tar', '.tar.gz')):
+    if save_path.endswith(('.tar', '.tar.gz', '.tgz')):
         if is_download:
             tar_file = tarfile.open(save_path)
             print(f"Extracting tarball file to {save_dir} ...")

@@ -280,6 +280,7 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
                         ['angleStep', 'Object Radiograph'],
                         ['clockwise', 'Processed']
                        ]
+    assert(os. path. isfile(config_file_path)), f'Error! NSI config file does not exist. Please check whether {config_file_path} is a valid file.'
     NSI_params = _NSI_read_str_from_config(config_file_path, tag_section_list)
 
     # coordinate of source

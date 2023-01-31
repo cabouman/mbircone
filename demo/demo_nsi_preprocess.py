@@ -27,38 +27,22 @@ print('This script is a demonstration of the preprocessing module of NSI dataset
 # Set the parameters to get the data and do the recon 
 # ###########################################################################
 
-# Change the parameters below for your own use case.
-
-# The url to the data repo.
-data_repo_url = 'https://github.com/cabouman/mbir_data/raw/master/'
-
-# Download url to the index file.
-# This file will be used to retrieve urls to files that we are going to download
-yaml_url = os.path.join(data_repo_url, 'index.yaml')
-
-# Choice of NSI dataset. 
-# These should be valid choices specified in the index file. 
-# The url to the dataset will be parsed from data_repo_url and the choices of dataset specified below.
-dataset_name = 'nsi_demo'
-
-# destination path to download and extract the phantom and NN weight files.
-dataset_dir = './demo_data/'   
+# ###################### Change the parameters below for your own use case.
+# ##### params for dataset downloading.
 # path to store output recon images
 save_path = './output/nsi_demo/'
 os.makedirs(save_path, exist_ok=True)
 
-# ##### Download and extract data 
-# Download the url index file and return path to local file. 
-index_path = demo_utils.download_and_extract(yaml_url, dataset_dir) 
-# Load the url index file as a directionary
-url_index = demo_utils.load_yaml(index_path)
-# get urls to phantom and denoiser parameter file
-dataset_url = os.path.join(data_repo_url, url_index['dataset'][dataset_name])  # url to download the dataset
+# ##### Download and extract NSI dataset 
+# url to NSI dataset.
+dataset_url = 'https://engineering.purdue.edu/~bouman/data_repository/data/demo_data_nsi.tgz'
+# destination path to download and extract the phantom and NN weight files.
+dataset_dir = './demo_data/'   
 # download dataset. The dataset path will be later used to define path to NSI files.
 dataset_path = demo_utils.download_and_extract(dataset_url, dataset_dir)
 
 # ##### NSI specific file paths
-# path to NSI config file. 
+# path to NSI config file. Change dataset path params for your own NSI dataset
 nsi_config_file_path = os.path.join(dataset_path, 'demo_data_nsi/JB-033_ArtifactPhantom_Vertical_NoMetal.nsipro')
 # path to directory containing all object scans
 obj_scan_path = os.path.join(dataset_path, 'demo_data_nsi/Radiographs-JB-033_ArtifactPhantom_Vertical_NoMetal')
@@ -108,9 +92,9 @@ det_channel_offset = geo_params["det_channel_offset"]
 det_row_offset = geo_params["det_row_offset"]
 # MBIR recon
 recon_mbir = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification,
-                                     det_channel_offset=det_channel_offset, det_row_offset=det_row_offset,
-                                     delta_det_row=delta_det_row, delta_det_channel=delta_det_channel,
-                                     weights=weights)
+                                   det_channel_offset=det_channel_offset, det_row_offset=det_row_offset,
+                                   delta_det_row=delta_det_row, delta_det_channel=delta_det_channel,
+                                   weights=weights)
 print("MBIR recon finished. recon shape = ", np.shape(recon_mbir))
 
 print("\n*******************************************************",
