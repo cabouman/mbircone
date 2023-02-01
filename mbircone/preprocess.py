@@ -4,15 +4,18 @@ import numpy as np
 from PIL import Image
 import warnings
 import math
+from mbircone import cone3D
+
+__lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
 
 
 def _read_scan_img(img_path):
-    """Read and return single image from a ConeBeam Scan.
+    """Reads a single scan image from an image path.
 
     Args:
-        img_path (string): Path to a ConeBeam Scan.
+        img_path (string): Path to a ConeBeam scan image.
     Returns:
-        ndarray (float): 2D numpy array. A single sinogram.
+        ndarray (float): 2D numpy array. A single scan image.
     """
 
     img = np.asarray(Image.open(img_path))
@@ -20,19 +23,19 @@ def _read_scan_img(img_path):
     if np.issubdtype(img.dtype, np.integer):
         # make float and normalize integer types
         maxval = np.iinfo(img.dtype).max
-        img = img.astype(np.float32) / maxval
-
+        img = img.astype(np.float32) / maxval    
+    
     return img.astype(np.float32)
 
 
 def _read_scan_dir(scan_dir, view_ids=[]):
-    """Read and return a stack of sinograms from a directory.
+    """Reads a stack of scan images from a directory.
 
     Args:
         scan_dir (string): Path to a ConeBeam Scan directory.
-        view_ids (list[int]): List of view indexes to specify which scans to read.
+        view_ids (list[int]): List of view indices to specify which scans to read.
     Returns:
-        ndarray (float): 3D numpy array, (num_views, num_slices, num_channels). A stack of sinograms.
+        ndarray (float): 3D numpy array, (num_views, num_det_rows, num_det_channels). A stack of scan images.
     """
 
     if view_ids == []:
@@ -42,24 +45,23 @@ def _read_scan_dir(scan_dir, view_ids=[]):
     img_path_list = [img_path_list[i] for i in view_ids]
     img_list = [_read_scan_img(img_path) for img_path in img_path_list]
 
-    # return shape = num_views x num_slices x num_channels
+    # return shape = num_views x num_det_rows x num_det_channels
     return np.stack(img_list, axis=0)
 
 
 def _downsample_scans(obj_scan, blank_scan, dark_scan, downsample_factor=[1, 1]):
-    """Down-sample given scans with given factor.
+    """Performs Down-sampling to the scan images in the detector plane.
 
     Args:
-        obj_scan (float): A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
-        blank_scan (float): A blank scan. 3D numpy array, (1, num_slices, num_channels).
-        dark_scan (float): A dark scan. 3D numpy array, (1, num_slices, num_channels).
+        obj_scan (float): A stack of sinograms. 3D numpy array, (num_views, num_det_rows, num_det_channels).
+        blank_scan (float): A blank scan. 2D numpy array, (num_det_rows, num_det_channels).
+        dark_scan (float): A dark scan. 3D numpy array, (num_det_rows, num_det_channels).
         downsample_factor ([int, int]): Default=[1,1]] Two numbers to define down-sample factor.
     Returns:
         Downsampled scans
-
-        - **obj_scan** (*ndarray, float*): A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
-        - **blank_scan** (*ndarray, float*): A blank scan. 3D numpy array, (1, num_slices, num_channels).
-        - **dark_scan** (*ndarray, float*): A dark scan. 3D numpy array, (1, num_slices, num_channels).
+        - **obj_scan** (*ndarray, float*): A stack of sinograms. 3D numpy array, (num_views, num_det_rows, num_det_channels).
+        - **blank_scan** (*ndarray, float*): A blank scan. 3D numpy array, (num_det_rows, num_det_channels).
+        - **dark_scan** (*ndarray, float*): A dark scan. 3D numpy array, (num_det_rows, num_det_channels).
     """
 
     assert len(downsample_factor) == 2, 'factor({}) needs to be of len 2'.format(downsample_factor)
@@ -73,7 +75,8 @@ def _downsample_scans(obj_scan, blank_scan, dark_scan, downsample_factor=[1, 1])
 
     obj_scan = obj_scan.reshape(obj_scan.shape[0], obj_scan.shape[1] // downsample_factor[0], downsample_factor[0],
                                 obj_scan.shape[2] // downsample_factor[1], downsample_factor[1]).sum((2, 4))
-    blank_scan = blank_scan.reshape(blank_scan.shape[0], blank_scan.shape[1] // downsample_factor[0], downsample_factor[0],
+    blank_scan = blank_scan.reshape(blank_scan.shape[0], blank_scan.shape[1] // downsample_factor[0],
+                                    downsample_factor[0],
                                     blank_scan.shape[2] // downsample_factor[1], downsample_factor[1]).sum((2, 4))
     dark_scan = dark_scan.reshape(dark_scan.shape[0], dark_scan.shape[1] // downsample_factor[0], downsample_factor[0],
                                   dark_scan.shape[2] // downsample_factor[1], downsample_factor[1]).sum((2, 4))
@@ -82,23 +85,21 @@ def _downsample_scans(obj_scan, blank_scan, dark_scan, downsample_factor=[1, 1])
 
 
 def _crop_scans(obj_scan, blank_scan, dark_scan, crop_factor=[(0, 0), (1, 1)]):
-    """Crop given scans with given factor.
+    """Crops given scans with given factor.
 
     Args:
-        obj_scan (float): A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
-        blank_scan (float) : A blank scan. 3D numpy array, (1, num_slices, num_channels).
-        dark_scan (float): A dark scan. 3D numpy array, (1, num_slices, num_channels).
+        obj_scan (float): A stack of sinograms. 3D numpy array, (num_views, num_det_rows, num_det_channels).
+        blank_scan (float) : A blank scan. 3D numpy array, (1, num_det_rows, num_det_channels).
+        dark_scan (float): A dark scan. 3D numpy array, (1, num_det_rows, num_det_channels).
         crop_factor ([(int, int),(int, int)] or [int, int, int, int]):
             [Default=[(0, 0), (1, 1)]] Two points to define the bounding box. Sequence of [(r0, c0), (r1, c1)] or
-            [r0, c0, r1, c1], where 1>=r1 >= r0>=0 and 1>=c1 >= c0>=0.
+            [r0, c0, r1, c1], where 0<=r0 <= r1<=1 and 0<=c0 <= c1<=1.
 
     Returns:
         Cropped scans
-
-        - **obj_scan** (*ndarray, float*): A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
-        - **blank_scan** (*ndarray, float*): A blank scan. 3D numpy array, (1, num_slices, num_channels).
-        - **dark_scan** (*ndarray, float*): A dark scan. 3D numpy array, (1, num_slices, num_channels).
-
+        - **obj_scan** (*ndarray, float*): A stack of sinograms. 3D numpy array, (num_views, num_det_rows, num_det_channels).
+        - **blank_scan** (*ndarray, float*): A blank scan. 3D numpy array, (1, num_det_rows, num_det_channels).
+        - **dark_scan** (*ndarray, float*): A dark scan. 3D numpy array, (1, num_det_rows, num_det_channels).
     """
     if isinstance(crop_factor[0], (list, tuple)):
         (r0, c0), (r1, c1) = crop_factor
@@ -122,103 +123,36 @@ def _crop_scans(obj_scan, blank_scan, dark_scan, crop_factor=[(0, 0), (1, 1)]):
     return obj_scan, blank_scan, dark_scan
 
 
-def _compute_sino_from_scans(obj_scan, blank_scan, dark_scan):
-    """Compute sinogram data base on given object scan, blank scan, and dark scan.
-
+def _compute_sino_and_weight_mask_from_scans(obj_scan, blank_scan, dark_scan):
+    """Computes sinogram data and weights mask base on given object scan, blank scan, and dark scan. The weights mask is used to filter out negative values in the corrected object scan and blank scan. For real CT dataset weights mask should be used when calculating sinogram weights.
+    
     Args:
-        obj_scan (float): A stack of sinograms. 3D numpy array, (num_views, num_slices, num_channels).
-        blank_scan (float) : A blank scan. 3D numpy array, (1, num_slices, num_channels).
-        dark_scan (float):  A dark scan. 3D numpy array, (1, num_slices, num_channels).
+        obj_scan (ndarray): A stack of sinograms. 3D numpy array, (num_views, num_det_rows, num_det_channels).
+        blank_scan (ndarray) : A blank scan. 3D numpy array, (num_obj_scans, num_det_rows, num_det_channels).
+        dark_scan (ndarray):  A dark scan. 3D numpy array, (num_obj_scans, num_det_rows, num_det_channels).
     Returns:
-        ndarray (float): Preprocessed sinograms. 3D numpy array, (num_views, num_slices, num_channels).
+        A tuple (sino, weight_mask) containing:
+        - **sino** (*ndarray*): Preprocessed sinogram with shape (num_views, num_det_rows, num_det_channels).
+        - **weight_mask** (*ndarray*): A binary mask for sinogram weights. 
 
     """
-    blank_scan_mean = 0 * obj_scan + np.average(blank_scan, axis=0)
-    dark_scan_mean = 0 * obj_scan + np.average(dark_scan, axis=0)
+    # take average of multiple blank/dark scans, and expand the dimension to be the same as obj_scan.
+    blank_scan_mean = 0 * obj_scan + np.mean(blank_scan, axis=0, keepdims=True)
+    dark_scan_mean = 0 * obj_scan + np.mean(dark_scan, axis=0, keepdims=True)
 
     obj_scan_corrected = (obj_scan - dark_scan_mean)
     blank_scan_corrected = (blank_scan_mean - dark_scan_mean)
-
-    good_pixels = (obj_scan_corrected > 0) & (blank_scan_corrected > 0)
-
-    normalized_scan = np.zeros(obj_scan_corrected.shape)
-    normalized_scan[good_pixels] = obj_scan_corrected[good_pixels] / blank_scan_corrected[good_pixels]
-
-    sino = np.zeros(obj_scan_corrected.shape)
-    sino[normalized_scan > 0] = -np.log(normalized_scan[normalized_scan > 0])
-
-    return sino
-
-
-def _compute_views_index_list(view_range, num_views):
-    """Return a list of sampled indexes of views to use for reconstruction.
-
-    Args:
-        view_range ([int, int]): Two indexes of views to specify the range of views to use for reconstruction.
-        num_views (int): Number of views to use for reconstruction.
-
-    Returns:
-        list[int], a list of sampled indexes of views to use for reconstruction.
-
-    """
-    index_original = range(view_range[0], view_range[1] + 1)
-    assert num_views <= len(index_original), 'num_views cannot exceed range of view index'
-    index_sampled = [view_range[0] + int(np.floor(i * len(index_original) / num_views)) for i in range(num_views)]
-    return index_sampled
-
-
-def _select_contiguous_subset(indexList, num_time_points=1, time_point=0):
-    """Return a contiguous subset of index list given a time point. Mainly use for 4D datasets with multiple time points.
-
-    Args:
-        indexList (list[int]): A list of indexes.
-        num_time_points (int): [Default=1] Total number of time points.
-        time_point (int): [Default=0] Index of the time point we want to use for 3D reconstruction.
-
-    Returns:
-        list[int], a contiguous subset of index list.
-    """
-    assert time_point < num_time_points, 'ind_chunk cannot be larger than num_chunk.'
-
-    len_ind = len(indexList)
-    num_per_set = len_ind // num_time_points
-
-    # distribute the remaining
-    remaining_index_num = len_ind % num_time_points
-
-    start_id = time_point * num_per_set + np.minimum(time_point, remaining_index_num)
-    end_id = (time_point + 1) * num_per_set + np.minimum(time_point + 1, remaining_index_num)
-
-    indexList_new = indexList[start_id:end_id]
-    return indexList_new
-
-
-def _compute_angles_list(view_index_list, num_acquired_scans, total_angles, rotation_direction="positive"):
-    """Return angles list from indexes list.
-
-    Args:
-        view_index_list (list[int]): Final index list after subsampling and time point selection.
-        num_acquired_scans (int): Total number of acquired scans in the directory.
-        total_angles (int): Total rotation angle for the whole dataset.
-        rotation_direction (string): [Default='positive'] Rotation direction. Should be 'positive' or 'negative'.
-
-    Returns:
-        ndarray (float), 1D view angles array in radians.
-    """
-    if rotation_direction not in ["positive", "negative"]:
-        warnings.warn("Parameter rotation_direction is not valid string; Setting center_offset = 'positive'.")
-        rotation_direction = "positive"
-    view_index_list = np.array(view_index_list)
-    if rotation_direction == "positive":
-        angles_list = (total_angles * view_index_list / num_acquired_scans) % 360.0 / 360.0 * (2 * np.pi)
-    if rotation_direction == "negative":
-        angles_list = (-total_angles * view_index_list / num_acquired_scans) % 360.0 / 360.0 * (2 * np.pi)
-
-    return angles_list
-
+    sino = -np.log(obj_scan_corrected / blank_scan_corrected)
+    # weight_mask. 1 corresponds to valid sinogram values, and 0 corresponds to invalid sinogram values.
+    # this will later be used to calculate sinogram weights in function compute_sino_from_scans.
+    weight_mask = (obj_scan_corrected > 0) & (blank_scan_corrected > 0) 
+    print('Set sinogram weight corresponding to nan and inf pixels to 0.')
+    weight_mask[np.isnan(sino)] = False
+    weight_mask[np.isinf(sino)] = False
+    return sino, weight_mask
 
 def _NSI_read_str_from_config(filepath, tags_sections):
-    """Return strings about dataset information read from NSI configuration file.
+    """Returns strings about dataset information read from NSI configuration file.
 
     Args:
         filepath (string): Path to NSI configuration file. The filename extension is '.nsipro'.
@@ -230,7 +164,7 @@ def _NSI_read_str_from_config(filepath, tags_sections):
     tag_strs = ['<' + tag + '>' for tag, section in tags_sections]
     section_starts = ['<' + section + '>' for tag, section in tags_sections]
     section_ends = ['</' + section + '>' for tag, section in tags_sections]
-    params = []
+    NSI_params = []
 
     try:
         with open(filepath, 'r') as f:
@@ -249,176 +183,270 @@ def _NSI_read_str_from_config(filepath, tags_sections):
             if tag_str in line:
                 tag_ind = line.find(tag_str, 1) + len(tag_str)
                 if tag_ind == -1:
-                    params.append("")
+                    NSI_params.append("")
                 else:
-                    params.append(line[tag_ind:].strip('\n'))
+                    NSI_params.append(line[tag_ind:].strip('\n'))
 
-    return params
+    return NSI_params
 
 
-def NSI_read_params(config_file_path):
-    """ Read NSI system parameters from a NSI configuration file.
+def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, dark_scan_path=None,
+                              downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
+                              view_id_start=0, view_angle_start=0., 
+                              view_id_end=None, subsample_view_factor=1):
+    """ Load the object scan, blank scan, dark scan, view angles, and geometry parameters from an NSI dataset directory.
+     
+    The scan images will be (optionally) cropped and downsampled.
 
-    Args:
-        config_file_path (string): Path to NSI configuration file. The filename extension is '.nsipro'.
+    A subset of the views may be selected based on user input. In that case, the object scan images and view angles corresponding to the subset of the views will be returned.
+
+    This function is specific to NSI datasets. 
+    
+    **Arguments specific to file paths**:
+        
+        - config_file_path (string): Path to NSI configuration file. The filename extension is '.nsipro'.
+        - obj_scan_path (string): Path to an NSI radiograph directory.
+        - blank_scan_path (string): [Default=None] Path to a blank scan image, e.g. 'path_to_scan/gain0.tif'
+        - dark_scan_path (string): [Default=None] Path to a dark scan image, e.g. 'path_to_scan/offset.tif'
+    
+    **Arguments specific to radiograph downsampling and cropping**:
+        
+        - downsample_factor ([int, int]): [Default=[1,1]] Down-sample factors along the detector rows and channels respectively. By default no downsampling will be performed.
+            
+            In case where the scan size is not divisible by `downsample_factor`, the scans will be first truncated to a size that is divisible by `downsample_factor`, and then downsampled.
+
+        - crop_factor ([(float, float),(float, float)] or [float, float, float, float]): [Default=[(0., 0.), (1., 1.)]]. Two fractional points [(r0, c0), (r1, c1)] defining the bounding box that crops the scans, where 0<=r0<=r1<=1 and 0<=c0<=c1<=1. By default no cropping will be performed.
+            
+            r0 and r1 defines the cropping factors along the detector rows. c0 and c1 defines the cropping factors along the detector channels. ::
+            
+            :       (0,0)--------------------------(0,1)
+            :         |  (r0,c0)---------------+     |
+            :         |     |                  |     |
+            :         |     | (Cropped Region) |     |
+            :         |     |                  |     |
+            :         |     +---------------(r1,c1)  |
+            :       (1,0)--------------------------(1,1)
+            
+            For example, ``crop_factor=[(0.25,0), (0.75,1)]`` will crop out the middle half of the scan image along the vertical direction.
+    
+    **Arguments specific to view subsampling**: 
+
+        - view_id_start (int): [Default=0] view id corresponding to the first view.
+        - view_angle_start (float): [Default=0.0] view angle in radian corresponding to the first view.
+        - view_id_end (int): [Default=None] view id corresponding to the last view. If None, this will be equal to the total number of object scan images in ``obj_scan_path``.
+        - subsample_view_factor (int): [Default=1]: view subsample factor. By default no view subsampling will be performed. 
+            
+            For example, with ``subsample_view_factor=2``, every other view will be loaded.
+
     Returns:
-        Dictionary: NSI system parameters.
+        5-element tuple containing:
+
+        - **obj_scan** (*ndarray, float*): 3D object scan with shape (num_views, num_det_rows, num_det_channels)
+        
+        - **blank_scan** (*ndarray, float*): 3D blank scan with shape (1, num_det_rows, num_det_channels)
+        
+        - **dark_scan** (*ndarray, float*): 3D dark scan with shape (1, num_det_rows, num_det_channels)
+        
+        - **angles** (*ndarray, double*): 1D view angles array in radians in the interval :math:`[0,2\pi)`.
+
+        - **geo_params**: MBIRCONE format geometric parameters containing the following entries:
+            
+            - dist_source_detector: Distance between the X-ray source and the detector in units of :math:`ALU`.
+            - magnification: Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
+           
+            - delta_det_channel: Detector channel spacing in :math:`ALU`.
+            - delta_det_row: Detector row spacing in :math:`ALU`.
+            - det_channel_offset: Distance in :math:`ALU` from center of detector to the source-detector line along a row.
+            - det_row_offset: Distance in :math:`ALU` from center of detector.
+            - rotation_offset: Distance in :math:`ALU` from source-detector line to axis of rotation in the object space.
+            - num_det_channels: Number of detector channels.
+            - num_det_rows: Number of detector rows.
+
     """
+    # MBIR geometry parameter dictionary
+    geo_params = dict()
+    
+    ############### load NSI parameters from the given config file path
     tag_section_list = [['source', 'Result'],
                         ['reference', 'Result'],
                         ['pitch', 'Object Radiograph'],
                         ['width pixels', 'Detector'],
                         ['height pixels', 'Detector'],
                         ['number', 'Object Radiograph'],
-                        ['Rotation range', 'CT Project Configuration']]
-    params = _NSI_read_str_from_config(config_file_path, tag_section_list)
-    NSI_system_params = dict()
+                        ['Rotation range', 'CT Project Configuration'],
+                        ['rotate', 'Correction'],
+                        ['flipH', 'Correction'],
+                        ['flipV', 'Correction'],
+                        ['angleStep', 'Object Radiograph'],
+                        ['clockwise', 'Processed']
+                       ]
+    assert(os. path. isfile(config_file_path)), f'Error! NSI config file does not exist. Please check whether {config_file_path} is a valid file.'
+    NSI_params = _NSI_read_str_from_config(config_file_path, tag_section_list)
 
-    NSI_system_params['u_s'] = np.single(params[0].split(' ')[-1])
+    # coordinate of source
+    u_s = np.single(NSI_params[0].split(' ')[-1])
 
-    vals = params[1].split(' ')
-    NSI_system_params['u_d1'] = np.single(vals[2])
-    NSI_system_params['v_d1'] = np.single(vals[0])
+    # coordinate of reference
+    coordinate_ref = NSI_params[1].split(' ')
+    u_d1 = np.single(coordinate_ref[2])
+    v_d1 = np.single(coordinate_ref[0])
+    w_d1 = np.single(coordinate_ref[1])
+    
+    # detector pixel pitch
+    pixel_pitch_det = NSI_params[2].split(' ')
+    geo_params['delta_det_channel'] = np.single(pixel_pitch_det[0])
+    geo_params['delta_det_row'] = np.single(pixel_pitch_det[1])
+    
+    # dimension of radiograph
+    geo_params['num_det_channels'] = int(NSI_params[3])
+    geo_params['num_det_rows'] = int(NSI_params[4])
+    
+    # total number of radiograph scans
+    num_acquired_scans = int(NSI_params[5])
+    
+    # total angles (usually 360 for 3D data, and (360*number_of_full_rotations) for 4D data
+    total_angles = int(NSI_params[6])
+    
+    # Radiograph rotation (degree)
+    scan_rotate = int(NSI_params[7])
+    if (scan_rotate == 180) or (scan_rotate == 0):
+        print('scans are in portrait mode!')
+    elif (scan_rotate == 270) or (scan_rotate == 90):
+        print('scans are in landscape mode!')
+        geo_params['num_det_channels'], geo_params['num_det_rows'] = geo_params['num_det_rows'], geo_params['num_det_channels']
+    else:        
+        warnings.warn("Picture mode unknown! Should be either portrait (0 or 180 deg rotation) or landscape (90 or 270 deg rotation). Automatically setting picture mode to portrait.")
+        scan_rotate = 180 
+    
+    # Radiograph horizontal & vertical flip
+    if NSI_params[8] == "True":
+        flipH = True
+    else: 
+        flipH = False
+    if NSI_params[9] == "True":
+        flipV = True
+    else: 
+        flipV = False
+    
+    # Detector rotation angle step (degree)
+    angle_step = np.single(NSI_params[10])
+    
+    # Detector rotation direction
+    if NSI_params[11] == "True":
+        print("clockwise rotation.")
+    else:
+        print("counter-clockwise rotation.")
+        # counter-clockwise rotation
+        angle_step = -angle_step
+    v_d0 = - v_d1
+    w_d0 = - geo_params['num_det_rows'] * geo_params['delta_det_row'] / 2.0
+    geo_params['rotation_offset'] = 0.0
 
-    NSI_system_params['w_d1'] = np.single(vals[1])
-
-    vals = params[2].split(' ')
-    NSI_system_params['delta_dv'] = np.single(vals[0])
-    NSI_system_params['delta_dw'] = np.single(vals[1])
-
-    NSI_system_params['N_dv'] = int(params[3])
-    NSI_system_params['N_dw'] = int(params[4])
-    NSI_system_params['num_acquired_scans'] = int(params[5])
-    NSI_system_params['total_angles'] = int(params[6])
-
-    NSI_system_params['v_d0'] = - NSI_system_params['v_d1']
-    NSI_system_params['w_d0'] = - NSI_system_params['N_dw'] * NSI_system_params['delta_dw'] / 2.0
-    NSI_system_params['v_r'] = 0.0
-    return NSI_system_params
-
-
-def NSI_adjust_sysparam(NSI_system_params, downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)]):
-    """Return adjusted NSI system parameters given downsampling factor and cropping factor.
-
-    Args:
-        NSI_system_params (dict of string-int): NSI system parameters.
-        downsample_factor ([int, int]): [Default=[1,1]] Two numbers to define down-sample factor.
-        crop_factor ([(int, int),(int, int)] or [int, int, int, int]): [Default=[(0, 0), (1, 1)]]
-            Two points to define the bounding box. Sequence of [(r0, c0), (r1, c1)] or [r0, c0, r1, c1], where 1>=r1 >= r0>=0 and 1>=c1 >= c0>=0.
-    Returns:
-        Dictionary: Adjusted NSI system parameters.
-    """
+    ############### Adjust geometry NSI_params according to crop_factor and downsample_factor
     if isinstance(crop_factor[0], (list, tuple)):
         (r0, c0), (r1, c1) = crop_factor
     else:
         r0, c0, r1, c1 = crop_factor
 
     # Adjust parameters after downsampling
-    NSI_system_params['N_dw'] = (NSI_system_params['N_dw'] // downsample_factor[0])
-    NSI_system_params['N_dv'] = (NSI_system_params['N_dv'] // downsample_factor[1])
+    geo_params['num_det_rows'] = (geo_params['num_det_rows'] // downsample_factor[0])
+    geo_params['num_det_channels'] = (geo_params['num_det_channels'] // downsample_factor[1])
 
-    NSI_system_params['delta_dw'] = NSI_system_params['delta_dw'] * downsample_factor[0]
-    NSI_system_params['delta_dv'] = NSI_system_params['delta_dv'] * downsample_factor[1]
+    geo_params['delta_det_row'] = geo_params['delta_det_row'] * downsample_factor[0]
+    geo_params['delta_det_channel'] = geo_params['delta_det_channel'] * downsample_factor[1]
 
     # Adjust parameters after cropping
+    num_det_rows_shift0 = np.round(geo_params['num_det_rows'] * r0)
+    num_det_rows_shift1 = np.round(geo_params['num_det_rows'] * (1 - r1))
+    w_d0 = w_d0 + num_det_rows_shift0 * geo_params['delta_det_row']
+    geo_params['num_det_rows'] = geo_params['num_det_rows'] - (num_det_rows_shift0 + num_det_rows_shift1)
 
-    N_dwshift0 = np.round(NSI_system_params['N_dw'] * r0)
-    N_dwshift1 = np.round(NSI_system_params['N_dw'] * (1 - r1))
-    NSI_system_params['w_d0'] = NSI_system_params['w_d0'] + N_dwshift0 * NSI_system_params['delta_dw']
-    NSI_system_params['N_dw'] = NSI_system_params['N_dw'] - (N_dwshift0 + N_dwshift1)
+    num_det_channels_shift0 = np.round(geo_params['num_det_channels'] * c0)
+    num_det_channels_shift1 = np.round(geo_params['num_det_channels'] * (1 - c1))
+    v_d0 = v_d0 + num_det_channels_shift0 * geo_params['delta_det_channel']
+    geo_params['num_det_channels'] = geo_params['num_det_channels'] - (num_det_channels_shift0 + num_det_channels_shift1)
 
-    N_dvshift0 = np.round(NSI_system_params['N_dv'] * c0)
-    N_dvshift1 = np.round(NSI_system_params['N_dv'] * (1 - c1))
-    NSI_system_params['v_d0'] = NSI_system_params['v_d0'] + N_dvshift0 * NSI_system_params['delta_dv']
-    NSI_system_params['N_dv'] = NSI_system_params['N_dv'] - (N_dvshift0 + N_dvshift1)
+    ############### calculate MBIRCONE NSI_params from NSI NSI_params
+    geo_params["dist_source_detector"] = u_d1 - u_s
+    geo_params["magnification"] = -geo_params["dist_source_detector"] / u_s
 
-    return NSI_system_params
-
-
-def NSI_to_MBIRCONE_params(NSI_system_params):
-    """Return MBIRCONE format geometric parameters from adjusted NSI system parameters.
-
-    Args:
-        NSI_system_params (dict of string-int): Adjusted NSI system parameters.
-    Returns:
-        Dictionary: MBIRCONE format geometric parameters
-
-    """
-    geo_params = dict()
-    geo_params["num_channels"] = NSI_system_params['N_dv']
-    geo_params["num_slices"] = NSI_system_params['N_dw']
-    geo_params["delta_pixel_detector"] = NSI_system_params['delta_dv']
-    geo_params["rotation_offset"] = NSI_system_params['v_r']
-
-    geo_params["dist_source_detector"] = NSI_system_params['u_d1'] - NSI_system_params['u_s']
-    geo_params["magnification"] = -geo_params["dist_source_detector"] / NSI_system_params['u_s']
-
-    dist_dv_to_detector_corner_from_detector_center = - NSI_system_params['N_dv'] * NSI_system_params['delta_dw'] / 2.0
-    dist_dw_to_detector_corner_from_detector_center = - NSI_system_params['N_dw'] * NSI_system_params['delta_dv'] / 2.0
-    geo_params["channel_offset"] = -(NSI_system_params['v_d0'] - dist_dv_to_detector_corner_from_detector_center)
-    geo_params["row_offset"] = - (NSI_system_params['w_d0'] - dist_dw_to_detector_corner_from_detector_center)
-    return geo_params
-
-
-def obtain_sino(path_radiographs, num_views, path_blank=None, path_dark=None,
-               view_range=None, total_angles=360, num_acquired_scans=2000,
-               rotation_direction="positive", downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
-               num_time_points=1, time_point=0):
-    """Return preprocessed sinogram and angles list for reconstruction.
-
-    Args:
-        path_radiographs (string): Path to a ConeBeam Scan directory.
-        num_views (int): Number of views to use for reconstruction.
-        path_blank (string): [Default=None] Path to blank scan.
-        path_dark (string): [Default=None] Path to dark scan.
-        view_range (list[int, int]): [Default=None] Two indexes of views to specify the range of views to use for reconstruction.
-        total_angles (int): [Default=360] Total rotation angle for the whole dataset.
-        num_acquired_scans (int): [Default=2000] Total number of acquired scans in the directory.
-        rotation_direction (string): [Default='positive'] Rotation direction. Should be 'positive' or 'negative'.
-        downsample_factor ([int, int]): [Default=[1,1]] Two numbers to define down-sample factor.
-        crop_factor ([(int, int),(int, int)] or [int, int, int, int]): [Default=[(0, 0), (1, 1)]]
-            Two points to define the bounding box. Sequence of [(r0, c0), (r1, c1)] or [r0, c0, r1, c1], where 1>=r1 >= r0>=0 and 1>=c1 >= c0>=0.
-        num_time_points (int): [Default=1] Total number of time points.
-        time_point (int): [Default=0] Index of the time point we want to use for 3D reconstruction.
-    Returns:
-        2-element tuple containing
-
-        - **sino** (*ndarray, float*): Preprocessed 3D sinogram.
-
-        - **angles** (*array, single*): 1D array of angles corresponding to preprocessed sinogram.
-
-    """
-
-    if view_range is None:
-        view_range = [0, num_acquired_scans - 1]
-
-    view_ids = _compute_views_index_list(view_range, num_views)
-    view_ids = _select_contiguous_subset(view_ids, num_time_points, time_point)
-    angles = _compute_angles_list(view_ids, num_acquired_scans, total_angles, rotation_direction)
-    obj_scan = _read_scan_dir(path_radiographs, view_ids)
-
-    # Should deal with situation when input is None.
-    if path_blank is not None:
-        blank_scan = np.expand_dims(_read_scan_img(path_blank), axis=0)
+    dist_dv_to_detector_corner_from_detector_center = - geo_params['num_det_channels'] * geo_params['delta_det_channel'] / 2.0
+    dist_dw_to_detector_corner_from_detector_center = - geo_params['num_det_rows'] * geo_params['delta_det_row'] / 2.0
+    geo_params["det_channel_offset"] = -(v_d0 - dist_dv_to_detector_corner_from_detector_center)
+    geo_params["det_row_offset"] = - (w_d0 - dist_dw_to_detector_corner_from_detector_center)
+    
+    ############### read blank scans and dark scans
+    blank_scan = np.expand_dims(_read_scan_img(blank_scan_path), axis=0)
+    if dark_scan_path is not None:
+        dark_scan = np.expand_dims(_read_scan_img(dark_scan_path), axis=0)
     else:
-        blank_scan = 0 * obj_scan[0] + 1
-        blank_scan = blank_scan.reshape([1, obj_scan.shape[1], obj_scan.shape[2]])
-    if path_dark is not None:
-        dark_scan = np.expand_dims(_read_scan_img(path_dark), axis=0)
-    else:
-        dark_scan = 0 * obj_scan[0]
-        dark_scan = dark_scan.reshape([1, obj_scan.shape[1], obj_scan.shape[2]])
+        dark_scan = np.zeros(blank_scan.shape)
+    
+    if view_id_end is None:
+        view_id_end = num_acquired_scans
+    view_ids = list(range(view_id_start, view_id_end, subsample_view_factor)) 
+    obj_scan = _read_scan_dir(obj_scan_path, view_ids)
+    
+    # flip the scans according to flipH and flipV NSI_params 
+    if flipV:
+        print("Flip scans vertically!")
+        obj_scan = np.flip(obj_scan, axis=1)
+        blank_scan = np.flip(blank_scan, axis=1)
+        dark_scan = np.flip(dark_scan, axis=1)
+    if flipH:
+        print("Flip scans horizontally!")
+        obj_scan = np.flip(obj_scan, axis=2)
+        blank_scan = np.flip(blank_scan, axis=2)
+        dark_scan = np.flip(dark_scan, axis=2)
 
-    obj_scan = np.flip(obj_scan, axis=1)
-    blank_scan = np.flip(blank_scan, axis=1)
-    dark_scan = np.flip(dark_scan, axis=1)
-
+    # rotate the scans according to scan_rotate param
+    rot_count = scan_rotate // 90
+    obj_scan = np.rot90(obj_scan, rot_count, axes=(2,1))    
+    blank_scan = np.rot90(blank_scan, rot_count, axes=(2,1))    
+    dark_scan = np.rot90(dark_scan, rot_count, axes=(2,1))    
+     
     # downsampling in pixels
     obj_scan, blank_scan, dark_scan = _downsample_scans(obj_scan, blank_scan, dark_scan,
                                                         downsample_factor=downsample_factor)
     # cropping in pixels
     obj_scan, blank_scan, dark_scan = _crop_scans(obj_scan, blank_scan, dark_scan,
                                                   crop_factor=crop_factor)
+   
+    # compute projection angles based on angle_step and rotation direction
+    view_angle_start_deg = np.rad2deg(view_angle_start)
+    angle_step *= subsample_view_factor
+    angles = np.deg2rad(np.array([(view_angle_start_deg+n*angle_step) % 360.0 for n in range(len(view_ids))]))
+    return obj_scan, blank_scan, dark_scan, angles, geo_params
 
-    sino = _compute_sino_from_scans(obj_scan, blank_scan, dark_scan)
-    return sino.astype(np.float32), angles.astype(np.float64)
+
+def transmission_CT_preprocess(obj_scan, blank_scan, dark_scan,
+                               weight_type='unweighted'):
+    """Given a set of object scans, blank scan, and dark scan, compute the sinogram data and weights. It is assumed that the object scans, blank scan and dark scan all have compatible sizes. 
+    
+    The sinogram values and weights corresponding to invalid sinogram entries will be set to 0.
+ 
+    Args:
+        obj_scan (ndarray, float): 3D object scan with shape (num_views, num_det_rows, num_det_channels). 
+        blank_scan (ndarray, float): [Default=None] 3D blank scan with shape (num_blank_scans, num_det_rows, num_det_channels). When num_blank_scans>1, the pixel-wise mean will be used as the blank scan.
+        dark_scan (ndarray, float): [Default=None] 3D dark scan with shape (num_dark_scans, num_det_rows, num_det_channels). When num_dark_scans>1, the pixel-wise mean will be used as the dark scan.
+        weight_type (string, optional): [Default='unweighted'] Type of noise model used for data.
+
+                - ``'unweighted'`` corresponds to unweighted reconstruction;
+                - ``'transmission'`` is the correct weighting for transmission CT with constant dosage;
+                - ``'transmission_root'`` is commonly used with transmission CT data to improve image homogeneity;
+                - ``'MAR'`` is appropriate for objects containing metal components. This is temporarily a placeholder for future development.
+    Returns:
+        2-element tuple containing:
+        - **sino** (*ndarray, float*): Preprocessed sinogram data with shape (num_views, num_det_rows, num_det_channels).
+        - **weights** (*ndarray, float*): 3D weights array with the same shape as sino. 
+    """
+
+    # should add something here to check the validity of downsampled scan pixel values?
+    sino, weight_mask = _compute_sino_and_weight_mask_from_scans(obj_scan, blank_scan, dark_scan)
+    # set the sino corresponding to invalid entries to 0.
+    sino[weight_mask == 0] = 0.
+    # compute sinogram weights
+    weights = cone3D.calc_weights(sino, weight_type=weight_type)
+    # set the sino weights corresponding to invalid entries to 0.
+    weights[weight_mask == 0] = 0.
+    return sino.astype(np.float32), weights.astype(np.float32)
