@@ -35,9 +35,9 @@ num_rows_phantom = 90
 num_cols_phantom = 90
 
 # Reconstruction size
-num_image_slices=18
-num_image_rows=300
-num_image_cols=300
+num_image_slices = 18
+num_image_rows = 192
+num_image_cols = 192
 
 # qGGMRF recon parameters
 sharpness = 0.0                    # Controls regularization level of reconstruction by controlling prior term weighting
@@ -67,7 +67,7 @@ phantom = phantom/10.0
 print('Phantom shape is:', num_slices_phantom, num_rows_phantom, num_cols_phantom)
 
 # Pad phantom so that the edges are replicated
-pad_factor = 2
+pad_factor = 3
 pad_rows_L = num_rows_phantom * pad_factor
 pad_rows_R = pad_rows_L
 pad_cols_L = num_cols_phantom * pad_factor
@@ -98,7 +98,7 @@ print('Performing 3D qGGMRF reconstruction ...')
 
 recon = mbircone.cone3D.recon_lamino(sino, angles, theta,
                                      num_image_rows=num_image_rows, num_image_cols=num_image_cols, num_image_slices=num_image_slices,
-                                     sharpness=sharpness, max_resolutions=0, snr_db=snr_db)
+                                     sharpness=sharpness, snr_db=snr_db)
 
 print('recon shape = ', np.shape(recon))
 
