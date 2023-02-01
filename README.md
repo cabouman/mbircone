@@ -57,16 +57,20 @@ pip install -r requirements_demo.txt
 ```
 python demo_3D_shepp_logan.py
 ```
-3) Run demo
+3) Run MACE demo
 ```
 python demo_mace3D.py
 ```
+4) (Optional) Run NSI dataset demo. (Note: this is a long demo with an estimated run time of 30-60 minutes!)
+```
+python demo_nsi_preprocess.py
+```
 
-3) Result visualization: 
+5) Result visualization: 
 
-Please go to ```demo/output/mace3D/``` to look at phantom, sinogram, and reconstruction images
+Please go to ```demo/output/``` to look at phantom, sinogram, and reconstruction images
 
-4) In the case where exceptions occur when downloading data, please check your internet connection. If you replaced the default url with the url of your own dataset, please make sure that the url is correct, and points to a public webpage.
+6) In the case where exceptions occur when downloading data, please check your internet connection. If you replaced the default url with the url of your own dataset, please make sure that the url is correct, and points to a public webpage.
 
 
 ## Build documentation in local folder
