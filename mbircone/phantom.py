@@ -207,7 +207,8 @@ def gen_microscopy_sample_3d(num_rows, num_cols, num_slices):
 
 def gen_lamino_sample_3d(num_rows, num_cols, num_slices, edge_pixel_thickness=0):
     """
-    Generate a 3D microscopy sample phantom.
+    Generate a 3D laminography phantom by extracting a rectangular region
+    from a 3D microscopy sample phantom.
     Args:
         num_rows: int, number of rows.
         num_cols: int, number of cols.
