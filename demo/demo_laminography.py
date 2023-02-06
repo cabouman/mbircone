@@ -85,7 +85,7 @@ phantom = np.pad(phantom, [(pad_slices_L, pad_slices_R), (0, 0), (0, 0)], mode='
 
 
 print('Generating synthetic sinogram ...')
-sino = mbircone.cone3D.project_lamino(phantom, angles, theta,
+sino = mbircone.laminography.project_lamino(phantom, angles, theta,
                                       num_det_rows, num_det_channels)
 print('Synthetic sinogram shape: (num_views, num_det_rows, num_det_channels) = ', sino.shape)
 
@@ -96,9 +96,10 @@ print('Synthetic sinogram shape: (num_views, num_det_rows, num_det_channels) = '
 
 print('Performing 3D qGGMRF reconstruction ...')
 
-recon = mbircone.cone3D.recon_lamino(sino, angles, theta,
-                                     num_image_rows=num_image_rows, num_image_cols=num_image_cols, num_image_slices=num_image_slices,
-                                     sharpness=sharpness, snr_db=snr_db)
+recon = mbircone.laminography.recon_lamino(sino, angles, theta,
+                                           num_image_rows=num_image_rows,
+                                           num_image_cols=num_image_cols, num_image_slices=num_image_slices,
+                                           sharpness=sharpness, snr_db=snr_db)
 
 print('recon shape = ', np.shape(recon))
 
