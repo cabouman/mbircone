@@ -132,7 +132,7 @@ def project_lamino(image, angles, theta,
                    delta_det_channel=None, delta_det_row=None, delta_pixel_image=None,
                    det_channel_offset=0.0, image_slice_offset=0.0,
                    num_threads=None, verbose=1, lib_path=__lib_path):
-    """ Compute 3D cone beam forward projection for the laminograhpy case.
+    """ Compute 3D cone beam forward projection for the laminography case.
 
     Args:
         image (float, ndarray): 3D image to be projected, with shape (num_img_slices, num_img_rows, num_img_cols).
