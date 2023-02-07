@@ -20,7 +20,7 @@ print('This script is a demonstration of the laminography reconstruction algorit
 # Laminographic angle
 theta_degrees = 60
 # Convert to radians
-theta = theta_degrees * (np.pi/180)
+theta_radians = theta_degrees * (np.pi/180)
 
 # detector size
 num_det_channels = 128
@@ -60,23 +60,11 @@ os.makedirs(save_path, exist_ok=True)
 ######################################################################################
 
 print('Generating a laminography phantom ...')
-phantom = mbircone.phantom.gen_lamino_sample_3d(num_rows_phantom, num_cols_phantom, num_slices_phantom)
+phantom = mbircone.phantom.gen_lamino_sample_3d(num_rows_phantom, num_cols_phantom, num_slices_phantom, pad_factor=3)
 
 # Scale the phantom by a factor of 10.0 to make the projections physical realistic -log attenuation values
 phantom = phantom/10.0
 print('Phantom shape is:', num_slices_phantom, num_rows_phantom, num_cols_phantom)
-
-# Pad phantom so that the edges are replicated
-pad_factor = 3
-pad_rows_L = num_rows_phantom * pad_factor
-pad_rows_R = pad_rows_L
-pad_cols_L = num_cols_phantom * pad_factor
-pad_cols_R = pad_cols_L
-pad_slices_L = num_slices_phantom * pad_factor
-pad_slices_R = pad_slices_L
-
-phantom = np.pad(phantom, [(0, 0), (pad_rows_L, pad_rows_R),(pad_cols_L, pad_cols_R)], mode='edge')
-phantom = np.pad(phantom, [(pad_slices_L, pad_slices_R), (0, 0), (0, 0)], mode='constant', constant_values=0.0)
 
 
 ######################################################################################
@@ -85,7 +73,7 @@ phantom = np.pad(phantom, [(pad_slices_L, pad_slices_R), (0, 0), (0, 0)], mode='
 
 
 print('Generating synthetic sinogram ...')
-sino = mbircone.laminography.project_lamino(phantom, angles, theta,
+sino = mbircone.laminography.project_lamino(phantom, angles, theta_radians,
                                       num_det_rows, num_det_channels)
 print('Synthetic sinogram shape: (num_views, num_det_rows, num_det_channels) = ', sino.shape)
 
@@ -96,7 +84,7 @@ print('Synthetic sinogram shape: (num_views, num_det_rows, num_det_channels) = '
 
 print('Performing 3D qGGMRF reconstruction ...')
 
-recon = mbircone.laminography.recon_lamino(sino, angles, theta,
+recon = mbircone.laminography.recon_lamino(sino, angles, theta_radians,
                                            num_image_rows=num_image_rows,
                                            num_image_cols=num_image_cols, num_image_slices=num_image_slices,
                                            sharpness=sharpness, snr_db=snr_db)
@@ -134,11 +122,14 @@ plot_image(display_phantom[:,display_x_image,:], title=f'phantom, coronal slice 
 plot_image(display_phantom[:,:,display_y_image], title=f'phantom, sagittal slice {display_y_image}',
            filename=os.path.join(save_path, 'phantom_sagittal.png'), vmin=vmin, vmax=vmax)
 # recon images
-plot_image(display_recon[display_slice_recon], title=f'qGGMRF recon, axial slice {display_slice_recon}, Θ='+str(theta_degrees)+' degrees',
+plot_image(display_recon[display_slice_recon], title=f'qGGMRF recon, axial slice {display_slice_recon}, '
+                                                     f'Θ='+str(theta_radians)+' degrees',
            filename=os.path.join(save_path, 'recon_axial.png'), vmin=vmin, vmax=vmax)
-plot_image(display_recon[:, display_x_recon,:], title=f'qGGMRF recon, coronal slice {display_x_recon}, Θ='+str(theta_degrees)+' degrees',
+plot_image(display_recon[:, display_x_recon,:], title=f'qGGMRF recon, coronal slice {display_x_recon}, '
+                                                      f'Θ='+str(theta_radians)+' degrees',
            filename=os.path.join(save_path, 'recon_coronal.png'), vmin=vmin, vmax=vmax)
-plot_image(display_recon[:, :, display_y_recon], title=f'qGGMRF recon, sagittal slice {display_y_recon}, Θ='+str(theta_degrees)+' degrees',
+plot_image(display_recon[:, :, display_y_recon], title=f'qGGMRF recon, sagittal slice {display_y_recon}, '
+                                                       f'Θ='+str(theta_radians)+' degrees',
            filename=os.path.join(save_path, 'recon_sagittal.png'), vmin=vmin, vmax=vmax)
 
 print(f"Images saved to {save_path}.")
