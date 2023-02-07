@@ -49,7 +49,7 @@ def recon_lamino(sino, angles, theta,
             If None, automatically set to ``delta_det_channel/magnification``.
 
         det_channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector
-            to the source-detector line along a row. (Note: There is no ``det_row_offset`` parameter; due to the
+            to the detector z-axis along a row. (Note: There is no ``det_row_offset`` parameter; due to the
             parallel beam geometry such a parameter would not have an effect.)
         image_slice_offset (float, optional): [Default=0.0] Vertical offset of the image in units of :math:`ALU`.
 
@@ -158,7 +158,7 @@ def recon_lamino(sino, angles, theta,
     # Calculate parameters that differ when we switch to synthetic cone-beam coordinates
 
     # Determine synthetic source-detector distance to approximate parallel beams
-    # Beams should spread by less than epsilon * max(delta_det_channel,delta_det_row) as they pass through the phantom
+    # Beams spread by less than epsilon * max(delta_det_channel,delta_det_row) as they pass through the phantom
     epsilon = 0.0015
     _dist_source_detector = (1/epsilon)*max(delta_det_channel, delta_det_row)*(max(num_det_rows, num_det_channels)**2)
 
@@ -220,7 +220,7 @@ def project_lamino(image, angles, theta,
             If None, automatically set to ``delta_det_channel/magnification``.
 
         det_channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector
-            to the source-detector line along a row. (Note: There is no ``det_row_offset`` parameter; due to the
+            to the detector z-axis along a row. (Note: There is no ``det_row_offset`` parameter; due to the
             parallel beam geometry such a parameter would not have an effect.)
         image_slice_offset (float, optional): [Default=0.0] Vertical offset of the image in units of :math:`ALU`.
 
@@ -261,7 +261,7 @@ def project_lamino(image, angles, theta,
     _lib_path = lib_path
 
     # Determine artificial source-detector distance to approximate parallel beams
-    # Beams should spread by less than epsilon * max(delta_det_channel,delta_det_row) as they pass through the phantom
+    # Beams spread by less than epsilon * max(delta_det_channel,delta_det_row) as they pass through the phantom
     epsilon = 0.0015
     _dist_source_detector = (1/epsilon)*max(delta_det_channel,delta_det_row)*(max(num_det_rows, num_det_channels)**2)
 
