@@ -104,6 +104,13 @@ for view_idx in [0, num_views//4, num_views//2]:
 display_phantom = phantom
 display_recon = recon
 
+# recon_area_of_interest = recon[1:18, 96:225, 96:225]
+recon_area_of_interest = recon[1:17, 96:224, 96:224]
+display_error = np.abs(phantom[48:64, 251:379, 251:379] - recon_area_of_interest)
+
+print(f'qGGMRF rms reconstruction error within 16x128x128 laminography phantom window: '
+      f'{np.sqrt(np.mean(display_error**2))/np.mean(phantom[48:64, 251:379, 251:379]):.3g}')
+
 # Set display indexes for phantom and recon images
 display_slice_image = display_phantom.shape[0] // 2
 display_x_image = display_phantom.shape[1] // 2
@@ -112,6 +119,10 @@ display_y_image = display_phantom.shape[2] // 2
 display_slice_recon = display_recon.shape[0] // 2
 display_x_recon = display_recon.shape[1] // 2
 display_y_recon = display_recon.shape[2] // 2
+
+display_slice_error = display_error.shape[0] // 2
+display_x_error = display_error.shape[1] // 2
+display_y_error = display_error.shape[2] // 2
 
 # phantom images
 plot_image(display_phantom[display_slice_image], title=f'phantom, axial slice {display_slice_image}',
@@ -130,6 +141,18 @@ plot_image(display_recon[:, display_x_recon,:], title=f'qGGMRF recon, coronal sl
 plot_image(display_recon[:, :, display_y_recon], title=f'qGGMRF recon, sagittal slice {display_y_recon}, '
                                                        f'Θ='+str(theta_degrees)+' degrees',
            filename=os.path.join(save_path, 'recon_sagittal.png'), vmin=vmin, vmax=vmax)
+
+# error images
+plot_image(display_error[display_slice_error], title=f'error, axial slice {display_slice_error}, '
+                                                     f'Θ='+str(theta_degrees)+' degrees',
+           filename=os.path.join(save_path, 'error_axial.png'), vmin=vmin, vmax=vmax)
+plot_image(display_error[:, display_x_error,:], title=f'error, coronal slice {display_x_error}, '
+                                                      f'Θ='+str(theta_degrees)+' degrees',
+           filename=os.path.join(save_path, 'error_coronal.png'), vmin=vmin, vmax=vmax)
+plot_image(display_error[:, :, display_y_error], title=f'error, sagittal slice {display_y_error}, '
+                                                       f'Θ='+str(theta_degrees)+' degrees',
+           filename=os.path.join(save_path, 'error_sagittal.png'), vmin=vmin, vmax=vmax)
+
 
 print(f"Images saved to {save_path}.")
 input("Press Enter")
