@@ -36,8 +36,8 @@ num_cols_phantom = 90
 
 # Reconstruction size
 num_image_slices = 18
-num_image_rows = 192
-num_image_cols = 192
+num_image_rows = 320
+num_image_cols = 320
 
 # qGGMRF recon parameters
 sharpness = 0.0                    # Controls regularization level of reconstruction by controlling prior term weighting
@@ -71,10 +71,9 @@ print('Phantom shape is:', num_slices_phantom, num_rows_phantom, num_cols_phanto
 # Generate synthetic sinogram
 ######################################################################################
 
-
 print('Generating synthetic sinogram ...')
 sino = mbircone.laminography.project_lamino(phantom, angles, theta_radians,
-                                      num_det_rows, num_det_channels)
+                                            num_det_rows, num_det_channels)
 print('Synthetic sinogram shape: (num_views, num_det_rows, num_det_channels) = ', sino.shape)
 
 
@@ -123,13 +122,13 @@ plot_image(display_phantom[:,:,display_y_image], title=f'phantom, sagittal slice
            filename=os.path.join(save_path, 'phantom_sagittal.png'), vmin=vmin, vmax=vmax)
 # recon images
 plot_image(display_recon[display_slice_recon], title=f'qGGMRF recon, axial slice {display_slice_recon}, '
-                                                     f'Θ='+str(theta_radians)+' degrees',
+                                                     f'Θ='+str(theta_degrees)+' degrees',
            filename=os.path.join(save_path, 'recon_axial.png'), vmin=vmin, vmax=vmax)
 plot_image(display_recon[:, display_x_recon,:], title=f'qGGMRF recon, coronal slice {display_x_recon}, '
-                                                      f'Θ='+str(theta_radians)+' degrees',
+                                                      f'Θ='+str(theta_degrees)+' degrees',
            filename=os.path.join(save_path, 'recon_coronal.png'), vmin=vmin, vmax=vmax)
 plot_image(display_recon[:, :, display_y_recon], title=f'qGGMRF recon, sagittal slice {display_y_recon}, '
-                                                       f'Θ='+str(theta_radians)+' degrees',
+                                                       f'Θ='+str(theta_degrees)+' degrees',
            filename=os.path.join(save_path, 'recon_sagittal.png'), vmin=vmin, vmax=vmax)
 
 print(f"Images saved to {save_path}.")
