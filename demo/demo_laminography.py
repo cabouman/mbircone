@@ -101,6 +101,18 @@ for view_idx in [0, num_views//4, num_views//2]:
                    filename=os.path.join(save_path, f'sino-shepp-logan-3D-view_angle{view_angle}.png'),
                    vmin=0.0, vmax=2.0)
 
+plot_image(sino[0,:,:]-sino[num_views//4,:,:],
+           title=f'sinogram view angle {0} minus view angle'
+                 f' {int(angles[num_views//4]*180/np.pi)}',
+           filename=os.path.join(save_path, f'sinogram-difference.png'),
+           vmin=0.0, vmax=2.0)
+
+plot_image(np.abs(sino[0,:,:]-sino[num_views//3,:,:]),
+           title=f'sinogram view angle {0} minus view angle'
+                 f' {int(angles[num_views//3]*180/np.pi)}',
+           filename=os.path.join(save_path, f'sinogram-difference.png'),
+           vmin=0.0, vmax=2.0)
+
 display_phantom = phantom
 display_recon = recon
 
