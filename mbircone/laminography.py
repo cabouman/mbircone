@@ -55,7 +55,7 @@ def auto_lamino_params(theta, num_det_rows, num_det_channels, delta_det_channel,
 def recon_lamino(sino, angles, theta,
                  weights=None, weight_type='unweighted', init_image=0.0, prox_image=None,
                  num_image_rows=None, num_image_cols=None, num_image_slices=None,
-                 delta_det_channel=None, delta_det_row=None, delta_pixel_image=None,
+                 delta_det_channel=1.0, delta_det_row=1.0, delta_pixel_image=None,
                  det_channel_offset=0.0, image_slice_offset=0.0,
                  sigma_y=None, snr_db=40.0, sigma_x=None, sigma_p=None, p=1.2, q=2.0, T=1.0, num_neighbors=6,
                  sharpness=0.0, positivity=True, max_resolutions=None, stop_threshold=0.02, max_iterations=100,
@@ -87,10 +87,8 @@ def recon_lamino(sino, angles, theta,
         num_image_slices (int, optional): [Default=None] Number of slices in reconstructed image.
             If None, automatically set by ``cone3D.auto_image_size``.
 
-        delta_det_channel (float, optional): [Default=1.0] Detector channel spacing in :math:`ALU`. If None, set to
-            value of delta_det_row. If delta_det_row is None, set both to 1.0.
-        delta_det_row (float, optional): [Default=1.0] Detector row spacing in :math:`ALU`. If None, set to
-            value of delta_det_channel. If delta_det_channel is None, set both to 1.0.
+        delta_det_channel (float, optional): [Default=1.0] Detector channel spacing in :math:`ALU`.
+        delta_det_row (float, optional): [Default=1.0] Detector row spacing in :math:`ALU`.
         delta_pixel_image (float, optional): [Default=None] Image pixel spacing in :math:`ALU`.
             If None, automatically set to ``delta_det_channel/magnification``.
 
@@ -143,8 +141,6 @@ def recon_lamino(sino, angles, theta,
 
     (_, num_det_rows, num_det_channels) = sino.shape
 
-    (delta_det_channel, delta_det_row) = cone3D.auto_delta_det_channel_row(delta_det_channel, delta_det_row)
-
     lamino_dist_source_detector, lamino_magnification, lamino_delta_det_row, lamino_det_row_offset, \
         lamino_rotation_offset, lamino_image_slice_offset = auto_lamino_params(theta, num_det_rows, num_det_channels,
                                                                                delta_det_channel, delta_det_row,
@@ -169,7 +165,7 @@ def recon_lamino(sino, angles, theta,
 
 def project_lamino(image, angles, theta,
                    num_det_rows, num_det_channels,
-                   delta_det_channel=None, delta_det_row=None, delta_pixel_image=None,
+                   delta_det_channel=1.0, delta_det_row=1.0, delta_pixel_image=None,
                    det_channel_offset=0.0, image_slice_offset=0.0,
                    num_threads=None, verbose=1, lib_path=__lib_path):
     """ Compute 3D cone beam forward projection for the laminography case.
@@ -182,10 +178,8 @@ def project_lamino(image, angles, theta,
         num_det_rows (int): Number of rows in laminography sinogram data.
         num_det_channels (int): Number of channels in laminography sinogram data.
 
-        delta_det_channel (float, optional): [Default=1.0] Detector channel spacing in :math:`ALU`. If None, set to
-            value of delta_det_row. If delta_det_row is None, set both to 1.0.
-        delta_det_row (float, optional): [Default=1.0] Detector row spacing in :math:`ALU`. If None, set to
-            value of delta_det_channel. If delta_det_channel is None, set both to 1.0.
+        delta_det_channel (float, optional): [Default=1.0] Detector channel spacing in :math:`ALU`.
+        delta_det_row (float, optional): [Default=1.0] Detector row spacing in :math:`ALU`.
         delta_pixel_image (float, optional): [Default=None] Image pixel spacing in :math:`ALU`.
             If None, automatically set to ``delta_det_channel/magnification``.
 
@@ -204,8 +198,6 @@ def project_lamino(image, angles, theta,
     Returns:
         (float, ndarray): 3D laminography sinogram with shape (num_views, num_det_rows, num_det_channels).
     """
-
-    (delta_det_channel, delta_det_row) = cone3D.auto_delta_det_channel_row(delta_det_channel, delta_det_row)
 
     lamino_dist_source_detector, lamino_magnification, lamino_delta_det_row, lamino_det_row_offset, \
         lamino_rotation_offset, lamino_image_slice_offset = auto_lamino_params(theta, num_det_rows, num_det_channels,
