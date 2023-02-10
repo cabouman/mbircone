@@ -88,6 +88,30 @@ def calc_weights(sino, weight_type):
     return weights
 
 
+def auto_delta_det_channel_row(delta_det_channel, delta_det_row):
+    """ Compute the automatic value of ``delta_det_channel`` and ``delta_det_row``.
+
+    Args:
+        delta_det_channel (float): Detector channel spacing in :math:`ALU`.
+        delta_det_row (float): Detector row spacing in :math:`ALU`.
+
+    Returns:
+        (int, 2-tuple): Default values for ``delta_det_channel``, ``delta_det_row`` for the
+        inputted detector measurements.
+
+
+    """
+    if delta_det_channel is None and delta_det_row is None:
+        delta_det_channel = 1.0
+        delta_det_row = 1.0
+    elif delta_det_channel is None:
+        delta_det_channel = delta_det_row
+    elif delta_det_row is None:
+        delta_det_row = delta_det_channel
+
+    return delta_det_channel, delta_det_row
+
+
 def auto_max_resolutions(init_image) :
     """ Compute the automatic value of ``max_resolutions`` for use in MBIR reconstruction.
 
@@ -350,7 +374,7 @@ def create_sino_params_dict(dist_source_detector, magnification,
 def recon(sino, angles, dist_source_detector, magnification,
           weights=None, weight_type='unweighted', init_image=0.0, prox_image=None,
           num_image_rows=None, num_image_cols=None, num_image_slices=None,
-          delta_det_channel=1.0, delta_det_row=1.0, delta_pixel_image=None,
+          delta_det_channel=None, delta_det_row=None, delta_pixel_image=None,
           det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0, image_slice_offset=0.0,
           sigma_y=None, snr_db=40.0, sigma_x=None, sigma_p=None, p=1.2, q=2.0, T=1.0, num_neighbors=6,
           sharpness=0.0, positivity=True, max_resolutions=None, stop_threshold=0.02, max_iterations=100,
@@ -384,8 +408,12 @@ def recon(sino, angles, dist_source_detector, magnification,
         num_image_slices (int, optional): [Default=None] Number of slices in reconstructed image.
             If None, automatically set by ``cone3D.auto_image_size``.
 
-        delta_det_channel (float, optional): [Default=1.0] Detector channel spacing in :math:`ALU`.
-        delta_det_row (float, optional): [Default=1.0] Detector row spacing in :math:`ALU`.
+        delta_det_channel (float, optional): [Default=None] Detector channel spacing in :math:`ALU`.
+            If this is set to None, automatically set to the value of delta_det_row if
+            delta_det_row is not None, or to 1.0 if delta_det_row is None.
+        delta_det_row (float, optional): [Default=None] Detector row spacing in :math:`ALU`.
+            If this is set to None, automatically set to the value of delta_det_channel if
+            delta_det_channel is not None, or to 1.0 if delta_det_channel is None.
         delta_pixel_image (float, optional): [Default=None] Image pixel spacing in :math:`ALU`.
             If None, automatically set to ``delta_pixel_detector/magnification``.
         
@@ -457,6 +485,8 @@ def recon(sino, angles, dist_source_detector, magnification,
     print('max_resolution = ', max_resolutions)
 
     (num_views, num_det_rows, num_det_channels) = sino.shape
+
+    (delta_det_channel, delta_det_row) = auto_delta_det_channel_row(delta_det_channel, delta_det_row)
 
     if delta_pixel_image is None:
         delta_pixel_image = delta_det_channel/magnification
@@ -578,7 +608,7 @@ def recon(sino, angles, dist_source_detector, magnification,
 def project(image, angles,
             num_det_rows, num_det_channels,
             dist_source_detector, magnification,
-            delta_det_channel=1.0, delta_det_row=1.0, delta_pixel_image=None,
+            delta_det_channel=None, delta_det_row=None, delta_pixel_image=None,
             det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0, image_slice_offset=0.0,
             num_threads=None, verbose=1, lib_path=__lib_path):
     """ Compute 3D cone beam forward projection.
@@ -594,8 +624,12 @@ def project(image, angles,
         magnification (float): Magnification of the cone-beam geometry defined as
             (source to detector distance)/(source to center-of-rotation distance).
 
-        delta_det_channel (float, optional): [Default=1.0] Detector channel spacing in :math:`ALU`.
-        delta_det_row (float, optional): [Default=1.0] Detector row spacing in :math:`ALU`.
+        delta_det_channel (float, optional): [Default=None] Detector channel spacing in :math:`ALU`.
+            If this is set to None, automatically set to the value of delta_det_row if
+            delta_det_row is not None, or to 1.0 if delta_det_row is None.
+        delta_det_row (float, optional): [Default=None] Detector row spacing in :math:`ALU`.
+            If this is set to None, automatically set to the value of delta_det_channel if
+            delta_det_channel is not None, or to 1.0 if delta_det_channel is None.
         delta_pixel_image (float, optional): [Default=None] Image pixel spacing in :math:`ALU`.
             If None, automatically set to ``delta_pixel_detector/magnification``.
 
@@ -624,6 +658,8 @@ def project(image, angles,
 
     os.environ['OMP_NUM_THREADS'] = str(num_threads)
     os.environ['OMP_DYNAMIC'] = 'true'
+
+    delta_det_channel, delta_det_row = auto_delta_det_channel_row(delta_det_channel, delta_det_row)
 
     if delta_pixel_image is None:
         delta_pixel_image = delta_det_channel / magnification
