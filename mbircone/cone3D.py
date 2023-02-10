@@ -105,8 +105,12 @@ def auto_delta_det_channel_row(delta_det_channel, delta_det_row):
         delta_det_channel = 1.0
         delta_det_row = 1.0
     elif delta_det_channel is None:
+        warnings.warn("Parameter delta_det_row is provided but delta_det_channel is set to None."
+                      "Setting delta_det_channel = delta_det_row.")
         delta_det_channel = delta_det_row
     elif delta_det_row is None:
+        warnings.warn("Parameter delta_det_channel is provided but delta_det_row is set to None."
+                      "Setting delta_det_row = delta_det_channel.")
         delta_det_row = delta_det_channel
 
     return delta_det_channel, delta_det_row
