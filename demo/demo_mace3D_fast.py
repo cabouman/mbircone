@@ -25,17 +25,16 @@ print('This script is a demonstration of the mace3D reconstruction algorithm. De
 
 # Change the parameters below for your own use case.
 
-# The url to the data repo.
-data_repo_url = 'https://github.com/cabouman/mbir_data/raw/master/'
+##### urls to phantom and denoiser parameter file
+# url to download the 3D image volume phantom file
+phantom_url = "https://engineering.purdue.edu/~bouman/data_repository/data/bottle_cap_3D_phantom.npy.tgz"  # name of the phantom file. Please make sure this matches with the name of the downloaded file.
+phantom_name = 'bottle_cap_3D_phantom.npy'
 
-# Download url to the index file.
-# This file will be used to retrieve urls to files that we are going to download
-yaml_url = os.path.join(data_repo_url, 'index.yaml')
+# url to download the denoiser parameter file 
+denoiser_url = "https://engineering.purdue.edu/~bouman/data_repository/data/model_dncnn_ct.tgz" 
+# name of the directory containing all denoiser param files. Make sure this matches with the name of the downloaded file.
+denoiser_model_name = 'model_dncnn_ct'
 
-# Choice of phantom file. 
-# These should be valid choices specified in the index file. 
-# The url to phantom data will be parsed from data_repo_url and the choices of phantom specified below.
-phantom_name = 'bottle_cap_3D'
 
 # Destination path to download and extract the phantom and NN weight files.
 target_dir = './demo_data/'   
@@ -60,19 +59,15 @@ max_admm_itr = 10            # max ADMM iterations for MACE reconstruction
 # Download and extract data 
 # ###########################################################################
 
-# Download the url index file and return path to local file. 
-index_path = demo_utils.download_and_extract(yaml_url, target_dir) 
-# Load the url index file as a directionary
-url_index = demo_utils.load_yaml(index_path)
-# get urls to phantom and denoiser parameter file
-phantom_url = os.path.join(data_repo_url, url_index['phantom'][phantom_name])  # url to download the 3D image volume phantom file
-denoiser_url = os.path.join(data_repo_url, url_index['denoiser']['dncnn_ct'])  # url to download the denoiser parameter file 
+#### download phantom file
+# retrieve parent directory where phantom npy file is extracted to
+phantom_dir = demo_utils.download_and_extract(phantom_url, target_dir)
+phantom_full_path = os.path.join(phantom_dir, phantom_name)
 
-# download phantom file
-phantom_path = demo_utils.download_and_extract(phantom_url, target_dir)
-# download and extract NN weights and structure files
-denoiser_path = demo_utils.download_and_extract(denoiser_url, target_dir)
-
+#### download and extract NN weights and structure files
+# retrieve parent directory where denoiser files are extracted to
+denoiser_model_dir = demo_utils.download_and_extract(denoiser_url, target_dir)
+denoiser_model_full_path = os.path.join(denoiser_model_dir, denoiser_model_name)
 
 # ###########################################################################
 # Generate downsampled phantom 
@@ -80,7 +75,7 @@ denoiser_path = demo_utils.download_and_extract(denoiser_url, target_dir)
 print("Generating downsampled 3D phantom volume ...")
 
 # load original phantom
-phantom_orig = np.load(phantom_path) / 4.0
+phantom_orig = np.load(phantom_full_path) / 4.0
 print("shape of original phantom = ", phantom_orig.shape)
 
 # downsample the original phantom along slice axis
@@ -117,7 +112,7 @@ recon_qGGMRF = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnifi
 # This demo includes a custom DnCNN denoiser trained on CT images.
 print("Loading denoiser function and model ...")
 # Load denoiser model structure and pre-trained model weights
-denoiser_model = denoiser_utils.DenoiserCT(checkpoint_dir=os.path.join(denoiser_path, 'model_dncnn_ct'))
+denoiser_model = denoiser_utils.DenoiserCT(checkpoint_dir=denoiser_model_full_path)
 # Define the denoiser using this model.  This version requires some interface code to match with MACE.
 def denoiser(img_noisy):
     img_noisy = np.expand_dims(img_noisy, axis=1)

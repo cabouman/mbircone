@@ -39,21 +39,15 @@ if __name__=='__main__':
     # Denoiser function to be used in MACE. For the built-in demo, this should be one of dncnn_keras or dncnn_ct
     # Other denoisers built in keras can be used with minimal modification by putting the architecture and weights
     # in model.json and model.hdf5 in the denoiser_path set below
-    denoiser_type = 'dncnn_ct'
-
-    # The url to the data repo.
-    data_repo_url = 'https://github.com/cabouman/mbir_data/raw/master/'
-
-    # Download url to the index file.
-    # This file will be used to retrieve urls to files that we are going to download
-    yaml_url = os.path.join(data_repo_url, 'index.yaml')
-
-    # Choice of phantom and denoiser files. 
-    # These should be valid choices specified in the index file. 
-    # The urls to phantom data and NN weights will be parsed from data_repo_url and the choices of phantom and denoiser specified below.
-    phantom_name = 'bottle_cap_3D'
-    denoiser_name = denoiser_type
-
+    
+    ##### urls to phantom and denoiser parameter file
+    # url to download the 3D image volume phantom file
+    phantom_url = "https://engineering.purdue.edu/~bouman/data_repository/data/bottle_cap_3D_phantom.npy.tgz"
+    # name of the phantom file. Please make sure this matches with the name of the downloaded file.
+    phantom_name = 'bottle_cap_3D_phantom.npy'
+    # url to download the denoiser parameter file
+    denoiser_url = "https://engineering.purdue.edu/~bouman/data_repository/data/model_dncnn_ct.tgz"
+    
     # destination path to download and extract the phantom and NN weight files.
     target_dir = './demo_data/'   
     # path to store output recon images
@@ -82,18 +76,13 @@ if __name__=='__main__':
     # ###########################################################################
     # Download and extract data 
     # ###########################################################################
+    #### download phantom file
+    # retrieve parent directory where phantom npy file is extracted to
+    phantom_dir = demo_utils.download_and_extract(phantom_url, target_dir)
+    phantom_full_path = os.path.join(phantom_dir, phantom_name)
 
-    # Download the url index file and return path to local file. 
-    index_path = demo_utils.download_and_extract(yaml_url, target_dir) 
-    # Load the url index file as a directionary
-    url_index = demo_utils.load_yaml(index_path)
-    # get urls to phantom and denoiser parameter file
-    phantom_url = os.path.join(data_repo_url, url_index['phantom'][phantom_name])  # url to download the 3D image volume phantom file
-    denoiser_url = os.path.join(data_repo_url, url_index['denoiser'][denoiser_name])  # url to download the denoiser parameter file 
-
-    # download phantom file
-    phantom_path = demo_utils.download_and_extract(phantom_url, target_dir)
-    # download and extract NN weights and structure files
+    #### download and extract NN weights and structure files
+    # retrieve parent directory where denoiser files are extracted to
     denoiser_path = demo_utils.download_and_extract(denoiser_url, target_dir)
 
     
@@ -152,7 +141,7 @@ if __name__=='__main__':
     print("Loading 3D phantom volume ...")
 
     # load original phantom
-    phantom_3D = np.load(phantom_path)
+    phantom_3D = np.load(phantom_full_path)
     print("shape of 3D phantom = ", phantom_3D.shape)
 
     # ###########################################################################
