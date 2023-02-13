@@ -205,7 +205,7 @@ def gen_microscopy_sample_3d(num_rows, num_cols, num_slices):
     return np.transpose(image, (2, 0, 1))
 
 
-def gen_lamino_sample_3d(num_rows, num_cols, num_slices, pad_factor=0):
+def gen_lamino_sample_3d(num_rows, num_cols, num_slices, pad_factor=0.0):
     """
     Generate a 3D laminography phantom by extracting a rectangular region
     from a 3D microscopy sample phantom.
@@ -213,7 +213,7 @@ def gen_lamino_sample_3d(num_rows, num_cols, num_slices, pad_factor=0):
         num_rows: int, number of rows.
         num_cols: int, number of cols.
         num_slices: int, number of slices.
-        pad_factor (float, optional): [Default=0] Size of constant padding around
+        pad_factor (float, optional): [Default=0.0] Size of constant padding around
             phantom rows and columns to simulate a flat object.
             Value is given as a multiple of the size of the phantom.
     Return:
@@ -239,16 +239,6 @@ def gen_lamino_sample_3d(num_rows, num_cols, num_slices, pad_factor=0):
     phantom = phantom[slice_start:slice_end, row_start:row_end, col_start:col_end]
 
     phantom = np.clip(phantom, 0.2, 2.0)
-
-    # if edge_pixel_thickness <= 0:
-    #     return phantom
-    #
-    # phantom[:edge_pixel_thickness] = 2.0
-    # phantom[-edge_pixel_thickness:] = 2.0
-    # phantom[:, :edge_pixel_thickness] = 2.0
-    # phantom[:, -edge_pixel_thickness:] = 2.0
-    # phantom[:, :, :edge_pixel_thickness] = 2.0
-    # phantom[:, :, -edge_pixel_thickness:] = 2.0
 
     # Pad phantom so that the edges are replicated
     pad_rows_l = num_rows * pad_factor
