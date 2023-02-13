@@ -1,5 +1,5 @@
 mbircone.laminography
-------------------
+---------------------
 .. automodule:: mbircone.laminography
    :members: recon_lamino, project_lamino
    :undoc-members:
