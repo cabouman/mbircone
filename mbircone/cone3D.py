@@ -448,6 +448,7 @@ def denoise(img_noisy, sigma_w, sigma_x,
     reconparams['numZiplines'] = -1
     
     # dummy variables for NHICD. Not used in denoise mode.
+    reconparams['NHICD_Mode'] = 'off'
     reconparams['NHICD_ThresholdAllVoxels_ErrorPercent'] = -1
     reconparams['NHICD_percentage'] = -1
     reconparams['NHICD_random'] = -1

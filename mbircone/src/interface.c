@@ -1,10 +1,8 @@
-
 #include "allocate.h"
 #include "MBIRModularUtilities3D.h"
 #include "interface.h"
 #include "computeSysMatrix.h"
 #include "recon3DCone.h"
-#include "denoise3D.h"
 
 void AmatrixComputeToFile(float *angles, 
     struct SinoParams sinoParams, struct ImageParams imgParams, 
@@ -47,9 +45,7 @@ void denoise(float *x,
     /* img stores the denoised image arrray*/
     struct Image img;
     
-    int i;
-
-    /* Set params for img and img_noisyinside data structure */
+    /* Set params for img and err_imginside data structure */
     copyImgParams(&imgParams, &img.params);
     copyImgParams(&imgParams, &err_img.params);
 
@@ -61,7 +57,10 @@ void denoise(float *x,
     img.vox = x;
     /* Allocate e=x_noisy-x and initialize e=0 */
     err_img.vox = (float *) get_spc(err_img.params.N_x*err_img.params.N_y*err_img.params.N_z, sizeof(float));
-
+    int i;
+    for (i=0; i<err_img.params.N_x*err_img.params.N_y*err_img.params.N_z; i++){
+        err_img.vox[i] = 0;
+    }
     /* 
     Reconstruct with denoise mode 
     */
