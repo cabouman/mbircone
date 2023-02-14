@@ -347,6 +347,122 @@ def create_sino_params_dict(dist_source_detector, magnification,
     return sinoparams
 
 
+def denoise(img_noisy, sigma_w, sigma_x,
+            p=1.2, q=2.0, T=1.0, num_neighbors=6,
+            positivity=True, max_resolutions=None, stop_threshold=0.02, max_iterations=100,
+            num_threads=None, verbose=1):
+    """ Perform ICD denoising with qGGMRF prior.
+    
+    Args:
+        img_noisy (float, ndarray, optional): [Default=0.0] Initial value of reconstruction image, specified by either
+            A 3D numpy array with shape (num_img_slices, num_img_rows, num_img_cols).
+        sigma_w (float, optional): [Default=None] Pre-assumed noise std-dev.
+        sigma_x (float, optional): [Default=None] Pre-assumed image std-dev.
+            If None, automatically set with ``cone3D.auto_sigma_x`` as a function of ``sharpness``.
+            If ``prox_image`` is given, ``sigma_p`` is used instead of ``sigma_x`` in the reconstruction.
+        p (float, optional): [Default=1.2] Scalar value in range :math:`[1,2]` that specifies qGGMRF shape parameter.
+        q (float, optional): [Default=2.0] Scalar value in range :math:`[p,1]` that specifies qGGMRF shape parameter.
+        T (float, optional): [Default=1.0] Scalar value :math:`>0` that specifies the qGGMRF threshold parameter.
+        num_neighbors (int, optional): [Default=6] Possible values are :math:`{26,18,6}`.
+            Number of neighbors in the qGGMRF neighborhood. More neighbors results in a better
+            regularization but a slower reconstruction.
+        positivity (bool, optional): [Default=True] Determines if positivity constraint will be enforced.
+        stop_threshold (float, optional): [Default=0.02] Relative update stopping threshold, in percent, where relative
+            update is given by (average value change) / (average voxel value).
+        max_iterations (int, optional): [Default=100] Maximum number of iterations before stopping.
+
+        num_threads (int, optional): [Default=None] Number of compute threads requested when executed.
+            If None, this is set to the number of cores in the system.
+        verbose (int, optional): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal
+            reconstruction progress information, and 2 prints the full information.
+
+    Returns:
+        (float, ndarray): 3D denoised image with shape (num_img_slices, num_img_rows, num_img_cols) in units of
+        :math:`ALU^{-1}`.
+    """
+
+    # Internally set
+    # NHICD_ThresholdAllVoxels_ErrorPercent=80, NHICD_percentage=15, NHICD_random=20, 
+    # zipLineMode=2, N_G=2, numVoxelsPerZiplineMax=200
+
+    if num_threads is None:
+        num_threads = cpu_count(logical=False)
+
+    os.environ['OMP_NUM_THREADS'] = str(num_threads)
+    os.environ['OMP_DYNAMIC'] = 'true'
+   
+    num_image_slices, num_image_rows, num_image_cols = img_noisy.shape 
+    imgparams = create_image_params_dict(num_image_rows, num_image_cols, num_image_slices,
+                                         delta_pixel_image=1.0, image_slice_offset=0.0)
+    
+    reconparams = dict()
+    reconparams['is_positivity_constraint'] = bool(positivity)
+    reconparams['q'] = q
+    reconparams['p'] = p
+    reconparams['T'] = T
+    reconparams['sigmaX'] = sigma_x
+
+    if num_neighbors not in [6, 18, 26]:
+        num_neighbors = 6
+
+    if num_neighbors == 6:
+        reconparams['bFace'] = 1.0
+        reconparams['bEdge'] = -1
+        reconparams['bVertex'] = -1
+
+    if num_neighbors == 18:
+        reconparams['bFace'] = 1.0
+        reconparams['bEdge'] = 0.70710678118
+        reconparams['bVertex'] = -1
+
+    if num_neighbors == 26:
+        reconparams['bFace'] = 1.0
+        reconparams['bEdge'] = 0.70710678118
+        reconparams['bVertex'] = 0.57735026919
+
+    reconparams['stopThresholdChange_pct'] = stop_threshold
+    reconparams['MaxIterations'] = max_iterations
+
+    reconparams['weightScaler_value'] = sigma_w ** 2
+
+    reconparams['verbosity'] = verbose
+
+    ################ Internally set
+
+    # Weight scalar
+    reconparams['weightScaler_domain'] = 'spatiallyInvariant'
+    reconparams['weightScaler_estimateMode'] = 'None'
+
+    # Stopping
+    reconparams['stopThesholdRWFE_pct'] = 0
+    reconparams['stopThesholdRUFE_pct'] = 0
+    reconparams['relativeChangeMode'] = 'meanImage'
+    reconparams['relativeChangeScaler'] = 0.1
+    reconparams['relativeChangePercentile'] = 99.9
+    
+    # dummy variables. Not used in denoise mode.    
+    reconparams['zipLineMode'] = 0
+    reconparams['N_G'] = -1
+    reconparams['numVoxelsPerZiplineMax'] = -1
+    reconparams['numVoxelsPerZipline'] = -1
+    reconparams['numZiplines'] = -1
+    
+    # dummy variables for NHICD. Not used in denoise mode.
+    reconparams['NHICD_ThresholdAllVoxels_ErrorPercent'] = -1
+    reconparams['NHICD_percentage'] = -1
+    reconparams['NHICD_random'] = -1
+    reconparams['isComputeCost'] = 1
+
+    # parameters for denoise mode
+    reconparams['prox_mode'] = False
+    reconparams['sigma_lambda'] = 1
+
+    x = ci.denoise_cy(img_noisy,
+                      imgparams, reconparams,
+                      num_threads)
+    return x
+
+
 def recon(sino, angles, dist_source_detector, magnification,
           weights=None, weight_type='unweighted', init_image=0.0, prox_image=None,
           num_image_rows=None, num_image_cols=None, num_image_slices=None,
@@ -559,7 +675,7 @@ def recon(sino, angles, dist_source_detector, magnification,
         reconparams['NHICD_Mode'] = 'percentile+random'
     else:
         reconparams['NHICD_Mode'] = 'off'
-
+    
     if prox_image is None:
         reconparams['prox_mode'] = False
         reconparams['sigma_lambda'] = 1

@@ -230,7 +230,7 @@ struct ViewAngleList
 struct ReconParams
 {
     /* Flags Controlling Type of Prior Used */
-    char prox_mode;             /* 1: Proximal Map Mode; 0: qGGMRF Mode*/ 
+    char prox_mode;            /* 1: Proximal Map Mode; 0: qGGMRF Mode*/  
     /* QGGMRF Parameters */
     float q;                   /* q: QGGMRF parameter (q>1, typical choice q=2) */
     float p;                   /* p: QGGMRF parameter (1<=p<q) */
@@ -409,6 +409,8 @@ float computeNormSquaredFloatArray(float *arr, long int len);
 float computeRelativeRMSEFloatArray(float *arr1, float *arr2, long int len);
 
 float computeSinogramWeightedNormSquared(struct Sino *sino, float *arr);
+
+float computeImageWeightedNormSquared(struct Image *img, float *arr);
 
 char isInsideMask(long int i_1, long int i_2, long int N1, long int N2);
 

@@ -4,7 +4,7 @@
 #include "interface.h"
 #include "computeSysMatrix.h"
 #include "recon3DCone.h"
-
+#include "denoise3D.h"
 
 void AmatrixComputeToFile(float *angles, 
     struct SinoParams sinoParams, struct ImageParams imgParams, 
@@ -25,6 +25,60 @@ void AmatrixComputeToFile(float *angles,
     freeSysMatrix(&A);
 
 }
+
+
+/*
+ * This function initializes C variables related to qGGMRF denoising functionality  and invoke MBIR3DCone() function to perform qGGMRF denoise.
+ * This function is invoked by denoise_cy() function in interface_cy.pyx.
+ * 
+ * Input Variables:
+ * x: pointer to the 1D noisy image array as well as the recon image array. This array will be modified in-place in ICD iterations.
+ * sinoParams: struct to store sinogram params. See MBIRModularUtilities3D.h for struct definition.
+ * imgParams: struct to store recon image params. See MBIRModularUtilities3D.h for struct definition.
+ * reconParams: struct to store reconstruction related hyperparams. See MBIRModularUtilities3D.h for struct definition.
+ *
+ * Return Variables: None.
+ */
+void denoise(float *x,
+             struct ImageParams imgParams, struct ReconParams reconParams)
+{
+    /* sino stores the noisy image arrray*/
+    struct Image err_img;
+    /* img stores the denoised image arrray*/
+    struct Image img;
+    
+    int i;
+
+    /* Set params for img and img_noisyinside data structure */
+    copyImgParams(&imgParams, &img.params);
+    copyImgParams(&imgParams, &err_img.params);
+
+    /* Perform normalizations on parameters*/
+    computeSecondaryReconParams(&reconParams, &img.params);
+    computeSecondaryReconParams(&reconParams, &err_img.params);
+    
+    /* x stores the denoised image arrray. x will be returned to Python interface*/
+    img.vox = x;
+    /* Allocate e=x_noisy-x and initialize e=0 */
+    err_img.vox = (float *) get_spc(err_img.params.N_x*err_img.params.N_y*err_img.params.N_z, sizeof(float));
+
+    /* 
+    Reconstruct with denoise mode 
+    */
+    MBIR3DDenoise(&img, &err_img, &reconParams);
+    // dummy test function for debugging purpose. Set image intensity to be half as before
+    /*
+    fprintf(stdout, "test: output = input+1\n");
+    for(i=0; i<(size_t)img.params.N_x*img.params.N_y*img.params.N_z; i++)
+        img.vox[i] += 1;
+    */
+    
+    /* Free allocated data */
+    free((void*)err_img.vox);
+    // printf("Done mem_free_3D\n");
+
+} // end qGGMRF denoiser
+
 /*
  * This function initializes C variables related to qGGMRF reconstruction, read sysmatrix from disk, and invoke MBIR3DCone() function to perform qGGMRF recon or prox map estimation in place.
  * This function is invoked by recon_cy() function in interface_cy.pyx.
@@ -33,7 +87,7 @@ void AmatrixComputeToFile(float *angles,
  * x: pointer to the 1D initial image array as well as the recon image array. This array will be modified in-place in ICD iterations.
  * y: pointer to 1D sinogram array. This array will not be modified by C code.
  * wght: pointer to 1D sinogram weight array. This array will not be modified by C code.
- * proxmap_input: pointer to 1D proximal map input array. Will only be accessed when imgParams->prox_mode is True.
+ * proxmap_input: pointer to 1D proximal map input array. Will only be accessed when imgParams->prox_mode is true.
  * sinoParams: struct to store sinogram params. See MBIRModularUtilities3D.h for struct definition.
  * imgParams: struct to store recon image params. See MBIRModularUtilities3D.h for struct definition.
  * reconParams: struct to store reconstruction related hyperparams. See MBIRModularUtilities3D.h for struct definition.

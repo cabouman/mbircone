@@ -228,6 +228,37 @@ float computeRelativeRMSEFloatArray(float *arr1, float *arr2, long int len)
     return sqrt(numerator/denominator);
 }
 
+float computeImageWeightedNormSquared(struct Image *img, float *arr)
+{
+    /**
+     *                      1  ||     ||2   
+     *      normError    = --- || arr ||  
+     *                      M  ||     ||L 
+     *
+     *      normError = weightScaler_value
+     * 
+     *      Weight_true = Weight / weightScaler_value
+     */
+    long int i_x, i_y, i_z;
+    long int num_mask;
+    float normError = 0;
+
+    for (i_x = 0; i_x < img->params.N_x; ++i_x)
+    for (i_y = 0; i_y < img->params.N_y; ++i_y)
+    for (i_z = 0; i_z < img->params.N_z; ++i_z)
+    {
+        normError += arr[index_3D(i_x,i_y,i_z,img->params.N_y,img->params.N_z)] * arr[index_3D(i_x,i_y,i_z,img->params.N_y,img->params.N_z)];
+    }
+
+    num_mask = img->params.N_x * img->params.N_y * img->params.N_z;
+    
+    normError /= num_mask;
+
+    return normError;
+}
+
+
+
 float computeSinogramWeightedNormSquared(struct Sino *sino, float *arr)
 {
     /**
@@ -274,8 +305,6 @@ char isInsideMask(long int i_1, long int i_2, long int N1, long int N2)
 
     reldistance = pow((i_1-center_1)/radius, 2) + pow((i_2-center_2)/radius, 2);
     return (reldistance<1 ? 1 : 0);
-
-
 }
 
 long int computeNumVoxelsInImageMask(struct Image *img)
