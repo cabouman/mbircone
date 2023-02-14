@@ -207,8 +207,7 @@ def gen_microscopy_sample_3d(num_rows, num_cols, num_slices):
 
 def gen_lamino_sample_3d(num_rows, num_cols, num_slices, pad_factor=0.0):
     """
-    Generate a 3D laminography phantom by extracting a rectangular region
-    from a 3D microscopy sample phantom.
+    Generate a 3D laminography phantom with a padding of custom size.
     Args:
         num_rows: int, number of rows.
         num_cols: int, number of cols.
@@ -217,41 +216,45 @@ def gen_lamino_sample_3d(num_rows, num_cols, num_slices, pad_factor=0.0):
             phantom rows and columns to simulate a flat object.
             Value is given as a multiple of the size of the phantom.
     Return:
-        out_image: 3D array, num_slices*num_rows*num_cols
+        out_image: 3D array, num_slices x num_rows * (1+pad_factor) x num_cols * (1+pad_factor)
     """
 
-    # Proportion of the microscopy sample that the laminography sample should be
-    proportion_of_microscopy = .54
+    # The function describing the phantom is defined as the sum of 7 ellipsoids inside a 2x4x2 cuboid:
+    ms3d_paras = [
+        {'x0': -0.1, 'y0': 1.343, 'z0': 0.0, 'a': 0.11, 'b': 0.10, 'c': 0.20, 'gamma': 0, 'gray_level': 0.8},
+        {'x0': 0.0, 'y0': 0.9, 'z0': 0.0, 'a': 0.33, 'b': 0.15, 'c': 0.66, 'gamma': 0, 'gray_level': 0.4},
+        {'x0': 0.25, 'y0': 0.4, 'z0': 0.0, 'a': 0.1, 'b': 0.2, 'c': 0.40, 'gamma': 0, 'gray_level': 0.8},
+        {'x0': -0.2, 'y0': 0.0, 'z0': 0.0, 'a': 0.2, 'b': 0.08, 'c': 0.40, 'gamma': 0, 'gray_level': 0.4},
+        {'x0': 0.2, 'y0': -0.35, 'z0': 0.0, 'a': 0.1, 'b': 0.1, 'c': 0.2, 'gamma': 0, 'gray_level': 0.8},
+        {'x0': 0.25, 'y0': -0.8, 'z0': 0.0, 'a': 0.2, 'b': 0.08, 'c': 0.4, 'gamma': 0, 'gray_level': 0.8},
+        {'x0': -0.04, 'y0': -1.3, 'z0': 0.0, 'a': 0.33, 'b': 0.15, 'c': 0.30, 'gamma': 0, 'gray_level': 0.8}
+    ]
 
-    num_slices_base = int(num_slices / proportion_of_microscopy)
-    num_rows_base = int(num_rows / proportion_of_microscopy)
-    num_cols_base = int(num_cols / proportion_of_microscopy)
+    axis_x = np.linspace(-1.0, 1.0, num_cols)
+    axis_y = np.linspace(2.0, -2.0, num_rows)
+    axis_z = np.linspace(-1.0, 1.0, num_slices)
 
-    phantom = gen_microscopy_sample_3d(num_rows_base, num_cols_base, num_slices_base)
+    x_grid, y_grid, z_grid = np.meshgrid(axis_x, axis_y, axis_z)
+    image = x_grid * 0.0
+    image += 0.2
 
-    slice_start = (num_slices_base - num_slices) // 2
-    slice_end = (num_slices_base + num_slices) // 2
-    row_start = (num_rows_base - num_rows) // 2
-    row_end = (num_rows_base + num_rows) // 2
-    col_start = (num_cols_base - num_cols) // 2
-    col_end = (num_cols_base + num_cols) // 2
+    for el_paras in ms3d_paras:
+        image += _gen_ellipsoid(x_grid=x_grid, y_grid=y_grid, z_grid=z_grid, x0=el_paras['x0'], y0=el_paras['y0'],
+                                z0=el_paras['z0'],
+                                a=el_paras['a'], b=el_paras['b'], c=el_paras['c'],
+                                gamma=el_paras['gamma'] / 180.0 * np.pi,
+                                gray_level=el_paras['gray_level'])
 
-    phantom = phantom[slice_start:slice_end, row_start:row_end, col_start:col_end]
-
-    phantom = np.clip(phantom, 0.2, 2.0)
+    image = np.transpose(image, (2, 0, 1))
 
     # Pad phantom so that the edges are replicated
-    pad_rows_l = num_rows * pad_factor
-    pad_rows_r = pad_rows_l
-    pad_cols_l = num_cols * pad_factor
-    pad_cols_r = pad_cols_l
-    pad_slices_l = num_slices * pad_factor
-    pad_slices_r = pad_slices_l
+    pad_rows = int(num_rows * pad_factor)
+    pad_cols = int(num_cols * pad_factor)
 
-    phantom = np.pad(phantom, [(0, 0), (pad_rows_l, pad_rows_r), (pad_cols_l, pad_cols_r)], mode='edge')
-    phantom = np.pad(phantom, [(pad_slices_l, pad_slices_r), (0, 0), (0, 0)], mode='constant', constant_values=0.0)
+    image = np.pad(image, [(0, 0), (pad_rows, pad_rows), (pad_cols, pad_cols)], mode='edge')
 
-    return phantom
+    return image
+
 
 def nrmse(image, reference_image):
     """

@@ -23,21 +23,22 @@ theta_degrees = 60
 theta_radians = theta_degrees * (np.pi/180)
 
 # detector size
-num_det_channels = 128
-num_det_rows = 128
+num_det_channels = 64
+num_det_rows = 64
 
 # number of projection views
 num_views = 128
 
 # Phantom parameters
 num_slices_phantom = 16
-num_rows_phantom = 90
-num_cols_phantom = 90
+num_rows_phantom = 64
+num_cols_phantom = 64
+
+# Size of constant padding around phantom as a multiple of num_rows_phantom or num_cols_phantom
+pad_factor = 2
 
 # Reconstruction size
 num_image_slices = 18
-num_image_rows = 320
-num_image_cols = 320
 
 # qGGMRF recon parameters
 sharpness = 0.0                    # Controls regularization level of reconstruction by controlling prior term weighting
@@ -60,7 +61,8 @@ os.makedirs(save_path, exist_ok=True)
 ######################################################################################
 
 print('Generating a laminography phantom ...')
-phantom = mbircone.phantom.gen_lamino_sample_3d(num_rows_phantom, num_cols_phantom, num_slices_phantom, pad_factor=3)
+phantom = mbircone.phantom.gen_lamino_sample_3d(num_rows_phantom, num_cols_phantom,
+                                                num_slices_phantom, pad_factor=pad_factor)
 
 # Scale the phantom by a factor of 10.0 to make the projections physical realistic -log attenuation values
 phantom = phantom/10.0
@@ -84,8 +86,9 @@ print('Synthetic sinogram shape: (num_views, num_det_rows, num_det_channels) = '
 print('Performing 3D qGGMRF reconstruction ...')
 
 recon = mbircone.laminography.recon_lamino(sino, angles, theta_radians,
-                                           num_image_rows=num_image_rows,
-                                           num_image_cols=num_image_cols, num_image_slices=num_image_slices,
+                                           num_image_rows=192,
+                                           num_image_cols=192,
+                                           num_image_slices=16,
                                            sharpness=sharpness, snr_db=snr_db)
 
 print('recon shape = ', np.shape(recon))
@@ -116,12 +119,29 @@ plot_image(np.abs(sino[0,:,:]-sino[num_views//3,:,:]),
 display_phantom = phantom
 display_recon = recon
 
-# recon_area_of_interest = recon[1:18, 96:225, 96:225]
-recon_area_of_interest = recon[1:17, 96:224, 96:224]
-display_error = np.abs(phantom[48:64, 251:379, 251:379] - recon_area_of_interest)
+(num_slices_image, num_rows_image, num_cols_image) = np.shape(recon)
+
+# Determine where the relevant phantom region begins and ends
+recon_row_start = int((num_rows_image-num_rows_phantom)/2)
+recon_row_end = recon_row_start + num_rows_phantom
+recon_col_start = int((num_cols_image-num_cols_phantom)/2)
+recon_col_end = recon_col_start + num_cols_phantom
+recon_slice_start = int((num_slices_image-num_slices_phantom)/2)
+recon_slice_end = recon_slice_start + num_slices_phantom
+recon_area_of_interest = recon[recon_slice_start:recon_slice_end, recon_row_start:recon_row_end,
+                         recon_col_start:recon_col_end]
+
+phantom_row_start = int(num_rows_phantom * pad_factor)
+phantom_row_end = phantom_row_start + num_rows_phantom
+phantom_col_start = int(num_cols_phantom * pad_factor)
+phantom_col_end = phantom_col_start + num_cols_phantom
+phantom_area_of_interest = phantom[:, phantom_row_start:phantom_row_end, phantom_col_start:phantom_col_end]
+
+# Compute and display reconstruction error in phantom region
+display_error = np.abs(phantom_area_of_interest - recon_area_of_interest)
 
 print(f'qGGMRF rms reconstruction error within 16x128x128 laminography phantom window: '
-      f'{np.sqrt(np.mean(display_error**2))/np.mean(phantom[48:64, 251:379, 251:379]):.3g}')
+      f'{np.sqrt(np.mean(display_error**2))/np.mean(phantom_area_of_interest):.3g}')
 
 # Set display indexes for phantom and recon images
 display_slice_image = display_phantom.shape[0] // 2
