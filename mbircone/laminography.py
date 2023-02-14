@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import warnings
 import mbircone.cone3D as cone3D
 
 __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
@@ -52,6 +53,51 @@ def auto_lamino_params(theta, num_det_rows, num_det_channels, delta_det_channel,
         lamino_rotation_offset, lamino_image_slice_offset
 
 
+def auto_image_size_lamino(theta, num_det_rows, num_det_channels, delta_det_row, delta_det_channel, delta_pixel_image):
+    """ Compute the automatic image array size for use in MBIR reconstruction.
+
+    Args:
+        theta (float): Angle that source-detector line makes with the object vertical axis.
+
+        num_det_rows (int): Number of rows in laminography sinogram data.
+        num_det_channels (int): Number of channels in laminography sinogram data.
+
+        delta_det_row (float): Detector row spacing in :math:`ALU`.
+        delta_det_channel (float): Detector channel spacing in :math:`ALU`.
+
+        delta_pixel_image (float): Image pixel spacing in :math:`ALU`.
+
+    Returns:
+        (int): (int, 3-tuple): Default values for ``num_image_rows``, ``num_image_cols``, ``num_image_slices`` for the
+        inputted detector measurements.
+    """
+
+    detector_height = num_det_rows * delta_det_row
+    detector_width = num_det_channels * delta_det_channel
+
+    # Test if available data is a double-cone or a cone-cylinder-cone.
+    if detector_height <= detector_width * np.cos(theta):
+        # Data forms a double-cone because not enough detector rows.
+        warnings.warn("Detector does not have enough rows for a cylindrical reconstruction of diameter "
+                      "(num_det_channels * delta_det_channel). Performing reconstruction in a cylindrical region"
+                      "of diameter (num_det_rows * delta_det_row) instead.")
+        cyl_diam = detector_height
+        cyl_height = (detector_height / np.sin(theta)) - (detector_height / np.tan(theta))
+    else:
+        # Available data forms a cone-cylinder-cone
+        # Get dimensions of cylinder
+        cyl_diam = detector_width
+        cyl_height = (detector_height / np.sin(theta)) - (detector_width / np.tan(theta))
+
+    recon_diam = cyl_diam + (2 * cyl_height * np.tan(theta))
+
+    num_image_rows = int(np.ceil(recon_diam / delta_pixel_image))
+    num_image_cols = int(np.ceil(recon_diam / delta_pixel_image))
+    num_image_slices = int(np.ceil(cyl_height))
+
+    return num_image_rows, num_image_cols, num_image_slices
+
+
 def recon_lamino(sino, angles, theta,
                  weights=None, weight_type='unweighted', init_image=0.0, prox_image=None,
                  num_image_rows=None, num_image_cols=None, num_image_slices=None,
@@ -81,11 +127,11 @@ def recon_lamino(sino, angles, theta,
             (num_img_slices, num_img_rows, num_img_cols).
 
         num_image_rows (int, optional): [Default=None] Number of rows in reconstructed image.
-            If None, automatically set by ``cone3D.auto_image_size``.
+            If None, automatically set by ``laminography.auto_image_size_lamino``.
         num_image_cols (int, optional): [Default=None] Number of columns in reconstructed image.
-            If None, automatically set by ``cone3D.auto_image_size``.
+            If None, automatically set by ``laminography.auto_image_size_lamino``.
         num_image_slices (int, optional): [Default=None] Number of slices in reconstructed image.
-            If None, automatically set by ``cone3D.auto_image_size``.
+            If None, automatically set by ``laminography.auto_image_size_lamino``.
 
         delta_det_channel (float, optional): [Default=1.0] Detector channel spacing in :math:`ALU`.
         delta_det_row (float, optional): [Default=1.0] Detector row spacing in :math:`ALU`.
