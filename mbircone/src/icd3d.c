@@ -398,7 +398,6 @@ void resetIterationStats(struct ReconAux *reconAux)
 
 void RandomAux_ShuffleOrderXYZ(struct RandomAux *aux, struct ImageParams *params)
 {
-    fprintf(stdout, "zipline mode 0\n");
     shuffleLongIntArray(aux->orderXYZ, params->N_x * params->N_y * params->N_z);
 }
 
@@ -1178,7 +1177,7 @@ void ICDStep3DDenoise(struct Image *image, struct Image *err_image, struct ICDIn
     /* Clip to 0 */
     if (theta2 != 0)
     {
-        icdInfo->Delta_xj = theta1/theta2;
+        icdInfo->Delta_xj = -theta1/theta2;
 
         if(reconParams->is_positivity_constraint)
             icdInfo->Delta_xj = _MAX_(icdInfo->Delta_xj, -icdInfo->old_xj);
@@ -1221,7 +1220,7 @@ float MAPCost3DDenoise(struct Image *image, struct Image *err_image, struct Reco
     
     // Initialize cost with forward model cost    
     cost = MAPCostForwardDenoise(err_image, reconParams);
-    // cost += MAPCostPrior_QGGMRF(image, reconParams);
+    cost += MAPCostPrior_QGGMRF(image, reconParams);
     return cost;
 }
 
