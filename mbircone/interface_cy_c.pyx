@@ -270,8 +270,7 @@ def AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname, verbos
 
 
 def denoise_cy(x_noisy,
-               imgparams, reconparams, 
-               num_threads):
+               imgparams, reconparams):
     # sino, wght shape : views x slices x channels
     # recon shape: N_x N_y N_z (source-detector-line, channels, slices)
 
@@ -300,7 +299,6 @@ def denoise_cy(x_noisy,
                           &cy_weightScaler_domain[0],
                           &cy_NHICD_Mode[0])
 
-    openmp.omp_set_num_threads(num_threads)
     denoise(&cy_x[0,0,0],
             c_imgparams,
             c_reconparams)

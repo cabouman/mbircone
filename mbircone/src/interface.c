@@ -31,7 +31,6 @@ void AmatrixComputeToFile(float *angles,
  * 
  * Input Variables:
  * x: pointer to the 1D noisy image array as well as the recon image array. This array will be modified in-place in ICD iterations.
- * sinoParams: struct to store sinogram params. See MBIRModularUtilities3D.h for struct definition.
  * imgParams: struct to store recon image params. See MBIRModularUtilities3D.h for struct definition.
  * reconParams: struct to store reconstruction related hyperparams. See MBIRModularUtilities3D.h for struct definition.
  *
@@ -57,24 +56,13 @@ void denoise(float *x,
     img.vox = x;
     /* Allocate e=x_noisy-x and initialize e=0 */
     err_img.vox = (float *) get_spc(err_img.params.N_x*err_img.params.N_y*err_img.params.N_z, sizeof(float));
-    int i;
-    for (i=0; i<err_img.params.N_x*err_img.params.N_y*err_img.params.N_z; i++){
-        err_img.vox[i] = 0;
-    }
     /* 
     Reconstruct with denoise mode 
     */
     MBIR3DDenoise(&img, &err_img, &reconParams);
-    // dummy test function for debugging purpose. Set image intensity to be half as before
-    /*
-    fprintf(stdout, "test: output = input+1\n");
-    for(i=0; i<(size_t)img.params.N_x*img.params.N_y*img.params.N_z; i++)
-        img.vox[i] += 1;
-    */
     
     /* Free allocated data */
     free((void*)err_img.vox);
-    // printf("Done mem_free_3D\n");
 
 } // end qGGMRF denoiser
 

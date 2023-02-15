@@ -349,8 +349,8 @@ def create_sino_params_dict(dist_source_detector, magnification,
 
 def denoise(img_noisy, sigma_w, sigma_x,
             p=1.2, q=2.0, T=1.0, num_neighbors=6,
-            positivity=True, max_resolutions=None, stop_threshold=0.02, max_iterations=100,
-            num_threads=None, verbose=1):
+            positivity=True, stop_threshold=0.02, max_iterations=100,
+            verbose=1):
     """ Perform ICD denoising with qGGMRF prior.
     
     Args:
@@ -371,8 +371,6 @@ def denoise(img_noisy, sigma_w, sigma_x,
             update is given by (average value change) / (average voxel value).
         max_iterations (int, optional): [Default=100] Maximum number of iterations before stopping.
 
-        num_threads (int, optional): [Default=None] Number of compute threads requested when executed.
-            If None, this is set to the number of cores in the system.
         verbose (int, optional): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal
             reconstruction progress information, and 2 prints the full information.
 
@@ -385,10 +383,6 @@ def denoise(img_noisy, sigma_w, sigma_x,
     # NHICD_ThresholdAllVoxels_ErrorPercent=80, NHICD_percentage=15, NHICD_random=20, 
     # zipLineMode=2, N_G=2, numVoxelsPerZiplineMax=200
 
-    if num_threads is None:
-        num_threads = cpu_count(logical=False)
-
-    os.environ['OMP_NUM_THREADS'] = str(num_threads)
     os.environ['OMP_DYNAMIC'] = 'true'
    
     num_image_slices, num_image_rows, num_image_cols = img_noisy.shape 
@@ -459,8 +453,7 @@ def denoise(img_noisy, sigma_w, sigma_x,
     reconparams['sigma_lambda'] = 1
 
     x = ci.denoise_cy(img_noisy,
-                      imgparams, reconparams,
-                      num_threads)
+                      imgparams, reconparams)
     return x
 
 
