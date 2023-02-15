@@ -127,11 +127,11 @@ def recon_lamino(sino, angles, theta,
             (num_img_slices, num_img_rows, num_img_cols).
 
         num_image_rows (int, optional): [Default=None] Number of rows in reconstructed image.
-            If None, automatically set by ``laminography.auto_image_size_lamino``.
+            If None, automatically set by ``cone3D.auto_image_size``.
         num_image_cols (int, optional): [Default=None] Number of columns in reconstructed image.
-            If None, automatically set by ``laminography.auto_image_size_lamino``.
+            If None, automatically set by ``cone3D.auto_image_size``.
         num_image_slices (int, optional): [Default=None] Number of slices in reconstructed image.
-            If None, automatically set by ``laminography.auto_image_size_lamino``.
+            If None, automatically set by ``cone3D.auto_image_size``.
 
         delta_det_channel (float, optional): [Default=1.0] Detector channel spacing in :math:`ALU`.
         delta_det_row (float, optional): [Default=1.0] Detector row spacing in :math:`ALU`.
