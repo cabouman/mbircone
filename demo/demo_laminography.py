@@ -34,6 +34,11 @@ num_slices_phantom = 16
 num_rows_phantom = 64
 num_cols_phantom = 64
 
+# Reconstruction parameters
+num_slices_image = 16
+num_rows_image = 146
+num_cols_image = 146
+
 # Size of constant padding around phantom as a multiple of num_rows_phantom or num_cols_phantom
 pad_factor = 2
 
@@ -86,8 +91,8 @@ print('Synthetic sinogram shape: (num_views, num_det_rows, num_det_channels) = '
 print('Performing 3D qGGMRF reconstruction ...')
 
 recon = mbircone.laminography.recon_lamino(sino, angles, theta_radians,
-                                           num_image_rows=192,
-                                           num_image_cols=192,
+                                           num_image_rows=146,
+                                           num_image_cols=146,
                                            num_image_slices=16,
                                            sharpness=sharpness, snr_db=snr_db)
 
@@ -140,7 +145,7 @@ phantom_area_of_interest = phantom[:, phantom_row_start:phantom_row_end, phantom
 # Compute and display reconstruction error in phantom region
 display_error = np.abs(phantom_area_of_interest - recon_area_of_interest)
 
-print(f'qGGMRF rms reconstruction error within 16x128x128 laminography phantom window: '
+print(f'qGGMRF normalized rms reconstruction error within 16x128x128 laminography phantom window: '
       f'{np.sqrt(np.mean(display_error**2))/np.mean(phantom_area_of_interest):.3g}')
 
 # Set display indexes for phantom and recon images
