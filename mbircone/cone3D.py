@@ -8,6 +8,7 @@ import mbircone.interface_cy_c as ci
 import random
 import warnings
 import mbircone._utils as _utils
+from skimage.filters import gaussian
 
 __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
 __namelen_sysmatrix = 20
@@ -148,6 +149,42 @@ def auto_sigma_y(sino, magnification, weights, snr_db=40.0, delta_pixel_image=1.
     else:
         return 1.0
 
+
+def auto_sigma_w_denoise(img_noisy, gauss_sigma=2.):
+    """ Given a noisy image, estimate the standard deviation of its noise.
+        
+        The input image will be smoothed by a Gaussian filter, and the std-dev of the noise is estimated by the std-dev of the residual image between the noisy image and the smoothed image. 
+    
+    Args:
+        img_noisy (float, ndarray): Noisy image with 3D shape (num_slices, num_rows, num_cols)
+        gauss_sigma (float, optional): [Default=2.0] std-dev of Gaussian filter used to smooth the input image.
+    """
+    num_slices = img_noisy.shape[0]
+    # smooth the noisy image with a Gaussian filter
+    img_smooth = np.array([gaussian(img_noisy[i,:,:], gauss_sigma, preserve_range=True) for i in range(num_slices)])
+    np.save('/depot/bouman/users/yang1467/mbircone/demo/output/denoise_test_auto_params/img_smoothed.npy', img_smooth)
+    # Compute the residual image (the estimated noise).
+    img_residual = img_noisy - img_smooth
+    # set sigma_w to be the std-dev of the residual image
+    return np.std(img_residual)
+
+
+def auto_sigma_x_denoise(img_noisy, gauss_sigma=2.):
+    """ Given a noisy image, estimate the standard deviation of its Gaussian prior.
+        
+        The image will be smoothed by a Gaussian filter, and the std-dev of the Gaussian prior is estimated as a fraction of the smoothed image.        
+    
+    Args:
+        img_noisy (float, ndarray): Noisy image with 3D shape (num_slices, num_rows, num_cols)
+        gauss_sigma (float, optional): [Default=2.0] std-dev of Gaussian filter used to smooth the input image.
+    """
+    num_slices = img_noisy.shape[0]
+    # smooth the noisy image with a Gaussian filter
+    img_smooth = np.array([gaussian(img_noisy[i,:,:], gauss_sigma, preserve_range=True) for i in range(num_slices)])
+    # Compute the std-dev of the smoothed image.
+    sigma_img = np.std(img_smooth)
+    # set sigma_x to be a fraction of the image std-dev
+    return sigma_img/5.
 
 def auto_sigma_prior(sino, magnification, delta_pixel_detector=1.0, sharpness=0.0):
     """ Compute the automatic prior model regularization parameter for use in MBIR reconstruction.
@@ -347,32 +384,28 @@ def create_sino_params_dict(dist_source_detector, magnification,
     return sinoparams
 
 
-def denoise(img_noisy, sigma_w, sigma_x,
+def denoise(img_noisy, sigma_w=None, sigma_x=None,
             p=1.2, q=2.0, T=1.0, num_neighbors=6,
             positivity=True, stop_threshold=0.02, max_iterations=100,
             verbose=1):
-    """ Perform ICD denoising with qGGMRF prior.
+    """ Given a noisy image, perform ICD denoising with qGGMRF prior.
     
     Args:
         img_noisy (float, ndarray, optional): [Default=0.0] Initial value of reconstruction image, specified by either
             A 3D numpy array with shape (num_img_slices, num_img_rows, num_img_cols).
-        sigma_w (float, optional): [Default=None] Pre-assumed noise std-dev.
-        sigma_x (float, optional): [Default=None] Pre-assumed image std-dev.
-            If None, automatically set with ``cone3D.auto_sigma_x`` as a function of ``sharpness``.
-            If ``prox_image`` is given, ``sigma_p`` is used instead of ``sigma_x`` in the reconstruction.
+        sigma_w (float, optional): [Default=None] Estimated noise std-dev. If None, automatically set with ``cone3D.auto_sigma_w_denoise``.
+        sigma_x (float, optional): [Default=None] Estimated qGGMRF prior std-dev. If None, automatically set with ``cone3D.auto_sigma_x_denoise``.
         p (float, optional): [Default=1.2] Scalar value in range :math:`[1,2]` that specifies qGGMRF shape parameter.
         q (float, optional): [Default=2.0] Scalar value in range :math:`[p,1]` that specifies qGGMRF shape parameter.
         T (float, optional): [Default=1.0] Scalar value :math:`>0` that specifies the qGGMRF threshold parameter.
         num_neighbors (int, optional): [Default=6] Possible values are :math:`{26,18,6}`.
             Number of neighbors in the qGGMRF neighborhood. More neighbors results in a better
-            regularization but a slower reconstruction.
+            regularization but a slower denoising.
         positivity (bool, optional): [Default=True] Determines if positivity constraint will be enforced.
-        stop_threshold (float, optional): [Default=0.02] Relative update stopping threshold, in percent, where relative
-            update is given by (average value change) / (average voxel value).
+        stop_threshold (float, optional): [Default=0.02] Relative update stopping threshold, in percent, where relative update is given by (average value change) / (average voxel value).
         max_iterations (int, optional): [Default=100] Maximum number of iterations before stopping.
 
-        verbose (int, optional): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal
-            reconstruction progress information, and 2 prints the full information.
+        verbose (int, optional): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal denoising progress information, and 2 prints the full information.
 
     Returns:
         (float, ndarray): 3D denoised image with shape (num_img_slices, num_img_rows, num_img_cols) in units of
@@ -382,9 +415,14 @@ def denoise(img_noisy, sigma_w, sigma_x,
     # Internally set
     # NHICD_ThresholdAllVoxels_ErrorPercent=80, NHICD_percentage=15, NHICD_random=20, 
     # zipLineMode=2, N_G=2, numVoxelsPerZiplineMax=200
+    if sigma_x is None:
+        sigma_x = auto_sigma_x_denoise(img_noisy)
+        print("Estimated sigma_x = ", sigma_x)
+    if sigma_w is None:
+        sigma_w = auto_sigma_w_denoise(img_noisy)
+        print("Estimated sigma_w = ", sigma_w)
 
-    os.environ['OMP_DYNAMIC'] = 'true'
-   
+  
     num_image_slices, num_image_rows, num_image_cols = img_noisy.shape 
     imgparams = create_image_params_dict(num_image_rows, num_image_cols, num_image_slices,
                                          delta_pixel_image=1.0, image_slice_offset=0.0)
