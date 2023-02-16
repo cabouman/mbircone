@@ -54,7 +54,7 @@ def auto_lamino_params(theta, num_det_rows, num_det_channels, delta_det_channel,
 
 
 def auto_image_size_lamino(theta, num_det_rows, num_det_channels, delta_det_row, delta_det_channel, delta_pixel_image):
-    """ Compute the automatic image array size for use in MBIR reconstruction.
+    """ Compute the automatic image array size for use in MBIR reconstruction. Currently unused.
 
     Args:
         theta (float): Angle that source-detector line makes with the object vertical axis.
