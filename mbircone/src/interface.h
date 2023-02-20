@@ -5,7 +5,7 @@ void AmatrixComputeToFile(float *angles,
     struct SinoParams sinoParams, struct ImageParams imgParams, 
     char *Amatrix_fname, char verbose);
 
-void denoise(float *x,
+void denoise(float *x_noisy, float *x_init,
     struct ImageParams imgParams, struct ReconParams reconParams);
 
 void recon(float *x, float *y, float *wght, float *proxmap_input,

@@ -386,6 +386,7 @@ def create_sino_params_dict(dist_source_detector, magnification,
 
 def denoise(img_noisy,
             sharpness=0.0, sigma_x=None, sigma_w=None,
+            init_image=None,
             p=1.2, q=2.0, T=1.0, num_neighbors=6,
             positivity=True, stop_threshold=0.02, max_iterations=100,
             verbose=1):
@@ -400,6 +401,8 @@ def denoise(img_noisy,
         sigma_x (float, optional): [Default=None] qGGMRF prior model regularization parameter.
             If None, automatically set with ``cone3D.auto_sigma_x_denoise`` as a function of ``sharpness``.
         sigma_w (float, optional): [Default=None] Noise std-dev. If None, automatically set with ``cone3D.auto_sigma_w_denoise``.
+        init_image (float, ndarray, optional): [Default=0.0] Initial value of denoised image, specified by either a scalar value or a 3D numpy array with shape (num_img_slices, num_img_rows, num_img_cols). If None, `img_noisy` will be used as the initial value.
+
         p (float, optional): [Default=1.2] Scalar value in range :math:`[1,2]` that specifies qGGMRF shape parameter.
         q (float, optional): [Default=2.0] Scalar value in range :math:`[p,1]` that specifies qGGMRF shape parameter.
         T (float, optional): [Default=1.0] Scalar value :math:`>0` that specifies the qGGMRF threshold parameter.
@@ -424,7 +427,8 @@ def denoise(img_noisy,
     if sigma_w is None:
         sigma_w = auto_sigma_w_denoise(img_noisy)
         print("Estimated sigma_w = ", sigma_w)
-  
+    if init_image is None:
+        init_image = img_noisy  
     num_image_slices, num_image_rows, num_image_cols = img_noisy.shape 
     imgparams = create_image_params_dict(num_image_rows, num_image_cols, num_image_slices,
                                          delta_pixel_image=1.0, image_slice_offset=0.0)
@@ -492,7 +496,7 @@ def denoise(img_noisy,
     reconparams['prox_mode'] = False
     reconparams['sigma_lambda'] = 1
 
-    x = ci.denoise_cy(img_noisy,
+    x = ci.denoise_cy(img_noisy, init_image,
                       imgparams, reconparams)
     return x
 

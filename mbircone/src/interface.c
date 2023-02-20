@@ -37,7 +37,7 @@ void AmatrixComputeToFile(float *angles,
  *
  * Return Variables: None.
  */
-void denoise(float *x,
+void denoise(float *x_noisy, float *x_init,
              struct ImageParams imgParams, struct ReconParams reconParams)
 {
     /* sino stores the noisy image arrray*/
@@ -45,6 +45,7 @@ void denoise(float *x,
     /* img stores the denoised image arrray*/
     struct Image img;
     
+    int i; 
     /* Set params for img and err_imginside data structure */
     copyImgParams(&imgParams, &img.params);
     copyImgParams(&imgParams, &err_img.params);
@@ -53,9 +54,12 @@ void denoise(float *x,
     computeSecondaryReconParams(&reconParams, &img.params);
     
     /* x stores the denoised image arrray. x will be returned to Python interface*/
-    img.vox = x;
+    img.vox = x_init;
     /* Allocate e=x_noisy-x and initialize e=0 */
     err_img.vox = (float *) get_spc(err_img.params.N_x*err_img.params.N_y*err_img.params.N_z, sizeof(float));
+    for(i=0; i<err_img.params.N_x*err_img.params.N_y*err_img.params.N_z; i++)
+        err_img.vox[i] = x_noisy[i] - x_init[i];
+    
     /* 
     Reconstruct with denoise mode 
     */

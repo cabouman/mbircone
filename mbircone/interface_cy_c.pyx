@@ -117,7 +117,7 @@ cdef extern from "./src/interface.h":
     void AmatrixComputeToFile(float *angles, SinoParams c_sinoparams, ImageParams c_imgparams, 
         char *Amatrix_fname, char verbose);
     
-    void denoise(float *x,
+    void denoise(float *x_noisy, float *x_init,
     ImageParams c_imgparams, ReconParams c_reconparams);
 
     void recon(float *x, float *sino, float *wght, float *proxmap_input,
@@ -269,7 +269,7 @@ def AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname, verbos
     AmatrixComputeToFile(&c_angles[0], c_sinoparams, c_imgparams, &c_Amatrix_fname[0], verbose)
 
 
-def denoise_cy(x_noisy,
+def denoise_cy(x_noisy, x_init,
                imgparams, reconparams):
     # sino, wght shape : views x slices x channels
     # recon shape: N_x N_y N_z (source-detector-line, channels, slices)
@@ -281,8 +281,20 @@ def denoise_cy(x_noisy,
         x_noisy = np.ascontiguousarray(x_noisy, dtype=np.single)
     else:
         x_noisy = x_noisy.astype(np.single, copy=False)
-    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_x = x_noisy
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_x_noisy = x_noisy
     
+    # image shape: N_x N_y N_z (source-detector-line, channels, slices)
+    if np.isscalar(x_init):
+        x_init = np.zeros((imgparams['N_x'], imgparams['N_y'], imgparams['N_z'])) + x_init
+    else:
+        x_init = np.swapaxes(x_init, 0, 2)
+    if not x_init.flags["C_CONTIGUOUS"]:
+        x_init = np.ascontiguousarray(x_init, dtype=np.single)
+    else:
+        x_init = x_init.astype(np.single, copy=False)
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_x_init = x_init
+
+
     cdef cnp.ndarray[char, ndim=1, mode="c"] cy_relativeChangeMode = string_to_char_array(reconparams["relativeChangeMode"])
     cdef cnp.ndarray[char, ndim=1, mode="c"] cy_weightScaler_estimateMode = string_to_char_array(reconparams["weightScaler_estimateMode"])
     cdef cnp.ndarray[char, ndim=1, mode="c"] cy_weightScaler_domain = string_to_char_array(reconparams["weightScaler_domain"])
@@ -299,12 +311,13 @@ def denoise_cy(x_noisy,
                           &cy_weightScaler_domain[0],
                           &cy_NHICD_Mode[0])
 
-    denoise(&cy_x[0,0,0],
+    denoise(&cy_x_noisy[0,0,0],
+            &cy_x_init[0,0,0],
             c_imgparams,
             c_reconparams)
     # print("Cython done")
     # Convert shape from Cython interface specifications to Python interface specifications
-    return np.swapaxes(cy_x, 0, 2)
+    return np.swapaxes(cy_x_init, 0, 2)
 
 
 
