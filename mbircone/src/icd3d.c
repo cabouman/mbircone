@@ -398,6 +398,7 @@ void resetIterationStats(struct ReconAux *reconAux)
 
 void RandomAux_ShuffleOrderXYZ(struct RandomAux *aux, struct ImageParams *params)
 {
+    fprintf(stdout, "zipline mode 0\n");
     shuffleLongIntArray(aux->orderXYZ, params->N_x * params->N_y * params->N_z);
 }
 
@@ -1155,4 +1156,16 @@ void updateNHICDStats(struct ReconAux *reconAux, long int j_x, long int j_y, str
 
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
