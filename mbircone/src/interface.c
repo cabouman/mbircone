@@ -51,7 +51,6 @@ void denoise(float *x,
 
     /* Perform normalizations on parameters*/
     computeSecondaryReconParams(&reconParams, &img.params);
-    computeSecondaryReconParams(&reconParams, &err_img.params);
     
     /* x stores the denoised image arrray. x will be returned to Python interface*/
     img.vox = x;
