@@ -1066,6 +1066,35 @@ void printReconParams(struct ReconParams *params)
 
 }
 
+
+void printDenoiseParams(struct ImageParams *img_params, struct ReconParams *denoise_params)
+{
+    printf("\nImage parameters read:\n");
+
+    printf("\tN_x = %ld \n", img_params->N_x);
+    printf("\tN_y = %ld \n", img_params->N_y);
+    printf("\tN_z = %ld \n", img_params->N_z);
+
+    printf("\nDenoiser parameters read:\n");
+    printf("\tq = %e \n", denoise_params->q);
+    printf("\tp = %e \n", denoise_params->p);
+    printf("\tT = %e \n", denoise_params->T);
+    printf("\tsigmaX = %e \n", denoise_params->sigmaX);
+    printf("\tbFace = %e \n", denoise_params->bFace);
+    printf("\tbEdge = %e \n", denoise_params->bEdge);
+    printf("\tbVertex = %e \n", denoise_params->bVertex);
+    printf("\tsigma_lambda = %e \n", denoise_params->sigma_lambda);
+    printf("\tis_positivity_constraint = %d \n", denoise_params->is_positivity_constraint);
+
+    printf("\tstopThresholdChange_pct = %e \n", denoise_params->stopThresholdChange_pct);
+    printf("\tMaxIterations = %d \n", denoise_params->MaxIterations);
+    printf("\trelativeChangeMode = %s \n", denoise_params->relativeChangeMode);
+    printf("\tweightScaler_value = %e \n", denoise_params->weightScaler_value);
+
+    printf("\tverbosity = %d \n", denoise_params->verbosity);
+}
+
+
 void printSysMatrixParams(struct SysMatrix *A)
 {
 

@@ -45,8 +45,7 @@ void MBIR3DDenoise(struct Image *img, struct Image *err_img, struct ReconParams 
     srand(0);
 
     if (reconParams->verbosity>0){
-        printImgParams(&img->params);
-        printReconParams(reconParams);
+        printDenoiseParams(&img->params, reconParams);
     }
 
 

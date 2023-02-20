@@ -525,6 +525,8 @@ void printImgParams(struct ImageParams *params);
 
 void printReconParams(struct ReconParams *params);
 
+void printDenoiseParams(struct ImageParams *img_params, struct ReconParams *denoise_params);
+
 void printSysMatrixParams(struct SysMatrix *A);
 
 
