@@ -3,6 +3,7 @@
 #include "interface.h"
 #include "computeSysMatrix.h"
 #include "recon3DCone.h"
+#include "denoise3D.h"
 
 void AmatrixComputeToFile(float *angles, 
     struct SinoParams sinoParams, struct ImageParams imgParams, 
