@@ -61,8 +61,7 @@ cdef extern from "./src/MBIRModularUtilities3D.h":
 
     struct ReconParams:
     
-        char prox_mode;                  # Prior mode: (True: proximal map mode, False: QGGMRF mode) 
-        
+        char prox_mode;                  # Prior mode: (True: proximal map mode, False: QGGMRF recon/denoise mode) 
         # QGGMRF 
         float q;                   # q: QGGMRF parameter (q>1, typical choice q=2) 
         float p;                   # p: QGGMRF parameter (1<=p<q) 
@@ -117,6 +116,9 @@ cdef extern from "./src/MBIRModularUtilities3D.h":
 cdef extern from "./src/interface.h":
     void AmatrixComputeToFile(float *angles, SinoParams c_sinoparams, ImageParams c_imgparams, 
         char *Amatrix_fname, char verbose);
+    
+    void denoise(float *x_noisy, float *x_init,
+    ImageParams c_imgparams, ReconParams c_reconparams);
 
     void recon(float *x, float *sino, float *wght, float *proxmap_input,
     SinoParams c_sinoparams, ImageParams c_imgparams, ReconParams c_reconparams,
@@ -171,8 +173,7 @@ cdef map_py2c_reconparams(ReconParams* c_reconparams,
                           const char* cy_weightScaler_domain,
                           const char* cy_NHICD_Mode):
 
-        c_reconparams.prox_mode = reconparams['prox_mode']   # Prior mode: (True: proximal map mode, False: QGGMRF mode) 
-
+        c_reconparams.prox_mode = reconparams['prox_mode']   # Prior mode: (True: proximal map mode, False: QGGMRF recon/denoise mode) 
         # QGGMRF
         c_reconparams.q = reconparams['q']                   # q: QGGMRF parameter (q>1, typical choice q=2)
         c_reconparams.p = reconparams['p']                   # p: QGGMRF parameter (1<=p<q)
@@ -266,6 +267,58 @@ def AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname, verbos
     c_Amatrix_fname = string_to_char_array(Amatrix_fname)
 
     AmatrixComputeToFile(&c_angles[0], c_sinoparams, c_imgparams, &c_Amatrix_fname[0], verbose)
+
+
+def denoise_cy(x_noisy, x_init,
+               imgparams, reconparams):
+    # sino, wght shape : views x slices x channels
+    # recon shape: N_x N_y N_z (source-detector-line, channels, slices)
+
+    
+    # image shape: N_x N_y N_z (source-detector-line, channels, slices)
+    x_noisy = np.swapaxes(x_noisy, 0, 2)
+    if not x_noisy.flags["C_CONTIGUOUS"]:
+        x_noisy = np.ascontiguousarray(x_noisy, dtype=np.single)
+    else:
+        x_noisy = x_noisy.astype(np.single, copy=False)
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_x_noisy = x_noisy
+    
+    # image shape: N_x N_y N_z (source-detector-line, channels, slices)
+    if np.isscalar(x_init):
+        x_init = np.zeros((imgparams['N_x'], imgparams['N_y'], imgparams['N_z'])) + x_init
+    else:
+        x_init = np.swapaxes(x_init, 0, 2)
+    if not x_init.flags["C_CONTIGUOUS"]:
+        x_init = np.ascontiguousarray(x_init, dtype=np.single)
+    else:
+        x_init = x_init.astype(np.single, copy=False)
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_x_init = x_init
+
+
+    cdef cnp.ndarray[char, ndim=1, mode="c"] cy_relativeChangeMode = string_to_char_array(reconparams["relativeChangeMode"])
+    cdef cnp.ndarray[char, ndim=1, mode="c"] cy_weightScaler_estimateMode = string_to_char_array(reconparams["weightScaler_estimateMode"])
+    cdef cnp.ndarray[char, ndim=1, mode="c"] cy_weightScaler_domain = string_to_char_array(reconparams["weightScaler_domain"])
+    cdef cnp.ndarray[char, ndim=1, mode="c"] cy_NHICD_Mode = string_to_char_array(reconparams["NHICD_Mode"])
+
+    cdef ImageParams c_imgparams
+    cdef ReconParams c_reconparams
+
+    convert_py2c_ImageParams3D(&c_imgparams, imgparams)
+    map_py2c_reconparams(&c_reconparams,
+                          reconparams,
+                          &cy_relativeChangeMode[0],
+                          &cy_weightScaler_estimateMode[0],
+                          &cy_weightScaler_domain[0],
+                          &cy_NHICD_Mode[0])
+
+    denoise(&cy_x_noisy[0,0,0],
+            &cy_x_init[0,0,0],
+            c_imgparams,
+            c_reconparams)
+    # print("Cython done")
+    # Convert shape from Cython interface specifications to Python interface specifications
+    return np.swapaxes(cy_x_init, 0, 2)
+
 
 
 def recon_cy(sino, angles, wght, x_init, proxmap_input,
