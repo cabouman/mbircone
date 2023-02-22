@@ -215,10 +215,10 @@ def gen_lamino_sample_3d(num_rows, num_cols, num_slices, tile_rows=1, tile_cols=
         tile_rows: int, [Default=1] number of rows in the phantom tiling
         tile_cols: int, [Default=1] number of cols in the phantom tiling
     Return:
-        out_image: 3D array, num_slices x num_rows * (1+pad_factor) x num_cols * (1+pad_factor)
+        out_image: 3D array, num_slices x num_rows * (1+tile_rows) x num_cols * (1+tile_cols)
     """
 
-    # The function describing the phantom is defined as the sum of 7 ellipsoids inside a 4x4x1 cuboid:
+    # The function describing the phantom is defined as the sum of 9 ellipsoids inside a 4x4x1 cuboid:
     ms3d_paras = [
         {'x0': -0.2, 'y0': 1.343, 'z0': 0.0, 'a': 0.22, 'b': 0.10, 'c': 0.10, 'gamma': 0, 'gray_level': 0.8},
         {'x0': 0.0, 'y0': 0.9, 'z0': 0.0, 'a': 0.66, 'b': 0.15, 'c': 0.33, 'gamma': 0, 'gray_level': 0.4},
