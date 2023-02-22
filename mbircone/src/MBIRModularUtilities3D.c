@@ -228,6 +228,37 @@ float computeRelativeRMSEFloatArray(float *arr1, float *arr2, long int len)
     return sqrt(numerator/denominator);
 }
 
+float computeImageWeightedNormSquared(struct Image *img, float *arr)
+{
+    /**
+     *                      1  ||     ||2   
+     *      normError    = --- || arr ||  
+     *                      M  ||     ||L 
+     *
+     *      normError = weightScaler_value
+     * 
+     *      Weight_true = Weight / weightScaler_value
+     */
+    long int i_x, i_y, i_z;
+    long int num_mask;
+    float normError = 0;
+
+    for (i_x = 0; i_x < img->params.N_x; ++i_x)
+    for (i_y = 0; i_y < img->params.N_y; ++i_y)
+    for (i_z = 0; i_z < img->params.N_z; ++i_z)
+    {
+        normError += arr[index_3D(i_x,i_y,i_z,img->params.N_y,img->params.N_z)] * arr[index_3D(i_x,i_y,i_z,img->params.N_y,img->params.N_z)];
+    }
+
+    num_mask = img->params.N_x * img->params.N_y * img->params.N_z;
+    
+    normError /= num_mask;
+
+    return normError;
+}
+
+
+
 float computeSinogramWeightedNormSquared(struct Sino *sino, float *arr)
 {
     /**
@@ -274,8 +305,6 @@ char isInsideMask(long int i_1, long int i_2, long int N1, long int N2)
 
     reldistance = pow((i_1-center_1)/radius, 2) + pow((i_2-center_2)/radius, 2);
     return (reldistance<1 ? 1 : 0);
-
-
 }
 
 long int computeNumVoxelsInImageMask(struct Image *img)
@@ -1036,6 +1065,35 @@ void printReconParams(struct ReconParams *params)
     printf("\tisComputeCost = %d \n", params->isComputeCost);
 
 }
+
+
+void printDenoiseParams(struct ImageParams *img_params, struct ReconParams *denoise_params)
+{
+    printf("\nImage parameters read:\n");
+
+    printf("\tN_x = %ld \n", img_params->N_x);
+    printf("\tN_y = %ld \n", img_params->N_y);
+    printf("\tN_z = %ld \n", img_params->N_z);
+
+    printf("\nDenoiser parameters read:\n");
+    printf("\tq = %e \n", denoise_params->q);
+    printf("\tp = %e \n", denoise_params->p);
+    printf("\tT = %e \n", denoise_params->T);
+    printf("\tsigmaX = %e \n", denoise_params->sigmaX);
+    printf("\tbFace = %e \n", denoise_params->bFace);
+    printf("\tbEdge = %e \n", denoise_params->bEdge);
+    printf("\tbVertex = %e \n", denoise_params->bVertex);
+    printf("\tsigma_lambda = %e \n", denoise_params->sigma_lambda);
+    printf("\tis_positivity_constraint = %d \n", denoise_params->is_positivity_constraint);
+
+    printf("\tstopThresholdChange_pct = %e \n", denoise_params->stopThresholdChange_pct);
+    printf("\tMaxIterations = %d \n", denoise_params->MaxIterations);
+    printf("\trelativeChangeMode = %s \n", denoise_params->relativeChangeMode);
+    printf("\tweightScaler_value = %e \n", denoise_params->weightScaler_value);
+
+    printf("\tverbosity = %d \n", denoise_params->verbosity);
+}
+
 
 void printSysMatrixParams(struct SysMatrix *A)
 {

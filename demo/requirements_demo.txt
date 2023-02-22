@@ -5,4 +5,3 @@ tensorflow~=2.8.0
 keras~=2.8.0
 PyYAML
 datatest
-scikit-image
