@@ -10,7 +10,7 @@ def auto_lamino_params(theta, num_det_rows, num_det_channels, delta_det_channel,
     """ Compute values for parameters used internally for a synthetic cone beam approximation of laminography.
 
     Args:
-        theta (float): Angle that source-detector line makes with the object vertical axis.
+        theta (float): Angle in radians that source-detector line makes with the object vertical axis.
         num_det_rows (int): Number of rows in laminography sinogram data.
         num_det_channels (int): Number of channels in laminography sinogram data.
 
@@ -53,11 +53,11 @@ def auto_lamino_params(theta, num_det_rows, num_det_channels, delta_det_channel,
         lamino_rotation_offset, lamino_image_slice_offset
 
 
-def auto_image_size_lamino(theta, num_det_rows, num_det_channels, delta_det_row, delta_det_channel, delta_pixel_image):
+def auto_image_rows_cols(theta, num_det_rows, num_det_channels, delta_det_row, delta_det_channel, delta_pixel_image):
     """ Compute the automatic image array size for use in MBIR reconstruction. Currently unused.
 
     Args:
-        theta (float): Angle that source-detector line makes with the object vertical axis.
+        theta (float): Angle that source-detector line makes with the object vertical axis, in radians.
 
         num_det_rows (int): Number of rows in laminography sinogram data.
         num_det_channels (int): Number of channels in laminography sinogram data.
@@ -68,34 +68,20 @@ def auto_image_size_lamino(theta, num_det_rows, num_det_channels, delta_det_row,
         delta_pixel_image (float): Image pixel spacing in :math:`ALU`.
 
     Returns:
-        (int): (int, 3-tuple): Default values for ``num_image_rows``, ``num_image_cols``, ``num_image_slices`` for the
+        (int): (int, 3-tuple): Default values for ``num_image_rows``, ``num_image_cols`` for the
         inputted detector measurements.
     """
 
     detector_height = num_det_rows * delta_det_row
     detector_width = num_det_channels * delta_det_channel
 
-    # Test if available data is a double-cone or a cone-cylinder-cone.
-    if detector_height <= detector_width * np.cos(theta):
-        # Data forms a double-cone because not enough detector rows.
-        warnings.warn("Detector does not have enough rows for a cylindrical reconstruction of diameter "
-                      "(num_det_channels * delta_det_channel). Performing reconstruction in a cylindrical region"
-                      "of diameter (num_det_rows * delta_det_row) instead.")
-        cyl_diam = detector_height
-        cyl_height = (detector_height / np.sin(theta)) - (detector_height / np.tan(theta))
-    else:
-        # Available data forms a cone-cylinder-cone
-        # Get dimensions of cylinder
-        cyl_diam = detector_width
-        cyl_height = (detector_height / np.sin(theta)) - (detector_width / np.tan(theta))
+    # Compute diagonal of image that detector makes on a given horizontal slice for fixed z
+    detector_image_diagonal = np.sqrt((detector_width) ** 2 + (detector_height / np.cos(theta)) ** 2)
 
-    recon_diam = cyl_diam + (2 * cyl_height * np.tan(theta))
+    num_image_rows = int(np.ceil(detector_image_diagonal / delta_pixel_image))
+    num_image_cols = int(np.ceil(detector_image_diagonal / delta_pixel_image))
 
-    num_image_rows = int(np.ceil(recon_diam / delta_pixel_image))
-    num_image_cols = int(np.ceil(recon_diam / delta_pixel_image))
-    num_image_slices = int(np.ceil(cyl_height))
-
-    return num_image_rows, num_image_cols, num_image_slices
+    return num_image_rows, num_image_cols
 
 
 def recon_lamino(sino, angles, theta,
@@ -111,7 +97,7 @@ def recon_lamino(sino, angles, theta,
     Args:
         sino (float, ndarray): 3D laminography sinogram data with shape (num_views, num_det_rows, num_det_channels).
         angles (float, ndarray): 1D array of view angles in radians.
-        theta (float): Angle that source-detector line makes with the object vertical axis.
+        theta (float): Angle in radians that source-detector line makes with the object vertical axis.
 
         weights (float, ndarray, optional): [Default=None] 3D weights array with same shape as ``sino``.
             If ``weights`` is not supplied, then ``cone3D.calc_weights`` is used to set weights using ``weight_type``.
@@ -219,7 +205,7 @@ def project_lamino(image, angles, theta,
     Args:
         image (float, ndarray): 3D image to be projected, with shape (num_img_slices, num_img_rows, num_img_cols).
         angles (float, ndarray): 1D array of view angles in radians.
-        theta (float): Angle that source-detector line makes with the object vertical axis.
+        theta (float): Angle in radians that source-detector line makes with the object vertical axis.
 
         num_det_rows (int): Number of rows in laminography sinogram data.
         num_det_channels (int): Number of channels in laminography sinogram data.
