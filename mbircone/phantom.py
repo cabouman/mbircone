@@ -158,7 +158,7 @@ def gen_shepp_logan_3d_raw(num_rows, num_cols, num_slices, scale=1.0, offset_x=0
                                gamma=el_paras['gamma'] / 180.0 * np.pi,
                                gray_level=el_paras['gray_level'])
 
-    
+
 
     return np.transpose(image, (2, 0, 1))
 
@@ -205,34 +205,35 @@ def gen_microscopy_sample_3d(num_rows, num_cols, num_slices):
     return np.transpose(image, (2, 0, 1))
 
 
-def gen_lamino_sample_3d(num_rows, num_cols, num_slices, pad_factor=0.0):
+def gen_lamino_sample_3d(num_rows, num_cols, num_slices, tile_rows=1, tile_cols=1):
     """
-    Generate a 3D laminography phantom with a padding of custom size.
+    Generate a 3D laminography phantom with a tiling of custom size.
     Args:
         num_rows: int, number of rows.
         num_cols: int, number of cols.
         num_slices: int, number of slices.
-        pad_factor (float, optional): [Default=0.0] Size of constant padding around
-            phantom rows and columns to simulate a flat object.
-            Value is given as a multiple of the size of the phantom.
+        tile_rows: int, [Default=1] number of rows in the phantom tiling
+        tile_cols: int, [Default=1] number of cols in the phantom tiling
     Return:
         out_image: 3D array, num_slices x num_rows * (1+pad_factor) x num_cols * (1+pad_factor)
     """
 
-    # The function describing the phantom is defined as the sum of 7 ellipsoids inside a 2x4x2 cuboid:
+    # The function describing the phantom is defined as the sum of 7 ellipsoids inside a 4x4x1 cuboid:
     ms3d_paras = [
-        {'x0': -0.1, 'y0': 1.343, 'z0': 0.0, 'a': 0.11, 'b': 0.10, 'c': 0.20, 'gamma': 0, 'gray_level': 0.8},
-        {'x0': 0.0, 'y0': 0.9, 'z0': 0.0, 'a': 0.33, 'b': 0.15, 'c': 0.66, 'gamma': 0, 'gray_level': 0.4},
-        {'x0': 0.25, 'y0': 0.4, 'z0': 0.0, 'a': 0.1, 'b': 0.2, 'c': 0.40, 'gamma': 0, 'gray_level': 0.8},
-        {'x0': -0.2, 'y0': 0.0, 'z0': 0.0, 'a': 0.2, 'b': 0.08, 'c': 0.40, 'gamma': 0, 'gray_level': 0.4},
-        {'x0': 0.2, 'y0': -0.35, 'z0': 0.0, 'a': 0.1, 'b': 0.1, 'c': 0.2, 'gamma': 0, 'gray_level': 0.8},
-        {'x0': 0.25, 'y0': -0.8, 'z0': 0.0, 'a': 0.2, 'b': 0.08, 'c': 0.4, 'gamma': 0, 'gray_level': 0.8},
-        {'x0': -0.04, 'y0': -1.3, 'z0': 0.0, 'a': 0.33, 'b': 0.15, 'c': 0.30, 'gamma': 0, 'gray_level': 0.8}
+        {'x0': -0.2, 'y0': 1.343, 'z0': 0.0, 'a': 0.22, 'b': 0.10, 'c': 0.10, 'gamma': 0, 'gray_level': 0.8},
+        {'x0': 0.0, 'y0': 0.9, 'z0': 0.0, 'a': 0.66, 'b': 0.15, 'c': 0.33, 'gamma': 0, 'gray_level': 0.4},
+        {'x0': 0.5, 'y0': 0.4, 'z0': 0.0, 'a': 0.2, 'b': 0.2, 'c': 0.20, 'gamma': 0, 'gray_level': 0.8},
+        {'x0': -0.4, 'y0': 0.0, 'z0': 0.0, 'a': 0.4, 'b': 0.08, 'c': 0.20, 'gamma': 0, 'gray_level': 0.4},
+        {'x0': 0.4, 'y0': -0.35, 'z0': 0.0, 'a': 0.2, 'b': 0.1, 'c': 0.1, 'gamma': 0, 'gray_level': 0.8},
+        {'x0': 0.5, 'y0': -0.8, 'z0': 0.0, 'a': 0.4, 'b': 0.08, 'c': 0.2, 'gamma': 0, 'gray_level': 0.8},
+        {'x0': -0.08, 'y0': -1.3, 'z0': 0.0, 'a': 0.66, 'b': 0.15, 'c': 0.15, 'gamma': 0, 'gray_level': 0.8},
+        {'x0': -1.5, 'y0': 0.3, 'z0': 0.0, 'a': 0.2, 'b': 0.7, 'c': 0.20, 'gamma': 0, 'gray_level': 0.8},
+        {'x0': 1.5, 'y0': -0.7, 'z0': 0.0, 'a': 0.3, 'b': 0.5, 'c': 0.30, 'gamma': 0, 'gray_level': 0.4}
     ]
 
-    axis_x = np.linspace(-1.0, 1.0, num_cols)
+    axis_x = np.linspace(-2.0, 2.0, num_cols)
     axis_y = np.linspace(2.0, -2.0, num_rows)
-    axis_z = np.linspace(-1.0, 1.0, num_slices)
+    axis_z = np.linspace(-0.5, 0.5, num_slices)
 
     x_grid, y_grid, z_grid = np.meshgrid(axis_x, axis_y, axis_z)
     image = x_grid * 0.0
@@ -247,11 +248,8 @@ def gen_lamino_sample_3d(num_rows, num_cols, num_slices, pad_factor=0.0):
 
     image = np.transpose(image, (2, 0, 1))
 
-    # Pad phantom so that the edges are replicated
-    pad_rows = int(num_rows * pad_factor)
-    pad_cols = int(num_cols * pad_factor)
-
-    image = np.pad(image, [(0, 0), (pad_rows, pad_rows), (pad_cols, pad_cols)], mode='edge')
+    # Use tiling to create a larger phantom
+    image = np.tile(image, (1, tile_rows, tile_cols))
 
     return image
 
