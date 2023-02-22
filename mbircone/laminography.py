@@ -54,7 +54,7 @@ def auto_lamino_params(theta, num_det_rows, num_det_channels, delta_det_channel,
 
 
 def auto_image_rows_cols(theta, num_det_rows, num_det_channels, delta_det_row, delta_det_channel, delta_pixel_image):
-    """ Compute the automatic image array size for use in MBIR reconstruction. Currently unused.
+    """ Compute the automatic image array row and col size for use in MBIR reconstruction.
 
     Args:
         theta (float): Angle that source-detector line makes with the object vertical axis, in radians.
@@ -113,9 +113,9 @@ def recon_lamino(sino, angles, theta,
             (num_img_slices, num_img_rows, num_img_cols).
 
         num_image_rows (int, optional): [Default=None] Number of rows in reconstructed image.
-            If None, automatically set by ``cone3D.auto_image_size``.
+            If None, automatically set by ``laminography.auto_image_cols_rows``.
         num_image_cols (int, optional): [Default=None] Number of columns in reconstructed image.
-            If None, automatically set by ``cone3D.auto_image_size``.
+            If None, automatically set by ``laminography.auto_image_cols_rows``.
         num_image_slices (int, optional): [Default=None] Number of slices in reconstructed image.
             If None, automatically set by ``cone3D.auto_image_size``.
 
@@ -172,6 +172,15 @@ def recon_lamino(sino, angles, theta,
     """
 
     (_, num_det_rows, num_det_channels) = sino.shape
+
+    if delta_pixel_image is None:
+        delta_pixel_image = delta_det_channel
+    if num_image_rows is None:
+        num_image_rows, _ = auto_image_rows_cols(theta, num_det_rows, num_det_channels, delta_det_row,
+                                                 delta_det_channel, delta_pixel_image)
+    if num_image_cols is None:
+        _, num_image_cols = auto_image_rows_cols(theta, num_det_rows, num_det_channels, delta_det_row,
+                                                 delta_det_channel, delta_pixel_image)
 
     lamino_dist_source_detector, lamino_magnification, lamino_delta_det_row, lamino_det_row_offset, \
         lamino_rotation_offset, lamino_image_slice_offset = auto_lamino_params(theta, num_det_rows, num_det_channels,
