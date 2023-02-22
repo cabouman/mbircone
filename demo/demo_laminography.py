@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import mbircone
-from demo_utils import plot_image, plot_gif, create_circular_mask, nrmse
+from demo_utils import plot_image, nrmse
 
 
 def create_circular_mask(h, w, center=None, radius=None):
@@ -218,13 +218,13 @@ display_y_error = error.shape[2] // 2
 # error images
 plot_image(error[display_slice_error], title=f'error, axial slice {display_slice_error}, '
                                                      f'Θ='+str(theta_degrees)+' degrees',
-           filename=os.path.join(save_path, 'error_axial.png'), vmin=0.0, vmax=0.05, cmap='viridis')
+           filename=os.path.join(save_path, 'error_axial.png'), vmin=0.0, vmax=0.05)
 plot_image(error[:, display_x_error,:], title=f'error, coronal slice {display_x_error}, '
                                                       f'Θ='+str(theta_degrees)+' degrees',
-           filename=os.path.join(save_path, 'error_coronal.png'), vmin=0.0, vmax=0.05, cmap='viridis')
+           filename=os.path.join(save_path, 'error_coronal.png'), vmin=0.0, vmax=0.05)
 plot_image(error[:, :, display_y_error], title=f'error, sagittal slice {display_y_error}, '
                                                        f'Θ='+str(theta_degrees)+' degrees',
-           filename=os.path.join(save_path, 'error_sagittal.png'), vmin=0.0, vmax=0.05, cmap='viridis')
+           filename=os.path.join(save_path, 'error_sagittal.png'), vmin=0.0, vmax=0.05)
 
 print(f"Images saved to {save_path}.")
 input("Press Enter")
