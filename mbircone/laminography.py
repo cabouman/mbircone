@@ -68,7 +68,7 @@ def auto_image_rows_cols(theta, num_det_rows, num_det_channels, delta_det_row, d
         delta_pixel_image (float): Image pixel spacing in :math:`ALU`.
 
     Returns:
-        (int): (int, 3-tuple): Default values for ``num_image_rows``, ``num_image_cols`` for the
+        (int): (int, 2-tuple): Default values for ``num_image_rows``, ``num_image_cols`` for the
         inputted detector measurements.
     """
 
