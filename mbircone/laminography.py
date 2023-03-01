@@ -6,7 +6,7 @@ import mbircone.cone3D as cone3D
 __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
 
 
-def auto_lamino_params(theta, num_det_rows, num_det_channels, delta_det_channel, delta_det_row, image_slice_offset):
+def auto_lamino_params(theta, num_det_rows, num_det_channels, delta_det_row, delta_det_channel, image_slice_offset):
     """ Compute values for parameters used internally for a synthetic cone beam approximation of laminography.
 
     Args:
@@ -14,8 +14,8 @@ def auto_lamino_params(theta, num_det_rows, num_det_channels, delta_det_channel,
         num_det_rows (int): Number of rows in laminography sinogram data.
         num_det_channels (int): Number of channels in laminography sinogram data.
 
-        delta_det_channel (float): Detector channel spacing in :math:`ALU`.
         delta_det_row (float): Detector row spacing in :math:`ALU`.
+        delta_det_channel (float): Detector channel spacing in :math:`ALU`.
 
         image_slice_offset (float): Vertical offset of the image in units of :math:`ALU`.
 
@@ -31,7 +31,7 @@ def auto_lamino_params(theta, num_det_rows, num_det_channels, delta_det_channel,
     lamino_dist_source_detector = (1 / epsilon) * max(delta_det_channel, delta_det_row) * \
                                   (max(num_det_rows, num_det_channels) ** 2)
 
-    # Setting _magnification=1.0 with a large _dist_source_detector approximates parallel beams
+    # Setting lamino_magnification=1.0 with a large lamino_dist_source_detector approximates parallel beams
     lamino_magnification = 1.0
 
     # Compute synthetic detector pixel size corresponding to affine projection of
@@ -43,7 +43,7 @@ def auto_lamino_params(theta, num_det_rows, num_det_channels, delta_det_channel,
     lamino_det_row_offset = lamino_dist_source_detector / np.tan(theta)
 
     # Since there is no source-detector line in parallel-beam projection, define the
-    # synthetic source-detector line to intersect the axis of rotation; so _rotation_offset=0.0
+    # synthetic source-detector line to intersect the axis of rotation; so lamino_rotation_offset=0.0
     lamino_rotation_offset = 0.0
 
     # Move the image region to correspond with the movement of the synthetic cone-beam detector
@@ -53,8 +53,8 @@ def auto_lamino_params(theta, num_det_rows, num_det_channels, delta_det_channel,
         lamino_rotation_offset, lamino_image_slice_offset
 
 
-def auto_image_rows_cols(theta, num_det_rows, num_det_channels, delta_det_row, delta_det_channel, delta_pixel_image):
-    """ Compute the automatic image array row and col size for use in MBIR reconstruction.
+def auto_image_slices(theta, num_det_rows, num_det_channels, delta_det_row, delta_det_channel, delta_pixel_image):
+    """ Compute the automatic image array slice dimension for use in qGGMRF reconstruction.
 
     Args:
         theta (float): Angle that source-detector line makes with the object vertical axis, in radians.
@@ -64,6 +64,41 @@ def auto_image_rows_cols(theta, num_det_rows, num_det_channels, delta_det_row, d
 
         delta_det_row (float): Detector row spacing in :math:`ALU`.
         delta_det_channel (float): Detector channel spacing in :math:`ALU`.
+
+        delta_pixel_image (float): Image pixel spacing in :math:`ALU`.
+
+    Returns:
+        (int): Default value for ``num_image_slices`` for the inputted detector measurements.
+    """
+
+    if (num_det_rows * delta_det_row) > (num_det_channels * delta_det_channel) * np.cos(theta):
+        # Set region of reconstruction to cylinder inside double-cone
+        image_thickness = ((num_det_rows * delta_det_row) / np.sin(theta)) - \
+                          ((num_det_channels * delta_det_channel) / np.tan(theta))
+    else:
+        # Set region of reconstruction to double-cone
+        image_thickness = (num_det_rows * delta_det_row) / np.sin(theta)
+
+    # Convert absolute measurements to pixel measurements
+    num_image_slices = int(np.ceil(image_thickness / delta_pixel_image))
+
+    return num_image_slices
+
+
+def auto_image_rows_cols(theta, num_det_rows, num_det_channels, delta_det_row, delta_det_channel, num_image_slices,
+                         delta_pixel_image):
+    """ Compute the automatic image array row and col dimensions for use in qGGMRF reconstruction.
+
+    Args:
+        theta (float): Angle that source-detector line makes with the object vertical axis, in radians.
+
+        num_det_rows (int): Number of rows in laminography sinogram data.
+        num_det_channels (int): Number of channels in laminography sinogram data.
+
+        delta_det_row (float): Detector row spacing in :math:`ALU`.
+        delta_det_channel (float): Detector channel spacing in :math:`ALU`.
+
+        num_image_slices (int): Number of slices in reconstructed image.
 
         delta_pixel_image (float): Image pixel spacing in :math:`ALU`.
 
@@ -78,8 +113,9 @@ def auto_image_rows_cols(theta, num_det_rows, num_det_channels, delta_det_row, d
     # Compute diagonal of image that detector makes on a given horizontal slice for fixed z
     detector_image_diagonal = np.sqrt((detector_width) ** 2 + (detector_height / np.cos(theta)) ** 2)
 
-    num_image_rows = int(np.ceil(detector_image_diagonal / delta_pixel_image))
-    num_image_cols = int(np.ceil(detector_image_diagonal / delta_pixel_image))
+    # Compute image rows and columns
+    num_image_rows = int(np.ceil( (detector_image_diagonal/delta_pixel_image) + (num_image_slices * np.tan(theta)) ))
+    num_image_cols = int(np.ceil( (detector_image_diagonal/delta_pixel_image) + (num_image_slices * np.tan(theta)) ))
 
     return num_image_rows, num_image_cols
 
@@ -175,12 +211,16 @@ def recon_lamino(sino, angles, theta,
 
     if delta_pixel_image is None:
         delta_pixel_image = delta_det_channel
+
+    if num_image_slices is None:
+        num_image_slices = auto_image_slices(theta, num_det_rows, num_det_channels, delta_det_row,
+                                             delta_det_channel, delta_pixel_image)
     if num_image_rows is None:
         num_image_rows, _ = auto_image_rows_cols(theta, num_det_rows, num_det_channels, delta_det_row,
-                                                 delta_det_channel, delta_pixel_image)
+                                                 delta_det_channel, num_image_slices, delta_pixel_image)
     if num_image_cols is None:
         _, num_image_cols = auto_image_rows_cols(theta, num_det_rows, num_det_channels, delta_det_row,
-                                                 delta_det_channel, delta_pixel_image)
+                                                 delta_det_channel, num_image_slices, delta_pixel_image)
 
     lamino_dist_source_detector, lamino_magnification, lamino_delta_det_row, lamino_det_row_offset, \
         lamino_rotation_offset, lamino_image_slice_offset = auto_lamino_params(theta, num_det_rows, num_det_channels,
