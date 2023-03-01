@@ -56,6 +56,35 @@ def nrmse(image, reference_image):
     return rmse / denominator
 
 
+def create_circular_mask(h, w, center=None, radius=None):
+    """
+    Creates a circular mask for an image of size h x w, with a given center and radius.
+    Adapted from code by Alexander Reynolds via StackExchange
+
+    Args:
+        h (int): Height of image in pixels
+        w (int): Width of image in pixels
+        center (float, 2-tuple): Coordinates of center of circular mask, in pixels.
+        radius (float): Radius of circular mask, in pixels.
+    Returns:
+        h x w image with a circular mask centered at 'center' and with radius 'radius'
+        mask = 0 if pixel is within radius, 1 if pixel is outside radius
+
+    """
+    if center is None: # use the middle of the image
+        center = ((w-1)/2, (h-1)/2)
+    if radius is None: # use the smallest distance between the center and image walls
+        radius = min(center[0], center[1], w-center[0], h-center[1])+(1/2)
+
+    # Calculate distance from each pixel to the center of the circle
+    Y, X = np.ogrid[:h, :w]
+    dist_from_center = np.sqrt((X - center[0])**2 + (Y-center[1])**2)
+
+    # Create mask based on cutoff for distance
+    mask = dist_from_center > radius
+    return mask
+
+
 def plot_gif(x, save_dir, name, vmin=None, vmax=None):
     images = []
     for i in range(x.shape[0]):
@@ -71,7 +100,7 @@ def plot_gif(x, save_dir, name, vmin=None, vmax=None):
     imageio.mimsave(save_dir + "/%s.gif" % name, images, fps=5)
 
 
-def plot_image(img, title=None, filename=None, vmin=None, vmax=None):
+def plot_image(img, title=None, filename=None, vmin=None, vmax=None, cmap='gray'):
     """
     Function to display and save a 2D array as an image.
 
@@ -87,7 +116,7 @@ def plot_image(img, title=None, filename=None, vmin=None, vmax=None):
     fig = plt.figure()
     imgplot = plt.imshow(img, vmin=vmin, vmax=vmax, interpolation='none')
     plt.title(label=title)
-    imgplot.set_cmap('gray')
+    imgplot.set_cmap(cmap)
     plt.colorbar()
     if filename != None:
         try:
