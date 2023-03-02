@@ -82,11 +82,7 @@ print('Synthetic sinogram shape: (num_views, num_det_rows, num_det_channels) = '
 
 print('Performing 3D qGGMRF reconstruction ...')
 
-# Set image slices using known slice information
-num_image_slices = num_phantom_slices
-
 recon = mbircone.laminography.recon_lamino(sino, angles, theta_radians,
-                                           num_image_slices=num_image_slices,
                                            sharpness=sharpness, snr_db=snr_db)
 
 print('recon shape = ', np.shape(recon))
