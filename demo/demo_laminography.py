@@ -31,6 +31,9 @@ num_phantom_slices = 32
 num_phantom_rows = 64
 num_phantom_cols = 64
 
+# Image parameters
+num_image_slices = num_phantom_slices
+
 # Size of constant padding around phantom as a multiple of num_phantom_rows or num_phantom_cols
 tile_rows = 3
 tile_cols = 3
@@ -83,6 +86,7 @@ print('Synthetic sinogram shape: (num_views, num_det_rows, num_det_channels) = '
 print('Performing 3D qGGMRF reconstruction ...')
 
 recon = mbircone.laminography.recon_lamino(sino, angles, theta_radians,
+                                           num_image_slices = num_image_slices,
                                            sharpness=sharpness, snr_db=snr_db)
 
 print('recon shape = ', np.shape(recon))
