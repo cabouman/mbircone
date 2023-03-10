@@ -215,13 +215,18 @@ def recon_lamino(sino, angles, theta,
     if num_image_slices is None:
         num_image_slices = auto_image_slices(theta, num_det_rows, num_det_channels, delta_det_row,
                                              delta_det_channel, delta_pixel_image)
+        warnings.warn('\n*** Parameter num_image_slices was not given. Setting to {num_image_slices}. '
+                      'A smaller value may speed up qGGMRF reconstruction. ***\n')
     if num_image_rows is None:
         num_image_rows, _ = auto_image_rows_cols(theta, num_det_rows, num_det_channels, delta_det_row,
                                                  delta_det_channel, num_image_slices, delta_pixel_image)
+        warnings.warn('\n*** Parameter num_image_rows was not given. Setting to {num_image_rows}. '
+                      'A smaller value may speed up qGGMRF reconstruction. ***\n')
     if num_image_cols is None:
         _, num_image_cols = auto_image_rows_cols(theta, num_det_rows, num_det_channels, delta_det_row,
                                                  delta_det_channel, num_image_slices, delta_pixel_image)
-
+        warnings.warn('\n*** Parameter num_image_cols was not given. Setting to {num_image_cols}. '
+                      'A smaller value may speed up qGGMRF reconstruction. ***\n')
     lamino_dist_source_detector, lamino_magnification, lamino_delta_det_row, lamino_det_row_offset, \
         lamino_rotation_offset, lamino_image_slice_offset = auto_lamino_params(theta, num_det_rows, num_det_channels,
                                                                                delta_det_channel, delta_det_row,
