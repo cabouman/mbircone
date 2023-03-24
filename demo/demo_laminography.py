@@ -27,12 +27,14 @@ num_det_rows = 64
 num_views = 64
 
 # Phantom parameters
-num_phantom_slices = 32
+num_phantom_slices = 16
 num_phantom_rows = 64
 num_phantom_cols = 64
 
 # Image parameters
 num_image_slices = num_phantom_slices
+num_image_rows = 172
+num_image_cols = 172
 
 # Size of constant padding around phantom as a multiple of num_phantom_rows or num_phantom_cols
 tile_rows = 3
@@ -87,6 +89,8 @@ print('Performing 3D qGGMRF reconstruction ...')
 
 recon = mbircone.laminography.recon_lamino(sino, angles, theta_radians,
                                            num_image_slices = num_image_slices,
+                                           num_image_rows = num_image_rows,
+                                           num_image_cols = num_image_cols,
                                            sharpness=sharpness, snr_db=snr_db)
 
 print('recon shape = ', np.shape(recon))
@@ -104,11 +108,11 @@ for view_idx in [0, num_views//4, num_views//2]:
 (num_image_slices, num_image_rows, num_image_cols) = np.shape(recon)
 
 # Set display indexes for phantom and recon images
-display_slice_phantom = phantom.shape[0] // 4
+display_slice_phantom = phantom.shape[0] // 2
 display_x_phantom = phantom.shape[1] // 2
 display_y_phantom = phantom.shape[2] // 2
 
-display_slice_recon = recon.shape[0] // 4
+display_slice_recon = recon.shape[0] // 2
 display_x_recon = recon.shape[1] // 2
 display_y_recon = recon.shape[2] // 2
 
@@ -166,7 +170,7 @@ print(f'qGGMRF normalized rms reconstruction error within laminography phantom w
 # Generate image representing error
 error = np.abs(recon_roi - phantom_roi)
 
-display_slice_error = error.shape[0] // 4
+display_slice_error = error.shape[0] // 2
 display_x_error = error.shape[1] // 2
 display_y_error = error.shape[2] // 2
 

@@ -218,9 +218,6 @@ def gen_lamino_sample_3d(num_rows, num_cols, num_slices, tile_rows=1, tile_cols=
         out_image: 3D array, num_slices x num_rows * (1+tile_rows) x num_cols * (1+tile_cols)
     """
 
-    substrate_slices = num_slices // 2
-    conductor_slices = num_slices - substrate_slices
-
     # The function describing the phantom is defined as the sum of 9 ellipsoids inside a 4x4x1 cuboid:
     ms3d_paras = [
         {'x0': -0.2, 'y0': 1.343, 'z0': 0.0, 'a': 0.22, 'b': 0.10, 'c': 0.10, 'gamma': 0, 'gray_level': 0.8},
@@ -236,7 +233,7 @@ def gen_lamino_sample_3d(num_rows, num_cols, num_slices, tile_rows=1, tile_cols=
 
     axis_x = np.linspace(-2.0, 2.0, num_cols)
     axis_y = np.linspace(2.0, -2.0, num_rows)
-    axis_z = np.linspace(-0.5, 0.5, conductor_slices)
+    axis_z = np.linspace(-0.5, 0.5, num_slices)
 
     x_grid, y_grid, z_grid = np.meshgrid(axis_x, axis_y, axis_z)
     image = x_grid * 0.0
@@ -250,9 +247,6 @@ def gen_lamino_sample_3d(num_rows, num_cols, num_slices, tile_rows=1, tile_cols=
                                 gray_level=el_paras['gray_level'])
 
     image = np.transpose(image, (2, 0, 1))
-
-    # Add substrate layers
-    image = np.pad(image, ((0, substrate_slices),(0,0),(0,0)), 'constant', constant_values=(0,0.2))
 
     # Use tiling to create a larger phantom
     image = np.tile(image, (1, tile_rows, tile_cols))
