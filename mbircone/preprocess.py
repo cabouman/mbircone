@@ -339,7 +339,7 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
         # counter-clockwise rotation
         angle_step = -angle_step
     v_d0 = - v_d1
-    w_d0 = - geo_params['num_det_rows'] * geo_params['delta_det_row'] / 2.0
+    w_d0 = - w_d1
     geo_params['rotation_offset'] = 0.0
 
     ############### Adjust geometry NSI_params according to crop_factor and downsample_factor
