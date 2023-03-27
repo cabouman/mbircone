@@ -6,14 +6,14 @@ from demo_utils import plot_image, nrmse
 """
 This script is a demonstration of the laminography reconstruction algorithm. Demo functionality includes
  * Generating a 3D laminography sample phantom;
- * Generating synthetic laminography data by forward projecting the phantom.
- * Performing a 3D qGGMRF reconstruction.
+ * Generating synthetic laminography data by forward projecting the phantom;
+ * Performing a 3D qGGMRF reconstruction;
  * Displaying the results.
 """
 print('This script is a demonstration of the laminography reconstruction algorithm. Demo functionality includes \
 \n\t * Generating a 3D laminography sample phantom; \
-\n\t * Generating synthetic laminography data by forward projecting the phantom. \
-\n\t * Performing a 3D qGGMRF reconstruction. \
+\n\t * Generating synthetic laminography data by forward projecting the phantom; \
+\n\t * Performing a 3D qGGMRF reconstruction; \
 \n\t * Displaying the results.')
 
 # Laminographic angle
