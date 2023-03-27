@@ -142,6 +142,9 @@ def recon_lamino(sino, angles, theta,
         num_image_slices (int, optional): [Default=None] Number of slices in reconstructed image.
             If None, automatically set by ``laminography.auto_image_slices``.
 
+        delta_pixel_image (float, optional): [Default=None] Image pixel spacing in :math:`ALU`.
+            If None, automatically set to ``delta_det_channel``.
+
         det_channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector
             to the detector z-axis along a row. (Note: There is no ``det_row_offset`` parameter; due to the
             parallel beam geometry such a parameter would be redundant with image_slice_offset.)
@@ -157,15 +160,22 @@ def recon_lamino(sino, angles, theta,
     if delta_pixel_image is None:
         delta_pixel_image = delta_det_channel
 
+    # Set image parameters automatically
     if num_image_slices is None:
         num_image_slices = auto_image_slices(theta, num_det_rows, num_det_channels, delta_det_row,
                                              delta_det_channel, delta_pixel_image)
+        warnings.warn(f'\n*** Parameter num_image_slices was not given. Setting to {num_image_slices}. '
+                      'A smaller value may speed up qGGMRF reconstruction. ***\n')
     if num_image_rows is None:
         num_image_rows, _ = auto_image_rows_cols(theta, num_det_rows, num_det_channels, delta_det_row,
                                                  delta_det_channel, num_image_slices, delta_pixel_image)
+        warnings.warn(f'\n*** Parameter num_image_rows was not given. Setting to {num_image_rows}. '
+                      'A smaller value may speed up qGGMRF reconstruction. ***\n')
     if num_image_cols is None:
         _, num_image_cols = auto_image_rows_cols(theta, num_det_rows, num_det_channels, delta_det_row,
                                                  delta_det_channel, num_image_slices, delta_pixel_image)
+        warnings.warn(f'\n*** Parameter num_image_cols was not given. Setting to {num_image_cols}. '
+                      'A smaller value may speed up qGGMRF reconstruction. ***\n')
 
     lamino_dist_source_detector, lamino_magnification, lamino_delta_det_row, lamino_det_row_offset, \
         lamino_rotation_offset, lamino_image_slice_offset = auto_lamino_params(theta, num_det_rows, num_det_channels,
@@ -201,6 +211,9 @@ def project_lamino(image, angles, theta,
 
         num_det_rows (int): Number of rows in laminography sinogram data.
         num_det_channels (int): Number of channels in laminography sinogram data.
+
+        delta_pixel_image (float, optional): [Default=None] Image pixel spacing in :math:`ALU`.
+            If None, automatically set to ``delta_det_channel``.
 
         det_channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector
             to the detector z-axis along a row. (Note: There is no ``det_row_offset`` parameter; due to the
