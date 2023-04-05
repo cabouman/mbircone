@@ -438,7 +438,7 @@ def transmission_CT_preprocess(obj_scan, blank_scan, dark_scan,
     Returns:
         2-element tuple containing:
         - **sino** (*ndarray, float*): Preprocessed sinogram data with shape (num_views, num_det_rows, num_det_channels).
-        - **weights** (*ndarray, float*): 3D weights array with the same shape as sino. ``weights``=0.0 indicates an invalid sinogram entry in ``sino``.
+        - **weights** (*ndarray, float*): 3D weights array with the same shape as sino. ``weights`` = 0.0 indicates an invalid sinogram entry in ``sino``.
     """
 
     # should add something here to check the validity of downsampled scan pixel values?
