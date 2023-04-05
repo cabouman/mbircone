@@ -423,7 +423,7 @@ def transmission_CT_preprocess(obj_scan, blank_scan, dark_scan,
                                weight_type='unweighted'):
     """Given a set of object scans, blank scan, and dark scan, compute the sinogram data and weights. It is assumed that the object scans, blank scan and dark scan all have compatible sizes. 
     
-    The sinogram values and weights corresponding to invalid sinogram entries will be set to 0.
+    The weights and sinogram values corresponding to invalid sinogram entries will be set to 0.0.
  
     Args:
         obj_scan (ndarray, float): 3D object scan with shape (num_views, num_det_rows, num_det_channels). 
@@ -434,19 +434,42 @@ def transmission_CT_preprocess(obj_scan, blank_scan, dark_scan,
                 - ``'unweighted'`` corresponds to unweighted reconstruction;
                 - ``'transmission'`` is the correct weighting for transmission CT with constant dosage;
                 - ``'transmission_root'`` is commonly used with transmission CT data to improve image homogeneity;
-                - ``'MAR'`` is appropriate for objects containing metal components. This is temporarily a placeholder for future development.
+
     Returns:
         2-element tuple containing:
         - **sino** (*ndarray, float*): Preprocessed sinogram data with shape (num_views, num_det_rows, num_det_channels).
-        - **weights** (*ndarray, float*): 3D weights array with the same shape as sino. 
+        - **weights** (*ndarray, float*): 3D weights array with the same shape as sino. ``weights``=0.0 indicates an invalid sinogram entry in ``sino``.
     """
 
     # should add something here to check the validity of downsampled scan pixel values?
     sino, weight_mask = _compute_sino_and_weight_mask_from_scans(obj_scan, blank_scan, dark_scan)
-    # set the sino corresponding to invalid entries to 0.
-    sino[weight_mask == 0] = 0.
+    # set the sino corresponding to invalid entries to 0.0
+    sino[weight_mask == 0] = 0.0
     # compute sinogram weights
     weights = cone3D.calc_weights(sino, weight_type=weight_type)
-    # set the sino weights corresponding to invalid entries to 0.
-    weights[weight_mask == 0] = 0.
+    # set the sino weights corresponding to invalid entries to 0.0
+    weights[weight_mask == 0] = 0.0
     return sino.astype(np.float32), weights.astype(np.float32)
+
+
+def calc_weight_mar(sino, init_recon, metal_threshold, good_pixel_mask, beta=2.0, gamma=4.0):
+    """ Compute the weights used for reducing metal artifacts in MBIR reconstruction. For more information please refer to the `[theory] <theory.html>`_ section in readthedocs.
+    
+    Args:
+        sino (float, ndarray): Sinogram data with 3D shape (num_det_rows, num_det_channels).
+        init_recon (ndarray, float): Initial reconstruction used to identify metal voxels.
+        metal_threshold (float): Threshold value in units of :math:`ALU^{-1}` used to identify metal voxels.
+            Any voxels in ``init_recon`` with an attenuation coefficient larger than ``metal_threshold`` will be identified as a metal voxel.
+        good_pixel_mask (float, ndarray): pixel mask specifying the location of valid sinogram entries.
+            0.0 indicates an invalid pixel in the associated entry of ``sino``.
+        beta (float, optional): [Default=2.0] Scalar value in range :math:`>0`.
+            ``beta`` controls the weight to sinogram entries with low photon counts.
+            A larger ``beta`` value improves image homogeneity, but may result in more severe metal artifacts.
+        gamma (float, optional): [Default=4.0] Scalar value in range :math:`>1`.
+            ``gamma`` controls the weight to sinogram entries in which the projection paths contain metal components.
+            A larger ``gamma`` value reduces image artifacts around metal regions, but may result in worse image quality inside metal regions, as well as reduced image homogeneity.
+    Returns:
+        (float, ndarray): Weights used in mbircone reconstruction, with the same array shape as ``sino``.
+    """
+
+    return
