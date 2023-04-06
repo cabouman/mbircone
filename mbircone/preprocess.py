@@ -452,24 +452,78 @@ def transmission_CT_preprocess(obj_scan, blank_scan, dark_scan,
     return sino.astype(np.float32), weights.astype(np.float32)
 
 
-def calc_weight_mar(sino, init_recon, metal_threshold, good_pixel_mask, beta=2.0, gamma=4.0):
+def calc_weight_mar(sino, init_recon, 
+                    angles, dist_source_detector, magnification,
+                    metal_threshold, good_pixel_mask, 
+                    beta=2.0, gamma=4.0,
+                    delta_det_channel=1.0, delta_det_row=1.0, delta_pixel_image=None,
+                    det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0, image_slice_offset=0.0,
+                    num_threads=None, verbose=0, lib_path=__lib_path):
     """ Compute the weights used for reducing metal artifacts in MBIR reconstruction. For more information please refer to the `[theory] <theory.html>`_ section in readthedocs.
     
-    Args:
-        sino (float, ndarray): Sinogram data with 3D shape (num_det_rows, num_det_channels).
-        init_recon (ndarray, float): Initial reconstruction used to identify metal voxels.
-        metal_threshold (float): Threshold value in units of :math:`ALU^{-1}` used to identify metal voxels.
-            Any voxels in ``init_recon`` with an attenuation coefficient larger than ``metal_threshold`` will be identified as a metal voxel.
-        good_pixel_mask (float, ndarray): pixel mask specifying the location of valid sinogram entries.
+    Required arguments:
+        - **sino** (*ndarray*): Sinogram data with 3D shape (num_det_rows, num_det_channels).
+        - **init_recon** (*ndarray*): Initial reconstruction used to identify metal voxels.
+        - **angles** (*ndarray*): 1D array of view angles in radians.
+        - **dist_source_detector** (*float*): Distance between the X-ray source and the detector in units of :math:`ALU`.
+        - **magnification** (*float*): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
+        - **metal_threshold** (*float*): Threshold value in units of :math:`ALU^{-1}` used to identify metal voxels. Any voxels in ``init_recon`` with an attenuation coefficient larger than ``metal_threshold`` will be identified as a metal voxel.
+        - **good_pixel_mask** (*ndarray*): pixel mask specifying the location of valid sinogram entries.
+            
             0.0 indicates an invalid pixel in the associated entry of ``sino``.
-        beta (float, optional): [Default=2.0] Scalar value in range :math:`>0`.
+    
+    Arguments specific to MAR data weights: 
+        - **beta** (*float, optional*): [Default=2.0] Scalar value in range :math:`>0`.
+            
             ``beta`` controls the weight to sinogram entries with low photon counts.
             A larger ``beta`` value improves image homogeneity, but may result in more severe metal artifacts.
-        gamma (float, optional): [Default=4.0] Scalar value in range :math:`>1`.
+        
+        - **gamma** (*float, optional*): [Default=4.0] Scalar value in range :math:`>1`.
+            
             ``gamma`` controls the weight to sinogram entries in which the projection paths contain metal components.
             A larger ``gamma`` value reduces image artifacts around metal regions, but may result in worse image quality inside metal regions, as well as reduced image homogeneity.
-    Returns:
-        (float, ndarray): Weights used in mbircone reconstruction, with the same array shape as ``sino``.
-    """
+    
+    Optional arguments inherited from ``cone3D.project``:
+        - **delta_det_channel** (*float, optional*): [Default=1.0] Detector channel spacing in :math:`ALU`.
+        - **delta_det_row** (*float, optional*): [Default=1.0] Detector row spacing in :math:`ALU`.
+        - **delta_pixel_image** (*float, optional*): [Default=None] Image pixel spacing in :math:`ALU`.
+            
+            If None, automatically set to ``delta_pixel_detector/magnification``.
 
-    return
+        - **det_channel_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
+        - **det_row_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
+        - **rotation_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space.
+            
+            This is normally set to zero.
+        
+        - **image_slice_offset** (*float, optional*): [Default=0.0] Vertical offset of the image in units of :math:`ALU`.
+
+        - **num_threads** (*int, optional*): [Default=None] Number of compute threads requested when executed.
+            
+            If None, ``num_threads`` is set to the number of cores in the system.
+        
+        - **verbose** (*int, optional*): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal reconstruction progress information, and 2 prints the full information.
+        - **lib_path** (*str, optional*): [Default=~/.cache/mbircone] Path to directory containing library of forward projection matrices.
+    
+    Returns:
+        (ndarray): Weights used in mbircone reconstruction, with the same array shape as ``sino``.
+    """
+   
+    # metal mask
+    metal_mask = recon_init > metal_threshold
+    _, num_det_rows, num_det_channels = sino.shape
+    # sino_mask: 1 if projection path contains metal voxels, 0 else.
+    sino_mask = cone3D.project(metal_mask.astype(float), angles,
+                               num_det_rows=num_det_rows, num_det_channels=num_det_channels,
+                               dist_source_detector=dist_source_detector, magnification=magnification,
+                               delta_det_channel=delta_det_channel, delta_det_row=delta_det_row, delta_pixel_image=delta_pixel_image,
+                               det_channel_offset=det_channel_offset, det_row_offset=det_row_offset, rotation_offset=rotation_offset, image_slice_offset=image_slice_offset,
+                               num_threads=num_threads, verbose=verbose, lib_path=__lib_path)
+    
+    weights = np.zeros(sino.shape)
+    # case where projection path does not contain metal voxels: weight = np.exp(-sino/beta)
+    weights[sino_mask<=0] = np.exp(-sino[sino_mask<=0] / beta)
+    # case where projection path contains metal voxels: weight = np.exp(-sino*gamma/beta)
+    weights[sino_mask>0] = np.exp(-sino[sino_mask>0] * gamma / beta)
+    weights[good_pixel_mask == 0.0] = 0.0
+    return weights
