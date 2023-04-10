@@ -472,7 +472,7 @@ def calc_weight_mar(sino, init_recon,
             
             0.0 indicates an invalid pixel in the associated entry of ``sino``.
     
-    Arguments specific to MAR data weights: 
+    Optional arguments specific to MAR data weights: 
         - **beta** (*float, optional*): [Default=2.0] Scalar value in range :math:`>0`.
             
             ``beta`` controls the weight to sinogram entries with low photon counts.
@@ -518,12 +518,13 @@ def calc_weight_mar(sino, init_recon,
                                dist_source_detector=dist_source_detector, magnification=magnification,
                                delta_det_channel=delta_det_channel, delta_det_row=delta_det_row, delta_pixel_image=delta_pixel_image,
                                det_channel_offset=det_channel_offset, det_row_offset=det_row_offset, rotation_offset=rotation_offset, image_slice_offset=image_slice_offset,
-                               num_threads=num_threads, verbose=verbose, lib_path=__lib_path)
+                               num_threads=num_threads, verbose=verbose, lib_path=lib_path)
     
     weights = np.zeros(sino.shape)
     # case where projection path does not contain metal voxels: weight = np.exp(-sino/beta)
     weights[sino_mask<=0] = np.exp(-sino[sino_mask<=0] / beta)
     # case where projection path contains metal voxels: weight = np.exp(-sino*gamma/beta)
     weights[sino_mask>0] = np.exp(-sino[sino_mask>0] * gamma / beta)
+    # set weights of invalid sinogram entries to 0.0
     weights[good_pixel_mask == 0.0] = 0.0
     return weights
