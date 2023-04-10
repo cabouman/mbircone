@@ -520,6 +520,7 @@ def recon(sino, angles, dist_source_detector, magnification,
         
         weights (float, ndarray, optional): [Default=None] 3D weights array with same shape as ``sino``.
             If ``weights`` is not supplied, then ``cone3D.calc_weights`` is used to set weights using ``weight_type``.
+            weights=0.0 indicates an invalid sinogram entry in ``sino``.
         weight_type (string, optional): [Default='unweighted'] Type of noise model used for data.
 
                 - ``'unweighted'`` corresponds to unweighted reconstruction;
@@ -641,7 +642,9 @@ def recon(sino, angles, dist_source_detector, magnification,
     # Set automatic values for weights
     if weights is None:
         weights = calc_weights(sino, weight_type)
-
+    # if weights is provided, then set invalid sino entries (corresponding to weights-0.0) to 0.0.
+    else:
+        sino[weights == 0.0] = 0.0
     # Set automatic value of sigma_y
     if sigma_y is None:
         sigma_y = auto_sigma_y(sino, magnification, weights, snr_db, 
