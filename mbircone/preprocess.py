@@ -420,7 +420,8 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
 
 
 def transmission_CT_preprocess(obj_scan, blank_scan, dark_scan,
-                               weight_type='unweighted'):
+                               weight_type='unweighted',
+                               background_box_info=[]):
     """Given a set of object scans, blank scan, and dark scan, compute the sinogram data and weights. It is assumed that the object scans, blank scan and dark scan all have compatible sizes. 
     
     The weights and sinogram values corresponding to invalid sinogram entries will be set to 0.0.
@@ -445,6 +446,19 @@ def transmission_CT_preprocess(obj_scan, blank_scan, dark_scan,
     sino, weight_mask = _compute_sino_and_weight_mask_from_scans(obj_scan, blank_scan, dark_scan)
     # set the sino corresponding to invalid entries to 0.0
     sino[weight_mask == 0] = 0.0
+   
+    # background offset correction 
+    if background_box_info is not None:
+        assert(isinstance(background_box_info, (np.ndarray,list))), \
+              'background box info must be an array or list!'
+        background_offset = 0.0
+        for (x, y, width, height) in background_box_info:
+            background_offset += np.mean(sino[:,y:y+height, x:x+width])
+ 
+    background_offset /= len(background_box_info)
+    # background calibration
+    print("Background offset correction: sino background_offset = ", background_offset)
+    sino = sino - background_offset
     # compute sinogram weights
     weights = cone3D.calc_weights(sino, weight_type=weight_type)
     # set the sino weights corresponding to invalid entries to 0.0
@@ -455,7 +469,7 @@ def transmission_CT_preprocess(obj_scan, blank_scan, dark_scan,
 def calc_weight_mar(sino, init_recon, 
                     angles, dist_source_detector, magnification,
                     metal_threshold, good_pixel_mask, 
-                    beta=2.0, gamma=4.0,
+                    beta=1.0, gamma=4.0,
                     delta_det_channel=1.0, delta_det_row=1.0, delta_pixel_image=None,
                     det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0, image_slice_offset=0.0,
                     num_threads=None, verbose=0, lib_path=__lib_path):
@@ -473,7 +487,7 @@ def calc_weight_mar(sino, init_recon,
             0.0 indicates an invalid pixel in the associated entry of ``sino``.
     
     Optional arguments specific to MAR data weights: 
-        - **beta** (*float, optional*): [Default=2.0] Scalar value in range :math:`>0`.
+        - **beta** (*float, optional*): [Default=1.0] Scalar value in range :math:`>0`.
             
             ``beta`` controls the weight to sinogram entries with low photon counts.
             A larger ``beta`` value improves image homogeneity, but may result in more severe metal artifacts.
@@ -510,7 +524,7 @@ def calc_weight_mar(sino, init_recon,
     """
    
     # metal mask
-    metal_mask = recon_init > metal_threshold
+    metal_mask = (init_recon > metal_threshold)
     _, num_det_rows, num_det_channels = sino.shape
     # sino_mask: 1 if projection path contains metal voxels, 0 else.
     sino_mask = cone3D.project(metal_mask.astype(float), angles,
@@ -522,9 +536,9 @@ def calc_weight_mar(sino, init_recon,
     
     weights = np.zeros(sino.shape)
     # case where projection path does not contain metal voxels: weight = np.exp(-sino/beta)
-    weights[sino_mask<=0] = np.exp(-sino[sino_mask<=0] / beta)
+    weights[sino_mask<=0] = np.exp(-np.absolute(sino[sino_mask<=0]) / beta)
     # case where projection path contains metal voxels: weight = np.exp(-sino*gamma/beta)
-    weights[sino_mask>0] = np.exp(-sino[sino_mask>0] * gamma / beta)
+    weights[sino_mask>0] = np.exp(-np.absolute(sino[sino_mask>0]) * gamma / beta)
     # set weights of invalid sinogram entries to 0.0
     weights[good_pixel_mask == 0.0] = 0.0
     return weights
