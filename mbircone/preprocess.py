@@ -421,8 +421,8 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
 
 def transmission_CT_preprocess(obj_scan, blank_scan, dark_scan,
                                weight_type='unweighted',
-                               background_box_info=[]):
-    """Given a set of object scans, blank scan, and dark scan, compute the sinogram data and weights. It is assumed that the object scans, blank scan and dark scan all have compatible sizes. 
+                               background_box_info=None):
+    """Given a set of object scans, blank scan, and dark scan, compute the sinogram data and weights, and optionally perform background offset correction. It is assumed that the object scans, blank scan and dark scan all have compatible sizes. 
     
     The weights and sinogram values corresponding to invalid sinogram entries will be set to 0.0.
  
@@ -435,6 +435,17 @@ def transmission_CT_preprocess(obj_scan, blank_scan, dark_scan,
                 - ``'unweighted'`` corresponds to unweighted reconstruction;
                 - ``'transmission'`` is the correct weighting for transmission CT with constant dosage;
                 - ``'transmission_root'`` is commonly used with transmission CT data to improve image homogeneity;
+        background_box_info ([x, y, height, width]) [Default=None]: A background region used for background offset correction of the sinogram, defined via an anchor point *xy* and its width and height. 
+            ::
+            
+            :                +------------------+
+            :                |                  |
+            :              height               |
+            :                |                  |
+            :               (xy)---- width -----+
+ 
+            The background offset is calculated as the average value of sino[:,y:y+height,x:x+width]. This offset will be subtracted from the sinogram data.
+            If None, no background offset correction will be performed.
 
     Returns:
         2-element tuple containing:
@@ -449,11 +460,10 @@ def transmission_CT_preprocess(obj_scan, blank_scan, dark_scan,
    
     # background offset correction 
     if background_box_info is not None:
-        assert(isinstance(background_box_info, (np.ndarray,list))), \
-              'background box info must be an array or list!'
-        background_offset = 0.0
-        for (x, y, width, height) in background_box_info:
-            background_offset += np.mean(sino[:,y:y+height, x:x+width])
+        assert(isinstance(background_box_info, (np.ndarray,list,tuple))), \
+              'background box info must be an array, list, or tuple!'
+        (x, y, width, height) = background_box_info
+        background_offset = np.mean(sino[:,y:y+height, x:x+width])
  
     background_offset /= len(background_box_info)
     # background calibration
