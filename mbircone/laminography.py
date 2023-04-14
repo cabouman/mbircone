@@ -130,6 +130,7 @@ def recon_lamino(sino, angles, theta,
                  sharpness=0.0, positivity=True, max_resolutions=None, stop_threshold=0.02, max_iterations=100,
                  NHICD=False, num_threads=None, verbose=1, lib_path=__lib_path):
     """ Compute 3D cone beam MBIR reconstruction for the laminography case.
+        Inherits docstrings from cone3D.recon.
 
     Args:
         sino (float, ndarray): 3D laminography sinogram data with shape (num_views, num_det_rows, num_det_channels).
@@ -205,6 +206,7 @@ def project_lamino(image, angles, theta,
                    det_channel_offset=0.0, image_slice_offset=0.0,
                    num_threads=None, verbose=1, lib_path=__lib_path):
     """ Compute 3D cone beam forward projection for the laminography case.
+        Inherits docstrings from cone3D.project.
 
     Args:
         theta (float): Angle in radians that source-detector line makes with the object vertical axis.
@@ -239,5 +241,9 @@ def project_lamino(image, angles, theta,
                           image_slice_offset=lamino_image_slice_offset,
                           num_threads=num_threads, verbose=verbose, lib_path=lib_path)
 
+
+# Inherit Google docstrings from parent functions using docstring-inheritance package.
+# Automatically compiled with Sphinx
+# Documentation at https://pypi.org/project/docstring-inheritance/
 inherit_google_docstring(cone3D.recon.__doc__, recon_lamino)
 inherit_google_docstring(cone3D.project.__doc__, project_lamino)
