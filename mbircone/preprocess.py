@@ -419,6 +419,73 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
     return obj_scan, blank_scan, dark_scan, angles, geo_params
 
 
+def transmission_CT_compute_sino(obj_scan, blank_scan, dark_scan):
+    """Given a set of object scans, blank scan, and dark scan, compute the sinogram data: sino = -np.log((obj_scan-dark_scan) / (blank_scan-dark_scan)). 
+ 
+    Args:
+        obj_scan (ndarray, float): 3D object scan with shape (num_views, num_det_rows, num_det_channels). 
+        blank_scan (ndarray, float): [Default=None] 3D blank scan with shape (num_blank_scans, num_det_rows, num_det_channels). When num_blank_scans>1, the pixel-wise mean will be used as the blank scan.
+        dark_scan (ndarray, float): [Default=None] 3D dark scan with shape (num_dark_scans, num_det_rows, num_det_channels). When num_dark_scans>1, the pixel-wise mean will be used as the dark scan.
+    Returns:
+        (float, ndarray): Preprocessed sinogram data with shape (num_views, num_det_rows, num_det_channels).
+    """
+
+def background_offset_correction(sino, background_box_info, view_dependent=False):
+    """Given the sinogram data, calculate the background offset based on a selected background region, and return the corrected sinogram: sino <- sino - background_offset. The corrected sinogram will have an average value of zero inside the specified background region.
+ 
+    Args:
+        sino (float, ndarray): Sinogram data with 3D shape (num_views, num_det_rows, num_det_channels).
+        background_box_info (tuple or list(tuple)): A background region used for background offset correction of the sinogram, defined by ``(x,y,height,width)`` or ``[(view_index,x,y,height,width)]``. 
+            The background region is defined via an anchor point *xy* and its width and height.
+
+            ::
+            
+            :                +------------------+
+            :                |                  |
+            :              height               |
+            :                |                  |
+            :               (xy)---- width -----+
+ 
+            - In the case where a single tuple ``(x,y,height,width)`` is provided, the same background region will be used across all sinogram views.
+            - In the case where a list of tuples ``[(view_idx,x,y,height,width)]`` is provided, different background regions may be selected for different sinogram views.
+
+        view_dependent (bool): [Default=False] Determines whether the background offset is view dependent.
+            
+            - If True, a different background offset will be calculated for each sinogram view: `background_offset = np.mean(sino[:,y:y+height,x:x+width], axis=(1,2))`. In this case, a background region must be specified for every sinogram view. This may be done by specifying the same background region for all views. 
+            - If False, a single scalar offset will be calculated for all sinogram views: `background_offset = np.mean(sino[:,y:y+height,x:x+width])`. 
+ 
+    Returns:
+        (float, ndarray): Corrected sinogram data with shape (num_views, num_det_rows, num_det_channels).
+    """
+
+def compute_sino_mask(sino, good_pixel_mask=None):
+    """Given the sinogram data, identify the invalid sinogram entries, set the corresponding sinogram entries to be 0.0, and return the updated sinogram data as well as a pixel mask indicating the location of valid sinogram entries.
+ 
+    Args:
+        sino (float, ndarray): Sinogram data with 3D shape (num_views, num_det_rows, num_det_channels).
+        good_pixel_mask (optional, bool, ndarray): A mask with the same shape as ``sino``, where True indicates a valid sinogram entry, and False indicates an invalid sinogram entry.
+            If None, then the pixel mask will be computed such that `good_pixel_mask=False` for sino entries with inf or nan values.
+    Returns:
+        2-element tuple containing:
+
+        - **sino** (*ndarray, float*): Sinogram data with shape (num_views, num_det_rows, num_det_channels). The invalid sinogram entries is set to 0.0.
+        
+        - **good_pixel_mask** (*ndarray, bool*): 3D pixel mask with the same shape as ``sino``. False indicates an invalid sinogram entry.
+ 
+    """
+
+def transmission_CT_compute_weight_mask(obj_scan, blank_scan, dark_scan):
+    """Given a set of object scans, blank scan, and dark scan, compute the sinogram data: sino = -np.log((obj_scan-dark_scn) / (blank_scan-dark_scan)). 
+ 
+    Args:
+        obj_scan (ndarray, float): 3D object scan with shape (num_views, num_det_rows, num_det_channels). 
+        blank_scan (ndarray, float): [Default=None] 3D blank scan with shape (num_blank_scans, num_det_rows, num_det_channels). When num_blank_scans>1, the pixel-wise mean will be used as the blank scan.
+        dark_scan (ndarray, float): [Default=None] 3D dark scan with shape (num_dark_scans, num_det_rows, num_det_channels). When num_dark_scans>1, the pixel-wise mean will be used as the dark scan.
+    Returns:
+        (float, ndarray): Preprocessed sinogram data with shape (num_views, num_det_rows, num_det_channels).
+    """
+
+
 def transmission_CT_preprocess(obj_scan, blank_scan, dark_scan,
                                weight_type='unweighted'):
     """Given a set of object scans, blank scan, and dark scan, compute the sinogram data and weights. It is assumed that the object scans, blank scan and dark scan all have compatible sizes. 
@@ -450,3 +517,84 @@ def transmission_CT_preprocess(obj_scan, blank_scan, dark_scan,
     # set the sino weights corresponding to invalid entries to 0.
     weights[weight_mask == 0] = 0.
     return sino.astype(np.float32), weights.astype(np.float32)
+
+
+def calc_weights(sino, weight_type, good_pixel_mask):
+    """ Compute the weights used in MBIR reconstruction.
+
+    Args:
+        sino (float, ndarray): Sinogram data with either 3D shape (num_views, num_det_rows, num_det_channels)
+            or 4D shape (num_time_points, num_views, num_det_rows, num_det_channels).
+
+        weight_type (string): Type of noise model used for data
+
+                - weight_type = 'unweighted' => return numpy.ones(sino.shape).
+                - weight_type = 'transmission' => return numpy.exp(-sino).
+                - weight_type = 'transmission_root' => return numpy.exp(-sino/2).
+                - weight_type = 'emission' => return 1/(numpy.absolute(sino) + 0.1).
+        good_pixel_mask (bool, ndarray): pixel mask specifying the location of valid sinogram entries.
+            
+            False indicates an invalid pixel in the associated entry of ``sino``.
+            weights=0.0 for invalid sinogram entries.
+
+    Returns:
+        (float, ndarray): Weights used in mbircone reconstruction, with the same array shape as ``sino``.
+
+    Raises:
+        Exception: Raised if ``weight_type`` is not one of the above options.
+    """
+
+def calc_weights_mar(sino, init_recon, 
+                    angles, dist_source_detector, magnification,
+                    metal_threshold, good_pixel_mask, 
+                    beta=2.0, gamma=4.0,
+                    delta_det_channel=1.0, delta_det_row=1.0, delta_pixel_image=None,
+                    det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0, image_slice_offset=0.0,
+                    num_threads=None, verbose=0, lib_path=__lib_path):
+    """ Compute the weights used for reducing metal artifacts in MBIR reconstruction. For more information please refer to the `[theory] <theory.html>`_ section in readthedocs.
+    
+    Required arguments:
+        - **sino** (*ndarray*): Sinogram data with 3D shape (num_det_rows, num_det_channels).
+        - **init_recon** (*ndarray*): Initial reconstruction used to identify metal voxels.
+        - **angles** (*ndarray*): 1D array of view angles in radians.
+        - **dist_source_detector** (*float*): Distance between the X-ray source and the detector in units of :math:`ALU`.
+        - **magnification** (*float*): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
+        - **metal_threshold** (*float*): Threshold value in units of :math:`ALU^{-1}` used to identify metal voxels. Any voxels in ``init_recon`` with an attenuation coefficient larger than ``metal_threshold`` will be identified as a metal voxel.
+        - **good_pixel_mask** (*bool, ndarray*): pixel mask specifying the location of valid sinogram entries.
+            
+            False indicates an invalid pixel in the associated entry of ``sino``.
+    
+    Optional arguments specific to MAR data weights: 
+        - **beta** (*float, optional*): [Default=2.0] Scalar value in range :math:`>0`.
+            
+            ``beta`` controls the weight to sinogram entries with low photon counts.
+            A larger ``beta`` value improves image homogeneity, but may result in more severe metal artifacts.
+        
+        - **gamma** (*float, optional*): [Default=4.0] Scalar value in range :math:`>1`.
+            
+            ``gamma`` controls the weight to sinogram entries in which the projection paths contain metal components.
+            A larger ``gamma`` value reduces image artifacts around metal regions, but may result in worse image quality inside metal regions, as well as reduced image homogeneity.
+    
+    Optional arguments inherited from ``cone3D.project``:
+        - **delta_det_channel** (*float, optional*): [Default=1.0] Detector channel spacing in :math:`ALU`.
+        - **delta_det_row** (*float, optional*): [Default=1.0] Detector row spacing in :math:`ALU`.
+        - **delta_pixel_image** (*float, optional*): [Default=None] Image pixel spacing in :math:`ALU`.
+            
+            If None, automatically set to ``delta_pixel_detector/magnification``.
+        - **det_channel_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
+        - **det_row_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
+        - **rotation_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space.
+            
+            This is normally set to zero.
+        
+        - **image_slice_offset** (*float, optional*): [Default=0.0] Vertical offset of the image in units of :math:`ALU`.
+        - **num_threads** (*int, optional*): [Default=None] Number of compute threads requested when executed.
+            
+            If None, ``num_threads`` is set to the number of cores in the system.
+        
+        - **verbose** (*int, optional*): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal reconstruction progress information, and 2 prints the full information.
+        - **lib_path** (*str, optional*): [Default=~/.cache/mbircone] Path to directory containing library of forward projection matrices.
+    
+    Returns:
+        (ndarray): Weights used in mbircone reconstruction, with the same array shape as ``sino``.
+    """
