@@ -341,6 +341,7 @@ def recon_cy(sino, angles, wght, x_init, proxmap_input,
             # make a copy of the image and recon param dictionaries
             imgparams_lr = imgparams.copy()
             reconparams_lr = reconparams.copy()
+
             # Set the pixel pitch, num_rows, and num_cols for the next lower resolution
             imgparams_lr['Delta_xy'] = 2 * imgparams['Delta_xy']
             imgparams_lr['Delta_z'] = 2 * imgparams['Delta_z']
@@ -353,13 +354,17 @@ def recon_cy(sino, angles, wght, x_init, proxmap_input,
             imgparams_lr['j_ystop_roi'] = int(np.ceil(imgparams['j_ystop_roi'] / 2))
             imgparams_lr['j_zstart_roi'] = int(np.floor(imgparams['j_zstart_roi'] / 2))
             imgparams_lr['j_zstop_roi'] = int(np.ceil(imgparams['j_zstop_roi'] / 2))
-            # Rescale sigma_y for lower resolution
-            reconparams_lr['weightScaler_value'] = 2.0 * reconparams['weightScaler_value']
+            
+            # Increase sigma_y^2 for lower resolution. Note weightScaler_value=sigma_y^2
+            # Increase by 4x results in data term reduction by 4 to balance for prior term reduction by 8
+            reconparams_lr['weightScaler_value'] = 4.0 * reconparams['weightScaler_value']
+
             # Reduce resolution of initialization image if there is one
             if isinstance(x_init, np.ndarray) and (x_init.ndim == 3):
                 lr_init_image = zoom(x_init, 0.5)
             else:
                 lr_init_image = x_init
+
             # Reduce resolution of proximal image if there is one
             if isinstance(proxmap_input, np.ndarray) and (proxmap_input.ndim == 3):
                 lr_prox_image = zoom(proxmap_input, 0.5)
