@@ -38,21 +38,14 @@ angles = np.linspace(0, 2 * np.pi, num_views, endpoint=False)
 # Set reconstruction parameters
 sharpness = 0.0                             # Controls regularization: larger => sharper; smaller => smoother
 T = 0.1                                     # Controls edginess of reconstruction
-delta_pixel = 1.0/magnification             # Pixel pitch for default reconstruction resolution
 
 # Set phantom generation parameters
-num_phantom_slices = num_det_rows           # Set number of slides = to the number of detector rows
-num_phantom_rows = num_det_channels         # Make number of rows and columns = to number of detector columns
+num_phantom_slices = num_det_rows           # Set number of phantom slices = to the number of detector rows
+num_phantom_rows = num_det_channels         # Make number of phantom rows and columns = to number of detector columns
 num_phantom_cols = num_det_channels
-scale=1.0                                   # Determines the size of the phantom within the volume
 
 # Calculate scaling factor for Shepp Logan phantom so that projections are physically realistic -log attenuation values
-SL_phantom_density_scale = 4.0*magnification/(scale*num_phantom_rows)
-
-# Set reconstruction ROI to be only the region containing the phantom
-num_image_slices = int(scale*num_phantom_slices)
-num_image_rows = int(scale*num_phantom_rows)
-num_image_cols = int(scale*num_phantom_cols)
+SL_phantom_density_scale = 4.0*magnification/num_phantom_rows
 
 # Set display parameters for Shepp Logan phantom
 vmin = SL_phantom_density_scale*1.0
@@ -66,7 +59,7 @@ print('Genrating 3D Shepp Logan phantom ...\n')
 ######################################################################################
 # Generate a 3D shepp logan phantom
 ######################################################################################
-phantom = mbircone.phantom.gen_shepp_logan_3d(num_phantom_rows, num_phantom_cols, num_phantom_slices, scale=scale)
+phantom = mbircone.phantom.gen_shepp_logan_3d(num_phantom_rows, num_phantom_cols, num_phantom_slices)
 phantom = SL_phantom_density_scale*phantom
 print('Phantom shape = ', np.shape(phantom))
 
@@ -76,19 +69,15 @@ print('Phantom shape = ', np.shape(phantom))
 print('Generating synthetic sinogram ...\n')
 sino = mbircone.cone3D.project(phantom, angles,
                                num_det_rows, num_det_channels,
-                               dist_source_detector, magnification, delta_pixel_image=delta_pixel)
+                               dist_source_detector, magnification)
 print('Synthetic sinogram shape: (num_views, num_det_rows, num_det_channels) = ', sino.shape)
 
 ######################################################################################
 # Perform 3D MBIR reconstruction using qGGMRF prior
 ######################################################################################
 print('Performing 3D qGGMRF reconstruction ...\n')
-recon = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification,
-                              delta_pixel_image=delta_pixel,
-                              num_image_rows=num_image_rows, num_image_cols=num_image_cols,
-                              num_image_slices=num_image_slices,
-                              sharpness=sharpness, T=T)
-
+recon = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification, sharpness=sharpness, T=T)
+(num_image_slices, num_image_rows, num_image_cols) = np.shape(recon)
 print('recon shape = ', np.shape(recon))
 
 ######################################################################################
