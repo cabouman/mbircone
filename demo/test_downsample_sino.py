@@ -36,7 +36,7 @@ num_views = 64                               # Number of projection views
 angles = np.linspace(0, 2 * np.pi, num_views, endpoint=False)
 
 # Set reconstruction parameters
-sharpness = 0.0                             # Controls regularization: larger => sharper; smaller => smoother
+sharpness = -2.0                             # Controls regularization: larger => sharper; smaller => smoother
 T = 0.1                                     # Controls edginess of reconstruction
 
 # Set phantom generation parameters
@@ -52,7 +52,7 @@ vmin = SL_phantom_density_scale*1.0
 vmax = SL_phantom_density_scale*1.2
 
 # local path to save phantom, sinogram, and reconstruction images
-save_path = f'output/3D_shepp_logan/'
+save_path = f'output/test_low_res_sino/'
 os.makedirs(save_path, exist_ok=True)
 
 print('Genrating 3D Shepp Logan phantom ...\n')
@@ -67,10 +67,35 @@ print('Phantom shape = ', np.shape(phantom))
 # Generate synthetic sinogram
 ######################################################################################
 print('Generating synthetic sinogram ...\n')
-sino = mbircone.cone3D.project(phantom, angles,
+sino_orig = mbircone.cone3D.project(phantom, angles,
                                num_det_rows, num_det_channels,
                                dist_source_detector, magnification)
-print('Synthetic sinogram shape: (num_views, num_det_rows, num_det_channels) = ', sino.shape)
+print('Original sinogram shape: (num_views, num_det_rows, num_det_channels) = ', sino_orig.shape)
+
+# TODO: downsample the sinogram with block-averaging
+
+# downsampling method
+def reduce_sino_res(sino):
+    """ Given a high resolution sinogram, reduce the resolution of each sinogram view by half.
+        The size of each sinogram view must be even.
+    """
+    # check if the size of sinogram view is even
+    (num_views, num_det_rows, num_det_channels) = sino.shape
+    if (num_det_rows%2 != 0) or (num_det_channels%2 != 0):
+        print("Warning! Input sinogram size is odd. Return the original sino without reducing the resolution.")
+        return sino
+
+    print("original sino shape = ", sino.shape)
+    # otherwise reduce resolution of each sino view with block averaging
+    sino = sino.reshape(sino.shape[0], sino.shape[1] // 2, 2,
+                        sino.shape[2] // 2, 2).mean((2, 4))
+
+    print("Down-sampled sino shape = ", sino.shape)
+    return sino
+
+
+sino = reduce_sino_res(sino_orig)
+print('Original sinogram shape: (num_views, num_det_rows, num_det_channels) = ', sino.shape)
 
 ######################################################################################
 # Perform 3D MBIR reconstruction using qGGMRF prior
@@ -78,6 +103,7 @@ print('Synthetic sinogram shape: (num_views, num_det_rows, num_det_channels) = '
 print('Performing 3D qGGMRF reconstruction ...\n')
 recon = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification, sharpness=sharpness, T=T)
 (num_image_slices, num_image_rows, num_image_cols) = np.shape(recon)
+recon = recon/2.
 print('recon shape = ', np.shape(recon))
 
 ######################################################################################
@@ -94,8 +120,11 @@ display_y_recon = num_image_cols // 2
 # sinogram images
 for view_idx in [0, num_views//4, num_views//2]:
     view_angle = int(angles[view_idx]*180/np.pi)
-    plot_image(sino[view_idx, :, :], title=f'sinogram view angle {view_angle} ',
-               filename=os.path.join(save_path, f'sino-shepp-logan-3D-view_angle{view_angle}.png'))
+    plot_image(sino_orig[view_idx, :, :], title=f'Original sinogram view angle {view_angle} ',
+               filename=os.path.join(save_path, f'orig-sino-shepp-logan-3D-view_angle{view_angle}.png'))
+    
+    plot_image(sino[view_idx, :, :], title=f'Downsampled sinogram view angle {view_angle} ',
+               filename=os.path.join(save_path, f'downsampled-sino-shepp-logan-3D-view_angle{view_angle}.png'))
 
 # display phantom images
 plot_image(phantom[display_slice_phantom], title=f'phantom, axial slice {display_slice_phantom}',
