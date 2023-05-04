@@ -30,6 +30,7 @@ sftp-config.json
 ~$*.pptx
 
 # Personal files
+test/output/*
 demo/configs
 demo/demo_data/*
 demo/output/*
