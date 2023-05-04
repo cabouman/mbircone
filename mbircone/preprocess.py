@@ -430,61 +430,33 @@ def transmission_CT_compute_sino(obj_scan, blank_scan, dark_scan):
         (float, ndarray): Preprocessed sinogram data with shape (num_views, num_det_rows, num_det_channels).
     """
 
-def background_offset_correction(sino, background_box_info, view_dependent=False):
-    """Given the sinogram data, calculate the background offset based on a selected background region, and return the corrected sinogram: sino <- sino - background_offset. The corrected sinogram will have an average value of zero inside the specified background region.
+def background_offset_correction(sino, background_percentile=20.0):
+    """Given the sinogram data, perform background offset correction based on the histogram distribution of the sinogram. 
+
+    The corrected sinogram data  will be calculated as ``sino - offset``, where 
+    ``offset = numpy.percentile(sino, background_percentile)``.
  
     Args:
         sino (float, ndarray): Sinogram data with 3D shape (num_views, num_det_rows, num_det_channels).
-        background_box_info (tuple or list(tuple)): A background region used for background offset correction of the sinogram, defined by ``(x,y,height,width)`` or ``[(view_index,x,y,height,width)]``. 
-            The background region is defined via an anchor point *xy* and its width and height.
-
-            ::
-            
-            :                +------------------+
-            :                |                  |
-            :              height               |
-            :                |                  |
-            :               (xy)---- width -----+
- 
-            - In the case where a single tuple ``(x,y,height,width)`` is provided, the same background region will be used across all sinogram views.
-            - In the case where a list of tuples ``[(view_idx,x,y,height,width)]`` is provided, different background regions may be selected for different sinogram views.
-
-        view_dependent (bool): [Default=False] Determines whether the background offset is view dependent.
-            
-            - If True, a different background offset will be calculated for each sinogram view: `background_offset = np.mean(sino[:,y:y+height,x:x+width], axis=(1,2))`. In this case, a background region must be specified for every sinogram view. This may be done by specifying the same background region for all views. 
-            - If False, a single scalar offset will be calculated for all sinogram views: `background_offset = np.mean(sino[:,y:y+height,x:x+width])`. 
- 
+        background_percentile (float) [Default=20.0] Percentile of the sinogram data identified as a typical background pixel. A smaller value should be used in the case where object is larger in the field of view (i.e. sino data contains less background pixels).
+    
     Returns:
         (float, ndarray): Corrected sinogram data with shape (num_views, num_det_rows, num_det_channels).
     """
 
-def compute_sino_mask(sino, good_pixel_mask=None):
-    """Given the sinogram data, identify the invalid sinogram entries, set the corresponding sinogram entries to be 0.0, and return the updated sinogram data as well as a pixel mask indicating the location of valid sinogram entries.
+def correct_defective_sino_pixels(sino, defective_pixel_list=None):
+    """Given the sinogram data, identify the invalid sinogram entries, set the corresponding sinogram entries to be 0.0. Return the updated sinogram data as well as a list indicating the location of invalid sinogram entries.
  
     Args:
         sino (float, ndarray): Sinogram data with 3D shape (num_views, num_det_rows, num_det_channels).
-        good_pixel_mask (optional, bool, ndarray): A mask with the same shape as ``sino``, where True indicates a valid sinogram entry, and False indicates an invalid sinogram entry.
-            If None, then the pixel mask will be computed such that `good_pixel_mask=False` for sino entries with inf or nan values.
+        defective_pixel_list (optional, list(tuple)): A list of tuples containing indices of invalid sinogram pixels, with the format (view_idx, row_idx, channel_idx).
+            If None, then the defective pixels will be identified as sino entries with inf or nan values.
     Returns:
         2-element tuple containing:
 
         - **sino** (*ndarray, float*): Sinogram data with shape (num_views, num_det_rows, num_det_channels). The invalid sinogram entries is set to 0.0.
-        
-        - **good_pixel_mask** (*ndarray, bool*): 3D pixel mask with the same shape as ``sino``. False indicates an invalid sinogram entry.
- 
+        - **defective_pixel_list** (list(tuple)): A list of tuples containing indices of invalid sinogram pixels, with the format (view_idx, row_idx, channel_idx).
     """
-
-def transmission_CT_compute_weight_mask(obj_scan, blank_scan, dark_scan):
-    """Given a set of object scans, blank scan, and dark scan, compute the sinogram data: sino = -np.log((obj_scan-dark_scn) / (blank_scan-dark_scan)). 
- 
-    Args:
-        obj_scan (ndarray, float): 3D object scan with shape (num_views, num_det_rows, num_det_channels). 
-        blank_scan (ndarray, float): [Default=None] 3D blank scan with shape (num_blank_scans, num_det_rows, num_det_channels). When num_blank_scans>1, the pixel-wise mean will be used as the blank scan.
-        dark_scan (ndarray, float): [Default=None] 3D dark scan with shape (num_dark_scans, num_det_rows, num_det_channels). When num_dark_scans>1, the pixel-wise mean will be used as the dark scan.
-    Returns:
-        (float, ndarray): Preprocessed sinogram data with shape (num_views, num_det_rows, num_det_channels).
-    """
-
 
 def transmission_CT_preprocess(obj_scan, blank_scan, dark_scan,
                                weight_type='unweighted'):
@@ -519,7 +491,7 @@ def transmission_CT_preprocess(obj_scan, blank_scan, dark_scan,
     return sino.astype(np.float32), weights.astype(np.float32)
 
 
-def calc_weights(sino, weight_type, good_pixel_mask):
+def calc_weights(sino, weight_type, defective_pixel_list):
     """ Compute the weights used in MBIR reconstruction.
 
     Args:
@@ -532,9 +504,7 @@ def calc_weights(sino, weight_type, good_pixel_mask):
                 - weight_type = 'transmission' => return numpy.exp(-sino).
                 - weight_type = 'transmission_root' => return numpy.exp(-sino/2).
                 - weight_type = 'emission' => return 1/(numpy.absolute(sino) + 0.1).
-        good_pixel_mask (bool, ndarray): pixel mask specifying the location of valid sinogram entries.
-            
-            False indicates an invalid pixel in the associated entry of ``sino``.
+        defective_pixel_list (list(tuple)): A list of tuples containing indices of invalid sinogram pixels, with the format (view_idx, row_idx, channel_idx).
             weights=0.0 for invalid sinogram entries.
 
     Returns:
@@ -546,7 +516,7 @@ def calc_weights(sino, weight_type, good_pixel_mask):
 
 def calc_weights_mar(sino, init_recon, 
                     angles, dist_source_detector, magnification,
-                    metal_threshold, good_pixel_mask, 
+                    metal_threshold, defective_pixel_mask, 
                     beta=2.0, gamma=4.0,
                     delta_det_channel=1.0, delta_det_row=1.0, delta_pixel_image=None,
                     det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0, image_slice_offset=0.0,
@@ -560,9 +530,9 @@ def calc_weights_mar(sino, init_recon,
         - **dist_source_detector** (*float*): Distance between the X-ray source and the detector in units of :math:`ALU`.
         - **magnification** (*float*): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
         - **metal_threshold** (*float*): Threshold value in units of :math:`ALU^{-1}` used to identify metal voxels. Any voxels in ``init_recon`` with an attenuation coefficient larger than ``metal_threshold`` will be identified as a metal voxel.
-        - **good_pixel_mask** (*bool, ndarray*): pixel mask specifying the location of valid sinogram entries.
-            
-            False indicates an invalid pixel in the associated entry of ``sino``.
+        - **defective_pixel_list** (optional, list(tuple)): A list of tuples containing indices of invalid sinogram pixels, with the format (view_idx, row_idx, channel_idx).
+
+            weights=0.0 for invalid sinogram entries.
     
     Optional arguments specific to MAR data weights: 
         - **beta** (*float, optional*): [Default=2.0] Scalar value in range :math:`>0`.
