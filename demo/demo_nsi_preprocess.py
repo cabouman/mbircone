@@ -33,23 +33,23 @@ print('This script is a demonstration of the preprocessing module of NSI dataset
 save_path = './output/nsi_demo/'
 os.makedirs(save_path, exist_ok=True)
 
-# ##### Download and extract NSI dataset 
-# url to NSI dataset.
-dataset_url = 'https://engineering.purdue.edu/~bouman/data_repository/data/demo_data_nsi.tgz'
-# destination path to download and extract the phantom and NN weight files.
-dataset_dir = './demo_data/'   
-# download dataset. The dataset path will be later used to define path to NSI files.
-dataset_path = demo_utils.download_and_extract(dataset_url, dataset_dir)
 
 # ##### NSI specific file paths
 # path to NSI config file. Change dataset path params for your own NSI dataset
-nsi_config_file_path = os.path.join(dataset_path, 'demo_data_nsi/JB-033_ArtifactPhantom_Vertical_NoMetal.nsipro')
+nsi_config_file_path = "./demo_data/mar_demo_data/JB-033_ArtifactPhantom_VerticalMetal.nsipro"
+#nsi_config_file_path = "/depot/bouman/data/share_conebeam_data/new_MAR_phantom/horiz_metal_with_corrections/JB-033_ArtifactPhantom_Horizontal_Metal.nsipro"
 # path to directory containing all object scans
-obj_scan_path = os.path.join(dataset_path, 'demo_data_nsi/Radiographs-JB-033_ArtifactPhantom_Vertical_NoMetal')
+obj_scan_path = "./demo_data/mar_demo_data/Radiographs-JB-033_ArtifactPhantom_VerticalMetal"
+#obj_scan_path = "/depot/bouman/data/share_conebeam_data/new_MAR_phantom/horiz_metal_with_corrections/Radiographs-JB-033_ArtifactPhantom_Horizontal_Metal"
 # path to blank scan. Usually <dataset_path>/Corrections/gain0.tif
-blank_scan_path = os.path.join(dataset_path, 'demo_data_nsi/Corrections/gain0.tif')
-# path to dark scan. Usually <dataset_path>/Corrections/offset.tif
-dark_scan_path = os.path.join(dataset_path, 'demo_data_nsi/Corrections/offset.tif')
+blank_scan_path = "./demo_data/mar_demo_data/Corrections/gain0.tif"
+#blank_scan_path = "/depot/bouman/data/share_conebeam_data/new_MAR_phantom/horiz_metal_with_corrections/Corrections/gain0.tif"
+## path to dark scan. Usually <dataset_path>/Corrections/offset.tif
+dark_scan_path = "./demo_data/mar_demo_data/Corrections/offset.tif"
+#dark_scan_path = "/depot/bouman/data/share_conebeam_data/new_MAR_phantom/horiz_metal_with_corrections/Corrections/offset.tif"
+# path to file containing defective pixel information
+defective_pixel_path = "./demo_data/mar_demo_data/Corrections/defective_pixels.defect"
+#defective_pixel_path = "/depot/bouman/data/share_conebeam_data/new_MAR_phantom/horiz_metal_with_corrections/Corrections/defective_pixels.defect"
 # downsample factor of scan images along detector rows and detector columns.
 downsample_factor = [4, 4]
 # ######### End of parameters #########
@@ -63,7 +63,10 @@ print("\n*******************************************************",
 obj_scan, blank_scan, dark_scan, angles, geo_params = \
         mbircone.preprocess.NSI_load_scans_and_params(nsi_config_file_path, obj_scan_path, 
                                                       blank_scan_path, dark_scan_path,
-                                                      downsample_factor=downsample_factor)
+                                                      downsample_factor=downsample_factor,
+                                                      defective_pixel_path=defective_pixel_path)
+input("Press Ctrl-C to kill program ...")
+
 print("MBIR geometry paramemters:")
 pp.pprint(geo_params)
 print('obj_scan shape = ', obj_scan.shape)
