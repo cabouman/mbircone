@@ -1,4 +1,4 @@
-sphinx<=6.2.1
+sphinx>=2.2
 sphinxcontrib-bibtex==1.0
 ipython>=6.3.1
 matplotlib~=3.3.4
