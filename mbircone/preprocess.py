@@ -145,34 +145,6 @@ def _crop_scans(obj_scan, blank_scan, dark_scan,
     return obj_scan, blank_scan, dark_scan, defective_pixel_list
 
 
-def _compute_sino_and_weight_mask_from_scans(obj_scan, blank_scan, dark_scan):
-    """Computes sinogram data and weights mask base on given object scan, blank scan, and dark scan. The weights mask is used to filter out negative values in the corrected object scan and blank scan. For real CT dataset weights mask should be used when calculating sinogram weights.
-    
-    Args:
-        obj_scan (ndarray): A stack of sinograms. 3D numpy array, (num_views, num_det_rows, num_det_channels).
-        blank_scan (ndarray) : A blank scan. 3D numpy array, (num_obj_scans, num_det_rows, num_det_channels).
-        dark_scan (ndarray):  A dark scan. 3D numpy array, (num_obj_scans, num_det_rows, num_det_channels).
-    Returns:
-        A tuple (sino, weight_mask) containing:
-        - **sino** (*ndarray*): Preprocessed sinogram with shape (num_views, num_det_rows, num_det_channels).
-        - **weight_mask** (*ndarray*): A binary mask for sinogram weights. 
-
-    """
-    # take average of multiple blank/dark scans, and expand the dimension to be the same as obj_scan.
-    blank_scan_mean = 0 * obj_scan + np.mean(blank_scan, axis=0, keepdims=True)
-    dark_scan_mean = 0 * obj_scan + np.mean(dark_scan, axis=0, keepdims=True)
-
-    obj_scan_corrected = (obj_scan - dark_scan_mean)
-    blank_scan_corrected = (blank_scan_mean - dark_scan_mean)
-    sino = -np.log(obj_scan_corrected / blank_scan_corrected)
-    # weight_mask. 1 corresponds to valid sinogram values, and 0 corresponds to invalid sinogram values.
-    # this will later be used to calculate sinogram weights in function compute_sino_from_scans.
-    weight_mask = (obj_scan_corrected > 0) & (blank_scan_corrected > 0) 
-    print('Set sinogram weight corresponding to nan and inf pixels to 0.')
-    weight_mask[np.isnan(sino)] = False
-    weight_mask[np.isinf(sino)] = False
-    return sino, weight_mask
-
 def _NSI_read_str_from_config(filepath, tags_sections):
     """Returns strings about dataset information read from NSI configuration file.
 
@@ -417,6 +389,7 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
         tag_section_list = [['Defect', 'Defective Pixels']]
         defective_loc = _NSI_read_str_from_config(defective_pixel_path, tag_section_list)
         defective_pixel_list = np.array([defective_pixel_ind.split()[1::-1] for defective_pixel_ind in defective_loc ]).astype(int)
+        defective_pixel_list = list(map(tuple, defective_pixel_list))
     else:
         defective_pixel_list = None
     
@@ -453,24 +426,23 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
             for i in range(len(defective_pixel_list)):
                 (r,c) = defective_pixel_list[i] 
                 defective_pixel_list[i] = (c, blank_scan.shape[2]-r-1)
-     
-    print(f"\n******* Defective pixel info before down-sampling *******\n")
-    for (r,c) in defective_pixel_list:
-        print(f"(r,c) = ({r},{c})")
-        print("neighborhood = ", blank_scan[0,r-2:r+3,c-2:c+3])
-        print("\n\n")
-
+    if defective_pixel_list is not None:
+        print(f"\n******* Defective pixel info before down-sampling *******\n")
+        for (r,c) in defective_pixel_list:
+            print(f"(r,c) = ({r},{c})")
+            print("neighborhood = ", blank_scan[0,r-2:r+3,c-2:c+3])
+            print("\n\n")
     # downsampling in pixels (block-averaging)
     obj_scan, blank_scan, dark_scan, defective_pixel_list = _downsample_scans(obj_scan, blank_scan, dark_scan,
                                                                               defective_pixel_list,
                                                                               downsample_factor=downsample_factor)
-
-    print(f"\n******* Defective pixel info after down-sampling *******\n")
-    for (r,c) in defective_pixel_list:
-        print(f"(r,c) = ({r},{c})")
-        print("neighborhood = ", blank_scan[0,r-2:r+3,c-2:c+3])
-        print("\n\n")
-
+    
+    if defective_pixel_list is not None:
+        print(f"\n******* Defective pixel info after down-sampling *******\n")
+        for (r,c) in defective_pixel_list:
+            print(f"(r,c) = ({r},{c})")
+            print("neighborhood = ", blank_scan[0,r-2:r+3,c-2:c+3])
+            print("\n\n")
     # cropping in pixels
     obj_scan, blank_scan, dark_scan, defective_pixel_list = _crop_scans(obj_scan, blank_scan, dark_scan, 
                                                                         defective_pixel_list,
@@ -485,7 +457,7 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
     else:
         return obj_scan, blank_scan, dark_scan, angles, geo_params, defective_pixel_list
 
-def transmission_CT_compute_sino(obj_scan, blank_scan, dark_scan, defective_pixel_list=None):
+def transmission_CT_compute_sino(obj_scan, blank_scan, dark_scan, defective_pixel_list=[]):
     """Given a set of object scans, blank scan, and dark scan, compute the sinogram data with the steps below:
         
         1. ``sino = -numpy.log((obj_scan-dark_scan) / (blank_scan-dark_scan))``.
@@ -511,25 +483,37 @@ def transmission_CT_compute_sino(obj_scan, blank_scan, dark_scan, defective_pixe
     blank_scan_corrected = (blank_scan_mean - dark_scan_mean)
     sino = -np.log(obj_scan_corrected / blank_scan_corrected)
     # set sino entries corresponding to invalid detector pixels to be 0.0
-    for (r,c) in defective_pixel_list:
-        sino[:,r,c] = 0.0
+    if defective_pixel_list:    # if provided list is not empty
+        for defective_pixel_idx in defective_pixel_list:
+            if len(defective_pixel_idx) == 2:
+                (r,c) = defective_pixel_idx
+                sino[:,r,c] = 0.0
+            elif len(defective_pixel_idx) == 3:
+                (v,r,c) = defective_pixel_idx
+                sino[v,r,c] = 0.0
+            else:
+                raise Exception("transmission_CT_compute_sino: index information in defective_pixel_list cannot be parsed.")
+        print("length of provided defective pixel list = ", len(defective_pixel_list)) 
     
-    nan_pixel_list = list(np.argwhere(np.isnan(sino)))
+    nan_pixel_list = list(map(tuple, np.argwhere(np.isnan(sino)) ))
     for (v,r,c) in nan_pixel_list:
         sino[v,r,c] = 0.0
-
-    inf_pixel_list = list(np.argwhere(np.isinf(sino)))
+    print("number of sino entries with nan = ", len(nan_pixel_list)) 
+    
+    inf_pixel_list = list(map(tuple, np.argwhere(np.isinf(sino)) ))
     for (v,r,c) in inf_pixel_list:
         sino[v,r,c] = 0.0
+    print("number of sino entries with inf = ", len(inf_pixel_list))
 
     defective_pixel_list = list(set().union(defective_pixel_list,nan_pixel_list,inf_pixel_list))
+    print("length of augmented defective pixel list = ", len(defective_pixel_list))
     
     return sino, defective_pixel_list
 
-def calc_background_offset(sino, box_width=0.03, option=0):
-    """ Given the sinogram data, automatically calculate the background offset based on the selected method.
-
-        **Option 0**: Calculate the background offset based on the background region in the corner of the sinogram images:
+def calc_background_offset(sino, option=0, box_width=0.03):
+    """ Given the sinogram data, automatically calculate the background offset based on the selected option. Available options are:
+        
+        **Option 0**: Calculate the background offset based on the background region in the corner of the sinogram images. This is done with the following steps:
             
             1. Calculate the mean sinogram image across all views: ``sino_mean=np.mean(sino, axis=0)``.
             2. Select three background boxes from the top, left, and right corners of the sinogram image. 
@@ -538,12 +522,37 @@ def calc_background_offset(sino, box_width=0.03, option=0):
  
     Args:
         sino (float, ndarray): Sinogram data with 3D shape (num_views, num_det_rows, num_det_channels).
+        option (int, optional): [Default=0] Option of algorithm used to calculate the background offset.
         box_width(float, optional): [Default=0.03] Width of the background boxes w.r.t. the size of the sinogram images. 
     Returns:
         2-element tuple containing:
         - **offset** (*float*): Background offset value. 
         - **(x,y,width,height)** (*tuple, float*): Background box information used to obtain the background offset value. The background box should be one of the top/left/right boxes that yields the minimum background offset. 
     """
+    _, num_det_rows, num_det_channels = sino.shape
+    offset_list = []
+    box_info_list = []
+    # calculate mean sinogram
+    sino_mean=np.mean(sino, axis=0)    
+    # top background box
+    box_width_top = int(box_width*num_det_rows) 
+    offset_list.append(np.median(sino_mean[:box_width_top,:])) 
+    box_info_list.append((0,0,num_det_channels,box_width_top))
+    
+    # left background box
+    box_width_side = int(box_width*num_det_channels)
+    offset_list.append(np.median(sino_mean[:,:box_width_side])) 
+    box_info_list.append((0,0,box_width_side,num_det_rows))
+    
+    # right background box
+    offset_list.append(np.median(sino_mean[:,num_det_channels-box_width_side:])) 
+    box_info_list.append((num_det_channels-box_width_side,0,box_width_side,num_det_rows))
+    
+    offset = np.min(offset_list)
+    box_info = box_info_list[np.argmin(offset_list)]
+    print("box_info_list = ", box_info_list)
+    print("background values = ", offset_list)
+    return offset, box_info
 
 def calc_weights(sino, weight_type, defective_pixel_list):
     """ Compute the weights used in MBIR reconstruction.
@@ -583,7 +592,7 @@ def calc_weights(sino, weight_type, defective_pixel_list):
         if len(defective_pixel_idx) == 2:
             (r,c) = defective_pixel_idx
             weights[:,r,c] = 0.0
-        else len(defective_pixel_idx) == 3:
+        elif len(defective_pixel_idx) == 3:
             (v,r,c) = defective_pixel_idx
             weights[v,r,c] = 0.0
         else:
@@ -592,12 +601,12 @@ def calc_weights(sino, weight_type, defective_pixel_list):
     return weights
 
 def calc_weights_mar(sino, init_recon, 
-                    angles, dist_source_detector, magnification,
-                    metal_threshold, defective_pixel_mask, 
-                    beta=2.0, gamma=4.0,
-                    delta_det_channel=1.0, delta_det_row=1.0, delta_pixel_image=None,
-                    det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0, image_slice_offset=0.0,
-                    num_threads=None, verbose=0, lib_path=__lib_path):
+                     angles, dist_source_detector, magnification,
+                     metal_threshold, defective_pixel_mask, 
+                     beta=2.0, gamma=4.0,
+                     delta_det_channel=1.0, delta_det_row=1.0, delta_pixel_image=None,
+                     det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0, image_slice_offset=0.0,
+                     num_threads=None, verbose=0, lib_path=__lib_path):
     """ Compute the weights used for reducing metal artifacts in MBIR reconstruction. For more information please refer to the `[theory] <theory.html>`_ section in readthedocs.
     
     Required arguments:
