@@ -452,15 +452,11 @@ def transmission_CT_preprocess(obj_scan, blank_scan, dark_scan,
     return sino.astype(np.float32), weights.astype(np.float32)
 
 
-def calc_background_offset(sino, option=0, edge_width=3):
-    """ Given the sinogram data, automatically calculate the background offset based on the selected option. Available options are:
+def calc_background_offset(sino, option=0, edge_width=9):
+    """ Given a sinogram, automatically calculate the background offset based on the selected option. Available options are:
 
-        **Option 0**: Calculate the background offset based on the background region in the corner of the sinogram images. This is done with the following steps:
+        **Option 0**: Calculate the background offset using edge_width pixels along the upper, left, and right edges of an average sinogram view.
 
-            1. Calculate the mean sinogram image across all views: ``sino_mean=np.mean(sino, axis=0)``.
-            2. Select three background regions from the top, left, and right edges of the mean sinogram image.
-            3. For each background region, calculate its background value as: offset = median([median value of each line in the edge region]). 
-            4. The background offset value is selected as the median of the three offset values from different edge regions. 
     Args:
         sino (float, ndarray): Sinogram data with 3D shape (num_views, num_det_rows, num_det_channels).
         option (int, optional): [Default=0] Option of algorithm used to calculate the background offset.
