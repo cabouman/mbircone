@@ -1,0 +1,105 @@
+import os, sys
+import numpy as np
+import math
+import urllib.request
+import tarfile
+import mbircone
+import test_utils
+import pprint
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+
+pp = pprint.PrettyPrinter(indent=4)
+
+"""
+This script tests the background offset calculation functionality with an NSI dataset.
+"""
+
+print("\n\nThis script tests the background offset calculation functionality with an NSI dataset.\n\n")
+# ###########################################################################
+# Set the parameters to get the data and do the recon 
+# ###########################################################################
+
+# ###################### Change the parameters below for your own use case.
+# ##### params for dataset downloading.
+# path to store output recon images
+save_path = './output/test_background_offset/'
+os.makedirs(save_path, exist_ok=True)
+
+# ##### Download and extract NSI dataset 
+# url to NSI dataset.
+dataset_url = 'https://engineering.purdue.edu/~bouman/data_repository/data/demo_data_nsi.tgz'
+# destination path to download and extract the phantom and NN weight files.
+dataset_dir = './demo_data/'   
+# download dataset. The dataset path will be later used to define path to NSI files.
+dataset_path = test_utils.download_and_extract(dataset_url, dataset_dir)
+
+# ##### NSI specific file paths
+# path to NSI config file. Change dataset path params for your own NSI dataset
+nsi_config_file_path = os.path.join(dataset_path, 'demo_data_nsi/JB-033_ArtifactPhantom_Vertical_NoMetal.nsipro')
+# path to directory containing all object scans
+obj_scan_path = os.path.join(dataset_path, 'demo_data_nsi/Radiographs-JB-033_ArtifactPhantom_Vertical_NoMetal')
+# path to blank scan. Usually <dataset_path>/Corrections/gain0.tif
+blank_scan_path = os.path.join(dataset_path, 'demo_data_nsi/Corrections/gain0.tif')
+# path to dark scan. Usually <dataset_path>/Corrections/offset.tif
+dark_scan_path = os.path.join(dataset_path, 'demo_data_nsi/Corrections/offset.tif')
+# downsample factor of scan images along detector rows and detector columns.
+downsample_factor = [4, 4]
+# ######### End of parameters #########
+
+# ###########################################################################
+# NSI preprocess: obtain sinogram, sino weights, angles, and geometry params
+# ###########################################################################
+print("\n*******************************************************",
+      "\n*** Loading scan images, angles, and geometry params **",
+      "\n*******************************************************")
+obj_scan, blank_scan, dark_scan, angles, geo_params = \
+        mbircone.preprocess.NSI_load_scans_and_params(nsi_config_file_path, obj_scan_path, 
+                                                      blank_scan_path, dark_scan_path,
+                                                      downsample_factor=downsample_factor)
+print("MBIR geometry paramemters:")
+pp.pprint(geo_params)
+print('obj_scan shape = ', obj_scan.shape)
+print('blank_scan shape = ', blank_scan.shape)
+print('dark_scan shape = ', dark_scan.shape)
+
+print("\n*******************************************************",
+      "\n** Computing sino and sino weights from scan images ***",
+      "\n*******************************************************")
+sino, weights = mbircone.preprocess.transmission_CT_preprocess(obj_scan, blank_scan, dark_scan)
+_, num_det_rows, num_det_channels = sino.shape
+print('sino shape = ', sino.shape)
+
+# ###########################################################################
+# Background offset calculation
+# ###########################################################################
+print("\n*******************************************************",
+      "\n*********** Calculating background offset *************",
+      "\n*******************************************************")
+edge_width = 9
+background_offset = mbircone.preprocess.calc_background_offset(sino, edge_width=edge_width)
+print("Calculated background offset = ", background_offset)
+
+print("\n*************************************************************",
+      "\n** Plotting sinogram with background information annotated **",
+      "\n*************************************************************")
+# plot sinogram view
+plt.ion()
+fig = plt.figure()
+imgplot = plt.imshow(sino[0], vmin=-0.1, vmax=0.1, interpolation='none')
+plt.title(label="sinogram view with background region information")
+imgplot.set_cmap('gray')
+plt.colorbar()
+# overlay background region on top of the sinogram plot 
+background_info_list = [(0,0,num_det_channels,edge_width), # top edge region: (x,y,width,height)
+                        (0,0,edge_width,num_det_rows),     # left edge region
+                        (num_det_channels-edge_width,0,edge_width,num_det_rows)]     # right edge region
+for background_info in background_info_list:
+    (x,y,width,height) = background_info
+    rect = patches.Rectangle((x, y), width, height, linewidth=1, edgecolor='r', facecolor='none')
+    # Add the patch to the Axes
+    plt.gca().add_patch(rect)
+plt.title(label=f"sinogram view 0. Background offset = {background_offset:.6f}")
+plt.savefig(os.path.join(save_path, "background_region_info.png"))
+
+input("press Enter")
