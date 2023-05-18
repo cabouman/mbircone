@@ -460,7 +460,7 @@ def calc_background_offset(sino, option=0, edge_width=9):
     Args:
         sino (float, ndarray): Sinogram data with 3D shape (num_views, num_det_rows, num_det_channels).
         option (int, optional): [Default=0] Option of algorithm used to calculate the background offset.
-        edge_width(int, optional): [Default=3] Width of the edge regions in pixels. It must be an odd integer >= 3.
+        edge_width(int, optional): [Default=9] Width of the edge regions in pixels. It must be an odd integer >= 3.
     Returns:
         offset (float): Background offset value.
     """
