@@ -33,6 +33,7 @@ sftp-config.json
 
 # Personal files
 test/output/*
+test/demo_data/*
 demo/configs
 demo/demo_data/*
 demo/output/*
