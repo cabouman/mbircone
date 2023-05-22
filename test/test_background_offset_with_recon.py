@@ -34,7 +34,7 @@ print("This script tests the background offset calculation functionality with an
 # ###################### Change the parameters below for your own use case.
 # ##### params for dataset downloading.
 # path to store output recon images
-save_path = './output/test_background_offset/'
+save_path = './output/test_background_offset_with_recon/'
 os.makedirs(save_path, exist_ok=True)
 
 # ##### Download and extract NSI dataset 
@@ -146,4 +146,49 @@ plt.savefig(os.path.join(save_path, 'sino_view_corrected_with_negative_pixels.pn
 num_negative_pixels = np.sum(sino_corrected<0)
 perc_negative_pixels = 100*num_negative_pixels/np.prod(sino_corrected.shape) 
 print(f"total number of negative pixels in corrected sinogram = {num_negative_pixels} ({perc_negative_pixels:.2f}% of total pixels)")
+
+input("Please check the sinogram view plot before and after the correction, and press Enter to proceed to MBIR reconstruction step ...")
+
+print("\n*******************************************************",
+      "\n**** Performing MBIR recon with original sinogram *****",
+      "\n**** This step will take 30-60 minutes to finish ******",
+      "\n*******************************************************")
+# extract mbircone geometry params required for recon
+dist_source_detector = geo_params["dist_source_detector"]
+magnification = geo_params["magnification"]
+delta_det_row = geo_params["delta_det_row"]
+delta_det_channel = geo_params["delta_det_channel"]
+det_channel_offset = geo_params["det_channel_offset"]
+det_row_offset = geo_params["det_row_offset"]
+# MBIR recon
+recon_orig_sino = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification,
+                                        det_channel_offset=det_channel_offset, det_row_offset=det_row_offset,
+                                        delta_det_row=delta_det_row, delta_det_channel=delta_det_channel,
+                                        weights=weights)
+print("MBIR recon with original sinogram finished.")
+np.save(os.path.join(save_path, 'recon_orig_sino.npy'), recon_orig_sino)
+
+print("\n*******************************************************",
+      "\n**** Performing MBIR recon with corrected sinogram ****",
+      "\n**** This step will take 30-60 minutes to finish ******",
+      "\n*******************************************************")
+# MBIR recon
+recon_corrected_sino = mbircone.cone3D.recon(sino_corrected, angles, dist_source_detector, magnification,
+                                             det_channel_offset=det_channel_offset, det_row_offset=det_row_offset,
+                                             delta_det_row=delta_det_row, delta_det_channel=delta_det_channel,
+                                             weights=weights)
+print("MBIR recon with corrected sinogram finished.")
+np.save(os.path.join(save_path, 'recon_corrected_sino.npy'), recon_corrected_sino)
+
+print("\n*************************************************************",
+      "\n*********** Plotting MBIR reconstruction results ************",
+      "\n*************************************************************")
+# recon slices with original sinogram
+test_utils.plot_image(recon_orig_sino[210,:,:], title=f'MBIR recon with original sinogram, axial slice 210',
+                      filename=os.path.join(save_path, 'recon_orig_sino_axial210.png'), vmin=0, vmax=0.055)
+
+# recon slices with corrected sinogram
+test_utils.plot_image(recon_corrected_sino[210,:,:], title=f'MBIR recon with corrected sinogram, axial slice 210',
+                      filename=os.path.join(save_path, 'recon_corrected_sino_axial210.png'), vmin=0, vmax=0.055)
+
 input("press Enter")
