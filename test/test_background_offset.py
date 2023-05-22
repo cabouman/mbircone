@@ -67,7 +67,7 @@ print("\n*******************************************************",
       "\n** Computing sino and sino weights from scan images ***",
       "\n*******************************************************")
 sino, weights = mbircone.preprocess.transmission_CT_preprocess(obj_scan, blank_scan, dark_scan)
-_, num_det_rows, num_det_channels = sino.shape
+num_views, num_det_rows, num_det_channels = sino.shape
 print('sino shape = ', sino.shape)
 
 # ###########################################################################
@@ -80,14 +80,16 @@ edge_width = 9 # same as default value in calc_background_offset()
 background_offset = mbircone.preprocess.calc_background_offset(sino, edge_width=edge_width)
 print("Calculated background offset = ", background_offset)
 
+sino_corrected = sino - background_offset
+
 print("\n*************************************************************",
       "\n** Plotting sinogram with background information annotated **",
       "\n*************************************************************")
-# plot sinogram view
+########## plot sinogram view with bacground information
 plt.ion()
 fig = plt.figure()
 imgplot = plt.imshow(sino[0], vmin=-0.1, vmax=0.1, interpolation='none')
-plt.title(label="sinogram view with background region information")
+plt.title(label="Original sinogram view with background region information")
 imgplot.set_cmap('gray')
 plt.colorbar()
 
@@ -95,7 +97,42 @@ plt.colorbar()
 plt.axhline(y=edge_width, color="r") # top edge region
 plt.axvline(x=edge_width, color="r") # left edge region
 plt.axvline(x=num_det_channels-edge_width, color="r") # right edge region
-plt.title(label=f"sinogram view 0. Background offset = {background_offset:.6f}")
-plt.savefig(os.path.join(save_path, "background_region_info.png"))
+plt.savefig(os.path.join(save_path, "sino_view_original.png"))
 
+########## plot sinogram view after background offset correction
+fig = plt.figure()
+imgplot = plt.imshow(sino_corrected[0], vmin=-0.1, vmax=0.1, interpolation='none')
+imgplot.set_cmap('gray')
+plt.colorbar()
+plt.title(label=f"Corrected sinogram view. Background offset = {background_offset:.6f}")
+plt.savefig(os.path.join(save_path, "sino_view_corrected.png"))
+
+########## Annotate the negative sinogram pixels
+fig = plt.figure()
+imgplot = plt.imshow(sino[0], vmin=-0.1, vmax=0.1, interpolation='none')
+imgplot.set_cmap('gray')
+plt.colorbar()
+x_list, y_list = np.where(sino[0]<0)
+plt.scatter(y_list, x_list, c='red', s=0.5)
+#plt.scatter(0, 100, c='red')
+plt.title(label="Original sinogram view with negative pixels annotated in red")
+plt.savefig(os.path.join(save_path, 'sino_view_original_with_negative_pixels.png'))
+
+num_negative_pixels = np.sum(sino<0)
+perc_negative_pixels = 100*num_negative_pixels/np.prod(sino.shape) 
+print(f"total number of negative pixels in original sinogram = {num_negative_pixels} ({perc_negative_pixels:.2f}% of total pixels)")
+
+########## Annotate the negative sinogram pixels
+fig = plt.figure()
+imgplot = plt.imshow(sino_corrected[0], vmin=-0.1, vmax=0.1, interpolation='none')
+imgplot.set_cmap('gray')
+plt.colorbar()
+x_list, y_list = np.where(sino_corrected[0]<0)
+plt.scatter(y_list, x_list, c='red', s=0.5)
+plt.title(label="Corrected sinogram view with negative pixels annotated in red")
+plt.savefig(os.path.join(save_path, 'sino_view_corrected_with_negative_pixels.png'))
+
+num_negative_pixels = np.sum(sino_corrected<0)
+perc_negative_pixels = 100*num_negative_pixels/np.prod(sino_corrected.shape) 
+print(f"total number of negative pixels in corrected sinogram = {num_negative_pixels} ({perc_negative_pixels:.2f}% of total pixels)")
 input("press Enter")
