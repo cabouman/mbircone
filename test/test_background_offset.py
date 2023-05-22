@@ -76,7 +76,7 @@ print('sino shape = ', sino.shape)
 print("\n*******************************************************",
       "\n*********** Calculating background offset *************",
       "\n*******************************************************")
-edge_width = 9
+edge_width = 9 # same as default value in calc_background_offset()
 background_offset = mbircone.preprocess.calc_background_offset(sino, edge_width=edge_width)
 print("Calculated background offset = ", background_offset)
 
@@ -90,15 +90,11 @@ imgplot = plt.imshow(sino[0], vmin=-0.1, vmax=0.1, interpolation='none')
 plt.title(label="sinogram view with background region information")
 imgplot.set_cmap('gray')
 plt.colorbar()
+
 # overlay background region on top of the sinogram plot 
-background_info_list = [(0,0,num_det_channels,edge_width), # top edge region: (x,y,width,height)
-                        (0,0,edge_width,num_det_rows),     # left edge region
-                        (num_det_channels-edge_width,0,edge_width,num_det_rows)]     # right edge region
-for background_info in background_info_list:
-    (x,y,width,height) = background_info
-    rect = patches.Rectangle((x, y), width, height, linewidth=1, edgecolor='r', facecolor='none')
-    # Add the patch to the Axes
-    plt.gca().add_patch(rect)
+plt.axhline(y=edge_width, color="r") # top edge region
+plt.axvline(x=edge_width, color="r") # left edge region
+plt.axvline(x=num_det_channels-edge_width, color="r") # right edge region
 plt.title(label=f"sinogram view 0. Background offset = {background_offset:.6f}")
 plt.savefig(os.path.join(save_path, "background_region_info.png"))
 
