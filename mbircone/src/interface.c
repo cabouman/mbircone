@@ -109,7 +109,7 @@ void recon(float *x, float *y, float *wght, float *proxmap_input,
     if(proxmap_input == x)
     {
         img.proxMapInput = (float *) mget_spc((size_t)img.params.N_x*img.params.N_y*img.params.N_z,sizeof(float));
-        for(i=0; i<(size_t)img.params.N_x*img.params.N_y*img.params.N_z; i++)
+        for(i=0; i<(int)img.params.N_x*img.params.N_y*img.params.N_z; i++)
             img.proxMapInput[i] = proxmap_input[i];
     }
     else
