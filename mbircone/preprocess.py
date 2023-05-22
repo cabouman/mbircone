@@ -455,7 +455,7 @@ def transmission_CT_preprocess(obj_scan, blank_scan, dark_scan,
 def calc_background_offset(sino, option=0, edge_width=9):
     """ Given a sinogram, automatically calculate the background offset based on the selected option. Available options are:
 
-        **Option 0**: Calculate the background offset using edge_width pixels along the upper, left, and right edges of an average sinogram view.
+        **Option 0**: Calculate the background offset using edge_width pixels along the upper, left, and right edges of a median sinogram view.
 
     Args:
         sino (float, ndarray): Sinogram data with 3D shape (num_views, num_det_rows, num_det_channels).
@@ -478,19 +478,19 @@ def calc_background_offset(sino, option=0, edge_width=9):
     _, _, num_det_channels = sino.shape
 
     # calculate mean sinogram
-    sino_mean=np.mean(sino, axis=0)
+    sino_median=np.median(sino, axis=0)
 
     # offset value of the top edge region.
     # Calculated as median([median value of each horizontal line in top edge region])
-    median_top = np.median(np.median(sino_mean[:edge_width], axis=1))
+    median_top = np.median(np.median(sino_median[:edge_width], axis=1))
 
     # offset value of the left edge region.
     # Calculated as median([median value of each vertical line in left edge region])
-    median_left = np.median(np.median(sino_mean[:, :edge_width], axis=0))
+    median_left = np.median(np.median(sino_median[:, :edge_width], axis=0))
 
     # offset value of the right edge region.
     # Calculated as median([median value of each vertical line in right edge region])
-    median_right = np.median(np.median(sino_mean[:, num_det_channels-edge_width:], axis=0))
+    median_right = np.median(np.median(sino_median[:, num_det_channels-edge_width:], axis=0))
 
     # offset = median of three offset values from top, left, right edge regions.
     offset = np.median([median_top, median_left, median_right])
