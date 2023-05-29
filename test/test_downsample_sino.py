@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import mbircone
-from demo_utils import plot_image, plot_gif
+from test_utils import plot_image, plot_gif
 
 """
 This script is a demonstration of the 3D conebeam reconstruction algorithm with a qGGMRF prior. 

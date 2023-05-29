@@ -4,6 +4,8 @@ __pycache__
 # docs
 docs/build/
 
+*.swp
+
 # compiled files
 mbircone/*.c
 mbircone/*.so
@@ -30,6 +32,8 @@ sftp-config.json
 ~$*.pptx
 
 # Personal files
+test/output/*
+test/demo_data/*
 demo/configs
 demo/demo_data/*
 demo/output/*
