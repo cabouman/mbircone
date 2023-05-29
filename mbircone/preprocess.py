@@ -50,8 +50,8 @@ def _read_scan_dir(scan_dir, view_ids=[]):
 
 
 def _downsample_scans(obj_scan, blank_scan, dark_scan,
-                      defective_pixel_list=None,
-                      downsample_factor=[1, 1]):
+                      downsample_factor,
+                      defective_pixel_list=None):
     """Performs Down-sampling to the scan images in the detector plane.
 
     Args:
@@ -67,34 +67,58 @@ def _downsample_scans(obj_scan, blank_scan, dark_scan,
     """
 
     assert len(downsample_factor) == 2, 'factor({}) needs to be of len 2'.format(downsample_factor)
+    assert (downsample_factor[0]>=1 and downsample_factor[1]>=1), 'factor({}) along each dimension should be greater or equal to 1'.format(downsample_factor)
+    
+    good_pixel_mask = np.ones((blank_scan.shape[1], blank_scan.shape[2]), dtype=int)
+    if defective_pixel_list is not None:
+        for (r,c) in defective_pixel_list:
+            good_pixel_mask[r,c] = 0
 
+    # crop the scan if the size is not divisible by downsample_factor.
     new_size1 = downsample_factor[0] * (obj_scan.shape[1] // downsample_factor[0])
     new_size2 = downsample_factor[1] * (obj_scan.shape[2] // downsample_factor[1])
 
     obj_scan = obj_scan[:, 0:new_size1, 0:new_size2]
     blank_scan = blank_scan[:, 0:new_size1, 0:new_size2]
     dark_scan = dark_scan[:, 0:new_size1, 0:new_size2]
-
-    obj_scan = obj_scan.reshape(obj_scan.shape[0], obj_scan.shape[1] // downsample_factor[0], downsample_factor[0],
-                                obj_scan.shape[2] // downsample_factor[1], downsample_factor[1]).sum((2, 4))
-    blank_scan = blank_scan.reshape(blank_scan.shape[0], blank_scan.shape[1] // downsample_factor[0],
-                                    downsample_factor[0],
-                                    blank_scan.shape[2] // downsample_factor[1], downsample_factor[1]).sum((2, 4))
-    dark_scan = dark_scan.reshape(dark_scan.shape[0], dark_scan.shape[1] // downsample_factor[0], downsample_factor[0],
-                                  dark_scan.shape[2] // downsample_factor[1], downsample_factor[1]).sum((2, 4))
+    good_pixel_mask = good_pixel_mask[0:new_size1, 0:new_size2]
     
-    if defective_pixel_list is not None:
-        # adjust the defective pixel information: any down-sampling block containing a defective pixel is also defective 
-        for i in range(len(defective_pixel_list)):
-            (r,c) = defective_pixel_list[i] 
-            defective_pixel_list[i] = (r//downsample_factor[0], c//downsample_factor[1])
+    ###### Compute block sum of the high res scan images. Defective pixels are excluded.
+    # filter out defective pixels
+    good_pixel_mask = good_pixel_mask.reshape(good_pixel_mask.shape[0] // downsample_factor[0], downsample_factor[0],
+                                              good_pixel_mask.shape[1] // downsample_factor[1], downsample_factor[1])
+    obj_scan = obj_scan.reshape(obj_scan.shape[0], 
+                                obj_scan.shape[1] // downsample_factor[0], downsample_factor[0],
+                                obj_scan.shape[2] // downsample_factor[1], downsample_factor[1]) * good_pixel_mask
+               
+    blank_scan = blank_scan.reshape(blank_scan.shape[0], 
+                                    blank_scan.shape[1] // downsample_factor[0], downsample_factor[0],
+                                    blank_scan.shape[2] // downsample_factor[1], downsample_factor[1]) * good_pixel_mask
+    dark_scan = dark_scan.reshape(dark_scan.shape[0],
+                                  dark_scan.shape[1] // downsample_factor[0], downsample_factor[0],
+                                  dark_scan.shape[2] // downsample_factor[1], downsample_factor[1]) * good_pixel_mask
+    
+    # compute block sum
+    obj_scan = obj_scan.sum((2,4))
+    blank_scan = blank_scan.sum((2, 4)) 
+    dark_scan = dark_scan.sum((2, 4))
+    # number of good pixels in each down-sampling block
+    good_pixel_count = good_pixel_mask.sum((1,3))
 
+    # new defective pixel list = {indices of pixels where the downsampling block contains all bad pixels}
+    defective_pixel_list = np.argwhere(good_pixel_count < 1)
+    
+    # compute block averaging by dividing block sum with number of good pixels in the block
+    obj_scan = obj_scan / good_pixel_count
+    blank_scan = blank_scan / good_pixel_count
+    dark_scan = dark_scan / good_pixel_count
+ 
     return obj_scan, blank_scan, dark_scan, defective_pixel_list
 
 
 def _crop_scans(obj_scan, blank_scan, dark_scan, 
-                defective_pixel_list=None,
-                crop_factor=[(0, 0), (1, 1)]):
+                crop_factor=[(0, 0), (1, 1)],
+                defective_pixel_list=None):
     """Crops given scans with given factor.
 
     Args:
@@ -141,8 +165,8 @@ def _crop_scans(obj_scan, blank_scan, dark_scan,
                 del defective_pixel_list[i]
             else:
                 i+=1
-
     return obj_scan, blank_scan, dark_scan, defective_pixel_list
+
 
 
 def _NSI_read_str_from_config(filepath, tags_sections):
@@ -392,6 +416,7 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
         defective_pixel_list = list(map(tuple, defective_pixel_list))
     else:
         defective_pixel_list = None
+
     
     # flip the scans according to flipH and flipV NSI_params 
     if flipV:
@@ -426,42 +451,31 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
             for i in range(len(defective_pixel_list)):
                 (r,c) = defective_pixel_list[i] 
                 defective_pixel_list[i] = (c, blank_scan.shape[2]-r-1)
-    if defective_pixel_list is not None:
-        print(f"\n******* Defective pixel info before down-sampling *******\n")
-        for (r,c) in defective_pixel_list:
-            print(f"(r,c) = ({r},{c})")
-            print("neighborhood = ", blank_scan[0,r-2:r+3,c-2:c+3])
-            print("\n\n")
-    # downsampling in pixels (block-averaging)
-    obj_scan, blank_scan, dark_scan, defective_pixel_list = _downsample_scans(obj_scan, blank_scan, dark_scan,
-                                                                              defective_pixel_list,
-                                                                              downsample_factor=downsample_factor)
-    
-    if defective_pixel_list is not None:
-        print(f"\n******* Defective pixel info after down-sampling *******\n")
-        for (r,c) in defective_pixel_list:
-            print(f"(r,c) = ({r},{c})")
-            print("neighborhood = ", blank_scan[0,r-2:r+3,c-2:c+3])
-            print("\n\n")
+
     # cropping in pixels
     obj_scan, blank_scan, dark_scan, defective_pixel_list = _crop_scans(obj_scan, blank_scan, dark_scan, 
-                                                                        defective_pixel_list,
-                                                                        crop_factor=crop_factor)
-  
+                                                                        crop_factor=crop_factor,
+                                                                        defective_pixel_list=defective_pixel_list)
+
+    # downsampling in pixels (block-averaging)
+    if downsample_factor[0]*downsample_factor[1] > 1:
+        obj_scan, blank_scan, dark_scan, defective_pixel_list = _downsample_scans(obj_scan, blank_scan, dark_scan,
+                                                                                  downsample_factor=downsample_factor,
+                                                                                  defective_pixel_list=defective_pixel_list)
+         
     # compute projection angles based on angle_step and rotation direction
     view_angle_start_deg = np.rad2deg(view_angle_start)
     angle_step *= subsample_view_factor
     angles = np.deg2rad(np.array([(view_angle_start_deg+n*angle_step) % 360.0 for n in range(len(view_ids))]))
-    if defective_pixel_list is None:
-        return obj_scan, blank_scan, dark_scan, angles, geo_params
-    else:
-        return obj_scan, blank_scan, dark_scan, angles, geo_params, defective_pixel_list
+    
+    return obj_scan, blank_scan, dark_scan, angles, geo_params, defective_pixel_list
 
-def transmission_CT_compute_sino(obj_scan, blank_scan, dark_scan, defective_pixel_list=[]):
+
+def transmission_CT_compute_sino(obj_scan, blank_scan, dark_scan, defective_pixel_list=None):
     """Given a set of object scans, blank scan, and dark scan, compute the sinogram data with the steps below:
         
         1. ``sino = -numpy.log((obj_scan-dark_scan) / (blank_scan-dark_scan))``.
-        2. Set the invalid sinogram entries to 0.0. The invalid sinogram entries are indentified as the union of defective pixel entries (speicified by ``defective_pixel_list``) and sinogram entries with values of inf or Nan.
+        2. Identify the invalid sinogram entries. The invalid sinogram entries are indentified as the union of defective pixel entries (speicified by ``defective_pixel_list``) and sinogram entries with values of inf or Nan.
  
     Args:
         obj_scan (ndarray, float): 3D object scan with shape (num_views, num_det_rows, num_det_channels). 
@@ -471,19 +485,22 @@ def transmission_CT_compute_sino(obj_scan, blank_scan, dark_scan, defective_pixe
             If None, then the defective pixels will be identified as sino entries with inf or Nan values.
     Returns:
         2-element tuple containing:
-        - **sino** (*ndarray, float*): Sinogram data with shape (num_views, num_det_rows, num_det_channels). The invalid sinogram entries is set to 0.0.
+        - **sino** (*ndarray, float*): Sinogram data with shape (num_views, num_det_rows, num_det_channels).
         - **defective_pixel_list** (list(tuple)): A list of tuples containing indices of invalid sinogram pixels, with the format (view_idx, row_idx, channel_idx) or (detector_row_idx, detector_channel_idx).
 
     """
     # take average of multiple blank/dark scans, and expand the dimension to be the same as obj_scan.
-    blank_scan_mean = 0 * obj_scan + np.mean(blank_scan, axis=0, keepdims=True)
-    dark_scan_mean = 0 * obj_scan + np.mean(dark_scan, axis=0, keepdims=True)
+    blank_scan = 0 * obj_scan + np.mean(blank_scan, axis=0, keepdims=True)
+    dark_scan = 0 * obj_scan + np.mean(dark_scan, axis=0, keepdims=True)
 
-    obj_scan_corrected = (obj_scan - dark_scan_mean)
-    blank_scan_corrected = (blank_scan_mean - dark_scan_mean)
-    sino = -np.log(obj_scan_corrected / blank_scan_corrected)
-    # set sino entries corresponding to invalid detector pixels to be 0.0
-    if defective_pixel_list:    # if provided list is not empty
+    obj_scan = obj_scan - dark_scan
+    blank_scan = blank_scan - dark_scan
+    sino = -np.log(obj_scan / blank_scan)
+    
+    # set the sino pixels corresponding to the provided defective list to 0.0
+    if defective_pixel_list is None:
+        defective_pixel_list = []
+    else:    # if provided list is not None
         for defective_pixel_idx in defective_pixel_list:
             if len(defective_pixel_idx) == 2:
                 (r,c) = defective_pixel_idx
@@ -495,66 +512,26 @@ def transmission_CT_compute_sino(obj_scan, blank_scan, dark_scan, defective_pixe
                 raise Exception("transmission_CT_compute_sino: index information in defective_pixel_list cannot be parsed.")
         print("length of provided defective pixel list = ", len(defective_pixel_list)) 
     
+    # set NaN sino pixels to 0.0
     nan_pixel_list = list(map(tuple, np.argwhere(np.isnan(sino)) ))
     for (v,r,c) in nan_pixel_list:
         sino[v,r,c] = 0.0
     print("number of sino entries with nan = ", len(nan_pixel_list)) 
     
+    # set Inf sino pixels to 0.0
     inf_pixel_list = list(map(tuple, np.argwhere(np.isinf(sino)) ))
     for (v,r,c) in inf_pixel_list:
         sino[v,r,c] = 0.0
     print("number of sino entries with inf = ", len(inf_pixel_list))
 
+    # defective_pixel_list = union{input_defective_pixel_list, nan_pixel_list, inf_pixel_list}
     defective_pixel_list = list(set().union(defective_pixel_list,nan_pixel_list,inf_pixel_list))
     print("length of augmented defective pixel list = ", len(defective_pixel_list))
     
     return sino, defective_pixel_list
 
-def calc_background_offset(sino, option=0, box_width=0.03):
-    """ Given the sinogram data, automatically calculate the background offset based on the selected option. Available options are:
-        
-        **Option 0**: Calculate the background offset based on the background region in the corner of the sinogram images. This is done with the following steps:
-            
-            1. Calculate the mean sinogram image across all views: ``sino_mean=np.mean(sino, axis=0)``.
-            2. Select three background boxes from the top, left, and right corners of the sinogram image. 
-            3. Calculate the median value of the mean sinogram image inside each box. 
-            4. The background offset value is selected as the minimum of the three median values inside each background box: ``offset = min(offset_top, offset_left, offset_right)``.
- 
-    Args:
-        sino (float, ndarray): Sinogram data with 3D shape (num_views, num_det_rows, num_det_channels).
-        option (int, optional): [Default=0] Option of algorithm used to calculate the background offset.
-        box_width(float, optional): [Default=0.03] Width of the background boxes w.r.t. the size of the sinogram images. 
-    Returns:
-        2-element tuple containing:
-        - **offset** (*float*): Background offset value. 
-        - **(x,y,width,height)** (*tuple, float*): Background box information used to obtain the background offset value. The background box should be one of the top/left/right boxes that yields the minimum background offset. 
-    """
-    _, num_det_rows, num_det_channels = sino.shape
-    offset_list = []
-    box_info_list = []
-    # calculate mean sinogram
-    sino_mean=np.mean(sino, axis=0)    
-    # top background box
-    box_width_top = int(box_width*num_det_rows) 
-    offset_list.append(np.median(sino_mean[:box_width_top,:])) 
-    box_info_list.append((0,0,num_det_channels,box_width_top))
-    
-    # left background box
-    box_width_side = int(box_width*num_det_channels)
-    offset_list.append(np.median(sino_mean[:,:box_width_side])) 
-    box_info_list.append((0,0,box_width_side,num_det_rows))
-    
-    # right background box
-    offset_list.append(np.median(sino_mean[:,num_det_channels-box_width_side:])) 
-    box_info_list.append((num_det_channels-box_width_side,0,box_width_side,num_det_rows))
-    
-    offset = np.min(offset_list)
-    box_info = box_info_list[np.argmin(offset_list)]
-    print("box_info_list = ", box_info_list)
-    print("background values = ", offset_list)
-    return offset, box_info
 
-def calc_weights(sino, weight_type, defective_pixel_list):
+def calc_weights(sino, weight_type, defective_pixel_list=None):
     """ Compute the weights used in MBIR reconstruction.
 
     Args:
@@ -566,8 +543,8 @@ def calc_weights(sino, weight_type, defective_pixel_list):
                 - weight_type = 'transmission' => return numpy.exp(-sino).
                 - weight_type = 'transmission_root' => return numpy.exp(-sino/2).
                 - weight_type = 'emission' => return 1/(numpy.absolute(sino) + 0.1).
-        defective_pixel_list (list(tuple)): A list of tuples containing indices of invalid sinogram pixels, with the format (view_idx, row_idx, channel_idx).
-            weights=0.0 for invalid sinogram entries.
+        defective_pixel_list (list(tuple)): A list of tuples containing indices of invalid sinogram pixels, with the format (view_idx, row_idx, channel_idx) or (row_dix, channel_idx).
+            The corresponding weights of invalid sinogram entries are set to 0.0.
 
     Returns:
         (float, ndarray): Weights used in mbircone reconstruction, with the same array shape as ``sino``.
@@ -588,69 +565,18 @@ def calc_weights(sino, weight_type, defective_pixel_list):
         raise Exception("calc_weights: undefined weight_type {}".format(weight_type))
     
     # set weights corresponding to invalid sino entries to 0.0 
-    for defective_pixel_idx in defective_pixel_list:
-        if len(defective_pixel_idx) == 2:
-            (r,c) = defective_pixel_idx
-            weights[:,r,c] = 0.0
-        elif len(defective_pixel_idx) == 3:
-            (v,r,c) = defective_pixel_idx
-            weights[v,r,c] = 0.0
-        else:
-            raise Exception("calc_weights: index information in defective_pixel_list cannot be parsed.")
+    if defective_pixel_list is not None:
+        print("calc_weights: Setting sino weights corresponding to defective pixels to 0.0.")
+        for defective_pixel_idx in defective_pixel_list:
+            if len(defective_pixel_idx) == 2:
+                (r,c) = defective_pixel_idx
+                weights[:,r,c] = 0.0
+            elif len(defective_pixel_idx) == 3:
+                (v,r,c) = defective_pixel_idx
+                weights[v,r,c] = 0.0
+            else:
+                raise Exception("calc_weights: index information in defective_pixel_list cannot be parsed.")
 
     return weights
 
-def calc_weights_mar(sino, init_recon, 
-                     angles, dist_source_detector, magnification,
-                     metal_threshold, defective_pixel_mask, 
-                     beta=2.0, gamma=4.0,
-                     delta_det_channel=1.0, delta_det_row=1.0, delta_pixel_image=None,
-                     det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0, image_slice_offset=0.0,
-                     num_threads=None, verbose=0, lib_path=__lib_path):
-    """ Compute the weights used for reducing metal artifacts in MBIR reconstruction. For more information please refer to the `[theory] <theory.html>`_ section in readthedocs.
-    
-    Required arguments:
-        - **sino** (*ndarray*): Sinogram data with 3D shape (num_det_rows, num_det_channels).
-        - **init_recon** (*ndarray*): Initial reconstruction used to identify metal voxels.
-        - **angles** (*ndarray*): 1D array of view angles in radians.
-        - **dist_source_detector** (*float*): Distance between the X-ray source and the detector in units of :math:`ALU`.
-        - **magnification** (*float*): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
-        - **metal_threshold** (*float*): Threshold value in units of :math:`ALU^{-1}` used to identify metal voxels. Any voxels in ``init_recon`` with an attenuation coefficient larger than ``metal_threshold`` will be identified as a metal voxel.
-        - **defective_pixel_list** (optional, list(tuple)): A list of tuples containing indices of invalid sinogram pixels, with the format (view_idx, row_idx, channel_idx).
 
-            weights=0.0 for invalid sinogram entries.
-    
-    Optional arguments specific to MAR data weights: 
-        - **beta** (*float, optional*): [Default=2.0] Scalar value in range :math:`>0`.
-            
-            ``beta`` controls the weight to sinogram entries with low photon counts.
-            A larger ``beta`` value improves image homogeneity, but may result in more severe metal artifacts.
-        
-        - **gamma** (*float, optional*): [Default=4.0] Scalar value in range :math:`>1`.
-            
-            ``gamma`` controls the weight to sinogram entries in which the projection paths contain metal components.
-            A larger ``gamma`` value reduces image artifacts around metal regions, but may result in worse image quality inside metal regions, as well as reduced image homogeneity.
-    
-    Optional arguments inherited from ``cone3D.project``:
-        - **delta_det_channel** (*float, optional*): [Default=1.0] Detector channel spacing in :math:`ALU`.
-        - **delta_det_row** (*float, optional*): [Default=1.0] Detector row spacing in :math:`ALU`.
-        - **delta_pixel_image** (*float, optional*): [Default=None] Image pixel spacing in :math:`ALU`.
-            
-            If None, automatically set to ``delta_pixel_detector/magnification``.
-        - **det_channel_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
-        - **det_row_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
-        - **rotation_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space.
-            
-            This is normally set to zero.
-        
-        - **image_slice_offset** (*float, optional*): [Default=0.0] Vertical offset of the image in units of :math:`ALU`.
-        - **num_threads** (*int, optional*): [Default=None] Number of compute threads requested when executed.
-            
-            If None, ``num_threads`` is set to the number of cores in the system.
-        
-        - **verbose** (*int, optional*): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal reconstruction progress information, and 2 prints the full information.
-        - **lib_path** (*str, optional*): [Default=~/.cache/mbircone] Path to directory containing library of forward projection matrices.
-    
-    Returns:
-        (ndarray): Weights used in mbircone reconstruction, with the same array shape as ``sino``.
-    """
