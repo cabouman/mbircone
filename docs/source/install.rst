@@ -1,8 +1,8 @@
 ============
-Installation 
+Installation
 ============
 
-The ``mbircone`` package currently is only available to download and install from source through GitHub.
+The ``mbircone`` package currently is only available to download and install from source through ` GitHub <https://github.com/cabouman/mbircone>`_.
 
 
 Downloading and installing from source
@@ -117,4 +117,3 @@ You may also need to open the file ``/usr/local/lib/libomp.dylib``.
 This will generate a splash screen that requests permision of OSx to execute the library.
 
 In addition, after OS updates, you may need to reinstall the Xcode toolkit using the command: ``xcode-select --install``
-
