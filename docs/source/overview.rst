@@ -21,7 +21,7 @@ See the diagrams below (**note: currently placeholders, to be corrected**) for t
 
            Cone-Beam geometry
 
-      - .. figure:: figs/geom-cone-beam.png
+      - .. figure:: figs/geom-laminography.png
            :align: center
 
            Parallel-Beam Laminography geometry
