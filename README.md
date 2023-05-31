@@ -1,22 +1,22 @@
 # MBIR Cone
 
-Warnning: Prerelease version - This code is under development
-Python Package for Cone Beam reconstruction.
-Based on the OpenMBIR-ConeBeam c package.
+Python Package for Cone Beam Computed Tomography reconstruction. Full documentation is available at https://mbircone.readthedocs.io
 
-Full documentation is available at: https://mbircone.readthedocs.io
-
+**Warning:** This is a pre-release version of code that is still under development.
 
 
 ## Distribution Statement
 
 Distribution Statement A. Approved for public release: distribution unlimited (88ABW-2020-0895).
+
 If you publish results based on this code, please cite the following paper:
 > Thilo Balke, Soumendu Majee, Gregery T. Buzzard, Scott Poveromo, Patrick Howard, Michael A. Groeber, John McClure, Charles A. Bouman "Separable Models for cone-beam MBIR Reconstruction," proceedings of the IS&T International Symposium on Electronic Imaging, Computational Imaging XVI, pp. 181-1 to 181-7, 2018.
 
 For other OpenMBIR packages see: https://github.com/cabouman/OpenMBIR-Index
 
+
 ## Installation
+
 In order to install the package, clone the repository to your computer, and run the bash script named ``run_clean_install``.
 The script will create and activate a conda envirnoment named ``mbircone``, install the package and all its requirements, and build the documentation.
 
