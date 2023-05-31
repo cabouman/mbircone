@@ -3,8 +3,8 @@ import numpy as np
 def gen_shepp_logan(num_rows,num_cols):
     """
     Generate a Shepp Logan phantom
-    
-    Args: 
+
+    Args:
         num_rows: int, number of rows.
         num_cols: int, number of cols.
 
@@ -100,7 +100,7 @@ def gen_shepp_logan_3d(num_rows, num_cols, num_slices, block_size=(2,2,2), scale
 
     phantom_raw = gen_shepp_logan_3d_raw(num_rows*block_size[1], num_cols*block_size[2], num_slices*block_size[0],
                                          scale=scale, offset_x=offset_x, offset_y=offset_y, offset_z=offset_z)
-    phantom = phantom_raw.reshape(phantom_raw.shape[0]//block_size[0], block_size[0], 
+    phantom = phantom_raw.reshape(phantom_raw.shape[0]//block_size[0], block_size[0],
                                   phantom_raw.shape[1]//block_size[1], block_size[1],
                                   phantom_raw.shape[2]//block_size[2], block_size[2]).sum((1, 3, 5)) / (block_size[0]*block_size[1]*block_size[2])
     return phantom
@@ -109,14 +109,14 @@ def gen_shepp_logan_3d(num_rows, num_cols, num_slices, block_size=(2,2,2), scale
 def gen_shepp_logan_3d_raw(num_rows, num_cols, num_slices, scale=1.0, offset_x=0.0, offset_y=0.0, offset_z=0.0):
     """
     Generate a 3D Shepp Logan phantom based on below reference.
-    
+
     Kak AC, Slaney M. Principles of computerized tomographic imaging. Page.102. IEEE Press, New York, 1988. https://engineering.purdue.edu/~malcolm/pct/CTI_Ch03.pdf
 
     Args:
         num_rows: int, number of rows.
         num_cols: int, number of cols.
         num_slices: int, number of slices.
-        
+
         scale: (scalar, optional), scaling factor of phantom within the image. from 0 to 1
         offset_x: scalar, proportion of x-axis that is added to x-coordinate of phantom within image
         offset_y: scalar, proportion of y-axis that is added to y-coordinate of phantom within image
@@ -331,4 +331,3 @@ def _gen_ellipsoid(x_grid, y_grid, z_grid, x0, y0, z0, a, b, c, gray_level, alph
         np.dot(r[2], cor)) ** 2 / c ** 2 <= 1.0) * gray_level
 
     return image.reshape(x_grid.shape)
-
