@@ -3,10 +3,10 @@ Overview
 ========
 
 
-**mbircone** is a Python implementation of the MBIR cone beam reconstruction (Model Based Iterative Reconstruction) algorithm :cite:`balke2018separable`.
+**mbircone** is a Python/C implementation of the MBIR (Model Based Iterative Reconstruction) cone beam reconstruction algorithm :cite:`balke2018separable`.
 The code performs Bayesian reconstruction of tomographic data, so it is particularly well-suited for sparse view reconstruction from noisy data.
 It also has hooks to support Plug-and-Play prior models that can dramatically improve image quality :cite:`venkatakrishnan2013plug` :cite:`sreehari2016plug`.
-The reconstruction engine for *svmbir* is written and optimized in C. I uses a thin Cython middleware layer between the Python interface and the C computation engine, which allows for efficient memory transfers between Python and C.
+The reconstruction engine for *mbircone* is written and optimized in C. It uses a thin Cython middleware layer between the Python interface and the C computation engine, which allows for efficient memory transfers between Python and C.
 
 
 **Geometry**
