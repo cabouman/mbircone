@@ -21,7 +21,7 @@ See the diagrams below for the different fan specifications.
 
            Cone-Beam geometry
 
-      - .. figure:: figs/geom-cone-beam.png
+      - .. figure:: figs/geom-laminography.png
            :align: center
 
            Parallel-Beam Laminography geometry
