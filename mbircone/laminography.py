@@ -129,8 +129,7 @@ def recon_lamino(sino, angles, theta,
                  sigma_y=None, snr_db=40.0, sigma_x=None, sigma_p=None, p=1.2, q=2.0, T=1.0, num_neighbors=6,
                  sharpness=0.0, positivity=True, max_resolutions=None, stop_threshold=0.02, max_iterations=100,
                  NHICD=False, num_threads=None, verbose=1, lib_path=__lib_path):
-    """ Compute 3D cone beam MBIR reconstruction for the laminography case.
-        Inherits docstrings from cone3D.recon.
+    """Compute MBIR reconstruction for parallel-beam laminography geometry.
 
     Args:
         sino (float, ndarray): 3D laminography sinogram data with shape (num_views, num_det_rows, num_det_channels).
@@ -205,8 +204,7 @@ def project_lamino(image, angles, theta,
                    delta_det_channel=1.0, delta_det_row=1.0, delta_pixel_image=None,
                    det_channel_offset=0.0, image_slice_offset=0.0,
                    num_threads=None, verbose=1, lib_path=__lib_path):
-    """ Compute 3D cone beam forward projection for the laminography case.
-        Inherits docstrings from cone3D.project.
+    """ Compute forward projection for parallel-beam laminography geometry.
 
     Args:
         theta (float): Angle in radians that source-detector line makes with the object vertical axis.

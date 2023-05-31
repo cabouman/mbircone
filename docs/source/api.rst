@@ -1,4 +1,4 @@
-API reference
+API Reference
 =============
 
 * cone3D_ includes functions for 3D conebeam tomographic projection and reconstruction

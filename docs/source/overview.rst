@@ -3,16 +3,16 @@ Overview
 ========
 
 
-**mbircone** is a Python implementation of the MBIR cone beam reconstruction (Model Based Iterative Reconstruction) algorithm :cite:`Balke2018`.
+**mbircone** is a Python/C implementation of the MBIR (Model Based Iterative Reconstruction) cone beam reconstruction algorithm :cite:`balke2018separable`.
 The code performs Bayesian reconstruction of tomographic data, so it is particularly well-suited for sparse view reconstruction from noisy data.
 It also has hooks to support Plug-and-Play prior models that can dramatically improve image quality :cite:`venkatakrishnan2013plug` :cite:`sreehari2016plug`.
-The reconstruction engine for *svmbir* is written and optimized in C, and it uses a thin Cython middleware layer between the Python interface and the C computation engine.
-This allows for efficient memory transfers between Python and C.
+The reconstruction engine for *mbircone* is written and optimized in C. It uses a thin Cython middleware layer between the Python interface and the C computation engine, which allows for efficient memory transfers between Python and C.
+
 
 **Geometry**
 
 **mbircone** supports both *cone-beam* and *paralle-beam laminography* imaging geometries.
-See the diagrams below for the different fan specifications.
+See the diagrams below (**note: currently placeholders, to be corrected**) for the different fan specifications.
 
 .. list-table::
 
@@ -25,6 +25,7 @@ See the diagrams below for the different fan specifications.
            :align: center
 
            Parallel-Beam Laminography geometry
+
 
 **Note on view angle ordering**
 
@@ -52,6 +53,7 @@ Using this convention, the 3D array, ``image``, will be in units of photons/AU. 
 .. math::
 
     \mbox{image in photons/mm} = \frac{ \mbox{image in photons/ALU} }{ 5 \mbox{mm} / \mbox{ALU}}
+
 
 **Matrix caching**
 
