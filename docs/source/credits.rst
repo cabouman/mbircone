@@ -29,8 +29,8 @@ Distribution Statement A. Approved for public release: distribution unlimited (8
 Citation
 --------
 
-This software is based on the research published in the following paper:
-    * Thilo Balke, Soumendu Majee, Gregery T. Buzzard, Scott Poveromo, Patrick Howard, Michael A. Groeber, John McClure, Charles A. Bouman "Separable Models for cone-beam MBIR Reconstruction," Proceedings of the IS&T International Symposium on Electronic Imaging, Computational Imaging XVI, pp. 181-1 to 181-7, 2018.
+This software is based on the research published in the following paper :cite:`Balke2018`:
+    * Thilo Balke, Soumendu Majee, Gregery T. Buzzard, Scott Poveromo, Patrick Howard, Michael A. Groeber, John McClure, Charles A. Bouman "Separable Models for cone-beam MBIR Reconstruction," proceedings of the IS&T International Symposium on Electronic Imaging, Computational Imaging XVI, pp. 181-1 to 181-7, 2018.
 
 
 Please use the following Bibtex citation when referencing this software.
