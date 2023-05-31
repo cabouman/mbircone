@@ -54,6 +54,8 @@ obj_scan_path = os.path.join(dataset_path, 'demo_data_nsi/Radiographs-JB-033_Art
 blank_scan_path = os.path.join(dataset_path, 'demo_data_nsi/Corrections/gain0.tif')
 # path to dark scan. Usually <dataset_path>/Corrections/offset.tif
 dark_scan_path = os.path.join(dataset_path, 'demo_data_nsi/Corrections/offset.tif')
+# path to NSI file containing defective pixel information
+defective_pixel_path = os.path.join(dataset_path, 'demo_data_nsi/Corrections/defective_pixels.defect')
 # downsample factor of scan images along detector rows and detector columns.
 downsample_factor = [4, 4]
 # ######### End of parameters #########
@@ -61,13 +63,13 @@ downsample_factor = [4, 4]
 # ###########################################################################
 # NSI preprocess: obtain sinogram, sino weights, angles, and geometry params
 # ###########################################################################
-print("\n*******************************************************",
-      "\n*** Loading scan images, angles, and geometry params **",
-      "\n*******************************************************")
-obj_scan, blank_scan, dark_scan, angles, geo_params = \
-        mbircone.preprocess.NSI_load_scans_and_params(nsi_config_file_path, obj_scan_path, 
+obj_scan, blank_scan, dark_scan, angles, geo_params, defective_pixel_list = \
+        mbircone.preprocess.NSI_load_scans_and_params(nsi_config_file_path, obj_scan_path,
                                                       blank_scan_path, dark_scan_path,
-                                                      downsample_factor=downsample_factor)
+                                                      downsample_factor=downsample_factor,
+                                                      defective_pixel_path=defective_pixel_path
+                                                     )
+
 print("MBIR geometry paramemters:")
 pp.pprint(geo_params)
 print('obj_scan shape = ', obj_scan.shape)
@@ -75,11 +77,17 @@ print('blank_scan shape = ', blank_scan.shape)
 print('dark_scan shape = ', dark_scan.shape)
 
 print("\n*******************************************************",
-      "\n** Computing sino and sino weights from scan images ***",
+      "\n****** Computing sinogram data from scan images *******",
       "\n*******************************************************")
-sino, weights = mbircone.preprocess.transmission_CT_preprocess(obj_scan, blank_scan, dark_scan)
+sino, defective_pixel_list = \
+        mbircone.preprocess.transmission_CT_compute_sino(obj_scan, blank_scan, dark_scan,
+                                                         defective_pixel_list
+                                                        )
 num_views, num_det_rows, num_det_channels = sino.shape
 print('sino shape = ', sino.shape)
+
+# delete scan images to optimize memory usage
+del obj_scan, blank_scan, dark_scan
 
 # ###########################################################################
 # Background offset calculation
