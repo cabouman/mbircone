@@ -31,7 +31,7 @@ def _sino_indicator(sino):
 
 def _distance_line_to_point(A, B, P):
     """ Compute the distance from point P to the line passing through points A and B. (Deprecated method)
-    
+
     Args:
         A (float, 2-tuple): (x,y) coordinate of point A
         B (float, 2-tuple): (x,y) coordinate of point B
@@ -151,9 +151,9 @@ def auto_sigma_y(sino, magnification, weights, snr_db=40.0, delta_pixel_image=1.
 
 def auto_sigma_w_denoise(img_noisy, gauss_sigma=2.):
     """ Given a noisy image, estimate the standard deviation of its noise.
-        
-        The input image will be smoothed by a Gaussian filter, and the std-dev of the noise is estimated by the std-dev of the residual image between the noisy image and the smoothed image. 
-    
+
+        The input image will be smoothed by a Gaussian filter, and the std-dev of the noise is estimated by the std-dev of the residual image between the noisy image and the smoothed image.
+
     Args:
         img_noisy (float, ndarray): Noisy image with 3D shape (num_slices, num_rows, num_cols)
         gauss_sigma (float, optional): [Default=2.0] std-dev of Gaussian filter used to smooth the input image.
@@ -168,9 +168,9 @@ def auto_sigma_w_denoise(img_noisy, gauss_sigma=2.):
 
 def auto_sigma_x_denoise(img_noisy, sharpness=0.0, gauss_sigma=2.):
     """ Given a noisy image, estimate the standard deviation of its Gaussian prior.
-        
-        The image will be smoothed by a Gaussian filter, and the std-dev of the Gaussian prior is estimated as a fraction of the smoothed image.        
-    
+
+        The image will be smoothed by a Gaussian filter, and the std-dev of the Gaussian prior is estimated as a fraction of the smoothed image.
+
     Args:
         img_noisy (float, ndarray): Noisy image with 3D shape (num_slices, num_rows, num_cols)
         sharpness (float, optional): [Default=0.0] Controls level of sharpness.
@@ -189,7 +189,7 @@ def auto_sigma_x_denoise(img_noisy, sharpness=0.0, gauss_sigma=2.):
 
 def auto_sigma_prior(sino, magnification, delta_pixel_detector=1.0, sharpness=0.0):
     """ Compute the automatic prior model regularization parameter for use in MBIR reconstruction.
-    
+
     Args:
         sino (float, ndarray): Sinogram data with either 3D shape (num_views, num_det_rows, num_det_channels)
             or 4D shape (num_time_points, num_views, num_det_rows, num_det_channels).
@@ -203,7 +203,7 @@ def auto_sigma_prior(sino, magnification, delta_pixel_detector=1.0, sharpness=0.
     Returns:
         (float): Automatic value of prior model regularization parameter.
     """
-    
+
     num_det_channels = sino.shape[-1]
 
     # Compute indicator function for sinogram support
@@ -252,14 +252,14 @@ def auto_sigma_p(sino, magnification, delta_pixel_detector = 1.0, sharpness = 0.
     Returns:
         (float): Automatic value of proximal map prior model regularization parameter.
     """
-    
+
     return 2.0 * auto_sigma_prior(sino, magnification, delta_pixel_detector, sharpness)
 
 
 def auto_image_size(num_det_rows, num_det_channels,
                     delta_det_channel, delta_det_row, delta_pixel_image, magnification):
     """ Compute the automatic image array size for use in MBIR reconstruction.
-    
+
     Args:
         num_det_rows (int): Number of rows in sinogram data.
         num_det_channels (int): Number of channels in sinogram data.
@@ -268,23 +268,23 @@ def auto_image_size(num_det_rows, num_det_channels,
         delta_pixel_image (float): Image pixel spacing in :math:`ALU`.
         magnification (float): Magnification of the cone-beam geometry defined as
             (source to detector distance)/(source to center-of-rotation distance).
-    
+
     Returns:
         (int, 3-tuple): Default values for ``num_image_rows``, ``num_image_cols``, ``num_image_slices`` for the
         inputted image measurements.
-        
+
     """
-    
+
     num_image_rows = int(np.round(num_det_channels*((delta_det_channel/delta_pixel_image)/magnification)))
     num_image_cols = num_image_rows
     num_image_slices = int(np.round(num_det_rows*((delta_det_row/delta_pixel_image)/magnification)))
-    
+
     return (num_image_rows, num_image_cols, num_image_slices)
 
 
 def create_image_params_dict(num_image_rows, num_image_cols, num_image_slices, delta_pixel_image=1.0, image_slice_offset=0.0):
     """ Allocate image parameters as required by ``cone3D.recon`` and ``cone3D.project``.
-    
+
     Args:
         num_image_rows (int): Number of rows in image region.
         num_image_cols (int): Number of columns in image region.
@@ -292,7 +292,7 @@ def create_image_params_dict(num_image_rows, num_image_cols, num_image_slices, d
 
         delta_pixel_image (float, optional): [Default=1.0] Image pixel spacing in :math:`ALU`.
         image_slice_offset (float, optional): [Default=0.0] Vertical offset of the image in units of :math:`ALU`.
-    
+
     Returns:
         (dict): Parameters specifying the location and dimensions of a 3D density image.
 
@@ -309,9 +309,9 @@ def create_image_params_dict(num_image_rows, num_image_cols, num_image_slices, d
     imgparams['x_0'] = -imgparams['N_x']*imgparams['Delta_xy']/2.0
     imgparams['y_0'] = -imgparams['N_y']*imgparams['Delta_xy']/2.0
     imgparams['z_0'] = -imgparams['N_z']*imgparams['Delta_z']/2.0 - image_slice_offset
-        
+
     # Deprecated parameters
-        
+
     imgparams['j_xstart_roi'] = -1
     imgparams['j_ystart_roi'] = -1
 
@@ -333,12 +333,12 @@ def create_sino_params_dict(dist_source_detector, magnification,
                         det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0,
                         delta_det_channel=1.0, delta_det_row=1.0):
     """ Allocate sinogram parameters as required by ``cone3D.recon`` and ``cone3D.project``.
-    
+
     Args:
         dist_source_detector (float): Distance between the X-ray source and the detector in units of :math:`ALU`.
         magnification (float): Magnification of the cone-beam geometry defined as
             (source to detector distance)/(source to center-of-rotation distance).
-        
+
         num_views (int): Number of views in sinogram data
         num_det_rows (int): Number of rows in sinogram data
         num_det_channels (int): Number of channels in sinogram data
@@ -352,7 +352,7 @@ def create_sino_params_dict(dist_source_detector, magnification,
             This is normally set to zero.
         delta_det_channel (float, optional): [Default=1.0] Detector channel spacing in :math:`ALU`.
         delta_det_row (float, optional): [Default=1.0] Detector row spacing in :math:`ALU`.
-    
+
     Returns:
         (dict): Parameters specifying the location and dimensions of the X-ray source and detector.
     """
@@ -391,7 +391,7 @@ def denoise(img_noisy,
             positivity=True, stop_threshold=0.02, max_iterations=100,
             verbose=1):
     """ Perform denoising using a proximal map with a qGGMRF objective function. This denoiser internally uses ICD to approximate the solution to the proximal map.
-    
+
     Args:
         img_noisy (float, ndarray, optional): [Default=0.0] Initial value of reconstruction image, specified by a 3D numpy array with shape (num_img_slices, num_img_rows, num_img_cols).
         sharpness (float, optional): [Default=0.0] Sharpness of the denoised image.
@@ -419,7 +419,7 @@ def denoise(img_noisy,
     """
 
     # Internally set
-    # NHICD_ThresholdAllVoxels_ErrorPercent=80, NHICD_percentage=15, NHICD_random=20, 
+    # NHICD_ThresholdAllVoxels_ErrorPercent=80, NHICD_percentage=15, NHICD_random=20,
     # zipLineMode=2, N_G=2, numVoxelsPerZiplineMax=200
     if sigma_x is None:
         sigma_x = auto_sigma_x_denoise(img_noisy, sharpness=sharpness)
@@ -428,11 +428,11 @@ def denoise(img_noisy,
         sigma_w = auto_sigma_w_denoise(img_noisy)
         print("Estimated sigma_w = ", sigma_w)
     if init_image is None:
-        init_image = img_noisy  
-    num_image_slices, num_image_rows, num_image_cols = img_noisy.shape 
+        init_image = img_noisy
+    num_image_slices, num_image_rows, num_image_cols = img_noisy.shape
     imgparams = create_image_params_dict(num_image_rows, num_image_cols, num_image_slices,
                                          delta_pixel_image=1.0, image_slice_offset=0.0)
-    
+
     reconparams = dict()
     reconparams['is_positivity_constraint'] = bool(positivity)
     reconparams['q'] = q
@@ -477,14 +477,14 @@ def denoise(img_noisy,
     reconparams['relativeChangeMode'] = 'meanImage'
     reconparams['relativeChangeScaler'] = 0.1
     reconparams['relativeChangePercentile'] = 99.9
-    
-    # dummy variables. Not used in denoise mode.    
+
+    # dummy variables. Not used in denoise mode.
     reconparams['zipLineMode'] = 0
     reconparams['N_G'] = -1
     reconparams['numVoxelsPerZiplineMax'] = -1
     reconparams['numVoxelsPerZipline'] = -1
     reconparams['numZiplines'] = -1
-    
+
     # dummy variables for NHICD. Not used in denoise mode.
     reconparams['NHICD_Mode'] = 'off'
     reconparams['NHICD_ThresholdAllVoxels_ErrorPercent'] = -1
@@ -510,14 +510,14 @@ def recon(sino, angles, dist_source_detector, magnification,
           sharpness=0.0, positivity=True, max_resolutions=None, stop_threshold=0.02, max_iterations=100,
           NHICD=False, num_threads=None, verbose=1, lib_path=__lib_path):
     """ Compute 3D cone beam MBIR reconstruction
-    
+
     Args:
         sino (float, ndarray): 3D sinogram data with shape (num_views, num_det_rows, num_det_channels).
         angles (float, ndarray): 1D array of view angles in radians.
         dist_source_detector (float): Distance between the X-ray source and the detector in units of :math:`ALU`.
         magnification (float): Magnification of the cone-beam geometry defined as
             (source to detector distance)/(source to center-of-rotation distance).
-        
+
         weights (float, ndarray, optional): [Default=None] 3D weights array with same shape as ``sino``.
             If ``weights`` is not supplied, then ``cone3D.calc_weights`` is used to set weights using ``weight_type``.
         weight_type (string, optional): [Default='unweighted'] Type of noise model used for data.
@@ -530,7 +530,7 @@ def recon(sino, angles, dist_source_detector, magnification,
             a scalar value or a 3D numpy array with shape (num_img_slices, num_img_rows, num_img_cols).
         prox_image (float, ndarray, optional): [Default=None] 3D proximal map input image with shape
             (num_img_slices, num_img_rows, num_img_cols).
-        
+
         num_image_rows (int, optional): [Default=None] Number of rows in reconstructed image.
             If None, automatically set by ``cone3D.auto_image_size``.
         num_image_cols (int, optional): [Default=None] Number of columns in reconstructed image.
@@ -542,7 +542,7 @@ def recon(sino, angles, dist_source_detector, magnification,
         delta_det_row (float, optional): [Default=1.0] Detector row spacing in :math:`ALU`.
         delta_pixel_image (float, optional): [Default=None] Image pixel spacing in :math:`ALU`.
             If None, automatically set to ``delta_pixel_detector/magnification``.
-        
+
         det_channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector
             to the source-detector line along a row.
         det_row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector
@@ -551,7 +551,7 @@ def recon(sino, angles, dist_source_detector, magnification,
             to axis of rotation in the object space.
             This is normally set to zero.
         image_slice_offset (float, optional): [Default=0.0] Vertical offset of the image in units of :math:`ALU`.
-        
+
         sigma_y (float, optional): [Default=None] Forward model regularization parameter.
             If None, automatically set with ``cone3D.auto_sigma_y``.
         snr_db (float, optional): [Default=40.0] Assumed signal-to-noise ratio of the data in :math:`dB`.
@@ -568,7 +568,7 @@ def recon(sino, angles, dist_source_detector, magnification,
         num_neighbors (int, optional): [Default=6] Possible values are :math:`{26,18,6}`.
             Number of neighbors in the qGGMRF neighborhood. More neighbors results in a better
             regularization but a slower reconstruction.
-        
+
         sharpness (float, optional): [Default=0.0] Sharpness of reconstruction.
             ``sharpness=0.0`` is neutral; ``sharpness>0`` increases sharpness; ``sharpness<0`` reduces sharpness.
             Used to calculate ``sigma_x`` and ``sigma_p``.
@@ -596,7 +596,7 @@ def recon(sino, angles, dist_source_detector, magnification,
     """
 
     # Internally set
-    # NHICD_ThresholdAllVoxels_ErrorPercent=80, NHICD_percentage=15, NHICD_random=20, 
+    # NHICD_ThresholdAllVoxels_ErrorPercent=80, NHICD_percentage=15, NHICD_random=20,
     # zipLineMode=2, N_G=2, numVoxelsPerZiplineMax=200
 
     if num_threads is None:
@@ -604,7 +604,7 @@ def recon(sino, angles, dist_source_detector, magnification,
 
     os.environ['OMP_NUM_THREADS'] = str(num_threads)
     os.environ['OMP_DYNAMIC'] = 'true'
-    
+
     # Set automatic value of max_resolutions
     if max_resolutions is None :
         max_resolutions = auto_max_resolutions(init_image)
@@ -623,16 +623,16 @@ def recon(sino, angles, dist_source_detector, magnification,
     if num_image_slices is None:
         _, _, num_image_slices = auto_image_size(num_det_rows, num_det_channels, delta_det_channel, delta_det_row,
                                                delta_pixel_image, magnification)
-    
+
     sinoparams = create_sino_params_dict(dist_source_detector, magnification,
                                      num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
                                      det_channel_offset=det_channel_offset, det_row_offset=det_row_offset,
                                      rotation_offset=rotation_offset,
                                      delta_det_channel=delta_det_channel, delta_det_row=delta_det_row)
-    
+
     imgparams = create_image_params_dict(num_image_rows, num_image_cols, num_image_slices,
                                          delta_pixel_image=delta_pixel_image, image_slice_offset=image_slice_offset)
-    
+
     # Make sure that weights do not contain negative entries
     # If weights is provided, and negative entry exists, then do not use the provided weights
     if not ((weights is None) or (np.amin(weights) >= 0.0)):
@@ -644,7 +644,7 @@ def recon(sino, angles, dist_source_detector, magnification,
 
     # Set automatic value of sigma_y
     if sigma_y is None:
-        sigma_y = auto_sigma_y(sino, magnification, weights, snr_db, 
+        sigma_y = auto_sigma_y(sino, magnification, weights, snr_db,
                                delta_pixel_image=delta_pixel_image,
                                delta_pixel_detector=delta_det_channel)
 
@@ -713,7 +713,7 @@ def recon(sino, angles, dist_source_detector, magnification,
         reconparams['NHICD_Mode'] = 'percentile+random'
     else:
         reconparams['NHICD_Mode'] = 'off'
-    
+
     if prox_image is None:
         reconparams['prox_mode'] = False
         reconparams['sigma_lambda'] = 1
@@ -736,7 +736,7 @@ def project(image, angles,
             det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0, image_slice_offset=0.0,
             num_threads=None, verbose=1, lib_path=__lib_path):
     """ Compute 3D cone beam forward projection.
-    
+
     Args:
         image (float, ndarray): 3D image to be projected, with shape (num_img_slices, num_img_rows, num_img_cols).
         angles (float, ndarray): 1D array of view angles in radians.
@@ -789,9 +789,9 @@ def project(image, angles,
                                          det_channel_offset=det_channel_offset, det_row_offset=det_row_offset,
                                          rotation_offset=rotation_offset,
                                          delta_det_channel=delta_det_channel, delta_det_row=delta_det_row)
-     
+
     (num_image_slices, num_image_rows, num_image_cols) = image.shape
-    
+
     imgparams = create_image_params_dict(num_image_rows, num_image_cols, num_image_slices,
                                          delta_pixel_image=delta_pixel_image, image_slice_offset=image_slice_offset)
 
