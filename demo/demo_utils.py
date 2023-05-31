@@ -68,7 +68,7 @@ def plot_gif(x, save_dir, name, vmin=None, vmax=None):
         image = image.reshape(fig.canvas.get_width_height()[::-1] + (3,))
         images.append(image)
         plt.close()
-    imageio.mimsave(save_dir + "/%s.gif" % name, images, fps=5)
+    imageio.mimsave(save_dir + "/%s.gif" % name, images, duration=200)
 
 
 def plot_image(img, title=None, filename=None, vmin=None, vmax=None):
