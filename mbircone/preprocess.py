@@ -496,7 +496,7 @@ def transmission_CT_compute_sino(obj_scan, blank_scan, dark_scan, defective_pixe
     obj_scan = obj_scan - dark_scan
     blank_scan = blank_scan - dark_scan
     sino = -np.log(obj_scan / blank_scan)
-    
+     
     # set the sino pixels corresponding to the provided defective list to 0.0
     if defective_pixel_list is None:
         defective_pixel_list = []
@@ -510,23 +510,19 @@ def transmission_CT_compute_sino(obj_scan, blank_scan, dark_scan, defective_pixe
                 sino[v,r,c] = 0.0
             else:
                 raise Exception("transmission_CT_compute_sino: index information in defective_pixel_list cannot be parsed.")
-        print("length of provided defective pixel list = ", len(defective_pixel_list)) 
     
     # set NaN sino pixels to 0.0
     nan_pixel_list = list(map(tuple, np.argwhere(np.isnan(sino)) ))
     for (v,r,c) in nan_pixel_list:
         sino[v,r,c] = 0.0
-    print("number of sino entries with nan = ", len(nan_pixel_list)) 
     
     # set Inf sino pixels to 0.0
     inf_pixel_list = list(map(tuple, np.argwhere(np.isinf(sino)) ))
     for (v,r,c) in inf_pixel_list:
         sino[v,r,c] = 0.0
-    print("number of sino entries with inf = ", len(inf_pixel_list))
 
     # defective_pixel_list = union{input_defective_pixel_list, nan_pixel_list, inf_pixel_list}
     defective_pixel_list = list(set().union(defective_pixel_list,nan_pixel_list,inf_pixel_list))
-    print("length of augmented defective pixel list = ", len(defective_pixel_list))
     
     return sino, defective_pixel_list
 
