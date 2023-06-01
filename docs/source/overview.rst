@@ -12,7 +12,7 @@ The reconstruction engine for *mbircone* is written and optimized in C. It uses 
 **Geometry**
 
 **mbircone** supports both *cone-beam* and *paralle-beam laminography* imaging geometries.
-See the diagrams below (**note: currently placeholders, to be corrected**) for the different fan specifications.
+See the diagrams below that illustrate the two geometries.
 
 .. list-table::
 
@@ -29,7 +29,7 @@ See the diagrams below (**note: currently placeholders, to be corrected**) for t
 
 **Note on view angle ordering**
 
-In certain imaging systems with slow acquisition, it is common practice to collect view data using techniques such as the "golden ratio" method in which the view angles are not collected in monotonically increasing order on the interval :math:`[0,2\pi)`. While ``svmbir`` will produce the correct reconstruction regardless of view ordering, its reconstruction speed will be substantially degraded when the views are not in monotone order. In this case, we highly recommend that users reorder the sinogram views using the provided ``sino_sort`` function. The ``sino_sort``  function first wraps the view angles modulo :math:`2\pi`, and then sorts the views to be in monotonically increasing order by view angle.
+In certain imaging systems with slow acquisition, it is common practice to collect view data using techniques such as the "golden ratio" method in which the view angles are not collected in monotonically increasing order on the interval :math:`[0,2\pi)`. While ``mbircone`` will produce the correct reconstruction regardless of view ordering, its reconstruction speed will be substantially degraded when the views are not in monotone order. In this case, we highly recommend that users reorder the sinogram views using the provided ``sino_sort`` function. The ``sino_sort``  function first wraps the view angles modulo :math:`2\pi`, and then sorts the views to be in monotonically increasing order by view angle.
 
 
 **Conversion from Arbitrary Length Units (ALU)**
