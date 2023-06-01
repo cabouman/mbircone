@@ -11,7 +11,7 @@ The MBIRCONE Development Team is listed below in alphabetical order:
 
 
 MBIRCONE Sponsors
----------------
+-----------------
 
 We would like to thank the following sponsors for their financial support in the development of both this python package and the super-voxel MBIR C-code:
 
