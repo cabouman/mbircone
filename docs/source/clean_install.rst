@@ -29,4 +29,4 @@ In order to destroy and clean everything, and then recreate the conda environmen
 
     $ source clean_install_all.sh
 
-**Be careful with these last two commands** because they will destroy the conda environment named ``svmbir``.
+**Be careful with these last two commands** because they will destroy the conda environment named ``mbircone``.
