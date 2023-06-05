@@ -619,3 +619,61 @@ def calc_background_offset(sino, option=0, edge_width=9):
     # offset = median of three offset values from top, left, right edge regions.
     offset = np.median([median_top, median_left, median_right])
     return offset
+
+def calc_weights_mar(sino, angles, 
+                     dist_source_detector, magnification,
+                     init_recon,
+                     metal_threshold, defective_pixel_mask, 
+                     beta=2.0, gamma=4.0,
+                     delta_det_channel=1.0, delta_det_row=1.0, delta_pixel_image=None,
+                     det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0, image_slice_offset=0.0,
+                     num_threads=None, verbose=0, lib_path=__lib_path):
+    """ Compute the weights used for reducing metal artifacts in MBIR reconstruction. For more information please refer to the `[theory] <theory.html>`_ section in readthedocs.
+    
+    Required arguments:
+        - **sino** (*ndarray*): Sinogram data with 3D shape (num_det_rows, num_det_channels).
+        - **angles** (*ndarray*): 1D array of view angles in radians.
+        - **dist_source_detector** (*float*): Distance between the X-ray source and the detector in units of :math:`ALU`.
+        - **magnification** (*float*): Magnification of the cone-beam geometry defined as (source to detector distance)/(source to center-of-rotation distance).
+        - **init_recon** (*ndarray*): Initial reconstruction used to identify metal voxels.
+        - **metal_threshold** (*float*): Threshold value in units of :math:`ALU^{-1}` used to identify metal voxels. Any voxels in ``init_recon`` with an attenuation coefficient larger than ``metal_threshold`` will be identified as a metal voxel.
+        - **defective_pixel_list** (optional, list(tuple)): A list of tuples containing indices of invalid sinogram pixels, with the format (view_idx, row_idx, channel_idx).
+
+            weights=0.0 for invalid sinogram entries.
+    
+    Optional arguments specific to MAR data weights: 
+        - **beta** (*float, optional*): [Default=2.0] Scalar value in range :math:`>0`.
+            
+            ``beta`` controls the weight to sinogram entries with low photon counts.
+            A larger ``beta`` value improves image homogeneity, but may result in more severe metal artifacts.
+        
+        - **gamma** (*float, optional*): [Default=4.0] Scalar value in range :math:`>1`.
+            
+            ``gamma`` controls the weight to sinogram entries in which the projection paths contain metal components.
+            A larger ``gamma`` value reduces image artifacts around metal regions, but may result in worse image quality inside metal regions, as well as reduced image homogeneity.
+    
+    Optional arguments inherited from ``cone3D.project``:
+        - **delta_det_channel** (*float, optional*): [Default=1.0] Detector channel spacing in :math:`ALU`.
+        - **delta_det_row** (*float, optional*): [Default=1.0] Detector row spacing in :math:`ALU`.
+        - **delta_pixel_image** (*float, optional*): [Default=None] Image pixel spacing in :math:`ALU`.
+            
+            If None, automatically set to ``delta_pixel_detector/magnification``.
+        - **det_channel_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a row.
+        - **det_row_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from center of detector to the source-detector line along a column.
+        - **rotation_offset** (*float, optional*): [Default=0.0] Distance in :math:`ALU` from source-detector line to axis of rotation in the object space.
+            
+            This is normally set to zero.
+        
+        - **image_slice_offset** (*float, optional*): [Default=0.0] Vertical offset of the image in units of :math:`ALU`.
+        - **num_threads** (*int, optional*): [Default=None] Number of compute threads requested when executed.
+            
+            If None, ``num_threads`` is set to the number of cores in the system.
+        
+        - **verbose** (*int, optional*): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal reconstruction progress information, and 2 prints the full information.
+        - **lib_path** (*str, optional*): [Default=~/.cache/mbircone] Path to directory containing library of forward projection matrices.
+    
+    Returns:
+        (ndarray): Weights used in mbircone reconstruction, with the same array shape as ``sino``.
+    """
+
+    
