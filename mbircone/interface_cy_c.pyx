@@ -13,24 +13,24 @@ __namelen_sysmatrix = 20
 
 # Import c data structure
 cdef extern from "./src/MBIRModularUtilities3D.h":
-     
+
     struct SinoParams:
-    
+
         long int N_dv;
-        long int N_dw; 
+        long int N_dw;
         float Delta_dv;
         float Delta_dw;
-       
+
         long int N_beta;
-        
+
         float u_s;
         float u_r;
         float v_r;
         float u_d0;
         float v_d0;
         float w_d0;
-        
-        float weightScaler_value; 
+
+        float weightScaler_value;
 
 
     struct ImageParams:
@@ -45,7 +45,7 @@ cdef extern from "./src/MBIRModularUtilities3D.h":
 
         float Delta_xy;
         float Delta_z;
-        
+
         long int j_xstart_roi;
         long int j_ystart_roi;
         long int j_zstart_roi;
@@ -60,63 +60,63 @@ cdef extern from "./src/MBIRModularUtilities3D.h":
 
 
     struct ReconParams:
-    
-        char prox_mode;                  # Prior mode: (True: proximal map mode, False: QGGMRF recon/denoise mode) 
-        # QGGMRF 
-        float q;                   # q: QGGMRF parameter (q>1, typical choice q=2) 
-        float p;                   # p: QGGMRF parameter (1<=p<q) 
-        float T;                   # T: QGGMRF parameter 
-        float sigmaX;              # sigmaX: QGGMRF parameter 
-        float bFace;               # bFace: relative neighbor weight: cube faces 
-        float bEdge;               # bEdge: relative neighbor weight: cube edges 
-        float bVertex;             # bVertex: relative neighbor weight: cube vertices 
-        # Proximal Mapping 
-        float sigma_lambda;        # sigma_lambda: Proximal mapping scalar 
+
+        char prox_mode;                  # Prior mode: (True: proximal map mode, False: QGGMRF recon/denoise mode)
+        # QGGMRF
+        float q;                   # q: QGGMRF parameter (q>1, typical choice q=2)
+        float p;                   # p: QGGMRF parameter (1<=p<q)
+        float T;                   # T: QGGMRF parameter
+        float sigmaX;              # sigmaX: QGGMRF parameter
+        float bFace;               # bFace: relative neighbor weight: cube faces
+        float bEdge;               # bEdge: relative neighbor weight: cube edges
+        float bVertex;             # bVertex: relative neighbor weight: cube vertices
+        # Proximal Mapping
+        float sigma_lambda;        # sigma_lambda: Proximal mapping scalar
         char is_positivity_constraint;
-        
+
 
          # Stopping Conditions
 
-        float stopThresholdChange_pct;           # stop threshold (%) 
+        float stopThresholdChange_pct;           # stop threshold (%)
         float stopThesholdRWFE_pct;
         float stopThesholdRUFE_pct;
-        int MaxIterations;              # maximum number of iterations 
+        int MaxIterations;              # maximum number of iterations
         char relativeChangeMode[200];
         float relativeChangeScaler;
         float relativeChangePercentile;
-    
-    
+
+
          # Zipline Stuff
 
-        int N_G;                # Number of groups for group ICD 
-        int zipLineMode;                # Zipline mode: (0: off, 1: conventional Zipline, 2: randomized Zipline) 
+        int N_G;                # Number of groups for group ICD
+        int zipLineMode;                # Zipline mode: (0: off, 1: conventional Zipline, 2: randomized Zipline)
         int numVoxelsPerZiplineMax;
         int numVoxelsPerZipline;
         int numZiplines;
-    
+
         # Weight scaler stuff
 
-        char weightScaler_estimateMode[200];     # Estimate weight scaler? 1: Yes. 0: Use user specified value 
-        char weightScaler_domain[200];     
-        float weightScaler_value;            # User specified weight scaler 
-    
-    
-        # NHICD stuff 
+        char weightScaler_estimateMode[200];     # Estimate weight scaler? 1: Yes. 0: Use user specified value
+        char weightScaler_domain[200];
+        float weightScaler_value;            # User specified weight scaler
+
+
+        # NHICD stuff
         char NHICD_Mode[200];
         float NHICD_ThresholdAllVoxels_ErrorPercent;
         float NHICD_percentage;
         float NHICD_random;
-    
-        # Misc 
+
+        # Misc
         int verbosity;
         int isComputeCost;
 
 
 # Import a c function to compute A matrix.
 cdef extern from "./src/interface.h":
-    void AmatrixComputeToFile(float *angles, SinoParams c_sinoparams, ImageParams c_imgparams, 
+    void AmatrixComputeToFile(float *angles, SinoParams c_sinoparams, ImageParams c_imgparams,
         char *Amatrix_fname, char verbose);
-    
+
     void denoise(float *x_noisy, float *x_init,
     ImageParams c_imgparams, ReconParams c_reconparams);
 
@@ -124,18 +124,18 @@ cdef extern from "./src/interface.h":
     SinoParams c_sinoparams, ImageParams c_imgparams, ReconParams c_reconparams,
     char *Amatrix_fname);
 
-    void forwardProject(float *y, float *x, 
-    SinoParams sinoParams, ImageParams imgparams, 
+    void forwardProject(float *y, float *x,
+    SinoParams sinoParams, ImageParams imgparams,
     char *Amatrix_fname)
 
 
 cdef convert_py2c_SinoParams3D(SinoParams* c_sinoparams, sinoparams):
-    
+
     c_sinoparams.N_dv = sinoparams['N_dv']
-    c_sinoparams.N_dw = sinoparams['N_dw'] 
+    c_sinoparams.N_dw = sinoparams['N_dw']
     c_sinoparams.Delta_dv = sinoparams['Delta_dv']
     c_sinoparams.Delta_dw = sinoparams['Delta_dw']
-    c_sinoparams.N_beta = sinoparams['N_beta']   
+    c_sinoparams.N_beta = sinoparams['N_beta']
     c_sinoparams.u_s = sinoparams['u_s']
     c_sinoparams.u_r = sinoparams['u_r']
     c_sinoparams.v_r = sinoparams['v_r']
@@ -173,7 +173,7 @@ cdef map_py2c_reconparams(ReconParams* c_reconparams,
                           const char* cy_weightScaler_domain,
                           const char* cy_NHICD_Mode):
 
-        c_reconparams.prox_mode = reconparams['prox_mode']   # Prior mode: (True: proximal map mode, False: QGGMRF recon/denoise mode) 
+        c_reconparams.prox_mode = reconparams['prox_mode']   # Prior mode: (True: proximal map mode, False: QGGMRF recon/denoise mode)
         # QGGMRF
         c_reconparams.q = reconparams['q']                   # q: QGGMRF parameter (q>1, typical choice q=2)
         c_reconparams.p = reconparams['p']                   # p: QGGMRF parameter (1<=p<q)
@@ -239,13 +239,13 @@ def string_to_char_array(input_str):
         0-terminated array of unsigned byte with ascii representation of input_str
     """
     # Get the input length to prepare output space
-    len_str = len(input_str)  
-    
+    len_str = len(input_str)
+
     # Create output array - note the len_str+1 to give 0-terminated array
-    output_char_array = np.zeros(len_str + 1, dtype=np.ubyte)  
-    
+    output_char_array = np.zeros(len_str + 1, dtype=np.ubyte)
+
     # Fill in the output array with the input string
-    output_char_array[:len_str] = bytearray(input_str.encode('ascii'))  
+    output_char_array[:len_str] = bytearray(input_str.encode('ascii'))
 
     return output_char_array
 
@@ -256,7 +256,7 @@ def AmatrixComputeToFile_cy(angles, sinoparams, imgparams, Amatrix_fname, verbos
     cdef SinoParams c_sinoparams
     cdef ImageParams c_imgparams
 
-    # Get pointer to 1D char array of Amatrix 
+    # Get pointer to 1D char array of Amatrix
     cdef cnp.ndarray[char, ndim=1, mode="c"] c_Amatrix_fname
     # Get pointer to 1D array of angles
     cdef cnp.ndarray[float, ndim=1, mode="c"] c_angles = angles.astype(np.single)
@@ -274,7 +274,7 @@ def denoise_cy(x_noisy, x_init,
     # sino, wght shape : views x slices x channels
     # recon shape: N_x N_y N_z (source-detector-line, channels, slices)
 
-    
+
     # image shape: N_x N_y N_z (source-detector-line, channels, slices)
     x_noisy = np.swapaxes(x_noisy, 0, 2)
     if not x_noisy.flags["C_CONTIGUOUS"]:
@@ -282,7 +282,7 @@ def denoise_cy(x_noisy, x_init,
     else:
         x_noisy = x_noisy.astype(np.single, copy=False)
     cdef cnp.ndarray[float, ndim=3, mode="c"] cy_x_noisy = x_noisy
-    
+
     # image shape: N_x N_y N_z (source-detector-line, channels, slices)
     if np.isscalar(x_init):
         x_init = np.zeros((imgparams['N_x'], imgparams['N_y'], imgparams['N_z'])) + x_init
@@ -322,7 +322,7 @@ def denoise_cy(x_noisy, x_init,
 
 
 def recon_cy(sino, angles, wght, x_init, proxmap_input,
-             sinoparams, imgparams, reconparams, max_resolutions, 
+             sinoparams, imgparams, reconparams, max_resolutions,
              num_threads, lib_path):
     # sino, wght shape : views x slices x channels
     # recon shape: N_x N_y N_z (source-detector-line, channels, slices)
@@ -333,7 +333,7 @@ def recon_cy(sino, angles, wght, x_init, proxmap_input,
     # go to lower resolution if possible
     if go_to_lower_resolution:
         if not is_img_size_even:
-            print(f"Current recon size (slices, rows, cols)=({imgparams['N_z']}, {imgparams['N_x']}, {imgparams['N_y']}).") 
+            print(f"Current recon size (slices, rows, cols)=({imgparams['N_z']}, {imgparams['N_x']}, {imgparams['N_y']}).")
             warnings.warn("\n*** Stopped going to lower resolution space because reconstruction size is not even in all dimensions! ***\n")
         else:
             # go to lower resolution
@@ -341,6 +341,7 @@ def recon_cy(sino, angles, wght, x_init, proxmap_input,
             # make a copy of the image and recon param dictionaries
             imgparams_lr = imgparams.copy()
             reconparams_lr = reconparams.copy()
+
             # Set the pixel pitch, num_rows, and num_cols for the next lower resolution
             imgparams_lr['Delta_xy'] = 2 * imgparams['Delta_xy']
             imgparams_lr['Delta_z'] = 2 * imgparams['Delta_z']
@@ -353,34 +354,38 @@ def recon_cy(sino, angles, wght, x_init, proxmap_input,
             imgparams_lr['j_ystop_roi'] = int(np.ceil(imgparams['j_ystop_roi'] / 2))
             imgparams_lr['j_zstart_roi'] = int(np.floor(imgparams['j_zstart_roi'] / 2))
             imgparams_lr['j_zstop_roi'] = int(np.ceil(imgparams['j_zstop_roi'] / 2))
-            # Rescale sigma_y for lower resolution
-            reconparams_lr['weightScaler_value'] = 2.0 * reconparams['weightScaler_value']
+
+            # Increase sigma_y^2 for lower resolution. Note weightScaler_value=sigma_y^2
+            # Increase by 4x results in data term reduction by 4 to balance for prior term reduction by 8
+            reconparams_lr['weightScaler_value'] = 4.0 * reconparams['weightScaler_value']
+
             # Reduce resolution of initialization image if there is one
             if isinstance(x_init, np.ndarray) and (x_init.ndim == 3):
                 lr_init_image = zoom(x_init, 0.5)
             else:
                 lr_init_image = x_init
+
             # Reduce resolution of proximal image if there is one
             if isinstance(proxmap_input, np.ndarray) and (proxmap_input.ndim == 3):
                 lr_prox_image = zoom(proxmap_input, 0.5)
             else:
                 lr_prox_image = proxmap_input
-            
+
             if reconparams['verbosity'] >= 1:
                 lr_num_slices, lr_num_rows, lr_num_cols = imgparams_lr['N_z'], imgparams_lr['N_x'], imgparams_lr['N_y']
                 print(f'Performing multi-resolution recon for reconstruction size (slices, rows, cols)=({lr_num_slices}, {lr_num_rows},{lr_num_cols}).')
-            
+
             lr_recon = recon_cy(sino, angles, wght, lr_init_image, lr_prox_image,
-                                sinoparams, imgparams_lr, reconparams_lr, new_max_resolutions, 
+                                sinoparams, imgparams_lr, reconparams_lr, new_max_resolutions,
                                 num_threads, lib_path)
-            
+
             # Interpolate resolution of reconstruction
             x_init = zoom(lr_recon, 2.0)
             del lr_recon
             del lr_init_image
             del lr_prox_image
             # END go to lower resolution
-    
+
     hash_val = _utils.hash_params(angles, sinoparams, imgparams)
     py_Amatrix_fname = _utils._gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
 
@@ -401,21 +406,21 @@ def recon_cy(sino, angles, wght, x_init, proxmap_input,
     else:
         x_init = x_init.astype(np.single, copy=False)
     cdef cnp.ndarray[float, ndim=3, mode="c"] cy_x = x_init
-    
+
     cdef cnp.ndarray[float, ndim=3, mode="c"] cy_proxmap_input = np.empty((imgparams['N_x'], imgparams['N_y'], imgparams['N_z']), dtype=ctypes.c_float)
     if proxmap_input is not None:
         proxmap_input = np.swapaxes(proxmap_input, 0, 2)
         proxmap_input = np.ascontiguousarray(proxmap_input, dtype=np.single)
         cy_proxmap_input = proxmap_input
-    
+
     sino = np.swapaxes(sino,1,2)
     sino = np.ascontiguousarray(sino, dtype=np.single)
     cdef cnp.ndarray[float, ndim=3, mode="c"] cy_sino = sino
-   
-    wght = np.swapaxes(wght,1,2) 
+
+    wght = np.swapaxes(wght,1,2)
     wght = np.ascontiguousarray(wght, dtype=np.single)
     cdef cnp.ndarray[float, ndim=3, mode="c"] cy_wght = wght
-    
+
     cdef cnp.ndarray[char, ndim=1, mode="c"] c_Amatrix_fname = string_to_char_array(py_Amatrix_fname)
     cdef cnp.ndarray[char, ndim=1, mode="c"] cy_relativeChangeMode = string_to_char_array(reconparams["relativeChangeMode"])
     cdef cnp.ndarray[char, ndim=1, mode="c"] cy_weightScaler_estimateMode = string_to_char_array(reconparams["weightScaler_estimateMode"])

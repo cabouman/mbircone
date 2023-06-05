@@ -10,5 +10,7 @@ mbircone.preprocess
    .. autosummary::
 
       NSI_load_scans_and_params
-      transmission_CT_preprocess
+      transmission_CT_compute_sino
+      calc_background_offset
+      calc_weights
       calc_weight_mar

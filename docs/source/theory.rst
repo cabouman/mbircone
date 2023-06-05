@@ -2,7 +2,9 @@
 Theory
 ======
 
-Super-Voxel Model-Based Iterative Reconstruction (SVMBIR) is a fast algorithm for computing MBIR reconstructions from tomographic data.
+MBIR (Model-Based Iterative Reconstruction) Cone is a relatively algorithm for computing MBIR reconstructions from cone-beam tomographic data.
+However, it also supports the parallel-beam laminography geometry.
+
 MBIR reconstruction works by solving the following optimization problem
 
 .. math::

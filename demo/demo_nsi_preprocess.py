@@ -50,6 +50,8 @@ obj_scan_path = os.path.join(dataset_path, 'demo_data_nsi/Radiographs-JB-033_Art
 blank_scan_path = os.path.join(dataset_path, 'demo_data_nsi/Corrections/gain0.tif')
 # path to dark scan. Usually <dataset_path>/Corrections/offset.tif
 dark_scan_path = os.path.join(dataset_path, 'demo_data_nsi/Corrections/offset.tif')
+# path to NSI file containing defective pixel information
+defective_pixel_path = os.path.join(dataset_path, 'demo_data_nsi/Corrections/defective_pixels.defect')
 # downsample factor of scan images along detector rows and detector columns.
 downsample_factor = [4, 4]
 # ######### End of parameters #########
@@ -57,13 +59,14 @@ downsample_factor = [4, 4]
 # ###########################################################################
 # NSI preprocess: obtain sinogram, sino weights, angles, and geometry params
 # ###########################################################################
-print("\n*******************************************************",
-      "\n*** Loading scan images, angles, and geometry params **",
-      "\n*******************************************************")
-obj_scan, blank_scan, dark_scan, angles, geo_params = \
+print("\n********************************************************************************",
+      "\n** Load scan images, angles, geometry params, and defective pixel information **",
+      "\n********************************************************************************")
+obj_scan, blank_scan, dark_scan, angles, geo_params, defective_pixel_list = \
         mbircone.preprocess.NSI_load_scans_and_params(nsi_config_file_path, obj_scan_path, 
                                                       blank_scan_path, dark_scan_path,
-                                                      downsample_factor=downsample_factor)
+                                                      downsample_factor=downsample_factor,
+                                                      defective_pixel_path=defective_pixel_path)
 print("MBIR geometry paramemters:")
 pp.pprint(geo_params)
 print('obj_scan shape = ', obj_scan.shape)
@@ -71,16 +74,34 @@ print('blank_scan shape = ', blank_scan.shape)
 print('dark_scan shape = ', dark_scan.shape)
 
 print("\n*******************************************************",
-      "\n** Computing sino and sino weights from scan images ***",
+      "\n********** Compute sinogram from scan images **********",
       "\n*******************************************************")
-sino, weights = mbircone.preprocess.transmission_CT_preprocess(obj_scan, blank_scan, dark_scan)
-print('sino shape = ', sino.shape)
+sino, defective_pixel_list = \
+        mbircone.preprocess.transmission_CT_compute_sino(obj_scan, blank_scan, dark_scan,
+                                                         defective_pixel_list
+                                                        )
+# delete scan images to optimize memory usage
+del obj_scan, blank_scan, dark_scan
+
+print("\n*******************************************************",
+      "\n************** Correct background offset **************",
+      "\n*******************************************************")
+background_offset = mbircone.preprocess.calc_background_offset(sino)
+print("background_offset = ", background_offset)
+sino = sino - background_offset
+
+print("\n*******************************************************",
+      "\n************** Calculate sinogram weight **************",
+      "\n*******************************************************")
+weights = mbircone.preprocess.calc_weights(sino, weight_type="unweighted",
+                                           defective_pixel_list=defective_pixel_list
+                                          )
 
 # ###########################################################################
 # Perform MBIR reconstruction
 # ###########################################################################
 print("\n*******************************************************",
-      "\n*********** Performing MBIR reconstruction ************",
+      "\n************* Perform MBIR reconstruction *************",
       "\n**** This step will take 30-60 minutes to finish ******",
       "\n*******************************************************")
 # extract mbircone geometry params required for recon
@@ -95,10 +116,12 @@ recon_mbir = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnifica
                                    det_channel_offset=det_channel_offset, det_row_offset=det_row_offset,
                                    delta_det_row=delta_det_row, delta_det_channel=delta_det_channel,
                                    weights=weights)
+np.save(os.path.join(save_path, "recon_mbir.npy"), recon_mbir)
+
 print("MBIR recon finished. recon shape = ", np.shape(recon_mbir))
 
 print("\n*******************************************************",
-      "\n******** Plotting sinogram view and recon slices ******",
+      "\n********** Plot sinogram view and recon slices ********",
       "\n*******************************************************")
 view_angle_display = np.rad2deg(angles[0])
 demo_utils.plot_image(sino[0], title=f'Sinogram, view angle {view_angle_display:.1f} deg',
