@@ -137,7 +137,7 @@ recon_trans = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnific
                                     delta_det_row=delta_det_row, delta_det_channel=delta_det_channel,
                                     weights=weights_trans)
 np.save(os.path.join(save_path, "recon_trans.npy"), recon_trans)
-#recon_trans = np.load(os.path.join(save_path, "recon_trans.npy"))
+
 # ###########################################################################
 # Calculate MAR sinogram weight
 # ###########################################################################
@@ -182,18 +182,18 @@ rot_angle = 17.165 # rotate angle in the plane defined by axes [0,2].
 recon_trans_transformed = scipy.ndimage.rotate(recon_trans, rot_angle, [0,2], reshape=False, order=5)
 recon_mar_transformed = scipy.ndimage.rotate(recon_mar, rot_angle, [0,2], reshape=False, order=5)
 # axial slice
-demo_utils.plot_image(recon_trans_transformed[100], title=f'MBIR recon with "transmission" weight type',
-                      filename=os.path.join(save_path, 'recon_trans_axial100.png'), vmin=0, vmax=0.055)
+demo_utils.plot_image(recon_trans_transformed[135], title=f'MBIR recon with "transmission" weight type',
+                      filename=os.path.join(save_path, 'recon_trans_axial135.png'), vmin=0, vmax=0.055)
 
-demo_utils.plot_image(recon_mar_transformed[100], title=f'MBIR recon with "MAR" weight type',
-                      filename=os.path.join(save_path, 'recon_mar_axial100.png'), vmin=0, vmax=0.055)
+demo_utils.plot_image(recon_mar_transformed[135], title=f'MBIR recon with "MAR" weight type',
+                      filename=os.path.join(save_path, 'recon_mar_axial135.png'), vmin=0, vmax=0.055)
 
 # sagittal slice
-demo_utils.plot_image(recon_trans_transformed[:,:,98], title=f'MBIR recon with "transmission" weight type',
-                      filename=os.path.join(save_path, 'recon_trans_sagittal98.png'), vmin=0, vmax=0.055)
+demo_utils.plot_image(recon_trans_transformed[:,:,130], title=f'MBIR recon with "transmission" weight type',
+                      filename=os.path.join(save_path, 'recon_trans_sagittal130.png'), vmin=0, vmax=0.055)
 
-demo_utils.plot_image(recon_mar_transformed[:,:,98], title=f'MBIR recon with "MAR" weight type',
-                      filename=os.path.join(save_path, 'recon_mar_sagittal98.png'), vmin=0, vmax=0.055)
+demo_utils.plot_image(recon_mar_transformed[:,:,130], title=f'MBIR recon with "MAR" weight type',
+                      filename=os.path.join(save_path, 'recon_mar_sagittal130.png'), vmin=0, vmax=0.055)
 
 t_end = time.time()
 t_elapsed = t_end - t_start
