@@ -13,4 +13,4 @@ mbircone.preprocess
       transmission_CT_compute_sino
       calc_background_offset
       calc_weights
-      calc_weight_mar
+      calc_weights_mar
