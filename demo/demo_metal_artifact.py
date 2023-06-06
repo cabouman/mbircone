@@ -45,7 +45,6 @@ dataset_dir = './demo_data/'
 # download dataset. The dataset path will be later used to define path to NSI files.
 dataset_path = demo_utils.download_and_extract(dataset_url, dataset_dir)
 
-t_start = time.time()
 # ##### NSI specific file paths
 # path to NSI config file. Change dataset path params for your own NSI dataset
 nsi_config_file_path = os.path.join(dataset_path, 'mar_demo_data/JB-033_ArtifactPhantom_VerticalMetal.nsipro')
@@ -73,6 +72,7 @@ beta = 1.0
 gamma = 4.0
 # ######### End of parameters #########
 
+t_start = time.time()
 # ###########################################################################
 # NSI preprocess: obtain sinogram, sino weights, angles, and geometry params
 # ###########################################################################
@@ -197,5 +197,5 @@ demo_utils.plot_image(recon_mar_transformed[:,:,98], title=f'MBIR recon with "MA
 
 t_end = time.time()
 t_elapsed = t_end - t_start
-print(f"Recon images saved to {save_path}. Demo takes {t_elapsed:.1f} sec to finish.")
+print(f"Recon images saved to {save_path}. Demo script takes {t_elapsed:.1f} sec to finish.")
 input("press Enter")
