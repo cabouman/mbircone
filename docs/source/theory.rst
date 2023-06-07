@@ -43,6 +43,45 @@ For many new users, it is easier to use one of the automatic weight settings sho
 
 Option "unweighted" provides unweighted reconstruction; Option "transmission" is the correct weighting for transmission CT with constant dosage; Option "transmission_root" is commonly used with transmission CT data to improve image homogeneity; Option "emmission" is appropriate for emission CT data.
 
+
+**Data weight for Metal Artifact Reduction (MAR):**
+For X-ray CT data containing metal components, the ``calc_weight_mar`` function in ``mbircone.preprocess`` module may be used to compute the data weights for reduced metal artifacts in MBIR recon.
+
+For a sinogram entry :math:`y_i`, its MAR weight has the form
+
+.. math::
+    :nowrap:
+
+    \[
+    w_i =
+    \left\{
+    \begin{array}{
+     @{}% no padding
+     l@{\quad}% some padding
+     r@{}% no padding
+     >{{}}r@{}% no padding
+     >{{}}l@{}% no padding
+    }
+     \exp(-\frac{y_i}{\beta}),&  \text{if the projection path does not contain metal components.}\\
+     \exp(-\gamma \frac{y_i}{\beta}),& \text{if the projection path contains metal components.}
+    \end{array}
+    \right.
+    \]
+
+where the metal components are identified from an ``init_recon`` with a ``metal_threshold`` value. Any voxels with an attenuation coefficient larger than ``metal_threshold`` is identified as a metal voxel.
+
+The weights are controlled by parameters :math:`\beta` and :math:`\gamma`. :math:`\beta>0` controls weight to sinogram entries with low photon counts, and :math:`\gamma \geq 1` controls weight to sinogram entries in which the projection paths contain metal components. 
+
+Increasing :math:`\beta` improves image homogeneity, but may result in more severe metal artifacts. Increasing :math:`\gamma` reduces image artifacts around metal regions, but may result in worse image quality inside the metal regions, as well as reduced image homogeneity.
+
+Note that the case :math:`(\beta, \gamma)=(1.0, 1.0)` corresponds to ``weight_type`` = "transmission", and :math:`(\beta, \gamma)=(2.0, 1.0)` corresponds to ``weight_type`` = "transmission_root".
+
+These quantities correspond to the following python variables:
+
+* :math:`y` corresponds to ``sino``
+* :math:`\beta` corresponds to ``beta``
+* :math:`\gamma` corresponds to ``gamma``
+
 **Prior Model:**
 The ``recon`` function allows the prior model to be set either as a qGGMRF or a proximal map prior.
 The qGGRMF prior is the default method recommended for new users.
