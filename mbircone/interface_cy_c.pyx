@@ -6,7 +6,7 @@ cimport cython          # Import cython package
 cimport numpy as cnp    # Import specialized cython support for numpy
 cimport openmp
 from libc.string cimport memset,strcpy
-from scipy.ndimage import zoom
+from skimage.transform import rescale
 import mbircone._utils as _utils
 
 __namelen_sysmatrix = 20
@@ -361,13 +361,13 @@ def recon_cy(sino, angles, wght, x_init, proxmap_input,
 
             # Reduce resolution of initialization image if there is one
             if isinstance(x_init, np.ndarray) and (x_init.ndim == 3):
-                lr_init_image = zoom(x_init, 0.5)
+                lr_init_image = rescale(x_init, scale=0.5, anti_aliasing=True)
             else:
                 lr_init_image = x_init
 
             # Reduce resolution of proximal image if there is one
             if isinstance(proxmap_input, np.ndarray) and (proxmap_input.ndim == 3):
-                lr_prox_image = zoom(proxmap_input, 0.5)
+                lr_prox_image = rescale(proxmap_input, scale=0.5, anti_aliasing=True)
             else:
                 lr_prox_image = proxmap_input
 
@@ -380,7 +380,7 @@ def recon_cy(sino, angles, wght, x_init, proxmap_input,
                                 num_threads, lib_path)
 
             # Interpolate resolution of reconstruction
-            x_init = zoom(lr_recon, 2.0)
+            x_init = rescale(lr_recon, scale=2.0)
             del lr_recon
             del lr_init_image
             del lr_prox_image
