@@ -7,7 +7,6 @@ import os
 import hashlib
 import random
 from PIL import Image
-from scipy.interpolate import RegularGridInterpolator
 
 def hash_params(angles, sinoparams, imgparams):
     hash_input = str(sinoparams) + str(imgparams) + str(np.around(angles, decimals=6))

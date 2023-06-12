@@ -640,13 +640,10 @@ def calc_weights_mar(sino, angles, dist_source_detector, magnification,
     Optional arguments specific to MAR data weights:
         - **beta** (*float, optional*): [Default=2.0] Scalar value in range :math:`>0`.
 
-            ``beta`` controls the weight to sinogram entries with low photon counts.
-            A larger ``beta`` value improves image homogeneity, but may result in more severe metal artifacts.
-
+            A larger ``beta`` improves the noise uniformity, but too large a value may increase the overall noise level.
         - **gamma** (*float, optional*): [Default=4.0] Scalar value in range :math:`>1`.
 
-            ``gamma`` controls the weight to sinogram entries in which the projection paths contain metal components.
-            A larger ``gamma`` value reduces image artifacts around metal regions, but may result in worse image quality inside metal regions, as well as reduced image homogeneity.
+            A larger ``gamma`` reduces the weight of sinogram entries with metal, but too large a value may reduce image quality inside the metal regions.
         - **defective_pixel_list** (optional, list(tuple)): [Default=None] A list of tuples containing indices of invalid sinogram pixels, with the format (view_idx, row_idx, channel_idx).
 
             weights=0.0 for invalid sinogram entries.

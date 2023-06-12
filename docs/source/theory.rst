@@ -72,8 +72,8 @@ where the metal components are identified from an ``init_recon`` with a ``metal_
 
 The weights are controlled by parameters :math:`\beta` and :math:`\gamma`. :math:`\beta>0` controls weight to sinogram entries with low photon counts, and :math:`\gamma \geq 1` controls weight to sinogram entries in which the projection paths contain metal components. 
 
-Increasing :math:`\beta` improves image homogeneity, but may result in more severe metal artifacts. Increasing :math:`\gamma` reduces image artifacts around metal regions, but may result in worse image quality inside the metal regions, as well as reduced image homogeneity.
-
+A larger :math:`\beta` improves the noise uniformity, but too large a value may increase the overall noise level. A larger :math:`\gamma` reduces the weight of sinogram entries with metal, but too large a value may reduce image quality inside the metal regions.
+ 
 Note that the case :math:`(\beta, \gamma)=(1.0, 1.0)` corresponds to ``weight_type`` = "transmission", and :math:`(\beta, \gamma)=(2.0, 1.0)` corresponds to ``weight_type`` = "transmission_root".
 
 These quantities correspond to the following python variables:
