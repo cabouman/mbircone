@@ -36,6 +36,7 @@ num_views = 64                               # Number of projection views
 angles = np.linspace(0, 2 * np.pi, num_views, endpoint=False)
 
 # Set reconstruction parameters
+stop_threshold = 0.05                       # Controls when the recon algorithm stops. stop_threshold = 100* (average value change) / (average voxel value)
 sharpness = 0.0                             # Controls regularization: larger => sharper; smaller => smoother
 T = 0.1                                     # Controls edginess of reconstruction
 
@@ -76,7 +77,7 @@ print('Synthetic sinogram shape: (num_views, num_det_rows, num_det_channels) = '
 # Perform 3D MBIR reconstruction using qGGMRF prior
 ######################################################################################
 print('Performing 3D qGGMRF reconstruction ...\n')
-recon = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification, sharpness=sharpness, T=T)
+recon = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification, sharpness=sharpness, T=T, stop_threshold=stop_threshold)
 (num_image_slices, num_image_rows, num_image_cols) = np.shape(recon)
 print('recon shape = ', np.shape(recon))
 
