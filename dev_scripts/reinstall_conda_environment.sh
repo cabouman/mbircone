@@ -7,7 +7,7 @@ NAME=mbircone
 
 ENV_STRING=$((conda env list) | grep $NAME)
 if [[ $ENV_STRING == *$NAME* ]]; then
-  echo conda deactivate
+    conda deactivate
 fi
 cd ..
 
