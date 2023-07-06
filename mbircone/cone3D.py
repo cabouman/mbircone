@@ -388,7 +388,7 @@ def denoise(img_noisy,
             sharpness=0.0, sigma_x=None, sigma_w=None,
             init_image=None,
             p=1.2, q=2.0, T=1.0, num_neighbors=6,
-            positivity=True, stop_threshold=0.02, max_iterations=100,
+            positivity=True, stop_threshold=0.2, max_iterations=100,
             verbose=1):
     """ Perform denoising using a proximal map with a qGGMRF objective function. This denoiser internally uses ICD to approximate the solution to the proximal map.
 
@@ -410,7 +410,7 @@ def denoise(img_noisy,
             Number of neighbors in the qGGMRF neighborhood. More neighbors results in a better
             regularization but a slower denoising.
         positivity (bool, optional): [Default=True] Determines if positivity constraint will be enforced.
-        stop_threshold (float, optional): [Default=0.02] Relative update stopping threshold, in percent, where relative update is given by (average value change) / (average voxel value).
+        stop_threshold (float, optional): [Default=0.2] Relative update stopping threshold, in percent, where relative update is given by (average value change) / (average voxel value).
         max_iterations (int, optional): [Default=100] Maximum number of iterations before stopping.
         verbose (int, optional): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal denoising progress information, and 2 prints the full information.
     Returns:
@@ -507,7 +507,7 @@ def recon(sino, angles, dist_source_detector, magnification,
           delta_det_channel=1.0, delta_det_row=1.0, delta_pixel_image=None,
           det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0, image_slice_offset=0.0,
           sigma_y=None, snr_db=40.0, sigma_x=None, sigma_p=None, p=1.2, q=2.0, T=1.0, num_neighbors=6,
-          sharpness=0.0, positivity=True, max_resolutions=None, stop_threshold=0.02, max_iterations=100,
+          sharpness=0.0, positivity=True, max_resolutions=None, stop_threshold=0.2, max_iterations=100,
           NHICD=False, num_threads=None, verbose=1, lib_path=__lib_path):
     """ Compute 3D cone beam MBIR reconstruction
 
@@ -578,7 +578,7 @@ def recon(sino, angles, dist_source_detector, magnification,
         max_resolutions (int, optional): [Default=None] Integer :math:`\geq 0` that specifies the maximum number of grid
             resolutions used to solve MBIR reconstruction problem.
             If None, automatically set by ``cone3D.auto_max_resolutions``.
-        stop_threshold (float, optional): [Default=0.02] Relative update stopping threshold, in percent, where relative
+        stop_threshold (float, optional): [Default=0.2] Relative update stopping threshold, in percent, where relative
             update is given by (average value change) / (average voxel value).
         max_iterations (int, optional): [Default=100] Maximum number of iterations before stopping.
 
