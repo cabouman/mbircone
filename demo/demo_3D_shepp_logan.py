@@ -37,6 +37,8 @@ angles = np.linspace(0, 2 * np.pi, num_views, endpoint=False)
 
 # Set reconstruction parameters
 stop_threshold = 0.05                       # Controls when the recon algorithm stops. stop_threshold = 100* (average value change) / (average voxel value)
+                                            # Note that the synthetic SL phantom tends to require a smaller value of stop_threshold
+                                            # However, the default threshold should work fine for most real data cases.
 sharpness = 0.0                             # Controls regularization: larger => sharper; smaller => smoother
 T = 0.1                                     # Controls edginess of reconstruction
 
