@@ -127,7 +127,7 @@ def recon_lamino(sino, angles, theta,
                  delta_det_channel=1.0, delta_det_row=1.0, delta_pixel_image=None,
                  det_channel_offset=0.0, image_slice_offset=0.0,
                  sigma_y=None, snr_db=40.0, sigma_x=None, sigma_p=None, p=1.2, q=2.0, T=1.0, num_neighbors=6,
-                 sharpness=0.0, positivity=True, max_resolutions=None, stop_threshold=0.02, max_iterations=100,
+                 sharpness=0.0, positivity=True, max_resolutions=None, stop_threshold=0.20, max_iterations=100,
                  NHICD=False, num_threads=None, verbose=1, lib_path=__lib_path):
     """Compute MBIR reconstruction for parallel-beam laminography geometry.
 
