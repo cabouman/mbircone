@@ -210,6 +210,7 @@ def _NSI_read_str_from_config(filepath, tags_sections):
 
 def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, dark_scan_path=None,
                               defective_pixel_path=None,
+                              geo_params_only=False,
                               downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
                               view_id_start=0, view_angle_start=0.,
                               view_id_end=None, subsample_view_factor=1):
@@ -229,6 +230,7 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
         - dark_scan_path (string): [Default=None] Path to a dark scan image, e.g. 'dataset_path/Corrections/offset.tif'
         - defective_pixel_path (string): [Default=None] Path to the file containing defective pixel information, e.g. 'dataset_path/Corrections/defective_pixels.defect'
 
+        - geo_params_only (bool): [Default=False] If True, only the geo params dictionary will be returned. 
     **Arguments specific to radiograph downsampling and cropping**:
 
         - downsample_factor ([int, int]): [Default=[1,1]] Down-sample factors along the detector rows and channels respectively. By default no downsampling will be performed.
@@ -395,6 +397,8 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
     dist_dw_to_detector_corner_from_detector_center = - geo_params['num_det_rows'] * geo_params['delta_det_row'] / 2.0
     geo_params["det_channel_offset"] = -(v_d0 - dist_dv_to_detector_corner_from_detector_center)
     geo_params["det_row_offset"] = - (w_d0 - dist_dw_to_detector_corner_from_detector_center)
+    if geo_params_only:
+        return geo_params
 
     ############### read blank scans and dark scans
     blank_scan = np.expand_dims(_read_scan_img(blank_scan_path), axis=0)
