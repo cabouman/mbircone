@@ -383,7 +383,7 @@ void updateIterationStats(struct ReconAux *reconAux, struct ICDInfo3DCone *icdIn
 {
     reconAux->TotalValueChange += fabs(icdInfo->Delta_xj);
     //reconAux->TotalVoxelValue += _MAX_(img->vox[icdInfo->j_x][icdInfo->j_y][icdInfo->j_z], icdInfo->old_xj);
-    reconAux->TotalVoxelValue += _MAX_(img->vox[index_3D(icdInfo->j_x,icdInfo->j_y,icdInfo->j_z,img->params.N_y,img->params.N_z)], icdInfo->old_xj);
+    reconAux->TotalVoxelValue += _MAX_(fabs(img->vox[index_3D(icdInfo->j_x,icdInfo->j_y,icdInfo->j_z,img->params.N_y,img->params.N_z)]), fabs(icdInfo->old_xj));
     reconAux->NumUpdatedVoxels++;
 }
 
@@ -723,7 +723,7 @@ void updateIterationStatsGroup(struct ReconAux *reconAux, struct ICDInfo3DCone *
 
         absDelta = fabs(icdInfo->Delta_xj);
         //totValue = _MAX_(img->vox[j_x][j_y][j_z], icdInfo->old_xj);
-        totValue = _MAX_(img->vox[index_3D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)], icdInfo->old_xj);
+        totValue = _MAX_(fabs(img->vox[index_3D(j_x,j_y,j_z,img->params.N_y,img->params.N_z)]), fabs(icdInfo->old_xj));
 
         reconAux->TotalValueChange     += absDelta;
         reconAux->TotalVoxelValue     += totValue;
