@@ -2,20 +2,20 @@
 Theory
 ======
 
-MBIR (Model-Based Iterative Reconstruction) Cone is a relatively algorithm for computing MBIR reconstructions from cone-beam tomographic data.
-However, it also supports the parallel-beam laminography geometry.
+MBIR (Model-Based Iterative Reconstruction) Cone is a package for computing MBIR reconstructions from cone-beam tomographic data, with support for the parallel-beam laminography geometry.
 
-MBIR reconstruction works by solving the following optimization problem
+MBIR reconstruction works by solving the optimization problem
 
 .. math::
 
     {\hat x} = \arg \min_x \left\{ f(x) + h(x) \right\}
 
-where :math:`f(x)` is the forward model term and :math:`h(x)` is the prior model term.
-The super-voxel algorithm is then used to efficiently perform this optimization.
+where :math:`f(x)` is the forward model term and :math:`h(x)` is the prior model term. This optimization is solved efficiently using the super-voxel algorithm.
 
 
-**Forward Model:**
+Forward Model
+-------------
+
 The forward model term has the form,
 
 .. math::
@@ -27,7 +27,7 @@ where :math:`x` is the unknown image to be reconstructed,
 :math:`A` is the linear projection operator for the specified imaging geometry,
 :math:`\Lambda` is the diagonal matrix of sinogram weights, :math:`\Vert y \Vert_\Lambda^2 = y^T \Lambda y`, and :math:`\sigma_y` is a parameter controling the assumed standard deviation of the measurement noise.
 
-These quantities correspond to the following python variables:
+These quantities correspond to the following Python variables:
 
 * :math:`y` corresponds to ``sino``
 * :math:`\sigma_y` corresponds to ``sigma_y``
@@ -70,19 +70,21 @@ For a sinogram entry :math:`y_i`, its MAR weight has the form
 
 where the metal components are identified from an ``init_recon`` with a ``metal_threshold`` value. Any voxels with an attenuation coefficient larger than ``metal_threshold`` is identified as a metal voxel.
 
-The weights are controlled by parameters :math:`\beta` and :math:`\gamma`. :math:`\beta>0` controls weight to sinogram entries with low photon counts, and :math:`\gamma \geq 1` controls weight to sinogram entries in which the projection paths contain metal components. 
+The weights are controlled by parameters :math:`\beta` and :math:`\gamma`. :math:`\beta>0` controls weight to sinogram entries with low photon counts, and :math:`\gamma \geq 1` controls weight to sinogram entries in which the projection paths contain metal components.
 
 A larger :math:`\beta` improves the noise uniformity, but too large a value may increase the overall noise level. A larger :math:`\gamma` reduces the weight of sinogram entries with metal, but too large a value may reduce image quality inside the metal regions.
- 
+
 Note that the case :math:`(\beta, \gamma)=(1.0, 1.0)` corresponds to ``weight_type`` = "transmission", and :math:`(\beta, \gamma)=(2.0, 1.0)` corresponds to ``weight_type`` = "transmission_root".
 
-These quantities correspond to the following python variables:
+These quantities correspond to the following Python variables:
 
 * :math:`y` corresponds to ``sino``
 * :math:`\beta` corresponds to ``beta``
 * :math:`\gamma` corresponds to ``gamma``
 
-**Prior Model:**
+Prior Model
+-----------
+
 The ``recon`` function allows the prior model to be set either as a qGGMRF or a proximal map prior.
 The qGGRMF prior is the default method recommended for new users.
 Alternatively, the proximal map prior is an advanced feature required for the implementation of the Plug-and-Play algorithm. The Plug-and-Play algorithm allows the modular use of a wide variety of advanced prior models including priors implemented with machine learning methods such as deep neural networks.
@@ -105,7 +107,7 @@ where :math:`{\cal P}` represents a 8-point 2D neighborhood of pixel pairs in th
 :math:`p<q=2.0` are shape parameters;
 and :math:`T` is a threshold parameter.
 
-These quantities correspond to the following python variables:
+These quantities correspond to the following Python variables:
 
 * :math:`\sigma_x` corresponds to ``sigma_x``
 * :math:`p` corresponds to ``p``
@@ -113,7 +115,9 @@ These quantities correspond to the following python variables:
 * :math:`T` corresponds to ``T``
 
 
-**Proximal Map Prior:**
+Proximal Map Prior
+-------------------
+
 The proximal map prior is provided as a option for advanced users would would like to use plug-and-play methods.
 If ``prox_image`` is supplied, then the proximal map prior model is used, and the qGGMRF parameters are ignored.
 In this case, the reconstruction solves the optimization problem:
@@ -122,8 +126,7 @@ In this case, the reconstruction solves the optimization problem:
 
     {\hat x} = \arg \min_x \left\{ f(x) + \frac{1}{2\sigma_p^2} \Vert x -v \Vert^2 \right\}
 
-where the quantities correspond to the following python variables:
+where the quantities correspond to the following Python variables:
 
 * :math:`v` corresponds to ``prox_image``
 * :math:`\sigma_p` corresponds to ``sigma_p``
-
