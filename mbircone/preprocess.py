@@ -208,7 +208,7 @@ def _NSI_read_str_from_config(filepath, tags_sections):
     return NSI_params
 
 
-def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, dark_scan_path=None,
+def NSI_load_scans_and_params(config_file_path, obj_scan_path=None, blank_scan_path=None, dark_scan_path=None,
                               defective_pixel_path=None,
                               geo_params_only=False,
                               downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
