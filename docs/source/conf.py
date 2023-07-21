@@ -21,7 +21,7 @@ if os.environ.get('MBIRCONE_BUILD_DOCS') =='true':
 # -- Project information -----------------------------------------------------
 
 project = 'mbircone'
-copyright = '2021, MBIRCONE Development Team'
+copyright = '2021-2023, MBIRCONE Development Team'
 author = 'MBIRCONE Development Team'
 
 # The full version, including alpha/beta/rc tags
@@ -34,6 +34,7 @@ release = '0.1'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'sphinx_rtd_theme',
     'IPython.sphinxext.ipython_console_highlighting',
     'IPython.sphinxext.ipython_directive',
     'sphinx.ext.autodoc',
@@ -44,6 +45,9 @@ extensions = [
     'sphinxcontrib.bibtex',
     'sphinx.ext.viewcode'
 ]
+
+bibtex_bibfiles = ["bibtex/ref.bib"]
+
 
 # Add any paths that contain templates here, relative to this directory.
 exclude_patterns = ['_build', '**.ipynb_checkpoints']

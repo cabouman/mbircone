@@ -1,10 +1,9 @@
-**mbircone** stands for Model-Based Iterative Reconstruction for cone-beam.
-mbircone is an easy-to-use python package for fast cone-beam reconstruction of tomography data using model-based priors.
+**mbircone** (model-based iterative reconstruction for cone-beam) is an easy-to-use Python package for fast cone-beam reconstruction of tomography data using model-based priors.
 
 
 Features
 --------
-* Easy-to-use python code for fast cone-beam MBIR (Model Based Iterative Reconstruction)
+* Easy-to-use Python code for fast cone-beam MBIR (Model Based Iterative Reconstruction)
 
 * Supports MBIR reconstruction with Bayesian and Plug-and-Play prior models.
 
@@ -23,9 +22,7 @@ Fastest reconstruction can be obtained with,
 * Intel-based CPU(s) supporting AVX2,AVX512
 * Intel ICC compiler (in "Parallel Studio XE", and now free "oneAPI")
 
-We also recommend:
-
-* Installation using conda environment
+Installation using a conda environment is recommended.
 
 License
 -------

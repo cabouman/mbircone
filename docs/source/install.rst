@@ -2,11 +2,11 @@
 Installation
 ============
 
-The ``mbircone`` package currently is only available to download and install from source through ` GitHub <https://github.com/cabouman/mbircone>`_.
+The ``mbircone`` package is currently only available to download and install from source available from `GitHub <https://github.com/cabouman/mbircone>`_.
 
 
 Downloading and installing from source
------------------------------------------
+--------------------------------------
 
 1. Download the source code:
 
@@ -97,20 +97,13 @@ and ``Command Line Tools for Xcode`` available `[here] <https://developer.apple.
 Importantly, the Xcode Developer tools **do not include** the required OpenMP libraries.
 The OMP libraries can be obtained from `[here] <https://mac.r-project.org/openmp/>`__.
 You will need to download a file of the form ``openmp-XXX.tar.gz``.
-The tar file will contain the following files:
+The tar file will contain the following files::
 
-    ```
     /usr/local/lib/libomp.dylib
-    ```
-    ```
     /usr/local/include/ompt.h
-    ```
-    ```
     /usr/local/include/omp.h
-    ```
-    ```
     /usr/local/include/omp-tools.h
-    ```
+
 
 These files should be moved to the specified directories.
 You may also need to open the file ``/usr/local/lib/libomp.dylib``.
