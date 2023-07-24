@@ -471,17 +471,17 @@ long int almostUniformIntegerRV(float mean, int sigma);
 
 
 /**************************************** tic toc ****************************************/
-void tic(float *ticToc);
+void tic(double *ticToc);
 
-void toc(float *ticToc);
+void toc(double *ticToc);
 
-void ticTocDisp(float ticToc, char *ticTocName);
+void ticTocDisp(double ticToc, char *ticTocName);
 
 /**************************************** timer ****************************************/
 
-void timer_reset(float *timer);
+void timer_reset(double *timer);
 
-int timer_hasPassed(float *timer, float time_passed);
+int timer_hasPassed(double *timer, double time_passed);
 
 
 /**************************************** percentile stuff ****************************************/
