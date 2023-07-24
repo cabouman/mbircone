@@ -5,7 +5,7 @@ from setuptools import setup, Extension
 from Cython.Distutils import build_ext
 
 NAME = "mbircone"
-VERSION = "0.100b1"
+VERSION = "0.1b1"
 DESCRIPTION = "Python Package for Cone Beam reconstruction"
 REQUIRES = ['numpy','Cython','psutil','Pillow']  # external package dependencies
 LICENSE = "BSD-3-Clause"
