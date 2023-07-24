@@ -704,30 +704,30 @@ long int almostUniformIntegerRV(float mean, int sigma)
 
 
 /**************************************** tic toc ****************************************/
-void tic(float *ticToc)
+void tic(double *ticToc)
 {
     (*ticToc) = -omp_get_wtime();
 }
 
-void toc(float *ticToc)
+void toc(double *ticToc)
 {
     (*ticToc) += omp_get_wtime();
 }
 
-void ticTocDisp(float ticToc, char *ticTocName)
+void ticTocDisp(double ticToc, char *ticTocName)
 {
     printf("[ticToc] %s = %e s\n", ticTocName, ticToc);
 }
 
 /**************************************** timer ****************************************/
-void timer_reset(float *timer)
+void timer_reset(double *timer)
 {
     (*timer) = -omp_get_wtime();
 }
 
-int timer_hasPassed(float *timer, float time_passed)
+int timer_hasPassed(double *timer, double time_passed)
 {
-    float time_now;
+    double time_now;
     time_now = omp_get_wtime();
     if ((*timer) + time_now > time_passed )
     {

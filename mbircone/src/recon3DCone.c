@@ -20,15 +20,15 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
     float ratioUpdated;
     float relUpdate;
 
-    float timer_icd_loop;
-    float ticToc_icdUpdate;
-    float ticToc_icdUpdate_total;
-    float ticToc_all;
-    float ticToc_randomization;
-    float ticToc_computeCost;
-    float ticToc_computeRelUpdate;
-    float ticToc_iteration;
-    float ticToc_computeLastChangeThreshold;
+    double timer_icd_loop;
+    double ticToc_icdUpdate;
+    double ticToc_icdUpdate_total;
+    double ticToc_all;
+    double ticToc_randomization;
+    double ticToc_computeCost;
+    double ticToc_computeRelUpdate;
+    double ticToc_iteration;
+    double ticToc_computeLastChangeThreshold;
 
     char stopFlag = 0;
     struct ICDInfo3DCone *icdInfoArray;            /* Only used when using zip line option*/
