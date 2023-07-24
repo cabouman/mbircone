@@ -358,9 +358,9 @@ struct ParallelAux
 struct SpeedAuxICD
 {
     long int numberUpdatedVoxels;
-    float tic;
-    float toc;
-    float voxelsPerSecond;    
+    double tic;
+    double toc;
+    double voxelsPerSecond;
 };
 
 struct IterationStatistics

@@ -55,7 +55,7 @@ void computeDeltaXjAndUpdateGroup(struct ICDInfo3DCone *icdInfo, struct RandomZi
 
 void updateIterationStatsGroup(struct ReconAux *reconAux, struct ICDInfo3DCone *icdInfoArray, struct RandomZiplineAux *randomZiplineAux, struct Image *img, struct ReconParams *reconParams);
 
-void disp_iterationInfo(struct ReconAux *reconAux, struct ReconParams *reconParams, int itNumber, int MaxIterations, float cost, float relUpdate, float stopThresholdChange, float weightScaler_value, float voxelsPerSecond, float ticToc_iteration, float weightedNormSquared_e, float ratioUpdated, float totalEquits);
+void disp_iterationInfo(struct ReconAux *reconAux, struct ReconParams *reconParams, int itNumber, int MaxIterations, float cost, float relUpdate, float stopThresholdChange, float weightScaler_value, double voxelsPerSecond, double ticToc_iteration, float weightedNormSquared_e, float ratioUpdated, float totalEquits);
 
 float computeRelUpdate(struct ReconAux *reconAux, struct ReconParams *reconParams, struct Image *img);
 

@@ -12,6 +12,6 @@ float MAPCost3DDenoise(struct Image *image, struct Image *err_image, struct Reco
 
 float MAPCostForwardDenoise(struct Image *err_image, struct ReconParams *reconParams);
 
-void disp_iterationInfo_denoise(int itNumber, int MaxIterations, float cost, float relUpdate, float stopThresholdChange, float weightScaler_value, float ticToc_iteration);
+void disp_iterationInfo_denoise(int itNumber, int MaxIterations, float cost, float relUpdate, float stopThresholdChange, float weightScaler_value, double ticToc_iteration);
 #endif
 
