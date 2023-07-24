@@ -99,7 +99,7 @@ float MAPCostForwardDenoise(struct Image *err_image, struct ReconParams *reconPa
 }
 
 
-void disp_iterationInfo_denoise(int itNumber, int MaxIterations, float cost, float relUpdate, float stopThresholdChange, float weightScaler_value, float ticToc_iteration)
+void disp_iterationInfo_denoise(int itNumber, int MaxIterations, float cost, float relUpdate, float stopThresholdChange, float weightScaler_value, double ticToc_iteration)
 {
     printf("************************** Iteration %-2d (max. %d) **************************\n", itNumber, MaxIterations);
     printf("*  Cost                   = %-10.10e\n", cost);

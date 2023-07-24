@@ -5,7 +5,7 @@
 
 void computeSysMatrix(struct SinoParams *sinoParams, struct ImageParams *imgParams, struct SysMatrix *A, struct ViewAngleList *viewAngleList)
 {
-    float ticToc;
+    double ticToc;
     tic(&ticToc);
     
     // printf("\nInitialize Sinogram Mask ...\n");

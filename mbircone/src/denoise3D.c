@@ -14,11 +14,11 @@ void MBIR3DDenoise(struct Image *img, struct Image *err_img, struct ReconParams 
     long int N_x, N_y, N_z;
     float relUpdate;
 
-    float timer_icd_loop;
-    float ticToc_icdUpdate;
-    float ticToc_icdUpdate_total;
-    float ticToc_all;
-    float ticToc_iteration;
+    double timer_icd_loop;
+    double ticToc_icdUpdate;
+    double ticToc_icdUpdate_total;
+    double ticToc_all;
+    double ticToc_iteration;
 
     char stopFlag = 0;
     struct ICDInfo3DCone icdInfo;                /* Only used when not using zip line option*/

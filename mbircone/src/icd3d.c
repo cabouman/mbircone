@@ -736,7 +736,7 @@ void updateIterationStatsGroup(struct ReconAux *reconAux, struct ICDInfo3DCone *
 }
 
 
-void disp_iterationInfo(struct ReconAux *reconAux, struct ReconParams *reconParams, int itNumber, int MaxIterations, float cost, float relUpdate, float stopThresholdChange, float weightScaler_value, float voxelsPerSecond, float ticToc_iteration, float weightedNormSquared_e, float ratioUpdated, float totalEquits)
+void disp_iterationInfo(struct ReconAux *reconAux, struct ReconParams *reconParams, int itNumber, int MaxIterations, float cost, float relUpdate, float stopThresholdChange, float weightScaler_value, double voxelsPerSecond, double ticToc_iteration, float weightedNormSquared_e, float ratioUpdated, float totalEquits)
 {
     printf("************************** Iteration %-2d (max. %d) **************************\n", itNumber, MaxIterations);
     printf("*  Cost                   = %-10.10e\n", cost);
@@ -1045,7 +1045,7 @@ void speedAuxICD_computeSpeed(struct SpeedAuxICD *speedAuxICD)
     if (speedAuxICD->numberUpdatedVoxels > 0)
     {
         speedAuxICD->toc = omp_get_wtime();
-        speedAuxICD->voxelsPerSecond = ((float)speedAuxICD->numberUpdatedVoxels) / (speedAuxICD->toc - speedAuxICD->tic);
+        speedAuxICD->voxelsPerSecond = ((double)speedAuxICD->numberUpdatedVoxels) / (speedAuxICD->toc - speedAuxICD->tic);
     }
     else
     {
