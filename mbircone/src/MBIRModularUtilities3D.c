@@ -39,7 +39,7 @@ void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageParams *i
 
     long int j_u, j_x, j_y, i_beta, i_v, j_z, i_w;
     float B_ij, A_ij;
-    float ticToc;
+    double ticToc;
     float ***normalization, val, val2;
 
 
