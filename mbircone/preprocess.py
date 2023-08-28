@@ -463,6 +463,9 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
                                                                                   downsample_factor=downsample_factor,
                                                                                   defective_pixel_list=defective_pixel_list)
 
+    else:
+        print("Replace defective pixels with mean of neighborhood.")
+        obj_scan, blank_scan, dark_scan, defective_pixel_list = replace_defective_with_mean(obj_scan, blank_scan, dark_scan, defective_pixel_list)
     # compute projection angles based on angle_step and rotation direction
     view_angle_start_deg = np.rad2deg(view_angle_start)
     angle_step *= subsample_view_factor
@@ -470,6 +473,29 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
 
     return obj_scan, blank_scan, dark_scan, angles, geo_params, defective_pixel_list
 
+
+def replace_defective_with_mean(obj_scan, blank_scan, dark_scan, defective_pixel_list):
+    defective_pixel_list_new = []
+    num_views, num_det_rows, num_det_channels = obj_scan.shape
+    weights = np.ones((num_det_rows, num_det_channels))
+    for (r,c) in defective_pixel_list:
+        weights[r,c] = 0
+    for (r,c) in defective_pixel_list:
+        r_min, r_max = max(r-1, 0), min(r+2, num_det_rows)
+        c_min, c_max = max(c-1, 0), min(c+2, num_det_channels)
+        if np.sum(weights[r_min:r_max,c_min:c_max]) > 0:
+            obj_scan[:,r,c] = np.average(obj_scan[:,r_min:r_max,c_min:c_max], axis=(1,2),
+                                         weights=np.repeat(weights[np.newaxis,r_min:r_max,c_min:c_max], 
+                                                           num_views, axis=0))
+            blank_scan[:,r,c] = np.average(blank_scan[:,r_min:r_max,c_min:c_max], axis=(1,2),
+                                           weights=weights[np.newaxis,r_min:r_max,c_min:c_max])
+            dark_scan[:,r,c] = np.average(dark_scan[:,r_min:r_max,c_min:c_max], axis=(1,2),
+                                          weights=weights[np.newaxis,r_min:r_max,c_min:c_max])
+
+        else:
+            print(f"Unable to correct pixel ({r},{c})! All neighborhood values are defective!")
+            defective_pixel_list_new.append((r,c))
+    return obj_scan, blank_scan, dark_scan, defective_pixel_list_new
 
 def transmission_CT_compute_sino(obj_scan, blank_scan, dark_scan, defective_pixel_list=None):
     """Given a set of object scans, blank scan, and dark scan, compute the sinogram data with the steps below:
