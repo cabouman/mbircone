@@ -475,6 +475,20 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
 
 
 def replace_defective_with_mean(obj_scan, blank_scan, dark_scan, defective_pixel_list):
+    """ This function replace defective pixels with the mean of 8-pt neighboring pixels in the scan images.
+    
+    Args:
+        obj_scan (float): A stack of sinograms. 3D numpy array, (num_views, num_det_rows, num_det_channels).
+        blank_scan (float): A blank scan. 2D numpy array, (num_det_rows, num_det_channels).
+        dark_scan (float): A dark scan. 3D numpy array, (num_det_rows, num_det_channels).
+        defective_pixel_list (list(tuple)): A list of tuples containing indices of invalid sinogram pixels, with the format (detector_row_idx, detector_channel_idx).
+    Returns:    
+        4-element tuple containing:
+        - **obj_scan** (*ndarray, float*): A stack of sinograms. 3D numpy array, (num_views, num_det_rows, num_det_channels).
+        - **blank_scan** (*ndarray, float*): A blank scan. 3D numpy array, (num_det_rows, num_det_channels).
+        - **dark_scan** (*ndarray, float*): A dark scan. 3D numpy array, (num_det_rows, num_det_channels).
+        - **defective_pixel_list** (*list(tuple)*): Updated defective_pixel_list with the format (detector_row_idx, detector_channel_idx). 
+    """
     defective_pixel_list_new = []
     num_views, num_det_rows, num_det_channels = obj_scan.shape
     weights = np.ones((num_det_rows, num_det_channels))
