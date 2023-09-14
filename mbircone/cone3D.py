@@ -508,7 +508,8 @@ def recon(sino, angles, dist_source_detector, magnification,
           det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0, image_slice_offset=0.0,
           sigma_y=None, snr_db=40.0, sigma_x=None, sigma_p=None, p=1.2, q=2.0, T=1.0, num_neighbors=6,
           sharpness=0.0, positivity=True, max_resolutions=None, stop_threshold=0.2, max_iterations=100,
-          NHICD=False, num_threads=None, verbose=1, lib_path=__lib_path):
+          NHICD=False, num_threads=None, verbose=1, lib_path=__lib_path,
+          lamino_mode=0):
     """ Compute 3D cone beam MBIR reconstruction
 
     Args:
@@ -589,7 +590,8 @@ def recon(sino, angles, dist_source_detector, magnification,
             reconstruction progress information, and 2 prints the full information.
         lib_path (str, optional): [Default=~/.cache/mbircone] Path to directory containing library of
             forward projection matrices.
-
+        lamino_mode (boolean, optional): [Default=False] set to True for laminography reconstruction.
+            If True, less number of voxels will be updated in parallel. This will result in a more stable convergence behavoir at the cost of slower reconstruction speed.
 
     Returns:
         (float, ndarray): 3D reconstruction image with shape (num_img_slices, num_img_rows, num_img_cols) in units of

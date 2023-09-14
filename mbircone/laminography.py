@@ -196,7 +196,8 @@ def recon_lamino(sino, angles, theta,
                         num_neighbors=num_neighbors,
                         sharpness=sharpness, positivity=positivity, max_resolutions=max_resolutions,
                         stop_threshold=stop_threshold, max_iterations=max_iterations,
-                        NHICD=NHICD, num_threads=num_threads, verbose=verbose, lib_path=lib_path)
+                        NHICD=NHICD, num_threads=num_threads, verbose=verbose, lib_path=lib_path,
+                        lamino_mode=True)
 
 
 def project_lamino(image, angles, theta,
