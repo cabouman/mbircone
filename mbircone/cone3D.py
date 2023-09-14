@@ -704,7 +704,10 @@ def recon(sino, angles, dist_source_detector, magnification,
 
     # Zipline
     reconparams['zipLineMode'] = 2
-    reconparams['N_G'] = 2
+    if lamino_mode:
+        reconparams['N_G'] = 4 # increase number of pixel groups for lamino recon
+    else:
+        reconparams['N_G'] = 2
     reconparams['numVoxelsPerZiplineMax'] = 200
     reconparams['numVoxelsPerZipline'] = 200
     reconparams['numZiplines'] = 4
