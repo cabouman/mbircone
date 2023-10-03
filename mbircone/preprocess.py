@@ -526,6 +526,51 @@ def transmission_CT_compute_sino(obj_scan, blank_scan, dark_scan, defective_pixe
 
     return sino, defective_pixel_list
 
+def interpolate_defective_pixels(sino, defective_pixel_list):
+    """ This function interpolates defective sinogram entries with the mean of neighboring pixels.
+     
+    Args:
+        sino (ndarray, float): Sinogram data with 3D shape (num_views, num_det_rows, num_det_channels).
+        defective_pixel_list (list(tuple)): A list of tuples containing indices of invalid sinogram pixels, with the format (detector_row_idx, detector_channel_idx) or (view_idx, detector_row_idx, detector_channel_idx).
+    Returns:    
+        2-element tuple containing:
+        - **sino** (*ndarray, float*): Corrected sinogram data with shape (num_views, num_det_rows, num_det_channels).
+        - **defective_pixel_list** (*list(tuple)*): Updated defective_pixel_list with the format (detector_row_idx, detector_channel_idx) or (view_idx, detector_row_idx, detector_channel_idx). 
+    """
+    defective_pixel_list_new = []
+    num_views, num_det_rows, num_det_channels = sino.shape
+    weights = np.ones((num_views, num_det_rows, num_det_channels))
+
+    for defective_pixel_idx in defective_pixel_list:
+        if len(defective_pixel_idx) == 2:
+            (r,c) = defective_pixel_idx
+            weights[:,r,c] = 0.0
+        elif len(defective_pixel_idx) == 3:
+            (v,r,c) = defective_pixel_idx
+            weights[v,r,c] = 0.0
+        else:
+            raise Exception("replace_defective_with_mean: index information in defective_pixel_list cannot be parsed.")
+
+    for defective_pixel_idx in defective_pixel_list:
+        if len(defective_pixel_idx) == 2:
+            v_list = list(range(num_views))
+            (r,c) = defective_pixel_idx
+        elif len(defective_pixel_idx) == 3:
+            (v,r,c) = defective_pixel_idx
+            v_list = [v,]
+
+        r_min, r_max = max(r-1, 0), min(r+2, num_det_rows)
+        c_min, c_max = max(c-1, 0), min(c+2, num_det_channels)
+        for v in v_list:
+            # Perform interpolation when there are non-defective pixels in the neighborhood
+            if np.sum(weights[v,r_min:r_max,c_min:c_max]) > 0:
+                sino[v,r,c] = np.average(sino[v,r_min:r_max,c_min:c_max],
+                                         weights=weights[v,r_min:r_max,c_min:c_max])
+            # Corner case: all the neighboring pixels are defective
+            else:
+                print(f"Unable to correct sino entry ({v},{r},{c})! All neighborhood values are defective!")
+                defective_pixel_list_new.append((v,r,c)) 
+    return sino, defective_pixel_list_new
 
 def calc_weights(sino, weight_type, defective_pixel_list=None):
     """ Compute the weights used in MBIR reconstruction.
