@@ -102,6 +102,11 @@ sino, defective_pixel_list = \
 del obj_scan, blank_scan, dark_scan
 
 print("\n*******************************************************",
+      "\n********* Interpolate defective sino entries **********",
+      "\n*******************************************************")
+sino, defective_pixel_list = mbircone.preprocess.interpolate_defective_pixels(sino, defective_pixel_list)
+
+print("\n*******************************************************",
       "\n************** Correct background offset **************",
       "\n*******************************************************")
 background_offset = mbircone.preprocess.calc_background_offset(sino)
