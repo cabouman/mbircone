@@ -327,21 +327,21 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
     geo_params = dict()
 
     ############### load NSI parameters from the given config file path
-    tag_section_list = [['source', 'Result'],
-                        ['reference', 'Result'],
-                        ['pitch', 'Object Radiograph'],
-                        ['width pixels', 'Detector'],
-                        ['height pixels', 'Detector'],
-                        ['number', 'Object Radiograph'],
-                        ['Rotation range', 'CT Project Configuration'],
-                        ['rotate', 'Correction'],
-                        ['flipH', 'Correction'],
-                        ['flipV', 'Correction'],
-                        ['angleStep', 'Object Radiograph'],
-                        ['clockwise', 'Processed'],
-                        ['axis', 'Result'],
-                        ['normal', 'Result'],
-                        ['horizontal', 'Result']
+    tag_section_list = [['source', 'Result'],                           # coordinate of X-ray source
+                        ['reference', 'Result'],                        # coordinate of reference
+                        ['pitch', 'Object Radiograph'],                 # detector pixel pitch
+                        ['width pixels', 'Detector'],                   # number of detector rows
+                        ['height pixels', 'Detector'],                  # number of detector channels
+                        ['number', 'Object Radiograph'],                # number of views
+                        ['Rotation range', 'CT Project Configuration'], # Range of rotation angle (usually 360)
+                        ['rotate', 'Correction'],                       # rotation of radiographs
+                        ['flipH', 'Correction'],                        # Horizontal flip (boolean)
+                        ['flipV', 'Correction'],                        # Vertical flip (boolean)
+                        ['angleStep', 'Object Radiograph'],             # step size of adjacent view angles
+                        ['clockwise', 'Processed'],                     # rotation direction (boolean)
+                        ['axis', 'Result'],                             # rotation axis
+                        ['normal', 'Result'],                           # Detector normal vector
+                        ['horizontal', 'Result']                        # Detector horizontal vector
                        ]
     assert(os. path. isfile(config_file_path)), f'Error! NSI config file does not exist. Please check whether {config_file_path} is a valid file.'
     NSI_params = _NSI_read_str_from_config(config_file_path, tag_section_list)
