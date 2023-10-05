@@ -96,6 +96,11 @@ print("background_offset = ", background_offset)
 sino = sino - background_offset
 
 print("\n*******************************************************",
+      "\n**** Rotate sino images w.r.t. rotation axis tilt *****",
+      "\n*******************************************************")
+sino = mbircone.preprocess.correct_tilt(sino, tilt_angle=geo_params["rot_axis_tilt"])
+
+print("\n*******************************************************",
       "\n************** Calculate sinogram weight **************",
       "\n*******************************************************")
 weights = mbircone.preprocess.calc_weights(sino, weight_type="unweighted",
