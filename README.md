@@ -1,9 +1,12 @@
 # MBIR Cone
 
-Python Package for Cone Beam Computed Tomography reconstruction. Full documentation is available at https://mbircone.readthedocs.io
+Python Package for Cone Beam Computed Tomography reconstruction. 
+
+Full documentation is available at [mbircone_docs](https://mbircone.readthedocs.io).
+
+To cite this software package, please use the bibtext entry at [cite_mbircone](https://mbircone.readthedocs.io/en/latest/credits.html).
 
 **Warning:** This is a pre-release version of code that is still under development.
-
 
 ## Distribution Statement
 
