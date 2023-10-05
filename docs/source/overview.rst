@@ -26,30 +26,14 @@ Geometry
            Parallel-Beam Laminography geometry
 
 
-View angle ordering
--------------------
-
-In certain imaging systems with slow acquisition, it is common practice to collect view data using techniques such as the "golden ratio" method in which the view angles are not collected in monotonically increasing order on the interval :math:`[0,2\pi)`. While ``mbircone`` will produce the correct reconstruction regardless of view ordering, its reconstruction speed will be substantially degraded when the views are not in monotone order. In this case, we highly recommend that users reorder the sinogram views using the provided ``sino_sort`` function. The ``sino_sort``  function first wraps the view angles modulo :math:`2\pi`, and then sorts the views to be in monotonically increasing order by view angle.
-
-
 Arbitrary Length Units (ALU)
 ----------------------------
 
-In order to simplify usage, reconstructions are done using arbitrary length units (ALU). In this system, 1 ALU can correspond to any convenient measure of distance chosen by the user. So for example, it is often convenient to take 1 ALU to be the distance between pixels, which by default is also taken to be the distance between detector channels.
+In order to simplify usage, reconstructions are done using arbitrary length units (ALU).
+In this system, 1 ALU can correspond to any convenient measure of distance chosen by the user.
+So for example, it is often convenient to take 1 ALU to be the distance between pixels, which by default is also taken to be the distance between detector channels.
 
-
-Matrix caching
---------------
-
-When system matrices are computed, they are stored to disk and will be automatically loaded whenever the same geometry is subsequently encountered.
-By default, the system matrices are stored in the subfolder ``~/.cache/mbircone/sysmatrix`` of your home directory.
-The matrix files can be removed at any time, and should be periodically cleaned out to reduce disk use.
-Occasionally, updates to the software package include changes to the encoding of the system matrix, in which case the the cached matrix files should also be cleaned out to avoid incompatibility.
-
-
-
-Usage Examples
---------------
+The following two examples show how to convert from ALU to physical units for transmission and emission cases.
 
 *Transmission CT Example:* For this example, assume that the physical spacing between detector channels is 5 mm. In order to simplify our calculations, we also use the default detector channel spacing and voxel spacing of ``delta_channel=1.0`` and ``delta_xy=1.0``. In other words, we have adopted the convention that the voxel spacing is 1 ALU = 5 mm, where 1 ALU is now our newly adopted measure of distance.
 
@@ -68,3 +52,11 @@ Using this convention, the 3D array, ``image``, will be in units of photons/AU. 
 
     \text{image in photons/mm} = \frac{ \text{image in photons/ALU} }{ 5 \text{mm} / \text{ALU}}
 
+
+Matrix caching
+--------------
+
+When system matrices are computed, they are stored to disk and will be automatically loaded whenever the same geometry is subsequently encountered.
+By default, the system matrices are stored in the subfolder ``~/.cache/mbircone`` of your home directory.
+The matrix files can be removed at any time, and should be periodically cleaned out to reduce disk use.
+Occasionally, updates to the software package include changes to the encoding of the system matrix, in which case the the cached matrix files should also be cleaned out to avoid incompatibility.
