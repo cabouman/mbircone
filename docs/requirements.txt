@@ -1,8 +1,9 @@
-sphinx>=2.2
-sphinxcontrib-bibtex==1.0
+# Include requirements for the docs
+sphinx
+sphinx-rtd-theme
+sphinxcontrib-bibtex
 ipython>=6.3.1
 matplotlib~=3.3.4
 ruamel.yaml~=0.16.12
-sphinx-rtd-theme~=0.5.1
 scikit-image
 docstring-inheritance
