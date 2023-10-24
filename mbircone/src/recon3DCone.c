@@ -119,9 +119,14 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
     timer_reset(&timer_icd_loop);
     tic(&ticToc_all);
     ticToc_icdUpdate_total = 0;
+    
+    double ticToc_recon, ticToc_preprocess, ticToc_postprocess;
+    double time_recon, time_preprocess, time_postprocess;
     for (itNumber = 0; (itNumber <= MaxIterations) && (stopFlag==0); ++itNumber) 
     {
-
+        time_preprocess = 0.0;
+        time_recon = 0.0;
+        time_postprocess = 0.0;
         /**
          *         Shuffle the order in which the voxels are updated
          *         before every iteration
@@ -189,11 +194,20 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
                             for (k_G = 0; k_G < N_G; ++k_G)
                             {
                                 img->randomZiplineAux.k_G = k_G;
+                                tic(&ticToc_preprocess);
                                 prepareICDInfoRandGroup(j_x, j_y, &img->randomZiplineAux, icdInfoArray, img, reconParams, &reconAux);
+                                toc(&ticToc_preprocess);
+                                time_preprocess += ticToc_preprocess;                                
 
+                                tic(&ticToc_recon);
                                 ICDStep3DConeGroup(sino, img, A, icdInfoArray, reconParams, &img->randomZiplineAux, &parallelAux, &reconAux);
-
+                                toc(&ticToc_recon);
+                                time_recon += ticToc_recon;
+ 
+                                tic(&ticToc_postprocess);
                                 updateIterationStatsGroup(&reconAux, icdInfoArray, &img->randomZiplineAux, img, reconParams);
+                                toc(&ticToc_postprocess);
+                                time_postprocess += ticToc_postprocess;
                             }
                             speedAuxICD_update(&speedAuxICD, img->randomZiplineAux.N_M);
                             updateNHICDStats(&reconAux, j_x, j_y, img, reconParams);
@@ -340,6 +354,9 @@ void MBIR3DCone(struct Image *img, struct Sino *sino, struct ReconParams *reconP
     if (reconParams->verbosity>0){
         toc(&ticToc_all);
         ticTocDisp(ticToc_all, "MBIR3DCone");
+        ticTocDisp(time_preprocess, "Preprocess");
+        ticTocDisp(time_recon, "Recon");
+        ticTocDisp(time_postprocess, "Postprocess");
     }
     
 
