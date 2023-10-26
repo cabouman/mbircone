@@ -102,11 +102,21 @@ sino, defective_pixel_list = \
 del obj_scan, blank_scan, dark_scan
 
 print("\n*******************************************************",
+      "\n********* Interpolate defective sino entries **********",
+      "\n*******************************************************")
+sino, defective_pixel_list = mbircone.preprocess.interpolate_defective_pixels(sino, defective_pixel_list)
+
+print("\n*******************************************************",
       "\n************** Correct background offset **************",
       "\n*******************************************************")
 background_offset = mbircone.preprocess.calc_background_offset(sino)
 print("background_offset = ", background_offset)
 sino = sino - background_offset
+
+print("\n*******************************************************",
+      "\n**** Rotate sino images w.r.t. rotation axis tilt *****",
+      "\n*******************************************************")
+sino = mbircone.preprocess.correct_tilt(sino, tilt_angle=geo_params["rot_axis_tilt"])
 
 print("\n*******************************************************",
       "\n******** Calculate transission sinogram weight ********",

@@ -5,6 +5,7 @@ from PIL import Image
 import warnings
 import math
 from mbircone import cone3D
+import scipy
 
 __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
 
@@ -207,6 +208,44 @@ def _NSI_read_str_from_config(filepath, tags_sections):
 
     return NSI_params
 
+######## Functions for calculating rotation axis tilt
+def unit_vector(vector):
+    """ Returns the unit vector of the vector.  """
+    return vector / np.linalg.norm(vector)
+
+def angle_between(v1, v2):
+    """ Returns the angle in radians between vectors 'v1' and 'v2'::
+            >>> angle_between((1, 0, 0), (0, 1, 0))
+            1.5707963267948966
+            >>> angle_between((1, 0, 0), (1, 0, 0))
+            0.0
+            >>> angle_between((1, 0, 0), (-1, 0, 0))
+            3.141592653589793
+    """
+    v1_u = unit_vector(v1)
+    v2_u = unit_vector(v2)
+    return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
+
+
+def project_vector_to_plane(u, n):
+    """ Projects the vector u onto the plane defined by its normal vector n.
+    """
+    n = unit_vector(n)
+    u_proj = u - np.dot(u, n)*n
+    return u_proj
+
+def calc_tilt_angle(axis, detector_normal, detector_horizontal):
+    """ Returns the tilt angle between the rotation axis and the detector columns in unit of radians.
+    """
+    # project the rotation axis onto the detector plane
+    axis_projected = project_vector_to_plane(axis, detector_normal)
+    # calculate angle between the projected rotation axis and the horizontal detector vector
+    angle_axis_horizontal = angle_between(axis_projected, detector_horizontal)
+    # tilt angle = angle between the projected rotation axis and the vertical detector vector
+    angle_tilt = angle_axis_horizontal-np.pi/2
+    return angle_tilt
+
+######## END Functions for calculating rotation axis tilt
 
 def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, dark_scan_path=None,
                               defective_pixel_path=None,
@@ -288,18 +327,21 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
     geo_params = dict()
 
     ############### load NSI parameters from the given config file path
-    tag_section_list = [['source', 'Result'],
-                        ['reference', 'Result'],
-                        ['pitch', 'Object Radiograph'],
-                        ['width pixels', 'Detector'],
-                        ['height pixels', 'Detector'],
-                        ['number', 'Object Radiograph'],
-                        ['Rotation range', 'CT Project Configuration'],
-                        ['rotate', 'Correction'],
-                        ['flipH', 'Correction'],
-                        ['flipV', 'Correction'],
-                        ['angleStep', 'Object Radiograph'],
-                        ['clockwise', 'Processed']
+    tag_section_list = [['source', 'Result'],                           # coordinate of X-ray source
+                        ['reference', 'Result'],                        # coordinate of reference
+                        ['pitch', 'Object Radiograph'],                 # detector pixel pitch
+                        ['width pixels', 'Detector'],                   # number of detector rows
+                        ['height pixels', 'Detector'],                  # number of detector channels
+                        ['number', 'Object Radiograph'],                # number of views
+                        ['Rotation range', 'CT Project Configuration'], # Range of rotation angle (usually 360)
+                        ['rotate', 'Correction'],                       # rotation of radiographs
+                        ['flipH', 'Correction'],                        # Horizontal flip (boolean)
+                        ['flipV', 'Correction'],                        # Vertical flip (boolean)
+                        ['angleStep', 'Object Radiograph'],             # step size of adjacent view angles
+                        ['clockwise', 'Processed'],                     # rotation direction (boolean)
+                        ['axis', 'Result'],                             # rotation axis
+                        ['normal', 'Result'],                           # Detector normal vector
+                        ['horizontal', 'Result']                        # Detector horizontal vector
                        ]
     assert(os. path. isfile(config_file_path)), f'Error! NSI config file does not exist. Please check whether {config_file_path} is a valid file.'
     NSI_params = _NSI_read_str_from_config(config_file_path, tag_section_list)
@@ -363,6 +405,18 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
     w_d0 = - w_d1
     geo_params['rotation_offset'] = 0.0
 
+    # Rotation axis
+    rot_axis = NSI_params[12].split(' ')
+    rot_axis = [np.single(rot_axis[i]) for i in range(len(rot_axis))]
+    
+    # Detector normal vector
+    detector_normal = NSI_params[13].split(' ')
+    detector_normal = [np.single(detector_normal[i]) for i in range(len(detector_normal))]
+    
+    # Detector horizontal vector
+    detector_horizontal = NSI_params[14].split(' ')
+    detector_horizontal = [np.single(detector_horizontal[i]) for i in range(len(detector_horizontal))]
+
     ############### Adjust geometry NSI_params according to crop_factor and downsample_factor
     if isinstance(crop_factor[0], (list, tuple)):
         (r0, c0), (r1, c1) = crop_factor
@@ -396,6 +450,9 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
     geo_params["det_channel_offset"] = -(v_d0 - dist_dv_to_detector_corner_from_detector_center)
     geo_params["det_row_offset"] = - (w_d0 - dist_dw_to_detector_corner_from_detector_center)
 
+    ############### Calculate rotation axis tilt
+    geo_params['rot_axis_tilt'] = calc_tilt_angle(rot_axis, detector_normal, detector_horizontal)    
+    print("Rotation axis tilt angle = ", np.rad2deg(geo_params['rot_axis_tilt']), " deg") 
     ############### read blank scans and dark scans
     blank_scan = np.expand_dims(_read_scan_img(blank_scan_path), axis=0)
     if dark_scan_path is not None:
@@ -526,6 +583,72 @@ def transmission_CT_compute_sino(obj_scan, blank_scan, dark_scan, defective_pixe
 
     return sino, defective_pixel_list
 
+def interpolate_defective_pixels(sino, defective_pixel_list):
+    """ This function interpolates defective sinogram entries with the mean of neighboring pixels.
+     
+    Args:
+        sino (ndarray, float): Sinogram data with 3D shape (num_views, num_det_rows, num_det_channels).
+        defective_pixel_list (list(tuple)): A list of tuples containing indices of invalid sinogram pixels, with the format (detector_row_idx, detector_channel_idx) or (view_idx, detector_row_idx, detector_channel_idx).
+    Returns:    
+        2-element tuple containing:
+        - **sino** (*ndarray, float*): Corrected sinogram data with shape (num_views, num_det_rows, num_det_channels).
+        - **defective_pixel_list** (*list(tuple)*): Updated defective_pixel_list with the format (detector_row_idx, detector_channel_idx) or (view_idx, detector_row_idx, detector_channel_idx). 
+    """
+    defective_pixel_list_new = []
+    num_views, num_det_rows, num_det_channels = sino.shape
+    weights = np.ones((num_views, num_det_rows, num_det_channels))
+
+    for defective_pixel_idx in defective_pixel_list:
+        if len(defective_pixel_idx) == 2:
+            (r,c) = defective_pixel_idx
+            weights[:,r,c] = 0.0
+        elif len(defective_pixel_idx) == 3:
+            (v,r,c) = defective_pixel_idx
+            weights[v,r,c] = 0.0
+        else:
+            raise Exception("replace_defective_with_mean: index information in defective_pixel_list cannot be parsed.")
+
+    for defective_pixel_idx in defective_pixel_list:
+        if len(defective_pixel_idx) == 2:
+            v_list = list(range(num_views))
+            (r,c) = defective_pixel_idx
+        elif len(defective_pixel_idx) == 3:
+            (v,r,c) = defective_pixel_idx
+            v_list = [v,]
+
+        r_min, r_max = max(r-1, 0), min(r+2, num_det_rows)
+        c_min, c_max = max(c-1, 0), min(c+2, num_det_channels)
+        for v in v_list:
+            # Perform interpolation when there are non-defective pixels in the neighborhood
+            if np.sum(weights[v,r_min:r_max,c_min:c_max]) > 0:
+                sino[v,r,c] = np.average(sino[v,r_min:r_max,c_min:c_max],
+                                         weights=weights[v,r_min:r_max,c_min:c_max])
+            # Corner case: all the neighboring pixels are defective
+            else:
+                print(f"Unable to correct sino entry ({v},{r},{c})! All neighborhood values are defective!")
+                defective_pixel_list_new.append((v,r,c)) 
+    return sino, defective_pixel_list_new
+
+def correct_tilt(sino, weights=None, tilt_angle=0.0):
+    """ Correct the sinogram data (and sinogram weights if provided) according to the rotation axis tilt.
+
+    Args:
+        sino (float, ndarray): Sinogram data with 3D shape (num_views, num_det_rows, num_det_channels).
+        weights (float, ndarray): Weights used in mbircone reconstruction, with the same array shape as ``sino``.
+        tilt_angle (optional, float): tilt angle between the rotation axis and the detector columns in unit of radians.
+    
+    Returns:
+        - A numpy array containing the corrected sinogram data if weights is None. 
+        - A tuple (sino, weights) if weights is not None
+    """
+    sino = scipy.ndimage.rotate(sino, np.rad2deg(tilt_angle), axes=(1,2), reshape=False, order=5)
+    # weights not provided
+    if weights is None:
+        return sino
+    # weights provided
+    print("correct_tilt: weights provided by the user. Please note that zero weight entries might become non-zero after tilt angle correction.") 
+    weights = scipy.ndimage.rotate(weights, np.rad2deg(tilt_angle), axes=(1,2), reshape=False, order=5)
+    return sino, weights
 
 def calc_weights(sino, weight_type, defective_pixel_list=None):
     """ Compute the weights used in MBIR reconstruction.

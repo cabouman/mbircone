@@ -15,6 +15,7 @@ Indices and tables
    :caption: Background
 
    overview
+   iq_tune
    theory
    credits
 
