@@ -42,7 +42,6 @@ tile_cols = 3
 
 # qGGMRF recon parameters
 sharpness = 0.0                    # Controls regularization level of reconstruction by controlling prior term weighting
-snr_db = 30
 
 # display parameters
 vmin = 0.0
@@ -101,7 +100,7 @@ recon = mbircone.laminography.recon_lamino(sino, angles, theta_radians,
                                            num_image_slices = num_image_slices,
                                            num_image_rows = num_image_rows,
                                            num_image_cols = num_image_cols,
-                                           sharpness=sharpness, snr_db=snr_db, stop_threshold=0.05, positivity=False)
+                                           sharpness=sharpness, positivity=False)
 
 print('recon shape = ', np.shape(recon))
 
