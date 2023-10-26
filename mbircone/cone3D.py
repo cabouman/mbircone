@@ -590,7 +590,7 @@ def recon(sino, angles, dist_source_detector, magnification,
             reconstruction progress information, and 2 prints the full information.
         lib_path (str, optional): [Default=~/.cache/mbircone] Path to directory containing library of
             forward projection matrices.
-        lamino_mode (boolean, optional): [Default=False] set to True for laminography reconstruction.
+        lamino_mode (boolean, optional): [Default=False] set to True for laminography reconstruction. This parameter should not be set by the user.
             If True, less number of voxels will be updated in parallel. This will result in a more stable convergence behavoir at the cost of slower reconstruction speed.
 
     Returns:
