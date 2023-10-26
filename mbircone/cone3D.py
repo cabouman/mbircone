@@ -509,7 +509,7 @@ def recon(sino, angles, dist_source_detector, magnification,
           sigma_y=None, snr_db=40.0, sigma_x=None, sigma_p=None, p=1.2, q=2.0, T=1.0, num_neighbors=6,
           sharpness=0.0, positivity=True, max_resolutions=None, stop_threshold=0.2, max_iterations=100,
           NHICD=False, num_threads=None, verbose=1, lib_path=__lib_path,
-          lamino_mode=0):
+          lamino_mode=False):
     """ Compute 3D cone beam MBIR reconstruction
 
     Args:
