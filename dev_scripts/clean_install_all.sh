@@ -3,15 +3,15 @@
 # It then creates an "mbircone" environment and reinstalls mbircone along with the documentation and demo requirements.
 
 # Clean out old installation
-source clean_mbircone.sh
+yes | source clean_mbircone.sh
 
 # Destroy conda environement named mbircone and reinstall it
-source reinstall_conda_environment.sh
+yes | source reinstall_conda_environment.sh
+conda activate mbircone
 
 # Install mbircone
-source install_mbircone.sh
+yes | source install_mbircone.sh
 
 # Build documentation
-source install_docs.sh
-
+yes | source install_docs.sh
 
