@@ -18,34 +18,43 @@ If you publish results based on this code, please cite the following paper:
 For other OpenMBIR packages see: https://github.com/cabouman/OpenMBIR-Index
 
 
-## Installation
+## Clone Package
 
-In order to install the package, clone the repository to your computer, and run the bash script named ``run_clean_install``.
-The script will create and activate a conda envirnoment named ``mbircone``, install the package and all its requirements, and build the documentation.
-
-The information below provides additional detail.
-
-1) Clone Repository and enter
+Clone the package by running the following commands:
 ```
-git clone https://github.com/cabouman/mbircone.git
+git clone git@github.com:cabouman/mbircone.git
 cd mbircone
 ```
 
-2) Create conda environment
+
+## Installation Package
+
+There are two options for installing mbircone. Both approaches will require that you first install the `gcc` compiler and the associated `omp` libraries as per instructions here: https://svmbir.readthedocs.io/en/latest/install.html
+
+**Option 1: Easy Installation:**
+The easiest way to install is to use the available bash scripts:
+```
+cd mbircone/dev_scripts
+source ./clean_install_all.sh
+```
+
+The script will create and activate a conda envirnoment named ``mbircone``, install the package and all its requirements, and build the documentation.
+
+**Option 2: Manual Installation:**
+
+1) Create conda environment
 ```
 conda create -n mbircone python=3.8
 ```
-3) Activate conda environment
+2) Activate conda environment
 ```
 conda activate mbircone
 ```
-4) Install requirements
+3) Install requirements
 ```
 pip install -r requirements.txt
 ```
-5) Ensure GCC is installed per instructions here: https://svmbir.readthedocs.io/en/latest/install.html
-
-6) Install package
+4) Install package
 ```
 pip install .
 ```
