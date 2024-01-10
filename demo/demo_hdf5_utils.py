@@ -5,18 +5,16 @@ import mbircone
 from demo_utils import plot_image, plot_gif
 
 """
-This script demonstrates how to save image data in HDF5 format. 
+This script demonstrates the utility function of writing a image to an HDF5 file. 
 Demo functionality includes:
  * Generating a 3D Shepp Logan phantom;
  * Writing the image data as a HDF5 file using function `mbircone.utils.hdf5_write`;
- * Reading the image data and metadata from the HDF5 file using function `mbircone.utils.hdf5_read`;
  * Printing out the image metadata and displaying the image slices.
 """
 print('This script demonstrates how to save image data in HDF5 format.\
 Demo functionality includes:\
 \n\t * Generating a 3D Shepp Logan phantom; \
 \n\t * Writing the image data as a HDF5 file using function `mbircone.utils.hdf5_write`; \
-\n\t * Reading the image data and metadata from the HDF5 file using function `mbircone.utils.hdf5_read`; \
 \n\t * Printing out the image metadata and displaying the image slices.\n')
 
 ######### local path to save the HDF5 file and image slices
@@ -31,9 +29,9 @@ num_phantom_rows = 128
 num_phantom_cols = 128
 
 ######### Synthetic image metadata
-source = "3D shepp logan phantom" # source of the data
-alu_def = "5 mm" # Definition of 1 ALU
-delta_pixel_image = 1 # image pixel pitch = 1 ALU
+recon_description = "3D shepp logan phantom" # description of the image data
+alu_description = "1 ALU = 5 mm" # Description of arbitrary length unit (ALU)
+delta_pixel_image = 1 # image pixel spacing = 1 ALU
 
 # Set display parameters for Shepp Logan phantom
 vmin = 1.0
@@ -51,18 +49,7 @@ print('Phantom shape = ', np.shape(phantom))
 ######################################################################################
 print('Saving phantom data as an HDF5 file ...\n')
 mbircone.utils.hdf5_write(phantom, filename=hdf5_filename, 
-                           source=source, alu_def=alu_def, delta_pixel_image=delta_pixel_image)
-
-######################################################################################
-# Load the HDF5 file and print out the metadata information
-######################################################################################
-print('Loading the HDF5 file ...\n')
-phantom, metadata = mbircone.utils.hdf5_read(hdf5_filename)
-print("shape of phantom data = ", phantom.shape)
-print("Metadata of HDF5 file:",)
-for k in metadata.keys():
-    print(f"{k}: ", metadata[k])
-
+                          recon_description=recon_description, alu_description=alu_description, delta_pixel_image=delta_pixel_image)
 
 ######################################################################################
 # Display phantom slices
