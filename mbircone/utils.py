@@ -16,11 +16,16 @@ def hdf5_write(image, filename,
         alu_description (string, optional) [Default=""]: description of arbitrary length units (ALU). Example: "1 ALU = 5 mm".
         delta_pixel_image (float, optional) [Default=1.0]:  Image pixel spacing in ALU.
     """    
-    with h5py.File(filename, "w") as f:
-        # voxel values
-        f.create_dataset("Data", data=image)
-        # image shape
-        f.attrs["recon_description"] = recon_description
-        f.attrs["alu_description"] = alu_description
-        f.attrs["delta_pixel_image"] = delta_pixel_image
+    f = h5py.File(filename, "w")
+    # voxel values
+    f.create_dataset("Data", data=image)
+    # image shape
+    f.attrs["recon_description"] = recon_description
+    f.attrs["alu_description"] = alu_description
+    f.attrs["delta_pixel_image"] = delta_pixel_image
+    
+    print("Attributes of HDF5 file: ")
+    for k in f.attrs.keys():
+        print(f"{k}: ", f.attrs[k])
+    
     return
