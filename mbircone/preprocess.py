@@ -354,22 +354,21 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
     NSI_params = _NSI_read_str_from_config(config_file_path, tag_section_list)
 
     # coordinate of source
-    u_s = np.single(NSI_params[0].split(' ')[-1])
-
+    v_s = NSI_params[0].split(' ')
+    v_s = [np.single(i) for i in v_s]
+    
     # coordinate of reference
-    coordinate_ref = NSI_params[1].split(' ')
-    u_d1 = np.single(coordinate_ref[2])
-    v_d1 = np.single(coordinate_ref[0])
-    w_d1 = np.single(coordinate_ref[1])
-
+    v_r = NSI_params[1].split(' ')
+    v_r = [np.single(i) for i in v_r]
+ 
     # detector pixel pitch
     pixel_pitch_det = NSI_params[2].split(' ')
-    geo_params['delta_det_channel'] = np.single(pixel_pitch_det[0])
-    geo_params['delta_det_row'] = np.single(pixel_pitch_det[1])
+    Delta_c = np.single(pixel_pitch_det[0])
+    Delta_r = np.single(pixel_pitch_det[1])
 
     # dimension of radiograph
-    geo_params['num_det_channels'] = int(NSI_params[3])
-    geo_params['num_det_rows'] = int(NSI_params[4])
+    N_c = int(NSI_params[3])
+    N_r = int(NSI_params[4])
 
     # total number of radiograph scans
     num_acquired_scans = int(NSI_params[5])
@@ -408,21 +407,28 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
         print("counter-clockwise rotation.")
         # counter-clockwise rotation
         angle_step = -angle_step
-    v_d0 = - v_d1
-    w_d0 = - w_d1
-    geo_params['rotation_offset'] = 0.0
 
     # Rotation axis
-    rot_axis = NSI_params[12].split(' ')
-    rot_axis = [np.single(rot_axis[i]) for i in range(len(rot_axis))]
-    
+    v_a = NSI_params[12].split(' ')
+    v_a = [np.single(i) for i in v_a]
+   
     # Detector normal vector
-    detector_normal = NSI_params[13].split(' ')
-    detector_normal = [np.single(detector_normal[i]) for i in range(len(detector_normal))]
-    
+    v_n = NSI_params[13].split(' ')
+    v_n = [np.single(i) for i in v_n]
+   
     # Detector horizontal vector
-    detector_horizontal = NSI_params[14].split(' ')
-    detector_horizontal = [np.single(detector_horizontal[i]) for i in range(len(detector_horizontal))]
+    v_h = NSI_params[14].split(' ')
+    v_h = [np.single(i) for i in v_h]
+
+    print("####### NSI parameters:")
+    print("vector from origin to source = ", v_s, " [mm]")
+    print("vector from origin to reference = ", v_r, " [mm]")
+    print("Unit vector of rotation axis = ", v_a)
+    print("Unit vector of normal = ", v_n)
+    print("Unit vector of horizontal = ", v_h)
+    print(f"Detector pixel pitch: (Delta_r, Delta_c) = ({Delta_r:.3f},{Delta_c:.3f}) [mm]")
+    print(f"Detector size: (N_r, N_c) = ({N_r},{N_c})")
+   
 
     ############### Adjust geometry NSI_params according to crop_factor and downsample_factor
     if isinstance(crop_factor[0], (list, tuple)):
