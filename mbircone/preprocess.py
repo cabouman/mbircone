@@ -354,12 +354,12 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
     NSI_params = _NSI_read_str_from_config(config_file_path, tag_section_list)
 
     # coordinate of source
-    v_s = NSI_params[0].split(' ')
-    v_s = [np.single(i) for i in v_s]
+    r_s = NSI_params[0].split(' ')
+    r_s = [np.single(i) for i in r_s]
     
     # coordinate of reference
-    v_r = NSI_params[1].split(' ')
-    v_r = [np.single(i) for i in v_r]
+    r_r = NSI_params[1].split(' ')
+    r_r = [np.single(i) for i in r_r]
  
     # detector pixel pitch
     pixel_pitch_det = NSI_params[2].split(' ')
@@ -409,25 +409,26 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
         angle_step = -angle_step
 
     # Rotation axis
-    v_a = NSI_params[12].split(' ')
-    v_a = [np.single(i) for i in v_a]
+    r_a = NSI_params[12].split(' ')
+    r_a = [np.single(i) for i in r_a]
    
     # Detector normal vector
-    v_n = NSI_params[13].split(' ')
-    v_n = [np.single(i) for i in v_n]
+    r_n = NSI_params[13].split(' ')
+    r_n = [np.single(i) for i in r_n]
    
     # Detector horizontal vector
-    v_h = NSI_params[14].split(' ')
-    v_h = [np.single(i) for i in v_h]
+    r_h = NSI_params[14].split(' ')
+    r_h = [np.single(i) for i in r_h]
 
-    print("####### NSI parameters:")
-    print("vector from origin to source = ", v_s, " [mm]")
-    print("vector from origin to reference = ", v_r, " [mm]")
-    print("Unit vector of rotation axis = ", v_a)
-    print("Unit vector of normal = ", v_n)
-    print("Unit vector of horizontal = ", v_h)
+    print("############ NSI parameters ############")
+    print("vector from origin to source = ", r_s, " [mm]")
+    print("vector from origin to reference = ", r_r, " [mm]")
+    print("Unit vector of rotation axis = ", r_a)
+    print("Unit vector of normal = ", r_n)
+    print("Unit vector of horizontal = ", r_h)
     print(f"Detector pixel pitch: (Delta_r, Delta_c) = ({Delta_r:.3f},{Delta_c:.3f}) [mm]")
     print(f"Detector size: (N_r, N_c) = ({N_r},{N_c})")
+    print("############ End NSI parameters ############")
    
 
     ############### Adjust geometry NSI_params according to crop_factor and downsample_factor
