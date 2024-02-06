@@ -227,6 +227,13 @@ def angle_between(v1, v2):
     return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
 
 
+def project_vector_to_vector(u1, u2):
+    """ Projects the vector u1 onto the vector u2.
+    """
+    u2 = unit_vector(u2)
+    u1_proj = np.dot(u1, u2)*u_2
+    return u1_proj
+
 def project_vector_to_plane(u, n):
     """ Projects the vector u onto the plane defined by its normal vector n.
     """
