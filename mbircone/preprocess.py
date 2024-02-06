@@ -208,7 +208,7 @@ def _NSI_read_str_from_config(filepath, tags_sections):
 
     return NSI_params
 
-######## Functions for calculating rotation axis tilt
+######## Functions for NSI-MBIR parameter conversion
 def unit_vector(vector):
     """ Returns the unit vector of the vector.  """
     return vector / np.linalg.norm(vector)
@@ -231,7 +231,7 @@ def project_vector_to_vector(u1, u2):
     """ Projects the vector u1 onto the vector u2.
     """
     u2 = unit_vector(u2)
-    u1_proj = np.dot(u1, u2)*u_2
+    u1_proj = np.dot(u1, u2)*u2
     return u1_proj
 
 def project_vector_to_plane(u, n):
@@ -241,18 +241,45 @@ def project_vector_to_plane(u, n):
     u_proj = u - np.dot(u, n)*n
     return u_proj
 
-def calc_tilt_angle(axis, detector_normal, detector_horizontal):
+def calc_tilt_angle(r_a, r_n, r_h):
     """ Returns the tilt angle between the rotation axis and the detector columns in unit of radians.
     """
     # project the rotation axis onto the detector plane
-    axis_projected = project_vector_to_plane(axis, detector_normal)
+    r_a_p = project_vector_to_plane(r_a, r_n)
     # calculate angle between the projected rotation axis and the horizontal detector vector
-    angle_axis_horizontal = angle_between(axis_projected, detector_horizontal)
+    angle_axis_horizontal = angle_between(r_a_p, r_h)
     # tilt angle = angle between the projected rotation axis and the vertical detector vector
-    angle_tilt = angle_axis_horizontal-np.pi/2
-    return angle_tilt
+    tilt_angle = angle_axis_horizontal-np.pi/2
+    return tilt_angle
 
-######## END Functions for calculating rotation axis tilt
+def calc_source_detector_params(r_a, r_n, r_h, r_s, r_r):
+    r_n = unit_vector(r_n)
+    r_s_r = project_vector_to_vector(-r_s, r_n) # vector from source to center of rotation along source-detector line
+    r_s_d = project_vector_to_vector(r_r-r_s, r_n) # vector from source to detector along source-detector line
+    dist_source_detector = np.linalg.norm(r_s_d)
+    dist_source_rotation = np.linalg.norm(r_s_r)
+    magnification = dist_source_detector/dist_source_rotation 
+    tilt_angle = calc_tilt_angle(r_a, r_n, r_h)
+    return dist_source_detector, magnification, tilt_angle
+
+def calc_row_channel_params(r_a, r_n, r_h, r_s, r_r, Delta_c, Delta_r, N_c, N_r):
+    r_n = unit_vector(r_n)
+    r_h = unit_vector(r_h)
+    r_v = np.cross(r_n, r_h)
+    c_v = -(N_r-1)/2*Delta_r*r_v
+    c_h = -(N_c-1)/2*Delta_c*r_h
+    r_s_r = r_r - r_s
+    r_delta = r_s_r - project_vector_to_vector(r_s_r, r_n) - c_v - c_h
+    # detector row and channel offsets
+    det_channel_offset = -np.dot(r_delta, r_h)
+    det_row_offset = -np.dot(r_delta, r_v)
+    # rotation offset
+    delta_source = r_s - project_vector_to_vector(r_s, r_n)
+    delta_rot = delta_source - project_vector_to_vector(delta_source, r_a)# rotation offset vector (perpendicular to rotation axis)
+    rotation_offset = np.dot(delta_rot, np.cross(r_a, r_n))
+    return det_channel_offset, det_row_offset, rotation_offset
+
+######## END Functions for NSI-MBIR parameter conversion
 
 def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, dark_scan_path=None,
                               defective_pixel_path=None,
@@ -330,10 +357,7 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
 
         - **defective_pixel_list** (list(tuple)): A list of tuples containing indices of invalid sinogram pixels, with the format (detector_row_idx, detector_channel_idx).
     """
-    # MBIR geometry parameter dictionary
-    geo_params = dict()
-
-    ############### load NSI parameters from the given config file path
+    ############### load NSI parameters from an nsipro file
     tag_section_list = [['source', 'Result'],                           # coordinate of X-ray source
                         ['reference', 'Result'],                        # coordinate of reference
                         ['pitch', 'Object Radiograph'],                 # detector pixel pitch
@@ -355,11 +379,11 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
 
     # coordinate of source
     r_s = NSI_params[0].split(' ')
-    r_s = [np.single(i) for i in r_s]
+    r_s = np.array([np.single(i) for i in r_s])
     
     # coordinate of reference
     r_r = NSI_params[1].split(' ')
-    r_r = [np.single(i) for i in r_r]
+    r_r = np.array([np.single(i) for i in r_r])
  
     # detector pixel pitch
     pixel_pitch_det = NSI_params[2].split(' ')
@@ -382,11 +406,11 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
         print('scans are in portrait mode!')
     elif (scan_rotate == 270) or (scan_rotate == 90):
         print('scans are in landscape mode!')
-        geo_params['num_det_channels'], geo_params['num_det_rows'] = geo_params['num_det_rows'], geo_params['num_det_channels']
+        N_c, N_r = N_r, N_c
     else:
         warnings.warn("Picture mode unknown! Should be either portrait (0 or 180 deg rotation) or landscape (90 or 270 deg rotation). Automatically setting picture mode to portrait.")
-        scan_rotate = 180
-
+        scan_rotate = 180 
+    
     # Radiograph horizontal & vertical flip
     if NSI_params[8] == "True":
         flipH = True
@@ -407,20 +431,20 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
         print("counter-clockwise rotation.")
         # counter-clockwise rotation
         angle_step = -angle_step
-
+    
     # Rotation axis
     r_a = NSI_params[12].split(' ')
-    r_a = [np.single(i) for i in r_a]
+    r_a = np.array([np.single(i) for i in r_a])
    
     # Detector normal vector
     r_n = NSI_params[13].split(' ')
-    r_n = [np.single(i) for i in r_n]
+    r_n = np.array([np.single(i) for i in r_n])
    
     # Detector horizontal vector
     r_h = NSI_params[14].split(' ')
-    r_h = [np.single(i) for i in r_h]
+    r_h = np.array([np.single(i) for i in r_h])
 
-    print("############ NSI parameters ############")
+    print("############ NSI geometry parameters ############")
     print("vector from origin to source = ", r_s, " [mm]")
     print("vector from origin to reference = ", r_r, " [mm]")
     print("Unit vector of rotation axis = ", r_a)
@@ -428,45 +452,50 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
     print("Unit vector of horizontal = ", r_h)
     print(f"Detector pixel pitch: (Delta_r, Delta_c) = ({Delta_r:.3f},{Delta_c:.3f}) [mm]")
     print(f"Detector size: (N_r, N_c) = ({N_r},{N_c})")
-    print("############ End NSI parameters ############")
-   
-
+    print("############ End NSI geometry parameters ############")
+    ############### END load NSI parameters from an nsipro file
+    
+    
+    ############### Convert NSI geometry parameters to MBIR parameters
+    dist_source_detector, magnification, tilt_angle = calc_source_detector_params(r_a, r_n, r_h, r_s, r_r)
+    
+    det_channel_offset, det_row_offset, rotation_offset = calc_row_channel_params(r_a, r_n, r_h, r_s, r_r, Delta_c, Delta_r, N_c, N_r)
+    
+    # Create a dictionary to store MBIR parameters 
+    geo_params = dict()
+    geo_params["dist_source_detector"] = dist_source_detector
+    geo_params["magnification"] = magnification
+    geo_params["num_det_rows"] = N_r
+    geo_params["num_det_channels"] = N_c
+    geo_params["delta_det_channel"] = Delta_c
+    geo_params["delta_det_row"] = Delta_r
+    geo_params["det_channel_offset"] = det_channel_offset
+    geo_params["det_row_offset"] = det_row_offset
+    geo_params["rotation_offset"] = rotation_offset
+    ############### END Convert NSI geometry parameters to MBIR parameters
+    
     ############### Adjust geometry NSI_params according to crop_factor and downsample_factor
     if isinstance(crop_factor[0], (list, tuple)):
         (r0, c0), (r1, c1) = crop_factor
     else:
         r0, c0, r1, c1 = crop_factor
 
-    # Adjust parameters after downsampling
+    ############### Adjust detector size and pixel pitch params w.r.t. downsampling arguments
     geo_params['num_det_rows'] = (geo_params['num_det_rows'] // downsample_factor[0])
     geo_params['num_det_channels'] = (geo_params['num_det_channels'] // downsample_factor[1])
 
     geo_params['delta_det_row'] = geo_params['delta_det_row'] * downsample_factor[0]
     geo_params['delta_det_channel'] = geo_params['delta_det_channel'] * downsample_factor[1]
 
-    # Adjust parameters after cropping
+    ############### Adjust detector size params w.r.t. downsampling arguments
     num_det_rows_shift0 = np.round(geo_params['num_det_rows'] * r0)
     num_det_rows_shift1 = np.round(geo_params['num_det_rows'] * (1 - r1))
-    w_d0 = w_d0 + num_det_rows_shift0 * geo_params['delta_det_row']
     geo_params['num_det_rows'] = geo_params['num_det_rows'] - (num_det_rows_shift0 + num_det_rows_shift1)
 
     num_det_channels_shift0 = np.round(geo_params['num_det_channels'] * c0)
     num_det_channels_shift1 = np.round(geo_params['num_det_channels'] * (1 - c1))
-    v_d0 = v_d0 + num_det_channels_shift0 * geo_params['delta_det_channel']
     geo_params['num_det_channels'] = geo_params['num_det_channels'] - (num_det_channels_shift0 + num_det_channels_shift1)
 
-    ############### calculate MBIRCONE NSI_params from NSI NSI_params
-    geo_params["dist_source_detector"] = u_d1 - u_s
-    geo_params["magnification"] = -geo_params["dist_source_detector"] / u_s
-
-    dist_dv_to_detector_corner_from_detector_center = - geo_params['num_det_channels'] * geo_params['delta_det_channel'] / 2.0
-    dist_dw_to_detector_corner_from_detector_center = - geo_params['num_det_rows'] * geo_params['delta_det_row'] / 2.0
-    geo_params["det_channel_offset"] = -(v_d0 - dist_dv_to_detector_corner_from_detector_center)
-    geo_params["det_row_offset"] = - (w_d0 - dist_dw_to_detector_corner_from_detector_center)
-
-    ############### Calculate rotation axis tilt
-    geo_params['rot_axis_tilt'] = calc_tilt_angle(rot_axis, detector_normal, detector_horizontal)    
-    print("Rotation axis tilt angle = ", np.rad2deg(geo_params['rot_axis_tilt']), " deg") 
     ############### read blank scans and dark scans
     blank_scan = np.expand_dims(_read_scan_img(blank_scan_path), axis=0)
     if dark_scan_path is not None:
@@ -479,7 +508,7 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
     view_ids = list(range(view_id_start, view_id_end, subsample_view_factor))
     obj_scan = _read_scan_dir(obj_scan_path, view_ids)
 
-    # Load defective pixel information
+    ############### Load defective pixel information
     if defective_pixel_path is not None:
         tag_section_list = [['Defect', 'Defective Pixels']]
         defective_loc = _NSI_read_str_from_config(defective_pixel_path, tag_section_list)
@@ -489,7 +518,7 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
         defective_pixel_list = None
 
 
-    # flip the scans according to flipH and flipV NSI_params
+    ############### flip the scans according to flipH and flipV information from nsipro file
     if flipV:
         print("Flip scans vertically!")
         obj_scan = np.flip(obj_scan, axis=1)
@@ -511,7 +540,7 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
                 (r,c) = defective_pixel_list[i]
                 defective_pixel_list[i] = (r, blank_scan.shape[2]-c-1)
 
-    # rotate the scans according to scan_rotate param
+    ############### rotate the scans according to scan_rotate param
     rot_count = scan_rotate // 90
     for n in range(rot_count):
         obj_scan = np.rot90(obj_scan, 1, axes=(2,1))
@@ -523,18 +552,18 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
                 (r,c) = defective_pixel_list[i]
                 defective_pixel_list[i] = (c, blank_scan.shape[2]-r-1)
 
-    # cropping in pixels
+    ############### crop the scans based on input params
     obj_scan, blank_scan, dark_scan, defective_pixel_list = _crop_scans(obj_scan, blank_scan, dark_scan,
                                                                         crop_factor=crop_factor,
                                                                         defective_pixel_list=defective_pixel_list)
 
-    # downsampling in pixels (block-averaging)
+    ############### downsample the scans with block-averaging
     if downsample_factor[0]*downsample_factor[1] > 1:
         obj_scan, blank_scan, dark_scan, defective_pixel_list = _downsample_scans(obj_scan, blank_scan, dark_scan,
                                                                                   downsample_factor=downsample_factor,
                                                                                   defective_pixel_list=defective_pixel_list)
 
-    # compute projection angles based on angle_step and rotation direction
+    ############### compute projection angles based on angle_step and rotation direction
     view_angle_start_deg = np.rad2deg(view_angle_start)
     angle_step *= subsample_view_factor
     angles = np.deg2rad(np.array([(view_angle_start_deg+n*angle_step) % 360.0 for n in range(len(view_ids))]))
