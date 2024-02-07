@@ -276,13 +276,14 @@ def calc_row_channel_params(r_a, r_n, r_h, r_s, r_r, Delta_c, Delta_r, N_c, N_r)
     # rotation offset
     delta_source = r_s - project_vector_to_vector(r_s, r_n)
     delta_rot = delta_source - project_vector_to_vector(delta_source, r_a)# rotation offset vector (perpendicular to rotation axis)
-    rotation_offset = np.dot(delta_rot, np.cross(r_a, r_n))
+    rotation_offset = np.dot(delta_rot, np.cross(r_n, r_a))
     return det_channel_offset, det_row_offset, rotation_offset
 
 ######## END Functions for NSI-MBIR parameter conversion
 
 def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, dark_scan_path=None,
                               defective_pixel_path=None,
+                              reference=None,
                               downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
                               view_id_start=0, view_angle_start=0.,
                               view_id_end=None, subsample_view_factor=1):
@@ -384,7 +385,9 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
     # coordinate of reference
     r_r = NSI_params[1].split(' ')
     r_r = np.array([np.single(i) for i in r_r])
- 
+    if reference is not None:
+        r_r[:2] = reference
+        print("Corrected reference coordinate = ", r_r)
     # detector pixel pitch
     pixel_pitch_det = NSI_params[2].split(' ')
     Delta_c = np.single(pixel_pitch_det[0])
@@ -472,6 +475,7 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
     geo_params["det_channel_offset"] = det_channel_offset
     geo_params["det_row_offset"] = det_row_offset
     geo_params["rotation_offset"] = rotation_offset
+    geo_params["rotation_tilt_angle"] = tilt_angle # tilt angle of rotation axis
     ############### END Convert NSI geometry parameters to MBIR parameters
     
     ############### Adjust geometry NSI_params according to crop_factor and downsample_factor
