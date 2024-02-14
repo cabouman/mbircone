@@ -491,7 +491,7 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
     geo_params['delta_det_row'] = geo_params['delta_det_row'] * downsample_factor[0]
     geo_params['delta_det_channel'] = geo_params['delta_det_channel'] * downsample_factor[1]
 
-    ############### Adjust detector size params w.r.t. downsampling arguments
+    ############### Adjust detector size params w.r.t. cropping arguments
     num_det_rows_shift0 = np.round(geo_params['num_det_rows'] * r0)
     num_det_rows_shift1 = np.round(geo_params['num_det_rows'] * (1 - r1))
     geo_params['num_det_rows'] = geo_params['num_det_rows'] - (num_det_rows_shift0 + num_det_rows_shift1)
