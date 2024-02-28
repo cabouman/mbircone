@@ -1,4 +1,5 @@
 import os
+import re
 from glob import glob
 import numpy as np
 from PIL import Image
@@ -6,6 +7,7 @@ import warnings
 import math
 from mbircone import cone3D
 import scipy
+from striprtf.striprtf import rtf_to_text
 
 __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
 
@@ -169,6 +171,22 @@ def _crop_scans(obj_scan, blank_scan, dark_scan,
     return obj_scan, blank_scan, dark_scan, defective_pixel_list
 
 
+def _NSI_read_image_center_from_geom_report(geom_report_path):
+    """ Give the path to "Geometry Report.rtf", returns the X and Y coordinates of the first row and first column of the detector.
+        It is observed that the coordinates given in "Geometry Report.rtf" is more accurate than the coordinates given in the <reference> field in nsipro file.
+    """
+    rtf_file = open(geom_report_path, 'r')
+    rtf_raw = rtf_file.read()
+    rtf_file.close()
+    rtf_converted = rtf_to_text(rtf_raw).split("\n")
+    for line in rtf_converted:
+        if tag in line:
+            data = re.findall(r"(\d+\.*\d*, \d+\.*\d*)", line)
+            break
+    data = data[0].split(",")
+    x_r = float(data[0])
+    y_r = float(data[1])
+    return x_r, y_r
 
 def _NSI_read_str_from_config(filepath, tags_sections):
     """Returns strings about dataset information read from NSI configuration file.
@@ -282,8 +300,9 @@ def calc_row_channel_params(r_a, r_n, r_h, r_s, r_r, Delta_c, Delta_r, N_c, N_r)
 ######## END Functions for NSI-MBIR parameter conversion
 
 def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, dark_scan_path=None,
+                              geom_report_path=None,
                               defective_pixel_path=None,
-                              reference=None,
+                              #reference=None,
                               downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
                               view_id_start=0, view_angle_start=0.,
                               view_id_end=None, subsample_view_factor=1):
@@ -358,7 +377,7 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
 
         - **defective_pixel_list** (list(tuple)): A list of tuples containing indices of invalid sinogram pixels, with the format (detector_row_idx, detector_channel_idx).
     """
-    ############### load NSI parameters from an nsipro file
+    ############### NSI param tags in nsipro file
     tag_section_list = [['source', 'Result'],                           # coordinate of X-ray source
                         ['reference', 'Result'],                        # coordinate of reference
                         ['pitch', 'Object Radiograph'],                 # detector pixel pitch
@@ -385,9 +404,12 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
     # coordinate of reference
     r_r = NSI_params[1].split(' ')
     r_r = np.array([np.single(i) for i in r_r])
-    if reference is not None:
-        r_r[:2] = reference
-        print("Corrected reference coordinate = ", r_r)
+
+    if geom_report_path is not None:
+        x_r, y_r = _NSI_read_image_center_from_geom_report(geom_report_path, "Image center")
+        r_r[0] = x_r
+        r_r[1] = y_r
+    print("Corrected reference coordinate = ", r_r)
     # detector pixel pitch
     pixel_pitch_det = NSI_params[2].split(' ')
     Delta_c = np.single(pixel_pitch_det[0])
