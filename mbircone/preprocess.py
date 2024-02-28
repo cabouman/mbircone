@@ -454,7 +454,7 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
     r_a = NSI_params[12].split(' ')
     r_a = np.array([np.single(i) for i in r_a])
     # make sure rotation axis points down
-    if NSI_params[11] == "True":    # clockwise rotation: r_a from nsipro points up
+    if r_a[1] > 0:
         r_a = -r_a
     
     # Detector normal vector
