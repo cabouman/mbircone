@@ -7,3 +7,4 @@ dask-jobqueue~=0.7.3
 scikit-image
 docstring_inheritance
 h5py
+striprtf
