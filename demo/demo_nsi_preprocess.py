@@ -44,6 +44,8 @@ dataset_path = demo_utils.download_and_extract(dataset_url, dataset_dir)
 # ##### NSI specific file paths
 # path to NSI config file. Change dataset path params for your own NSI dataset
 nsi_config_file_path = os.path.join(dataset_path, 'demo_data_nsi/JB-033_ArtifactPhantom_Vertical_NoMetal.nsipro')
+# path to "Geometry Report.rtf"
+geom_report_path = os.path.join(dataset_path, 'demo_data_nsi/Geometry_Report_nsi_demo.rtf')
 # path to directory containing all object scans
 obj_scan_path = os.path.join(dataset_path, 'demo_data_nsi/Radiographs-JB-033_ArtifactPhantom_Vertical_NoMetal')
 # path to blank scan. Usually <dataset_path>/Corrections/gain0.tif
@@ -65,6 +67,7 @@ print("\n***********************************************************************
 obj_scan, blank_scan, dark_scan, angles, geo_params, defective_pixel_list = \
         mbircone.preprocess.NSI_load_scans_and_params(nsi_config_file_path, obj_scan_path, 
                                                       blank_scan_path, dark_scan_path,
+                                                      geom_report_path=geom_report_path,
                                                       downsample_factor=downsample_factor,
                                                       defective_pixel_path=defective_pixel_path)
 print("MBIR geometry paramemters:")
@@ -98,7 +101,7 @@ sino = sino - background_offset
 print("\n*******************************************************",
       "\n**** Rotate sino images w.r.t. rotation axis tilt *****",
       "\n*******************************************************")
-sino = mbircone.preprocess.correct_tilt(sino, tilt_angle=geo_params["rot_axis_tilt"])
+sino = mbircone.preprocess.correct_tilt(sino, tilt_angle=geo_params["rotation_axis_tilt"])
 
 print("\n*******************************************************",
       "\n************** Calculate sinogram weight **************",
@@ -121,9 +124,11 @@ delta_det_row = geo_params["delta_det_row"]
 delta_det_channel = geo_params["delta_det_channel"]
 det_channel_offset = geo_params["det_channel_offset"]
 det_row_offset = geo_params["det_row_offset"]
+rotation_offset = geo_params["rotation_offset"]
 # MBIR recon
 recon_mbir = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification,
                                    det_channel_offset=det_channel_offset, det_row_offset=det_row_offset,
+                                   rotation_offset=rotation_offset,
                                    delta_det_row=delta_det_row, delta_det_channel=delta_det_channel,
                                    weights=weights)
 np.save(os.path.join(save_path, "recon_mbir.npy"), recon_mbir)

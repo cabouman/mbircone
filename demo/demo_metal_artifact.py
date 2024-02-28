@@ -48,6 +48,8 @@ dataset_path = demo_utils.download_and_extract(dataset_url, dataset_dir)
 # ##### NSI specific file paths
 # path to NSI config file. Change dataset path params for your own NSI dataset
 nsi_config_file_path = os.path.join(dataset_path, 'mar_demo_data/JB-033_ArtifactPhantom_VerticalMetal.nsipro')
+# path to "Geometry Report.rtf"
+geom_report_path = os.path.join(dataset_path, 'mar_demo_data/Geometry_Report_nsi_demo.rtf')
 # path to directory containing all object scans
 obj_scan_path = os.path.join(dataset_path, 'mar_demo_data/Radiographs-JB-033_ArtifactPhantom_VerticalMetal')
 # path to blank scan. Usually <dataset_path>/Corrections/gain0.tif
@@ -82,6 +84,7 @@ print("\n***********************************************************************
 obj_scan, blank_scan, dark_scan, angles, geo_params, defective_pixel_list = \
         mbircone.preprocess.NSI_load_scans_and_params(nsi_config_file_path, obj_scan_path, 
                                                       blank_scan_path, dark_scan_path,
+                                                      geom_report_path=geom_report_path,
                                                       downsample_factor=downsample_factor,
                                                       subsample_view_factor=subsample_view_factor,
                                                       defective_pixel_path=defective_pixel_path)
@@ -116,7 +119,7 @@ sino = sino - background_offset
 print("\n*******************************************************",
       "\n**** Rotate sino images w.r.t. rotation axis tilt *****",
       "\n*******************************************************")
-sino = mbircone.preprocess.correct_tilt(sino, tilt_angle=geo_params["rot_axis_tilt"])
+sino = mbircone.preprocess.correct_tilt(sino, tilt_angle=geo_params["rotation_axis_tilt"])
 
 print("\n*******************************************************",
       "\n******** Calculate transission sinogram weight ********",
@@ -132,6 +135,7 @@ delta_det_row = geo_params["delta_det_row"]
 delta_det_channel = geo_params["delta_det_channel"]
 det_channel_offset = geo_params["det_channel_offset"]
 det_row_offset = geo_params["det_row_offset"]
+rotation_offset = geo_params["rotation_offset"]
 
 # ###########################################################################
 # Perform MBIR reconstruction with "transmission" sino weight
@@ -144,6 +148,7 @@ print("This recon will be used to identify metal voxels and compute the MAR sino
 # MBIR recon
 recon_trans = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification,
                                     det_channel_offset=det_channel_offset, det_row_offset=det_row_offset,
+                                    rotation_offset=rotation_offset,
                                     delta_det_row=delta_det_row, delta_det_channel=delta_det_channel,
                                     weights=weights_trans)
 np.save(os.path.join(save_path, "recon_trans.npy"), recon_trans)
@@ -161,6 +166,7 @@ weights_mar = mbircone.preprocess.calc_weights_mar(sino, angles=angles, init_rec
                                                    defective_pixel_list=defective_pixel_list,
                                                    delta_det_channel=delta_det_channel, delta_det_row=delta_det_row,
                                                    det_channel_offset=det_channel_offset, det_row_offset=det_row_offset,
+                                                   rotation_offset=rotation_offset,
                                                    )
 # delete transmission weight matrix to reduce memory usage
 del weights_trans
@@ -174,6 +180,7 @@ print("This recon will be used to identify metal voxels and compute the MAR sino
 # MBIR recon
 recon_mar = mbircone.cone3D.recon(sino, angles, dist_source_detector, magnification,
                                   det_channel_offset=det_channel_offset, det_row_offset=det_row_offset,
+                                  rotation_offset=rotation_offset,
                                   delta_det_row=delta_det_row, delta_det_channel=delta_det_channel,
                                   weights=weights_mar,
                                   init_image=recon_trans,
