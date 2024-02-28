@@ -312,6 +312,7 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
         - obj_scan_path (string): Path to an NSI radiograph directory.
         - blank_scan_path (string): [Default=None] Path to a blank scan image, e.g. 'dataset_path/Corrections/gain0.tif'
         - dark_scan_path (string): [Default=None] Path to a dark scan image, e.g. 'dataset_path/Corrections/offset.tif'
+        - geom_report_path (string): [Default=None] Path to "Geometry Report.rtf" file. This file contains more accurate information regarding the coordinates of the first detector row and column.
         - defective_pixel_path (string): [Default=None] Path to the file containing defective pixel information, e.g. 'dataset_path/Corrections/defective_pixels.defect'
 
     **Arguments specific to radiograph downsampling and cropping**:
@@ -493,7 +494,7 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
     geo_params["det_channel_offset"] = det_channel_offset
     geo_params["det_row_offset"] = det_row_offset
     geo_params["rotation_offset"] = rotation_offset
-    geo_params["rotation_tilt_angle"] = tilt_angle # tilt angle of rotation axis
+    geo_params["rotation_axis_tilt"] = tilt_angle # tilt angle of rotation axis
     ############### END Convert NSI geometry parameters to MBIR parameters
     
     ############### Adjust geometry NSI_params according to crop_factor and downsample_factor
