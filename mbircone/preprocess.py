@@ -180,7 +180,7 @@ def _NSI_read_image_center_from_geom_report(geom_report_path):
     rtf_file.close()
     rtf_converted = rtf_to_text(rtf_raw).split("\n")
     for line in rtf_converted:
-        if tag in line:
+        if "Image center" in line:
             data = re.findall(r"(\d+\.*\d*, \d+\.*\d*)", line)
             break
     data = data[0].split(",")
@@ -252,32 +252,24 @@ def project_vector_to_vector(u1, u2):
     u1_proj = np.dot(u1, u2)*u2
     return u1_proj
 
-def project_vector_to_plane(u, n):
-    """ Projects the vector u onto the plane defined by its normal vector n.
-    """
-    n = unit_vector(n)
-    u_proj = u - np.dot(u, n)*n
-    return u_proj
-
-def calc_tilt_angle(r_a, r_n, r_h):
+def calc_tilt_angle(r_a, r_n, r_h, r_v):
     """ Returns the tilt angle between the rotation axis and the detector columns in unit of radians.
     """
     # project the rotation axis onto the detector plane
-    r_a_p = project_vector_to_plane(r_a, r_n)
+    r_a_p = unit_vector(r_a - project_vector_to_vector(r_a, r_n))
     # calculate angle between the projected rotation axis and the horizontal detector vector
-    angle_axis_horizontal = angle_between(r_a_p, r_h)
-    # tilt angle = angle between the projected rotation axis and the vertical detector vector
-    tilt_angle = angle_axis_horizontal-np.pi/2
+    tilt_angle = -np.arctan(np.dot(r_a_p, r_h)/np.dot(r_a_p, r_v))
     return tilt_angle
 
 def calc_source_detector_params(r_a, r_n, r_h, r_s, r_r):
     r_n = unit_vector(r_n)
+    r_v = np.cross(r_n, r_h)
     r_s_r = project_vector_to_vector(-r_s, r_n) # vector from source to center of rotation along source-detector line
     r_s_d = project_vector_to_vector(r_r-r_s, r_n) # vector from source to detector along source-detector line
     dist_source_detector = np.linalg.norm(r_s_d)
     dist_source_rotation = np.linalg.norm(r_s_r)
     magnification = dist_source_detector/dist_source_rotation 
-    tilt_angle = calc_tilt_angle(r_a, r_n, r_h)
+    tilt_angle = calc_tilt_angle(r_a, r_n, r_h, r_v)
     return dist_source_detector, magnification, tilt_angle
 
 def calc_row_channel_params(r_a, r_n, r_h, r_s, r_r, Delta_c, Delta_r, N_c, N_r):
@@ -405,11 +397,12 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
     r_r = NSI_params[1].split(' ')
     r_r = np.array([np.single(i) for i in r_r])
 
+    # correct the coordinate of (0,0) detector pixel based on "Geometry Report.rtf"
     if geom_report_path is not None:
-        x_r, y_r = _NSI_read_image_center_from_geom_report(geom_report_path, "Image center")
+        x_r, y_r = _NSI_read_image_center_from_geom_report(geom_report_path)
         r_r[0] = x_r
         r_r[1] = y_r
-    print("Corrected reference coordinate = ", r_r)
+        print("Corrected reference coordinate (from Geometry Report) = ", r_r)
     # detector pixel pitch
     pixel_pitch_det = NSI_params[2].split(' ')
     Delta_c = np.single(pixel_pitch_det[0])
@@ -460,7 +453,10 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
     # Rotation axis
     r_a = NSI_params[12].split(' ')
     r_a = np.array([np.single(i) for i in r_a])
-   
+    # make sure rotation axis points down
+    if NSI_params[11] == "True":    # clockwise rotation: r_a from nsipro points up
+        r_a = -r_a
+    
     # Detector normal vector
     r_n = NSI_params[13].split(' ')
     r_n = np.array([np.single(i) for i in r_n])
