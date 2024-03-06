@@ -120,7 +120,7 @@ def _downsample_scans(obj_scan, blank_scan, dark_scan,
 
 
 def _crop_scans(obj_scan, blank_scan, dark_scan,
-                crop_factor=[(0, 0), (1, 1)],
+                crop_region=[(0, 1), (0, 1)],
                 defective_pixel_list=None):
     """Crops given scans with given factor.
 
@@ -128,9 +128,9 @@ def _crop_scans(obj_scan, blank_scan, dark_scan,
         obj_scan (float): A stack of sinograms. 3D numpy array, (num_views, num_det_rows, num_det_channels).
         blank_scan (float) : A blank scan. 3D numpy array, (1, num_det_rows, num_det_channels).
         dark_scan (float): A dark scan. 3D numpy array, (1, num_det_rows, num_det_channels).
-        crop_factor ([(int, int),(int, int)] or [int, int, int, int]):
-            [Default=[(0, 0), (1, 1)]] Two points to define the bounding box. Sequence of [(r0, c0), (r1, c1)] or
-            [r0, c0, r1, c1], where 0<=r0 <= r1<=1 and 0<=c0 <= c1<=1.
+        crop_region ([(int, int),(int, int)] or [int, int, int, int]):
+            [Default=[(0, 1), (0, 1)]] Two points to define the bounding box. Sequence of [(r0, r1), (c0, c1)] or
+            [r0, r1, c0, c1], where 0<=r0 <= r1<=1 and 0<=c0 <= c1<=1.
 
     Returns:
         Cropped scans
@@ -138,13 +138,13 @@ def _crop_scans(obj_scan, blank_scan, dark_scan,
         - **blank_scan** (*ndarray, float*): A blank scan. 3D numpy array, (1, num_det_rows, num_det_channels).
         - **dark_scan** (*ndarray, float*): A dark scan. 3D numpy array, (1, num_det_rows, num_det_channels).
     """
-    if isinstance(crop_factor[0], (list, tuple)):
-        (r0, c0), (r1, c1) = crop_factor
+    if isinstance(crop_region[0], (list, tuple)):
+        (r0, r1), (c0, c1) = crop_region
     else:
-        r0, c0, r1, c1 = crop_factor
+        r0, r1, c0, c1 = crop_region
 
-    assert 0 <= r0 <= r1 <= 1 and 0 <= c0 <= c1 <= 1, 'crop_factor should be sequence of [(r0, c0), (r1, c1)] ' \
-                                                      'or [r0, c0, r1, c1], where 1>=r1 >= r0>=0 and 1>=c1 >= c0>=0.'
+    assert 0 <= r0 <= r1 <= 1 and 0 <= c0 <= c1 <= 1, 'crop_region should be sequence of [(r0, r1), (c0, c1)] ' \
+                                                      'or [r0, r1, c0, c1], where 1>=r1 >= r0>=0 and 1>=c1 >= c0>=0.'
     assert math.isclose(c0, 1 - c1), 'horizontal crop limits must be symmetric'
 
     N1_lo = round(r0 * obj_scan.shape[1])
@@ -334,7 +334,7 @@ def calc_row_channel_params(r_a, r_n, r_h, r_s, r_r, Delta_c, Delta_r, N_c, N_r)
 def NSI_load_scans_and_params(config_file_path, geom_report_path, 
                               obj_scan_path, blank_scan_path, dark_scan_path,
                               defective_pixel_path,
-                              downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
+                              downsample_factor=[1, 1], crop_region=[(0, 1), (0, 1)],
                               view_id_start=0, view_angle_start=0.,
                               view_id_end=None, subsample_view_factor=1):
     """ Load the object scan, blank scan, dark scan, view angles, defective pixel information, and geometry parameters from an NSI dataset directory.
@@ -360,7 +360,7 @@ def NSI_load_scans_and_params(config_file_path, geom_report_path,
 
             In case where the scan size is not divisible by `downsample_factor`, the scans will be first truncated to a size that is divisible by `downsample_factor`, and then downsampled.
 
-        - crop_factor ([(float, float),(float, float)] or [float, float, float, float]): [Default=[(0., 0.), (1., 1.)]]. Two fractional points [(r0, c0), (r1, c1)] defining the bounding box that crops the scans, where 0<=r0<=r1<=1 and 0<=c0<=c1<=1. By default no cropping will be performed.
+        - crop_region ([(float, float),(float, float)] or [float, float, float, float]): [Default=[(0, 1), (0, 1)]]. Two fractional points [(r0, r1), (c0, c1)] defining the bounding box that crops the scans, where 0<=r0<=r1<=1 and 0<=c0<=c1<=1. By default no cropping will be performed.
 
             r0 and r1 defines the cropping factors along the detector rows. c0 and c1 defines the cropping factors along the detector channels. ::
 
@@ -372,7 +372,7 @@ def NSI_load_scans_and_params(config_file_path, geom_report_path,
             :         |     +---------------(r1,c1)  |
             :       (1,0)--------------------------(1,1)
 
-            For example, ``crop_factor=[(0.25,0), (0.75,1)]`` will crop out the middle half of the scan image along the vertical direction.
+            For example, ``crop_region=[(0.25,0.75), (0,1)]`` will crop out the middle half of the scan image along the vertical direction.
 
     **Arguments specific to view subsampling**:
 
@@ -536,11 +536,11 @@ def NSI_load_scans_and_params(config_file_path, geom_report_path,
     geo_params["rotation_axis_tilt"] = tilt_angle # tilt angle of rotation axis
     ############### END Convert NSI geometry parameters to MBIR parameters
     
-    ############### Adjust geometry NSI_params according to crop_factor and downsample_factor
-    if isinstance(crop_factor[0], (list, tuple)):
-        (r0, c0), (r1, c1) = crop_factor
+    ############### Adjust geometry NSI_params according to crop_region and downsample_factor
+    if isinstance(crop_region[0], (list, tuple)):
+        (r0, r1), (c0, c1) = crop_region
     else:
-        r0, c0, r1, c1 = crop_factor
+        r0, r1, c0, c1 = crop_region
 
     ############### Adjust detector size and pixel pitch params w.r.t. downsampling arguments
     geo_params['num_det_rows'] = (geo_params['num_det_rows'] // downsample_factor[0])
@@ -616,7 +616,7 @@ def NSI_load_scans_and_params(config_file_path, geom_report_path,
 
     ############### crop the scans based on input params
     obj_scan, blank_scan, dark_scan, defective_pixel_list = _crop_scans(obj_scan, blank_scan, dark_scan,
-                                                                        crop_factor=crop_factor,
+                                                                        crop_region=crop_region,
                                                                         defective_pixel_list=defective_pixel_list)
 
     ############### downsample the scans with block-averaging
