@@ -7,7 +7,7 @@ import warnings
 import math
 from mbircone import cone3D
 import scipy
-from striprtf.striprtf import rtf_to_text
+import striprtf.striprtf as striprtf
 
 __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
 
@@ -178,7 +178,7 @@ def _NSI_read_image_center_from_geom_report(geom_report_path):
     rtf_file = open(geom_report_path, 'r')
     rtf_raw = rtf_file.read()
     rtf_file.close()
-    rtf_converted = rtf_to_text(rtf_raw).split("\n")
+    rtf_converted = striprtf.rtf_to_text(rtf_raw).split("\n")
     for line in rtf_converted:
         if "Image center" in line:
             data = re.findall(r"(\d+\.*\d*, \d+\.*\d*)", line)
