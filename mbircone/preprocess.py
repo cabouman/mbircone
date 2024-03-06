@@ -291,10 +291,9 @@ def calc_row_channel_params(r_a, r_n, r_h, r_s, r_r, Delta_c, Delta_r, N_c, N_r)
 
 ######## END Functions for NSI-MBIR parameter conversion
 
-def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, dark_scan_path=None,
-                              geom_report_path=None,
-                              defective_pixel_path=None,
-                              #reference=None,
+def NSI_load_scans_and_params(config_file_path, geom_report_path, 
+                              obj_scan_path, blank_scan_path, dark_scan_path,
+                              defective_pixel_path,
                               downsample_factor=[1, 1], crop_factor=[(0, 0), (1, 1)],
                               view_id_start=0, view_angle_start=0.,
                               view_id_end=None, subsample_view_factor=1):
@@ -309,11 +308,11 @@ def NSI_load_scans_and_params(config_file_path, obj_scan_path, blank_scan_path, 
     **Arguments specific to file paths**:
 
         - config_file_path (string): Path to NSI configuration file. The filename extension is '.nsipro'.
+        - geom_report_path (string): Path to "Geometry Report.rtf" file. This file contains more accurate information regarding the coordinates of the first detector row and column.
         - obj_scan_path (string): Path to an NSI radiograph directory.
-        - blank_scan_path (string): [Default=None] Path to a blank scan image, e.g. 'dataset_path/Corrections/gain0.tif'
-        - dark_scan_path (string): [Default=None] Path to a dark scan image, e.g. 'dataset_path/Corrections/offset.tif'
-        - geom_report_path (string): [Default=None] Path to "Geometry Report.rtf" file. This file contains more accurate information regarding the coordinates of the first detector row and column.
-        - defective_pixel_path (string): [Default=None] Path to the file containing defective pixel information, e.g. 'dataset_path/Corrections/defective_pixels.defect'
+        - blank_scan_path (string): Path to a blank scan image, e.g. 'dataset_path/Corrections/gain0.tif'
+        - dark_scan_path (string): Path to a dark scan image, e.g. 'dataset_path/Corrections/offset.tif'
+        - defective_pixel_path (string): Path to the file containing defective pixel information, e.g. 'dataset_path/Corrections/defective_pixels.defect'
 
     **Arguments specific to radiograph downsampling and cropping**:
 

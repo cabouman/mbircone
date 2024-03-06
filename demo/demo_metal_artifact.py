@@ -82,12 +82,11 @@ print("\n***********************************************************************
       "\n** Load scan images, angles, geometry params, and defective pixel information **",
       "\n********************************************************************************")
 obj_scan, blank_scan, dark_scan, angles, geo_params, defective_pixel_list = \
-        mbircone.preprocess.NSI_load_scans_and_params(nsi_config_file_path, obj_scan_path, 
-                                                      blank_scan_path, dark_scan_path,
-                                                      geom_report_path=geom_report_path,
+        mbircone.preprocess.NSI_load_scans_and_params(nsi_config_file_path, geom_report_path,
+                                                      obj_scan_path, blank_scan_path, dark_scan_path,
+                                                      defective_pixel_path,
                                                       downsample_factor=downsample_factor,
-                                                      subsample_view_factor=subsample_view_factor,
-                                                      defective_pixel_path=defective_pixel_path)
+                                                      subsample_view_factor=subsample_view_factor)
 print("MBIR geometry paramemters:")
 pp.pprint(geo_params)
 print('obj_scan shape = ', obj_scan.shape)
