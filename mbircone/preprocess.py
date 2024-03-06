@@ -236,20 +236,6 @@ def unit_vector(v):
     """ Normalize v. Returns v/||v|| """
     return v / np.linalg.norm(v)
 
-def angle_between(v1, v2):
-    """ Returns the angle in radians between vectors 'v1' and 'v2'::
-            >>> angle_between((1, 0, 0), (0, 1, 0))
-            1.5707963267948966
-            >>> angle_between((1, 0, 0), (1, 0, 0))
-            0.0
-            >>> angle_between((1, 0, 0), (-1, 0, 0))
-            3.141592653589793
-    """
-    v1_u = unit_vector(v1)
-    v2_u = unit_vector(v2)
-    return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
-
-
 def project_vector_to_vector(u1, u2):
     """ Projects the vector u1 onto the vector u2. Returns the vector <u1|u2>.
     """
