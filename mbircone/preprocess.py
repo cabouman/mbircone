@@ -171,9 +171,14 @@ def _crop_scans(obj_scan, blank_scan, dark_scan,
     return obj_scan, blank_scan, dark_scan, defective_pixel_list
 
 
-def _NSI_read_image_center_from_geom_report(geom_report_path):
+def _NSI_read_detector_location_from_geom_report(geom_report_path):
     """ Give the path to "Geometry Report.rtf", returns the X and Y coordinates of the first row and first column of the detector.
         It is observed that the coordinates given in "Geometry Report.rtf" is more accurate than the coordinates given in the <reference> field in nsipro file.
+        
+    Args:
+        geom_report_path (string): Path to "Geometry Report.rtf" file. This file contains more accurate information regarding the coordinates of the first detector row and column.
+    Returns:
+        (x_r, y_r): A tuple containing the X and Y coordinates of center of the first detector row and column.    
     """
     rtf_file = open(geom_report_path, 'r')
     rtf_raw = rtf_file.read()
@@ -227,9 +232,9 @@ def _NSI_read_str_from_config(filepath, tags_sections):
     return NSI_params
 
 ######## Functions for NSI-MBIR parameter conversion
-def unit_vector(vector):
-    """ Returns the unit vector of the vector.  """
-    return vector / np.linalg.norm(vector)
+def unit_vector(v):
+    """ Normalize v. Returns v/||v|| """
+    return v / np.linalg.norm(v)
 
 def angle_between(v1, v2):
     """ Returns the angle in radians between vectors 'v1' and 'v2'::
@@ -246,14 +251,22 @@ def angle_between(v1, v2):
 
 
 def project_vector_to_vector(u1, u2):
-    """ Projects the vector u1 onto the vector u2.
+    """ Projects the vector u1 onto the vector u2. Returns the vector <u1|u2>.
     """
     u2 = unit_vector(u2)
     u1_proj = np.dot(u1, u2)*u2
     return u1_proj
 
 def calc_tilt_angle(r_a, r_n, r_h, r_v):
-    """ Returns the tilt angle between the rotation axis and the detector columns in unit of radians.
+    """ Calculate the tilt angle between the rotation axis and the detector columns in unit of radians. User should call `preprocess.correct_tilt()` to rotate the sinogram images w.r.t. to the tilt angle.
+    
+    Args:
+        r_a: 3D real-valued unit vector in direction of rotation axis pointing down.
+        r_n: 3D real-valued unit vector perpendicular to the detector plan pointing from source to detector.
+        r_h: 3D real-valued unit vector in direction parallel to detector rows pointing from left to right.
+        r_v: 3D real-valued unit vector in direction parallel to detector columns pointing down.
+    Returns:
+        float number specifying the angle between the rotation axis and the detector columns in units of radians.
     """
     # project the rotation axis onto the detector plane
     r_a_p = unit_vector(r_a - project_vector_to_vector(r_a, r_n))
@@ -262,23 +275,64 @@ def calc_tilt_angle(r_a, r_n, r_h, r_v):
     return tilt_angle
 
 def calc_source_detector_params(r_a, r_n, r_h, r_s, r_r):
-    r_n = unit_vector(r_n)
-    r_v = np.cross(r_n, r_h)
-    r_s_r = project_vector_to_vector(-r_s, r_n) # vector from source to center of rotation along source-detector line
-    r_s_d = project_vector_to_vector(r_r-r_s, r_n) # vector from source to detector along source-detector line
-    dist_source_detector = np.linalg.norm(r_s_d)
-    dist_source_rotation = np.linalg.norm(r_s_r)
+    """ Calculate the MBIRCONE geometry parameters: dist_source_detector, magnification, and rotation axis tilt angle. 
+    Args:
+        r_a (tuple): 3D real-valued unit vector in direction of rotation axis pointing down.
+        r_n (tuple): 3D real-valued unit vector perpendicular to the detector plan pointing from source to detector.
+        r_h (tuple): 3D real-valued unit vector in direction parallel to detector rows pointing from left to right.
+        r_s (tuple): 3D real-valued vector from origin to the source location.
+        r_r (tuple): 3D real-valued vector from origin to the center of pixel on first row and colum of detector.
+    Returns:
+        3-element tuple containing:
+        - **dist_source_detector** (float): Distance between the X-ray source and the detector in units of mm. 
+        - **magnification** (float): Magnification of the cone-beam geometry defined as
+            (source to detector distance)/(source to center-of-rotation distance).
+        - **tilt_angle (float)**: Angle between the rotation axis and the detector columns in units of radians.
+    """
+    r_n = unit_vector(r_n)      # make sure r_n is normalized
+    r_v = np.cross(r_n, r_h)    # r_v = r_n x r_h
+
+    #### vector pointing from source to center of rotation along the source-detector line.
+    r_s_r = project_vector_to_vector(-r_s, r_n) # project -r_s to r_n 
+    
+    #### vector pointing from source to detector along the source-detector line.
+    r_s_d = project_vector_to_vector(r_r-r_s, r_n)
+    
+    dist_source_detector = np.linalg.norm(r_s_d) # ||r_s_d||
+    dist_source_rotation = np.linalg.norm(r_s_r) # ||r_s_r||
     magnification = dist_source_detector/dist_source_rotation 
-    tilt_angle = calc_tilt_angle(r_a, r_n, r_h, r_v)
+    tilt_angle = calc_tilt_angle(r_a, r_n, r_h, r_v) # rotation axis tilt angle
     return dist_source_detector, magnification, tilt_angle
 
 def calc_row_channel_params(r_a, r_n, r_h, r_s, r_r, Delta_c, Delta_r, N_c, N_r):
-    r_n = unit_vector(r_n)
-    r_h = unit_vector(r_h)
-    r_v = np.cross(r_n, r_h)
-    c_v = -(N_r-1)/2*Delta_r*r_v
+    """ Calculate the MBIRCONE geometry parameters: det_channel_offset, det_row_offset, rotation_offset. 
+    Args:
+        r_a (tuple): 3D real-valued unit vector in direction of rotation axis pointing down.
+        r_n (tuple): 3D real-valued unit vector perpendicular to the detector plan pointing from source to detector.
+        r_h (tuple): 3D real-valued unit vector in direction parallel to detector rows pointing from left to right.
+        r_s (tuple): 3D real-valued vector from origin to the source location.
+        r_r (tuple): 3D real-valued vector from origin to the center of pixel on first row and colum of detector.
+        Delta_c (float): spacing between detector columns in units of mm.
+        Delta_r (float): spacing between detector rows in units of mm.
+        N_c (int): Number of detector channels.
+        N_r (int): Number of detector rows.
+    Returns:
+        3-element tuple containing:
+        - **det_channel_offset** (float): Distance in mm from center of detector to the source-detector line along a row. 
+        - **det_row_offset** (float): Distance in mm from center of detector to the source-detector line along a column. 
+        - **rotation_offset** (float): Distance in mm from source-detector line to axis of rotation.
+    """
+    r_n = unit_vector(r_n) # make sure r_n is normalized
+    r_h = unit_vector(r_h) # make sure r_h is normalized
+    r_v = np.cross(r_n, r_h) # r_v = r_n x r_h
+    
+    # vector pointing from center of detector to the first row and column of detector along detector columns.
+    c_v = -(N_r-1)/2*Delta_r*r_v 
+    # vector pointing from center of detector to the first row and column of detector along detector rows.
     c_h = -(N_c-1)/2*Delta_c*r_h
-    r_s_r = r_r - r_s
+    # vector pointing from source to first row and column of detector.
+    r_s_r = r_r - r_s 
+    # vector pointing from source-detector line to center of detector. 
     r_delta = r_s_r - project_vector_to_vector(r_s_r, r_n) - c_v - c_h
     # detector row and channel offsets
     det_channel_offset = -np.dot(r_delta, r_h)
@@ -399,7 +453,7 @@ def NSI_load_scans_and_params(config_file_path, geom_report_path,
 
     # correct the coordinate of (0,0) detector pixel based on "Geometry Report.rtf"
     if geom_report_path is not None:
-        x_r, y_r = _NSI_read_image_center_from_geom_report(geom_report_path)
+        x_r, y_r = _NSI_read_detector_location_from_geom_report(geom_report_path)
         r_r[0] = x_r
         r_r[1] = y_r
         print("Corrected reference coordinate (from Geometry Report) = ", r_r)
