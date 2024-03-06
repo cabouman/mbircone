@@ -45,7 +45,7 @@ def _read_scan_dir(scan_dir, view_ids=[]):
         warnings.warn("view_ids should not be empty.")
 
     img_path_list = sorted(glob(os.path.join(scan_dir, '*')))
-    img_path_list = [img_path_list[i] for i in view_ids]
+    img_path_list = [img_path_list[idx] for idx in view_ids]
     img_list = [_read_scan_img(img_path) for img_path in img_path_list]
 
     # return shape = num_views x num_det_rows x num_det_channels
@@ -158,16 +158,15 @@ def _crop_scans(obj_scan, blank_scan, dark_scan,
     dark_scan = dark_scan[:, N1_lo:N1_hi, N2_lo:N2_hi]
 
     # adjust the defective pixel information: any down-sampling block containing a defective pixel is also defective
-    if defective_pixel_list is not None:
-        i = 0
-        while i < len(defective_pixel_list):
-            (r,c) = defective_pixel_list[i]
-            (r_new, c_new) = (r-N1_lo, c-N2_lo)
-            # delete the index tuple if it falls outside the cropped region
-            if (r_new<0 or r_new>=obj_scan.shape[1] or c_new<0 or c_new>=obj_scan.shape[2]):
-                del defective_pixel_list[i]
-            else:
-                i+=1
+    i = 0
+    while i < len(defective_pixel_list):
+        (r,c) = defective_pixel_list[i]
+        (r_new, c_new) = (r-N1_lo, c-N2_lo)
+        # delete the index tuple if it falls outside the cropped region
+        if (r_new<0 or r_new>=obj_scan.shape[1] or c_new<0 or c_new>=obj_scan.shape[2]):
+            del defective_pixel_list[i]
+        else:
+            i+=1
     return obj_scan, blank_scan, dark_scan, defective_pixel_list
 
 
@@ -406,12 +405,13 @@ def NSI_load_scans_and_params(config_file_path, geom_report_path,
             - rotation_offset: Distance in :math:`ALU` from source-detector line to axis of rotation in the object space.
             - num_det_channels: Number of detector channels.
             - num_det_rows: Number of detector rows.
+            - rotation_axis_tilt: angle between the rotation axis and the detector columns in units of radians.
 
         - **defective_pixel_list** (list(tuple)): A list of tuples containing indices of invalid sinogram pixels, with the format (detector_row_idx, detector_channel_idx).
     """
     ############### NSI param tags in nsipro file
-    tag_section_list = [['source', 'Result'],                           # coordinate of X-ray source
-                        ['reference', 'Result'],                        # coordinate of reference
+    tag_section_list = [['source', 'Result'],                           # vector from origin to source
+                        ['reference', 'Result'],                        # vector from origin to first row and column of the detector
                         ['pitch', 'Object Radiograph'],                 # detector pixel pitch
                         ['width pixels', 'Detector'],                   # number of detector rows
                         ['height pixels', 'Detector'],                  # number of detector channels
@@ -422,27 +422,27 @@ def NSI_load_scans_and_params(config_file_path, geom_report_path,
                         ['flipV', 'Correction'],                        # Vertical flip (boolean)
                         ['angleStep', 'Object Radiograph'],             # step size of adjacent view angles
                         ['clockwise', 'Processed'],                     # rotation direction (boolean)
-                        ['axis', 'Result'],                             # rotation axis
-                        ['normal', 'Result'],                           # Detector normal vector
-                        ['horizontal', 'Result']                        # Detector horizontal vector
+                        ['axis', 'Result'],                             # unit vector in direction ofrotation axis
+                        ['normal', 'Result'],                           # unit vector in direction of source-detector line
+                        ['horizontal', 'Result']                        # unit vector in direction of detector rows
                        ]
     assert(os. path. isfile(config_file_path)), f'Error! NSI config file does not exist. Please check whether {config_file_path} is a valid file.'
     NSI_params = _NSI_read_str_from_config(config_file_path, tag_section_list)
 
-    # coordinate of source
+    # vector from origin to source
     r_s = NSI_params[0].split(' ')
-    r_s = np.array([np.single(i) for i in r_s])
+    r_s = np.array([np.single(elem) for elem in r_s])
     
-    # coordinate of reference
+    # vector from origin to reference, where reference is the center of first row and column of the detector
     r_r = NSI_params[1].split(' ')
-    r_r = np.array([np.single(i) for i in r_r])
+    r_r = np.array([np.single(elem) for elem in r_r])
 
     # correct the coordinate of (0,0) detector pixel based on "Geometry Report.rtf"
-    if geom_report_path is not None:
-        x_r, y_r = _NSI_read_detector_location_from_geom_report(geom_report_path)
-        r_r[0] = x_r
-        r_r[1] = y_r
-        print("Corrected reference coordinate (from Geometry Report) = ", r_r)
+    x_r, y_r = _NSI_read_detector_location_from_geom_report(geom_report_path)
+    r_r[0] = x_r
+    r_r[1] = y_r
+    print("Corrected coordinate of (0,0) detector pixel (from Geometry Report) = ", r_r)
+    
     # detector pixel pitch
     pixel_pitch_det = NSI_params[2].split(' ')
     Delta_c = np.single(pixel_pitch_det[0])
@@ -492,22 +492,22 @@ def NSI_load_scans_and_params(config_file_path, geom_report_path,
     
     # Rotation axis
     r_a = NSI_params[12].split(' ')
-    r_a = np.array([np.single(i) for i in r_a])
+    r_a = np.array([np.single(elem) for elem in r_a])
     # make sure rotation axis points down
     if r_a[1] > 0:
         r_a = -r_a
     
     # Detector normal vector
     r_n = NSI_params[13].split(' ')
-    r_n = np.array([np.single(i) for i in r_n])
+    r_n = np.array([np.single(elem) for elem in r_n])
    
     # Detector horizontal vector
     r_h = NSI_params[14].split(' ')
-    r_h = np.array([np.single(i) for i in r_h])
+    r_h = np.array([np.single(elem) for elem in r_h])
 
     print("############ NSI geometry parameters ############")
     print("vector from origin to source = ", r_s, " [mm]")
-    print("vector from origin to reference = ", r_r, " [mm]")
+    print("vector from origin to (0,0) detector pixel = ", r_r, " [mm]")
     print("Unit vector of rotation axis = ", r_a)
     print("Unit vector of normal = ", r_n)
     print("Unit vector of horizontal = ", r_h)
