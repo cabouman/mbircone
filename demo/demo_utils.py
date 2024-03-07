@@ -135,7 +135,7 @@ def download_and_extract(download_url, save_dir):
         save_dir (string): Path to parent directory where downloaded file will be saved . 
     Return:
         string: path to downloaded file. This will be ``save_dir``+ downloaded_file_name 
-            In case whereno download is performed, the function will return path to the existing local file.
+            In case where no download is performed, the function will return path to the existing local file.
             In case where a tarball file is downloaded and extracted, the function will return the path to the parent directory where the file is extracted to, which is the save as ``save_dir``. 
     """
 
