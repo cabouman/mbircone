@@ -1,4 +1,4 @@
-mbircone.cone3D
+mbircone.utils
 ---------------
 .. automodule:: mbircone.utils
    :members: hdf5_write
