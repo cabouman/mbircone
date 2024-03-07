@@ -181,7 +181,10 @@ def _crop_scans(obj_scan, blank_scan, dark_scan,
 def _NSI_read_detector_location_from_geom_report(geom_report_path):
     """ Give the path to "Geometry Report.rtf", returns the X and Y coordinates of the first row and first column of the detector.
         It is observed that the coordinates given in "Geometry Report.rtf" is more accurate than the coordinates given in the <reference> field in nsipro file.
-        
+        Specifically, this function parses the information of "Image center" from "Geometry Report.rtf".
+        Example: 
+            - content in "Geometry Report.rtf": Image center    (95.707, 123.072) [mm]  / (3.768, 4.845) [in]
+            - Returns: (95.707, 123.072) 
     Args:
         geom_report_path (string): Path to "Geometry Report.rtf" file. This file contains more accurate information regarding the coordinates of the first detector row and column.
     Returns:
@@ -190,9 +193,12 @@ def _NSI_read_detector_location_from_geom_report(geom_report_path):
     rtf_file = open(geom_report_path, 'r')
     rtf_raw = rtf_file.read()
     rtf_file.close()
+    # convert rft file content to plain text.
     rtf_converted = striprtf.rtf_to_text(rtf_raw).split("\n")
     for line in rtf_converted:
         if "Image center" in line:
+            # read the two floating numbers immediately following the keyword "Image center". 
+            # This is the X and Y coordinates of (0,0) detector pixel in units of mm.
             data = re.findall(r"(\d+\.*\d*, \d+\.*\d*)", line)
             break
     data = data[0].split(",")
