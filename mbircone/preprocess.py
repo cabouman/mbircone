@@ -13,10 +13,11 @@ __lib_path = os.path.join(os.path.expanduser('~'), '.cache', 'mbircone')
 
 
 def _read_scan_img(img_path):
-    """Reads a single scan image from an image path.
+    """Reads a single scan image from an image path. This function is a subroutine to the function `_read_scan_dir`.
 
     Args:
-        img_path (string): Path to a ConeBeam scan image.
+        img_path (string): Path object or file object pointing to an image. 
+            The image type must be compatible with `PIL.Image.open()`. See `https://pillow.readthedocs.io/en/stable/reference/Image.html` for more details.
     Returns:
         ndarray (float): 2D numpy array. A single scan image.
     """
@@ -32,10 +33,11 @@ def _read_scan_img(img_path):
 
 
 def _read_scan_dir(scan_dir, view_ids=[]):
-    """Reads a stack of scan images from a directory.
+    """Reads a stack of scan images from a directory. This function is a subroutine to `NSI_load_scans_and_params`.
 
     Args:
-        scan_dir (string): Path to a ConeBeam Scan directory.
+        scan_dir (string): Path to a ConeBeam Scan directory. 
+            Example: "<absolute_path_to_dataset>/Radiographs"
         view_ids (list[int]): List of view indices to specify which scans to read.
     Returns:
         ndarray (float): 3D numpy array, (num_views, num_det_rows, num_det_channels). A stack of scan images.
