@@ -27,36 +27,37 @@ print('This script is a demonstration of the preprocessing module of NSI dataset
 # Set the parameters to get the data and do the recon 
 # ###########################################################################
 
-# ###################### Change the parameters below for your own use case.
-# ##### params for dataset downloading.
-# path to store output recon images
-save_path = './output/nsi_demo/'
-os.makedirs(save_path, exist_ok=True)
+# ###################### User defined params. Change the parameters below for your own use case.
+save_path = './output/nsi_demo/' # path to store output recon images
+os.makedirs(save_path, exist_ok=True) # mkdir if directory does not exist
+downsample_factor = [4, 4] # downsample factor of scan images along detector rows and detector columns.
 
-# ##### Download and extract NSI dataset 
+# ##### params for dataset downloading. User may change these parameters for their own datasets.
+# An example NSI dataset will be downloaded from `dataset_url`, and saved to `download_dir`.
 # url to NSI dataset.
 dataset_url = 'https://engineering.purdue.edu/~bouman/data_repository/data/demo_data_nsi.tgz'
-# destination path to download and extract the phantom and NN weight files.
-dataset_dir = './demo_data/'   
-# download dataset. The dataset path will be later used to define path to NSI files.
-dataset_path = demo_utils.download_and_extract(dataset_url, dataset_dir)
+# destination path to download and extract the NSI data and metadata.
+download_dir = './demo_data/'   
+# download dataset. The download path will be later used to define path to dataset specific files.
+download_dir = demo_utils.download_and_extract(dataset_url, download_dir)
+# path to NSI dataset
+dataset_path = os.path.join(download_dir, "demo_data_nsi") # change this for different NSI datasets.
 
-# ##### NSI specific file paths
+# ###################### NSI specific file paths, These are derived from dataset_path.
+# User may change the variables below for a different NSI dataset.
 # path to NSI config file. Change dataset path params for your own NSI dataset
-nsi_config_file_path = os.path.join(dataset_path, 'demo_data_nsi/JB-033_ArtifactPhantom_Vertical_NoMetal.nsipro')
+nsi_config_file_path = os.path.join(dataset_path, 'JB-033_ArtifactPhantom_Vertical_NoMetal.nsipro')
 # path to "Geometry Report.rtf"
-geom_report_path = os.path.join(dataset_path, 'demo_data_nsi/Geometry_Report_nsi_demo.rtf')
+geom_report_path = os.path.join(dataset_path, 'Geometry_Report_nsi_demo.rtf')
 # path to directory containing all object scans
-obj_scan_path = os.path.join(dataset_path, 'demo_data_nsi/Radiographs-JB-033_ArtifactPhantom_Vertical_NoMetal')
+obj_scan_path = os.path.join(dataset_path, 'Radiographs-JB-033_ArtifactPhantom_Vertical_NoMetal')
 # path to blank scan. Usually <dataset_path>/Corrections/gain0.tif
-blank_scan_path = os.path.join(dataset_path, 'demo_data_nsi/Corrections/gain0.tif')
+blank_scan_path = os.path.join(dataset_path, 'Corrections/gain0.tif')
 # path to dark scan. Usually <dataset_path>/Corrections/offset.tif
-dark_scan_path = os.path.join(dataset_path, 'demo_data_nsi/Corrections/offset.tif')
+dark_scan_path = os.path.join(dataset_path, 'Corrections/offset.tif')
 # path to NSI file containing defective pixel information
-defective_pixel_path = os.path.join(dataset_path, 'demo_data_nsi/Corrections/defective_pixels.defect')
-# downsample factor of scan images along detector rows and detector columns.
-downsample_factor = [4, 4]
-# ######### End of parameters #########
+defective_pixel_path = os.path.join(dataset_path, 'Corrections/defective_pixels.defect')
+# ###################### End of parameters
 
 # ###########################################################################
 # NSI preprocess: obtain sinogram, sino weights, angles, and geometry params

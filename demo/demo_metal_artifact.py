@@ -31,35 +31,10 @@ print('This script is a demonstration of the metal artifact reduction (MAR) func
 # Set the parameters to get the data and do the recon 
 # ###########################################################################
 
-# ###################### Change the parameters below for your own use case.
-# ##### params for dataset downloading.
-# path to store output recon images
-save_path = './output/demo_metal_artifacts/'
-os.makedirs(save_path, exist_ok=True)
-
-# ##### Download and extract NSI dataset 
-# url to NSI dataset.
-dataset_url = 'https://engineering.purdue.edu/~bouman/data_repository/data/mar_demo_data.tgz'
-# destination path to download and extract the phantom and NN weight files.
-dataset_dir = './demo_data/' 
-# download dataset. The dataset path will be later used to define path to NSI files.
-dataset_path = demo_utils.download_and_extract(dataset_url, dataset_dir)
-
-# ##### NSI specific file paths
-# path to NSI config file. Change dataset path params for your own NSI dataset
-nsi_config_file_path = os.path.join(dataset_path, 'mar_demo_data/JB-033_ArtifactPhantom_VerticalMetal.nsipro')
-# path to "Geometry Report.rtf"
-geom_report_path = os.path.join(dataset_path, 'mar_demo_data/Geometry_Report_nsi_demo.rtf')
-# path to directory containing all object scans
-obj_scan_path = os.path.join(dataset_path, 'mar_demo_data/Radiographs-JB-033_ArtifactPhantom_VerticalMetal')
-# path to blank scan. Usually <dataset_path>/Corrections/gain0.tif
-blank_scan_path = os.path.join(dataset_path, 'mar_demo_data/Corrections/gain0.tif')
-# path to dark scan. Usually <dataset_path>/Corrections/offset.tif
-dark_scan_path = os.path.join(dataset_path, 'mar_demo_data/Corrections/offset.tif')
-# path to NSI file containing defective pixel information
-defective_pixel_path = os.path.join(dataset_path, 'mar_demo_data/Corrections/defective_pixels.defect')
-# downsample factor of scan images along detector rows and detector columns.
-downsample_factor = [6, 6]
+# ###################### User defined params. Change the parameters below for your own use case.
+save_path = './output/demo_metal_artifacts/' # path to store output recon images
+os.makedirs(save_path, exist_ok=True) # mkdir if directory does not exist
+downsample_factor = [6, 6] # downsample factor of scan images along detector rows and detector columns.
 # view subsample factor
 subsample_view_factor = 2
 
@@ -72,7 +47,33 @@ beta = 1.0
 # gamma controls the weight to sinogram entries in which the projection paths contain metal components.
 # A larger gamma promotes metal artifacts reduction around metal regions.
 gamma = 4.0
-# ######### End of parameters #########
+
+# ##### params for dataset downloading. User may change these parameters for their own datasets.
+# An example NSI dataset will be downloaded from `dataset_url`, and saved to `download_dir`.
+# url to NSI dataset.
+dataset_url = 'https://engineering.purdue.edu/~bouman/data_repository/data/mar_demo_data.tgz'
+# destination path to download and extract the NSI data and metadata.
+download_dir = './demo_data/'
+# download dataset. The download path will be later used to define path to dataset specific files.
+download_dir = demo_utils.download_and_extract(dataset_url, download_dir)
+# path to NSI dataset
+dataset_path = os.path.join(download_dir, "mar_demo_data") # change this for different NSI datasets.
+
+# ######### NSI specific file paths, These are derived from dataset_path.
+# User may change the variables below for a different NSI dataset.
+# path to NSI config file. Change dataset path params for your own NSI dataset
+nsi_config_file_path = os.path.join(dataset_path, 'JB-033_ArtifactPhantom_VerticalMetal.nsipro')
+# path to "Geometry Report.rtf"
+geom_report_path = os.path.join(dataset_path, 'Geometry_Report_nsi_demo.rtf')
+# path to directory containing all object scans
+obj_scan_path = os.path.join(dataset_path, 'Radiographs-JB-033_ArtifactPhantom_VerticalMetal')
+# path to blank scan. Usually <dataset_path>/Corrections/gain0.tif
+blank_scan_path = os.path.join(dataset_path, 'Corrections/gain0.tif')
+# path to dark scan. Usually <dataset_path>/Corrections/offset.tif
+dark_scan_path = os.path.join(dataset_path, 'Corrections/offset.tif')
+# path to NSI file containing defective pixel information
+defective_pixel_path = os.path.join(dataset_path, 'Corrections/defective_pixels.defect')
+# ###################### End of parameters
 
 t_start = time.time()
 # ###########################################################################
