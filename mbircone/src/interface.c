@@ -169,3 +169,20 @@ void forwardProject(float *y, float *x,
     // printf("Done free_2D\n");
 
 }
+
+void backProject(float *y, float *x,
+    struct SinoParams sinoParams, struct ImageParams imgParams,
+    char *Amatrix_fname)
+{
+    
+    struct SysMatrix A;
+
+    /* Read system matrix from disk */
+    readSysMatrix(Amatrix_fname, &sinoParams, &imgParams, &A);
+    backProject3DCone(y, x, &imgParams, &A, &sinoParams);
+
+    freeSysMatrix(&A);
+
+    // printf("Done free_2D\n");
+
+}

@@ -34,7 +34,7 @@ void forwardProject3DCone( float *Ax, float *x, struct ImageParams *imgParams, s
     }
 }
 
-void backProject3DCone( float ***x_out, float ***y_in, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams)
+void backProject3DCone( float *Ax, float *x, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams)
 {
 
     long int j_u, j_x, j_y, i_beta, i_v, j_z, i_w;
@@ -42,20 +42,11 @@ void backProject3DCone( float ***x_out, float ***y_in, struct ImageParams *imgPa
     double ticToc;
 
     tic(&ticToc);
-    #pragma omp parallel for private(j_y, j_z)
-    for (j_x = 0; j_x <= imgParams->N_x-1; ++j_x)
-    {
-        for (j_y = 0; j_y <= imgParams->N_y-1 ; ++j_y)
-        {
-            for (j_z = 0; j_z <= imgParams->N_z-1; ++j_z)
-            {
-                x_out[j_x][j_y][j_z] = 0;
-            }
-        }
-    }
-
-    printf("mode: %d\n", mode);
-
+    
+    // initialize image array to zero
+    setFloatArray2Value( &x[0], imgParams->N_x*imgParams->N_y*imgParams->N_z, 0);    
+   
+    // compute x = A^t y 
     #pragma omp parallel for private(j_x, j_y, j_u, i_v, B_ij, j_z, i_w, A_ij)
     for (i_beta = 0; i_beta <= sinoParams->N_beta-1; ++i_beta)
     {
@@ -78,7 +69,7 @@ void backProject3DCone( float ***x_out, float ***y_in, struct ImageParams *imgPa
                                 
 
                                 /* normal backprojection */
-                                x_out[j_x][j_y][j_z] += A_ij * y_in[i_beta][i_v][i_w] ;
+				x[index_3D(j_x,j_y,j_z,imgParams->N_y,imgParams->N_z)] += A_ij * Ax[index_3D(i_beta,i_v,i_w,sinoParams->N_dv,sinoParams->N_dw)];
                             }
                         }
                     }

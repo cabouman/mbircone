@@ -398,7 +398,7 @@ struct ReconAux
 
 void forwardProject3DCone( float *Ax, float *x, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams);
 
-void backProject3DCone( float ***x_out, float ***y_in, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams);
+void backProject3DCone( float *Ax, float *x, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams);
 
 void computeSecondaryReconParams(struct ReconParams *reconParams, struct ImageParams *imgParams);
 
