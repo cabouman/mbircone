@@ -55,22 +55,19 @@ void backProject3DCone( float *Ax, float *x, struct ImageParams *imgParams, stru
         {
             for (j_y = 0; j_y <= imgParams->N_y-1; ++j_y)
             {
-                if(isInsideMask(j_x, j_y, imgParams->N_x, imgParams->N_y))
+                j_u = A->j_u[j_x][j_y][i_beta];
+                for (i_v = A->i_vstart[j_x][j_y][i_beta]; i_v < A->i_vstart[j_x][j_y][i_beta]+A->i_vstride[j_x][j_y][i_beta] ; ++i_v)
                 {
-                    j_u = A->j_u[j_x][j_y][i_beta];
-                    for (i_v = A->i_vstart[j_x][j_y][i_beta]; i_v < A->i_vstart[j_x][j_y][i_beta]+A->i_vstride[j_x][j_y][i_beta] ; ++i_v)
+                    B_ij = A->B_ij_scaler * A->B[j_x][j_y][i_beta*A->i_vstride_max + i_v-A->i_vstart[j_x][j_y][i_beta]];
+                    for (j_z = 0; j_z <= imgParams->N_z-1; ++j_z)
                     {
-                        B_ij = A->B_ij_scaler * A->B[j_x][j_y][i_beta*A->i_vstride_max + i_v-A->i_vstart[j_x][j_y][i_beta]];
-                        for (j_z = 0; j_z <= imgParams->N_z-1; ++j_z)
+                        for (i_w = A->i_wstart[j_u][j_z]; i_w < A->i_wstart[j_u][j_z]+A->i_wstride[j_u][j_z]; ++i_w)
                         {
-                            for (i_w = A->i_wstart[j_u][j_z]; i_w < A->i_wstart[j_u][j_z]+A->i_wstride[j_u][j_z]; ++i_w)
-                            {
-                                A_ij = B_ij * A->C_ij_scaler * A->C[j_u][j_z*A->i_wstride_max + i_w-A->i_wstart[j_u][j_z]];
-                                
+                            A_ij = B_ij * A->C_ij_scaler * A->C[j_u][j_z*A->i_wstride_max + i_w-A->i_wstart[j_u][j_z]];
+                            
 
-                                /* normal backprojection */
-				x[index_3D(j_x,j_y,j_z,imgParams->N_y,imgParams->N_z)] += A_ij * Ax[index_3D(i_beta,i_v,i_w,sinoParams->N_dv,sinoParams->N_dw)];
-                            }
+                            /* normal backprojection */
+            x[index_3D(j_x,j_y,j_z,imgParams->N_y,imgParams->N_z)] += A_ij * Ax[index_3D(i_beta,i_v,i_w,sinoParams->N_dv,sinoParams->N_dw)];
                         }
                     }
                 }
