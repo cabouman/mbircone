@@ -869,7 +869,7 @@ def backproject(sino, angles,
             forward projection matrices.
 
     Returns:
-        (float, ndarray): 3D sinogram with shape (num_views, num_det_rows, num_det_channels).
+        (float, ndarray): 3D back projection image with shape (num_img_slices, num_img_rows, num_img_cols) in units of :math:`ALU^{-1}`.
     """
 
     if num_threads is None:
