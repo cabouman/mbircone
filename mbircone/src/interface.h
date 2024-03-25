@@ -16,4 +16,9 @@ void forwardProject(float *y, float *x,
     struct SinoParams sinoParams, struct ImageParams imgParams, 
     char *Amatrix_fname);
 
+void backProject(float *y, float *x, 
+    struct SinoParams sinoParams, struct ImageParams imgParams, 
+    char *Amatrix_fname);
+
+
 #endif /* _CY_INTERFACE_H_ */
