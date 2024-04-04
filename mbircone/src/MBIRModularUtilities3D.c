@@ -34,35 +34,20 @@ void forwardProject3DCone( float *Ax, float *x, struct ImageParams *imgParams, s
     }
 }
 
-void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams, char mode)
+void backProject3DCone( float *Ax, float *x, struct ImageParams *imgParams, struct SysMatrix *A, struct SinoParams *sinoParams)
 {
 
     long int j_u, j_x, j_y, i_beta, i_v, j_z, i_w;
     float B_ij, A_ij;
     double ticToc;
-    float ***normalization, val, val2;
-
-    /**
-     *         allocate normalization
-     */
-    normalization = (float***) multialloc(sizeof(float), 3, (int)imgParams->N_x, (int)imgParams->N_y, (int)imgParams->N_z);
 
     tic(&ticToc);
-    #pragma omp parallel for private(j_y, j_z)
-    for (j_x = 0; j_x <= imgParams->N_x-1; ++j_x)
-    {
-        for (j_y = 0; j_y <= imgParams->N_y-1 ; ++j_y)
-        {
-            for (j_z = 0; j_z <= imgParams->N_z-1; ++j_z)
-            {
-                x_out[j_x][j_y][j_z] = 0;
-            }
-        }
-    }
-
-    printf("mode: %d\n", mode);
-
-    #pragma omp parallel for private(j_x, j_y, j_u, i_v, B_ij, j_z, i_w, A_ij, val)
+    
+    // initialize image array to zero
+    setFloatArray2Value( &x[0], imgParams->N_x*imgParams->N_y*imgParams->N_z, 0);    
+   
+    // compute x = A^t y 
+    #pragma omp parallel for private(j_x, j_y, j_u, i_v, B_ij, j_z, i_w, A_ij)
     for (i_beta = 0; i_beta <= sinoParams->N_beta-1; ++i_beta)
     {
 
@@ -70,36 +55,19 @@ void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageParams *i
         {
             for (j_y = 0; j_y <= imgParams->N_y-1; ++j_y)
             {
-                if(isInsideMask(j_x, j_y, imgParams->N_x, imgParams->N_y))
+                j_u = A->j_u[j_x][j_y][i_beta];
+                for (i_v = A->i_vstart[j_x][j_y][i_beta]; i_v < A->i_vstart[j_x][j_y][i_beta]+A->i_vstride[j_x][j_y][i_beta] ; ++i_v)
                 {
-                    j_u = A->j_u[j_x][j_y][i_beta];
-                    for (i_v = A->i_vstart[j_x][j_y][i_beta]; i_v < A->i_vstart[j_x][j_y][i_beta]+A->i_vstride[j_x][j_y][i_beta] ; ++i_v)
+                    B_ij = A->B_ij_scaler * A->B[j_x][j_y][i_beta*A->i_vstride_max + i_v-A->i_vstart[j_x][j_y][i_beta]];
+                    for (j_z = 0; j_z <= imgParams->N_z-1; ++j_z)
                     {
-                        B_ij = A->B_ij_scaler * A->B[j_x][j_y][i_beta*A->i_vstride_max + i_v-A->i_vstart[j_x][j_y][i_beta]];
-                        for (j_z = 0; j_z <= imgParams->N_z-1; ++j_z)
+                        for (i_w = A->i_wstart[j_u][j_z]; i_w < A->i_wstart[j_u][j_z]+A->i_wstride[j_u][j_z]; ++i_w)
                         {
-                            for (i_w = A->i_wstart[j_u][j_z]; i_w < A->i_wstart[j_u][j_z]+A->i_wstride[j_u][j_z]; ++i_w)
-                            {
-                                A_ij = B_ij * A->C_ij_scaler * A->C[j_u][j_z*A->i_wstride_max + i_w-A->i_wstart[j_u][j_z]];
-                                
+                            A_ij = B_ij * A->C_ij_scaler * A->C[j_u][j_z*A->i_wstride_max + i_w-A->i_wstart[j_u][j_z]];
+                            
 
-                                if(mode==0){
-                                    /* normal backprojection */
-                                    x_out[j_x][j_y][j_z] += A_ij * y_in[i_beta][i_v][i_w] ;
-                                }
-                                else if(mode==1){
-                                    /* entropy */
-                                    val = A_ij * y_in[i_beta][i_v][i_w];
-                                    if (val!=0){
-                                        x_out[j_x][j_y][j_z] += val * log(val) ;
-                                    }
-                                    normalization[j_x][j_y][j_z] += A_ij * y_in[i_beta][i_v][i_w] ;
-                                }
-                                else if(mode==2){
-                                    /* kappa */
-                                    x_out[j_x][j_y][j_z] += A_ij * y_in[i_beta][i_v][i_w] * A_ij ;
-                                }
-                            }
+                            /* normal backprojection */
+            x[index_3D(j_x,j_y,j_z,imgParams->N_y,imgParams->N_z)] += A_ij * Ax[index_3D(i_beta,i_v,i_w,sinoParams->N_dv,sinoParams->N_dw)];
                         }
                     }
                 }
@@ -107,35 +75,9 @@ void backProjectlike3DCone( float ***x_out, float ***y_in, struct ImageParams *i
         }
     }
 
-    printf("mode: %d\n", mode);
-
-    if(mode==1)
-    {
-        /* compute entropy in bits after normalization */
-        #pragma omp parallel for private(j_y, j_z, val, val2)
-        for (j_x = 0; j_x <= imgParams->N_x-1; ++j_x)
-        {
-            for (j_y = 0; j_y <= imgParams->N_y-1; ++j_y)
-            {
-                for (j_z = 0; j_z <= imgParams->N_z-1; ++j_z)
-                {
-                    val = x_out[j_x][j_y][j_z];
-                    val2 = normalization[j_x][j_y][j_z];
-                    if (val2==0){
-                        x_out[j_x][j_y][j_z] = 0;
-                    }
-                    else{
-                        x_out[j_x][j_y][j_z] = (log(val2) - val/val2)/log(2);
-                    }
-                }
-            }   
-        }
-        multifree((void***)normalization, 3);
-    }
-
 
     toc(&ticToc);
-    ticTocDisp(ticToc, "backProjectlike3DCone");
+    ticTocDisp(ticToc, "backProject3DCone");
 
 }
 

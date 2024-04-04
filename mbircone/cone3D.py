@@ -822,3 +822,106 @@ def project(image, angles,
 
     proj = ci.project(image, settings)
     return proj
+
+
+def backproject(sino, angles,
+                dist_source_detector, magnification,
+                num_image_rows=None, num_image_cols=None, num_image_slices=None,
+                delta_det_channel=1.0, delta_det_row=1.0, delta_pixel_image=None,
+                det_channel_offset=0.0, det_row_offset=0.0, rotation_offset=0.0, image_slice_offset=0.0,
+                num_threads=None, verbose=1, lib_path=__lib_path):
+    """ Compute 3D cone beam back projection.
+
+    Args:
+        sino (float, ndarray): 3D sinogram data with shape (num_views, num_det_rows, num_det_channels).
+        angles (float, ndarray): 1D array of view angles in radians.
+
+        dist_source_detector (float): Distance between the X-ray source and the detector in units of :math:`ALU`.
+        magnification (float): Magnification of the cone-beam geometry defined as
+            (source to detector distance)/(source to center-of-rotation distance).
+        
+        num_image_rows (int, optional): [Default=None] Number of rows in reconstructed image.
+            If None, automatically set by ``cone3D.auto_image_size``.
+        num_image_cols (int, optional): [Default=None] Number of columns in reconstructed image.
+            If None, automatically set by ``cone3D.auto_image_size``.
+        num_image_slices (int, optional): [Default=None] Number of slices in reconstructed image.
+            If None, automatically set by ``cone3D.auto_image_size``.
+
+        delta_det_channel (float, optional): [Default=1.0] Detector channel spacing in :math:`ALU`.
+        delta_det_row (float, optional): [Default=1.0] Detector row spacing in :math:`ALU`.
+        delta_pixel_image (float, optional): [Default=None] Image pixel spacing in :math:`ALU`.
+            If None, automatically set to ``delta_pixel_detector/magnification``.
+
+        det_channel_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector
+            to the source-detector line along a row.
+        det_row_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from center of detector
+            to the source-detector line along a column.
+        rotation_offset (float, optional): [Default=0.0] Distance in :math:`ALU` from source-detector line
+            to axis of rotation in the object space.
+            This is normally set to zero.
+        image_slice_offset (float, optional): [Default=0.0] Vertical offset of the image in units of :math:`ALU`.
+
+        num_threads (int, optional): [Default=None] Number of compute threads requested when executed.
+            If None, ``num_threads`` is set to the number of cores in the system.
+        verbose (int, optional): [Default=1] Possible values are {0,1,2}, where 0 is quiet, 1 prints minimal
+            reconstruction progress information, and 2 prints the full information.
+        lib_path (str, optional): [Default=~/.cache/mbircone] Path to directory containing library of
+            forward projection matrices.
+
+    Returns:
+        (float, ndarray): 3D back projection image with shape (num_img_slices, num_img_rows, num_img_cols) in units of :math:`ALU^{-1}`.
+    """
+
+    if num_threads is None:
+        num_threads = cpu_count(logical=False)
+
+    os.environ['OMP_NUM_THREADS'] = str(num_threads)
+    os.environ['OMP_DYNAMIC'] = 'true'
+
+    if delta_pixel_image is None:
+        delta_pixel_image = delta_det_channel / magnification
+    
+    
+    num_views, num_det_rows, num_det_channels = sino.shape
+    ### calculate image parameters
+    if num_image_rows is None:
+        num_image_rows, _, _ = auto_image_size(num_det_rows, num_det_channels, delta_det_channel, delta_det_row,
+                                               delta_pixel_image, magnification)
+    if num_image_cols is None:
+        _, num_image_cols, _ = auto_image_size(num_det_rows, num_det_channels, delta_det_channel, delta_det_row,
+                                               delta_pixel_image, magnification)
+    if num_image_slices is None:
+        _, _, num_image_slices = auto_image_size(num_det_rows, num_det_channels, delta_det_channel, delta_det_row,
+                                               delta_pixel_image, magnification)
+    imgparams = create_image_params_dict(num_image_rows, num_image_cols, num_image_slices,
+                                         delta_pixel_image=delta_pixel_image, image_slice_offset=image_slice_offset)
+
+
+    ### calculate sinogram parameters
+    sinoparams = create_sino_params_dict(dist_source_detector, magnification,
+                                         num_views=num_views, num_det_rows=num_det_rows, num_det_channels=num_det_channels,
+                                         det_channel_offset=det_channel_offset, det_row_offset=det_row_offset,
+                                         rotation_offset=rotation_offset,
+                                         delta_det_channel=delta_det_channel, delta_det_row=delta_det_row)
+
+
+    ### calculate system matrix
+    hash_val = _utils.hash_params(angles, sinoparams, imgparams)
+    sysmatrix_fname = _utils._gen_sysmatrix_fname(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
+
+    if os.path.exists(sysmatrix_fname):
+        os.utime(sysmatrix_fname)  # Update file modified time
+    else:
+        sysmatrix_fname_tmp = _utils._gen_sysmatrix_fname_tmp(lib_path=lib_path, sysmatrix_name=hash_val[:__namelen_sysmatrix])
+        ci.AmatrixComputeToFile_cy(angles, sinoparams, imgparams, sysmatrix_fname_tmp, verbose=verbose)
+        os.rename(sysmatrix_fname_tmp, sysmatrix_fname)
+
+    # Collect settings to pass to C
+    settings = dict()
+    settings['imgparams'] = imgparams
+    settings['sinoparams'] = sinoparams
+    settings['sysmatrix_fname'] = sysmatrix_fname
+    settings['num_threads'] = num_threads
+
+    image = ci.backproject(sino, settings)
+    return image

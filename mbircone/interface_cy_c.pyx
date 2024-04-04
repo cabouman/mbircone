@@ -128,6 +128,10 @@ cdef extern from "./src/interface.h":
     SinoParams sinoParams, ImageParams imgparams,
     char *Amatrix_fname)
 
+    void backProject(float *y, float *x,
+    SinoParams sinoParams, ImageParams imgparams,
+    char *Amatrix_fname)
+
 
 cdef convert_py2c_SinoParams3D(SinoParams* c_sinoparams, sinoparams):
 
@@ -503,3 +507,49 @@ def project(image, settings):
     # print("Cython done")
     # Convert shape from Cython interface specifications to Python interface specifications
     return np.swapaxes(proj, 1, 2)
+
+
+def backproject(sino, settings):
+    """Back projection function used by mbircone.project().
+
+    Args:
+        sino (ndarray): 3D sinogram data of shape (num_views, num_det_rows, num_det_channels) to be back-projected.
+        settings (dict): Dictionary containing projection settings.
+
+    Returns:
+        ndarray: 3D numpy array containing back-projection image with shape (num_img_cols, num_img_rows, num_img_slices).
+    """
+
+    imgparams = settings['imgparams']
+    sinoparams = settings['sinoparams']
+    sysmatrix_fname = settings['sysmatrix_fname']
+    num_threads = settings['num_threads']
+
+    openmp.omp_set_num_threads(num_threads)
+    
+    sino = np.swapaxes(sino,1,2)
+    sino = np.ascontiguousarray(sino, dtype=np.single)
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_sino = sino
+
+
+    # Allocates memory, without initialization, for matrix to be passed back from C subroutine
+    cdef cnp.ndarray[float, ndim=3, mode="c"] cy_image = np.empty((imgparams['N_x'], imgparams['N_y'], imgparams['N_z']), dtype=ctypes.c_float)
+
+    # Write parameter to c structures based on given py parameter List.
+    cdef ImageParams c_imgparams
+    cdef SinoParams c_sinoparams
+    convert_py2c_SinoParams3D(&c_sinoparams, sinoparams)
+    convert_py2c_ImageParams3D(&c_imgparams, imgparams)
+
+    cdef cnp.ndarray[char, ndim=1, mode="c"] Amatrix_fname = string_to_char_array(sysmatrix_fname)
+
+    # Back projection by calling C subroutine
+    backProject(&cy_sino[0,0,0],
+                &cy_image[0,0,0],
+                c_sinoparams,
+                c_imgparams,
+                &Amatrix_fname[0])
+
+    # print("Cython done")
+    # Convert shape from Cython interface specifications to Python interface specifications
+    return np.swapaxes(cy_image, 0, 2)
