@@ -8,7 +8,7 @@ import yaml
 from PIL import Image
 from datetime import datetime
 from datatest import validate, ValidationError
-
+import matplotlib.patches as patches
 
 def strftime_format(format):
     """Check if string satisfy the require format.
@@ -365,3 +365,48 @@ def create_cluster_ticket_configs(save_config_dir, save_config_name='default'):
     os.makedirs(save_config_dir, exist_ok=True)
     save_dict_yaml(config, save_config_dir+save_config_name+'.yaml')
     return config
+
+def plot_image_hi_res(array, filename=None, title='', vmin=None, vmax=None, cmap='gray', show_colorbar=True, origin='upper', hline=None, box=None):
+    """ Display an array using a figure size large enough to map one array element to one pixel
+    The scaling isn't exactly correct, so some pixels are slightly larger than others, partially depending on the labels on the axes and on the colorbar.  It's difficult to get this exactly correct.
+    Code modified from `https://github.com/gbuzzard/package_template/blob/master/%7B%7Bcookiecutter.project_name%7D%7D/demo/demo_utils.py`
+
+    Args:
+        array: The array to display
+        title: The title for the plot
+        vmin: Minimum of the intensity window - same as vmin in imshow
+        vmax: Maximum of the intensity window - same as vmax in imshow
+        cmap: The color map as in imshow - same as cmap in imshow
+        show: If true, then plt.show() is called to display immediately, otherwise call
+              fig.show() on the object returned from this function to show the plot.
+
+    Returns:
+        The pyplot figure object
+    """
+    px = 1 / plt.rcParams['figure.dpi']  # pixel in inches
+    # Scale for one pixel per element and account for the border
+    fig_height = 3.7 * array.shape[0] * px
+    fig_width = 4.6 * array.shape[1] * px
+    fontsize = max([fig_height, 6.0])
+    plt.rcParams.update({'font.size': fontsize})
+
+    fig = plt.figure(figsize=(fig_width, fig_height), layout="constrained")
+    plt.imshow(array, vmin=vmin, vmax=vmax, cmap=cmap, interpolation='none', origin=origin)
+    plt.axis("off")
+    plt.title(title)
+    if hline is not None:
+        for l in hline:
+            plt.axhline(y=l, linewidth=1, color = 'r')
+    if box is not None:
+        for box_info in box:
+            (x,y,width,height) = box_info
+            rect = patches.Rectangle((x, y), width, height, linewidth=4, edgecolor='r', facecolor='none')
+            # Add the patch to the Axes
+            plt.gca().add_patch(rect)
+    if show_colorbar:
+        plt.colorbar()
+    if filename != None:
+        try:
+            plt.savefig(filename, bbox_inches='tight')
+        except:
+            print("plot_image_hi_res() Warning: Can't write to file {}".format(filename))
